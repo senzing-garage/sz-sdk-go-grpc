@@ -66,7 +66,10 @@ func getTestObject(ctx context.Context, test *testing.T) G2diagnosticClient {
 }
 
 func getG2Diagnostic(ctx context.Context) G2diagnosticClient {
-	g2diagnostic := &G2diagnosticClient{}
+	grpcConnection := getGrpcConnection()
+	g2diagnostic := &G2diagnosticClient{
+		G2DiagnosticGrpcClient: pb.NewG2DiagnosticClient(grpcConnection),
+	}
 	moduleName := "Test module name"
 	verboseLogging := 0
 	iniParams, err := g2engineconfigurationjson.BuildSimpleSystemConfigurationJson("")
@@ -620,14 +623,17 @@ func ExampleG2diagnosticClient_GetTotalSystemMemory() {
 
 func ExampleG2diagnosticClient_Init() {
 	// For more information, visit https://github.com/Senzing/g2-sdk-go-grpc/blob/main/g2diagnosticclient/g2diagnosticclient_test.go
-	g2diagnostic := &G2diagnosticClient{}
 	ctx := context.TODO()
+	grpcConnection := getGrpcConnection()
+	g2diagnostic := &G2diagnosticClient{
+		G2DiagnosticGrpcClient: pb.NewG2DiagnosticClient(grpcConnection),
+	}
 	moduleName := "Test module name"
+	verboseLogging := 0
 	iniParams, err := g2engineconfigurationjson.BuildSimpleSystemConfigurationJson("") // See https://pkg.go.dev/github.com/senzing/go-helpers
 	if err != nil {
 		fmt.Println(err)
 	}
-	verboseLogging := 0 // 0 for no Senzing logging; 1 for logging
 	err = g2diagnostic.Init(ctx, moduleName, iniParams, verboseLogging)
 	if err != nil {
 		fmt.Println(err)
@@ -637,15 +643,18 @@ func ExampleG2diagnosticClient_Init() {
 
 func ExampleG2diagnosticClient_InitWithConfigID() {
 	// For more information, visit https://github.com/Senzing/g2-sdk-go-grpc/blob/main/g2diagnosticclient/g2diagnosticclient_test.go
-	g2diagnostic := &G2diagnosticClient{}
 	ctx := context.TODO()
+	grpcConnection := getGrpcConnection()
+	g2diagnostic := &G2diagnosticClient{
+		G2DiagnosticGrpcClient: pb.NewG2DiagnosticClient(grpcConnection),
+	}
 	moduleName := "Test module name"
-	iniParams, err := g2engineconfigurationjson.BuildSimpleSystemConfigurationJson("")
+	initConfigID := int64(1)
+	verboseLogging := 0
+	iniParams, err := g2engineconfigurationjson.BuildSimpleSystemConfigurationJson("") // See https://pkg.go.dev/github.com/senzing/go-helpers
 	if err != nil {
 		fmt.Println(err)
 	}
-	initConfigID := int64(1)
-	verboseLogging := 0
 	err = g2diagnostic.InitWithConfigID(ctx, moduleName, iniParams, initConfigID, verboseLogging)
 	if err != nil {
 		fmt.Println(err)
@@ -655,8 +664,8 @@ func ExampleG2diagnosticClient_InitWithConfigID() {
 
 func ExampleG2diagnosticClient_Reinit() {
 	// For more information, visit https://github.com/Senzing/g2-sdk-go-grpc/blob/main/g2diagnosticclient/g2diagnosticclient_test.go
-	g2diagnostic := &G2diagnosticClient{}
 	ctx := context.TODO()
+	g2diagnostic := getG2Diagnostic(ctx)
 	initConfigID := int64(testhelpers.TestConfigDataId)
 	err := g2diagnostic.Reinit(ctx, initConfigID)
 	if err != nil {
