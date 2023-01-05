@@ -8,8 +8,10 @@ package g2diagnosticclient
 import (
 	"context"
 	"fmt"
+	"strconv"
 
 	pb "github.com/senzing/g2-sdk-proto/go/g2diagnostic"
+	"github.com/senzing/go-logging/logger"
 )
 
 // ----------------------------------------------------------------------------
@@ -47,7 +49,7 @@ Input
   - ctx: A context to control lifecycle.
   - entityListBySizeHandle: A handle created by GetEntityListBySize().
 */
-func (client *G2diagnosticClient) CloseEntityListBySize(ctx context.Context, entityListBySizeHandle interface{}) error {
+func (client *G2diagnosticClient) CloseEntityListBySize(ctx context.Context, entityListBySizeHandle uintptr) error {
 	request := pb.CloseEntityListBySizeRequest{
 		EntityListBySizeHandle: fmt.Sprintf("%v", entityListBySizeHandle),
 	}
@@ -82,7 +84,7 @@ Output
   - A string containing a JSON document.
     See the example output.
 */
-func (client *G2diagnosticClient) FetchNextEntityBySize(ctx context.Context, entityListBySizeHandle interface{}) (string, error) {
+func (client *G2diagnosticClient) FetchNextEntityBySize(ctx context.Context, entityListBySizeHandle uintptr) (string, error) {
 	request := pb.FetchNextEntityBySizeRequest{
 		EntityListBySizeHandle: fmt.Sprintf("%v", entityListBySizeHandle),
 	}
@@ -198,13 +200,17 @@ Input
 Output
   - A handle to an entity list to be used with FetchNextEntityBySize() and CloseEntityListBySize().
 */
-func (client *G2diagnosticClient) GetEntityListBySize(ctx context.Context, entitySize int) (interface{}, error) {
+func (client *G2diagnosticClient) GetEntityListBySize(ctx context.Context, entitySize int) (uintptr, error) {
 	request := pb.GetEntityListBySizeRequest{
 		EntitySize: int32(entitySize),
 	}
 	response, err := client.G2DiagnosticGrpcClient.GetEntityListBySize(ctx, &request)
+	if err != nil {
+		return 0, err
+	}
 	result := response.GetResult()
-	return result, err
+	result_int, err := strconv.Atoi(result)
+	return uintptr(result_int), err
 }
 
 /*
@@ -452,5 +458,17 @@ func (client *G2diagnosticClient) Reinit(ctx context.Context, initConfigID int64
 		InitConfigID: initConfigID,
 	}
 	_, err := client.G2DiagnosticGrpcClient.Reinit(ctx, &request)
+	return err
+}
+
+/*
+The SetLogLevel method sets the level of logging.
+
+Input
+  - ctx: A context to control lifecycle.
+  - logLevel: The desired log level. TRACE, DEBUG, INFO, WARN, ERROR, FATAL or PANIC.
+*/
+func (client *G2diagnosticClient) SetLogLevel(ctx context.Context, logLevel logger.Level) error {
+	var err error = nil
 	return err
 }

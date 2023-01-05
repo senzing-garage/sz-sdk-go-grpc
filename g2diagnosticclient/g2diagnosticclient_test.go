@@ -632,7 +632,7 @@ func ExampleG2diagnosticClient_GetEntityListBySize() {
 	if err != nil {
 		fmt.Println(err)
 	}
-	fmt.Println(len(entityListBySizeHandle.(string)) > 0) // Dummy output.
+	fmt.Println(entityListBySizeHandle > 0) // Dummy output.
 	// Output: true
 }
 
