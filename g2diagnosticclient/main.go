@@ -6,14 +6,8 @@
 package g2diagnosticclient
 
 import (
-	pb "github.com/senzing/g2-sdk-go-grpc/protobuf/g2diagnostic"
+	pb "github.com/senzing/g2-sdk-proto/go/g2diagnostic"
 )
-
-// ----------------------------------------------------------------------------
-// Constants
-// ----------------------------------------------------------------------------
-
-const MessageIdFormat = "senzing-6025%04d"
 
 // ----------------------------------------------------------------------------
 // Types
@@ -22,6 +16,13 @@ const MessageIdFormat = "senzing-6025%04d"
 type G2diagnosticClient struct {
 	G2DiagnosticGrpcClient pb.G2DiagnosticClient
 }
+
+// ----------------------------------------------------------------------------
+// Constants
+// ----------------------------------------------------------------------------
+
+// Identfier of the g2diagnosticclient component found messages having the format "senzing-6023xxxx".
+const ProductId = 6023
 
 // ----------------------------------------------------------------------------
 // Interfaces
@@ -55,3 +56,13 @@ type G2diagnosticClient struct {
 //	InitWithConfigID(ctx context.Context, moduleName string, iniParams string, initConfigID int64, verboseLogging int) error
 //	Reinit(ctx context.Context, initConfigID int64) error
 //}
+
+// ----------------------------------------------------------------------------
+// Variables
+// ----------------------------------------------------------------------------
+
+// Message templates for the g2diagnostic package.
+var IdMessages = map[int]string{}
+
+// Status strings for specific g2diagnostic messages.
+var IdStatuses = map[int]string{}

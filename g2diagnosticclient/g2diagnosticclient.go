@@ -9,7 +9,7 @@ import (
 	"context"
 	"fmt"
 
-	pb "github.com/senzing/g2-sdk-go-grpc/protobuf/g2diagnostic"
+	pb "github.com/senzing/g2-sdk-proto/go/g2diagnostic"
 )
 
 // ----------------------------------------------------------------------------

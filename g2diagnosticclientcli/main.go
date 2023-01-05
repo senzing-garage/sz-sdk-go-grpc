@@ -11,7 +11,7 @@ import (
 	"time"
 
 	"github.com/senzing/g2-sdk-go-grpc/g2diagnosticclient"
-	pb "github.com/senzing/g2-sdk-go-grpc/protobuf/g2diagnostic"
+	pb "github.com/senzing/g2-sdk-proto/go/g2diagnostic"
 	"github.com/senzing/go-helpers/g2engineconfigurationjson"
 	"github.com/senzing/go-logging/messagelogger"
 	"google.golang.org/grpc"
