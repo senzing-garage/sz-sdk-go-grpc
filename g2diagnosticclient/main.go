@@ -6,7 +6,6 @@
 package g2diagnosticclient
 
 import (
-	"github.com/senzing/g2-sdk-go/g2diagnostic"
 	pb "github.com/senzing/g2-sdk-proto/go/g2diagnostic"
 )
 
@@ -16,7 +15,6 @@ import (
 
 type G2diagnosticClient struct {
 	G2DiagnosticGrpcClient pb.G2DiagnosticClient
-	G2DiagnosticInterface  g2diagnostic.G2diagnostic
 }
 
 // ----------------------------------------------------------------------------
