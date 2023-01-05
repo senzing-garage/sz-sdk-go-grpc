@@ -73,7 +73,7 @@ func main() {
 	// Set up a client to the G2diagnosis gRPC server.
 
 	g2diagnosticClient := g2diagnosticclient.G2diagnosticClient{
-		G2DiagnosticGrpcClient: pb.NewG2DiagnosticClient(grpcConnection),
+		GrpcClient: pb.NewG2DiagnosticClient(grpcConnection),
 	}
 
 	// Create request parameters.

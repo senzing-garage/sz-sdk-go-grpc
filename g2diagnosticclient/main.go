@@ -2,7 +2,7 @@
  *
  */
 
-// Package main implements a client for the service.
+// Package g2diagnosticclient implements a client for the service.
 package g2diagnosticclient
 
 import (
@@ -14,7 +14,7 @@ import (
 // ----------------------------------------------------------------------------
 
 type G2diagnosticClient struct {
-	G2DiagnosticGrpcClient pb.G2DiagnosticClient
+	GrpcClient pb.G2DiagnosticClient
 }
 
 // ----------------------------------------------------------------------------
@@ -28,8 +28,8 @@ const ProductId = 6023
 // Variables
 // ----------------------------------------------------------------------------
 
-// Message templates for the g2diagnostic package.
+// Message templates for the g2diagnosticclient package.
 var IdMessages = map[int]string{}
 
-// Status strings for specific g2diagnostic messages.
+// Status strings for specific g2diagnosticclient messages.
 var IdStatuses = map[int]string{}

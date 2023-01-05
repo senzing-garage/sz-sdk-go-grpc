@@ -46,7 +46,7 @@ func getTestObject(ctx context.Context, test *testing.T) G2configClient {
 
 		grpcConnection := getGrpcConnection()
 		g2configClientSingleton = &G2configClient{
-			G2ConfigGrpcClient: pb.NewG2ConfigClient(grpcConnection),
+			GrpcClient: pb.NewG2ConfigClient(grpcConnection),
 		}
 
 		moduleName := "Test module name"
@@ -227,7 +227,7 @@ func ExampleG2configClient_AddDataSource() {
 	// For more information, visit https://github.com/Senzing/g2-sdk-go-grpc/blob/main/g2configclient/g2configclient_test.go
 	grpcConnection := getGrpcConnection()
 	g2config := &G2configClient{
-		G2ConfigGrpcClient: pb.NewG2ConfigClient(grpcConnection),
+		GrpcClient: pb.NewG2ConfigClient(grpcConnection),
 	}
 	ctx := context.TODO()
 	configHandle, err := g2config.Create(ctx)
@@ -247,7 +247,7 @@ func ExampleG2configClient_Close() {
 	// For more information, visit https://github.com/Senzing/g2-sdk-go-grpc/blob/main/g2configclient/g2configclient_test.go
 	grpcConnection := getGrpcConnection()
 	g2config := &G2configClient{
-		G2ConfigGrpcClient: pb.NewG2ConfigClient(grpcConnection),
+		GrpcClient: pb.NewG2ConfigClient(grpcConnection),
 	}
 	ctx := context.TODO()
 	configHandle, err := g2config.Create(ctx)
@@ -265,7 +265,7 @@ func ExampleG2configClient_Create() {
 	// For more information, visit https://github.com/Senzing/g2-sdk-go-grpc/blob/main/g2configclient/g2configclient_test.go
 	grpcConnection := getGrpcConnection()
 	g2config := &G2configClient{
-		G2ConfigGrpcClient: pb.NewG2ConfigClient(grpcConnection),
+		GrpcClient: pb.NewG2ConfigClient(grpcConnection),
 	}
 	ctx := context.TODO()
 	configHandle, err := g2config.Create(ctx)
@@ -280,7 +280,7 @@ func ExampleG2configClient_DeleteDataSource() {
 	// For more information, visit https://github.com/Senzing/g2-sdk-go-grpc/blob/main/g2configclient/g2configclient_test.go
 	grpcConnection := getGrpcConnection()
 	g2config := &G2configClient{
-		G2ConfigGrpcClient: pb.NewG2ConfigClient(grpcConnection),
+		GrpcClient: pb.NewG2ConfigClient(grpcConnection),
 	}
 	ctx := context.TODO()
 	configHandle, err := g2config.Create(ctx)
@@ -299,7 +299,7 @@ func ExampleG2configClient_Destroy() {
 	// For more information, visit https://github.com/Senzing/g2-sdk-go-grpc/blob/main/g2configclient/g2configclient_test.go
 	grpcConnection := getGrpcConnection()
 	g2config := &G2configClient{
-		G2ConfigGrpcClient: pb.NewG2ConfigClient(grpcConnection),
+		GrpcClient: pb.NewG2ConfigClient(grpcConnection),
 	}
 	ctx := context.TODO()
 	err := g2config.Destroy(ctx)
@@ -313,7 +313,7 @@ func ExampleG2configClient_Init() {
 	// For more information, visit https://github.com/Senzing/g2-sdk-go-grpc/blob/main/g2configclient/g2configclient_test.go
 	grpcConnection := getGrpcConnection()
 	g2config := &G2configClient{
-		G2ConfigGrpcClient: pb.NewG2ConfigClient(grpcConnection),
+		GrpcClient: pb.NewG2ConfigClient(grpcConnection),
 	}
 	ctx := context.TODO()
 	moduleName := "Test module name"
@@ -333,7 +333,7 @@ func ExampleG2configClient_ListDataSources() {
 	// For more information, visit https://github.com/Senzing/g2-sdk-go-grpc/blob/main/g2configclient/g2configclient_test.go
 	grpcConnection := getGrpcConnection()
 	g2config := &G2configClient{
-		G2ConfigGrpcClient: pb.NewG2ConfigClient(grpcConnection),
+		GrpcClient: pb.NewG2ConfigClient(grpcConnection),
 	}
 	ctx := context.TODO()
 	configHandle, err := g2config.Create(ctx)
@@ -352,7 +352,7 @@ func ExampleG2configClient_Load() {
 	// For more information, visit https://github.com/Senzing/g2-sdk-go-grpc/blob/main/g2configclient/g2configclient_test.go
 	grpcConnection := getGrpcConnection()
 	g2config := &G2configClient{
-		G2ConfigGrpcClient: pb.NewG2ConfigClient(grpcConnection),
+		GrpcClient: pb.NewG2ConfigClient(grpcConnection),
 	}
 	ctx := context.TODO()
 	configHandle, err := g2config.Create(ctx)
@@ -374,7 +374,7 @@ func ExampleG2configClient_Save() {
 	// For more information, visit https://github.com/Senzing/g2-sdk-go-grpc/blob/main/g2configclient/g2configclient_test.go
 	grpcConnection := getGrpcConnection()
 	g2config := &G2configClient{
-		G2ConfigGrpcClient: pb.NewG2ConfigClient(grpcConnection),
+		GrpcClient: pb.NewG2ConfigClient(grpcConnection),
 	}
 	ctx := context.TODO()
 	configHandle, err := g2config.Create(ctx)
@@ -393,7 +393,7 @@ func ExampleG2configClient_SetLogLevel() {
 	// For more information, visit https://github.com/Senzing/g2-sdk-go-grpc/blob/main/g2configclient/g2configclient_test.go
 	grpcConnection := getGrpcConnection()
 	g2config := &G2configClient{
-		G2ConfigGrpcClient: pb.NewG2ConfigClient(grpcConnection),
+		GrpcClient: pb.NewG2ConfigClient(grpcConnection),
 	}
 	ctx := context.TODO()
 	err := g2config.SetLogLevel(ctx, logger.LevelInfo)

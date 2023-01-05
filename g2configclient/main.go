@@ -2,7 +2,7 @@
  *
  */
 
-// Package main implements a client for the service.
+// Package g2configclient implements a client for the service.
 package g2configclient
 
 import (
@@ -14,7 +14,7 @@ import (
 // ----------------------------------------------------------------------------
 
 type G2configClient struct {
-	G2ConfigGrpcClient pb.G2ConfigClient
+	GrpcClient pb.G2ConfigClient
 }
 
 // ----------------------------------------------------------------------------

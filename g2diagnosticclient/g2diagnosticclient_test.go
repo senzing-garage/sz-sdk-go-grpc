@@ -53,7 +53,7 @@ func getTestObject(ctx context.Context, test *testing.T) G2diagnosticClient {
 
 		grpcConnection := getGrpcConnection()
 		g2diagnosticClientSingleton = &G2diagnosticClient{
-			G2DiagnosticGrpcClient: pb.NewG2DiagnosticClient(grpcConnection),
+			GrpcClient: pb.NewG2DiagnosticClient(grpcConnection),
 		}
 
 		moduleName := "Test module name"
@@ -74,7 +74,7 @@ func getTestObject(ctx context.Context, test *testing.T) G2diagnosticClient {
 func getG2Diagnostic(ctx context.Context) G2diagnosticClient {
 	grpcConnection := getGrpcConnection()
 	g2diagnostic := &G2diagnosticClient{
-		G2DiagnosticGrpcClient: pb.NewG2DiagnosticClient(grpcConnection),
+		GrpcClient: pb.NewG2DiagnosticClient(grpcConnection),
 	}
 	moduleName := "Test module name"
 	verboseLogging := 0
@@ -456,7 +456,7 @@ func TestG2diagnosticClient_Init(test *testing.T) {
 
 	grpcConnection := getGrpcConnection()
 	g2diagnostic := &G2diagnosticClient{
-		G2DiagnosticGrpcClient: pb.NewG2DiagnosticClient(grpcConnection),
+		GrpcClient: pb.NewG2DiagnosticClient(grpcConnection),
 	}
 
 	moduleName := "Test module name"
@@ -473,7 +473,7 @@ func TestG2diagnosticClient_InitWithConfigID(test *testing.T) {
 
 	grpcConnection := getGrpcConnection()
 	g2diagnostic := &G2diagnosticClient{
-		G2DiagnosticGrpcClient: pb.NewG2DiagnosticClient(grpcConnection),
+		GrpcClient: pb.NewG2DiagnosticClient(grpcConnection),
 	}
 
 	moduleName := "Test module name"
@@ -770,7 +770,7 @@ func ExampleG2diagnosticClient_Init() {
 	ctx := context.TODO()
 	grpcConnection := getGrpcConnection()
 	g2diagnostic := &G2diagnosticClient{
-		G2DiagnosticGrpcClient: pb.NewG2DiagnosticClient(grpcConnection),
+		GrpcClient: pb.NewG2DiagnosticClient(grpcConnection),
 	}
 	moduleName := "Test module name"
 	verboseLogging := 0
@@ -790,7 +790,7 @@ func ExampleG2diagnosticClient_InitWithConfigID() {
 	ctx := context.TODO()
 	grpcConnection := getGrpcConnection()
 	g2diagnostic := &G2diagnosticClient{
-		G2DiagnosticGrpcClient: pb.NewG2DiagnosticClient(grpcConnection),
+		GrpcClient: pb.NewG2DiagnosticClient(grpcConnection),
 	}
 	moduleName := "Test module name"
 	initConfigID := int64(1)

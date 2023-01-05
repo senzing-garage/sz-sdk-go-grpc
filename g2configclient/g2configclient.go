@@ -34,7 +34,7 @@ func (client *G2configClient) AddDataSource(ctx context.Context, configHandle ui
 		ConfigHandle: int64(configHandle),
 		InputJson:    inputJson,
 	}
-	response, err := client.G2ConfigGrpcClient.AddDataSource(ctx, &request)
+	response, err := client.GrpcClient.AddDataSource(ctx, &request)
 	result := response.GetResult()
 	return result, err
 }
@@ -51,7 +51,7 @@ func (client *G2configClient) Close(ctx context.Context, configHandle uintptr) e
 	request := pb.CloseRequest{
 		ConfigHandle: int64(configHandle),
 	}
-	_, err := client.G2ConfigGrpcClient.Close(ctx, &request)
+	_, err := client.GrpcClient.Close(ctx, &request)
 	return err
 }
 
@@ -70,7 +70,7 @@ Output
 */
 func (client *G2configClient) Create(ctx context.Context) (uintptr, error) {
 	request := pb.CreateRequest{}
-	response, err := client.G2ConfigGrpcClient.Create(ctx, &request)
+	response, err := client.GrpcClient.Create(ctx, &request)
 	result := response.GetResult()
 	return uintptr(result), err
 }
@@ -89,7 +89,7 @@ func (client *G2configClient) DeleteDataSource(ctx context.Context, configHandle
 		ConfigHandle: int64(configHandle),
 		InputJson:    inputJson,
 	}
-	_, err := client.G2ConfigGrpcClient.DeleteDataSource(ctx, &request)
+	_, err := client.GrpcClient.DeleteDataSource(ctx, &request)
 	return err
 }
 
@@ -102,7 +102,7 @@ Input
 */
 func (client *G2configClient) Destroy(ctx context.Context) error {
 	request := pb.DestroyRequest{}
-	_, err := client.G2ConfigGrpcClient.Destroy(ctx, &request)
+	_, err := client.GrpcClient.Destroy(ctx, &request)
 	return err
 }
 
@@ -122,7 +122,7 @@ func (client *G2configClient) Init(ctx context.Context, moduleName string, iniPa
 		IniParams:      iniParams,
 		VerboseLogging: int32(verboseLogging),
 	}
-	_, err := client.G2ConfigGrpcClient.Init(ctx, &request)
+	_, err := client.GrpcClient.Init(ctx, &request)
 	return err
 }
 
@@ -142,7 +142,7 @@ func (client *G2configClient) ListDataSources(ctx context.Context, configHandle 
 	request := pb.ListDataSourcesRequest{
 		ConfigHandle: int64(configHandle),
 	}
-	response, err := client.G2ConfigGrpcClient.ListDataSources(ctx, &request)
+	response, err := client.GrpcClient.ListDataSources(ctx, &request)
 	result := response.GetResult()
 	return result, err
 }
@@ -161,7 +161,7 @@ func (client *G2configClient) Load(ctx context.Context, configHandle uintptr, js
 		ConfigHandle: int64(configHandle),
 		JsonConfig:   jsonConfig,
 	}
-	_, err := client.G2ConfigGrpcClient.Load(ctx, &request)
+	_, err := client.GrpcClient.Load(ctx, &request)
 	return err
 }
 
@@ -181,7 +181,7 @@ func (client *G2configClient) Save(ctx context.Context, configHandle uintptr) (s
 	request := pb.SaveRequest{
 		ConfigHandle: int64(configHandle),
 	}
-	response, err := client.G2ConfigGrpcClient.Save(ctx, &request)
+	response, err := client.GrpcClient.Save(ctx, &request)
 	result := response.GetResult()
 	return result, err
 }
