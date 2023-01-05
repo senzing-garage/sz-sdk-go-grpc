@@ -21,7 +21,7 @@ const (
 )
 
 var (
-	grpcAddress                 = "localhost:50051"
+	grpcAddress                 = "localhost:8258"
 	grpcConnection              *grpc.ClientConn
 	g2diagnosticClientSingleton *G2diagnosticClient
 )

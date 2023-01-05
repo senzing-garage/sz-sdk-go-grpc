@@ -44,7 +44,7 @@ var IdStatuses = map[int]string{}
 // ----------------------------------------------------------------------------
 
 var (
-	grpcAddress = flag.String("addr", "localhost:50051", "the address to connect to")
+	grpcAddress = flag.String("addr", "localhost:8258", "the address to connect to")
 )
 
 func main() {

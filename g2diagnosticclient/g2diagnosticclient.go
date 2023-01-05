@@ -16,7 +16,18 @@ import (
 // Interface methods
 // ----------------------------------------------------------------------------
 
-// CheckDBPerf performs inserts to determine rate of insertion.
+/*
+The CheckDBPerf method performs inserts to determine rate of insertion.
+
+Input
+  - ctx: A context to control lifecycle.
+  - secondsToRun: Duration of the test in seconds.
+
+Output
+
+  - A string containing a JSON document.
+    Example: `{"numRecordsInserted":0,"insertTime":0}`
+*/
 func (client *G2diagnosticClient) CheckDBPerf(ctx context.Context, secondsToRun int) (string, error) {
 	request := pb.CheckDBPerfRequest{
 		SecondsToRun: int32(secondsToRun),
@@ -26,7 +37,16 @@ func (client *G2diagnosticClient) CheckDBPerf(ctx context.Context, secondsToRun 
 	return result, err
 }
 
-// TODO: Document.
+/*
+The CloseEntityListBySize method closes the list created by GetEntityListBySize().
+It is part of the GetEntityListBySize(), FetchNextEntityBySize(), CloseEntityListBySize()
+lifecycle of a list of sized entities.
+The entityListBySizeHandle is created by the GetEntityListBySize() method.
+
+Input
+  - ctx: A context to control lifecycle.
+  - entityListBySizeHandle: A handle created by GetEntityListBySize().
+*/
 func (client *G2diagnosticClient) CloseEntityListBySize(ctx context.Context, entityListBySizeHandle interface{}) error {
 	request := pb.CloseEntityListBySizeRequest{
 		EntityListBySizeHandle: fmt.Sprintf("%v", entityListBySizeHandle),
@@ -35,14 +55,33 @@ func (client *G2diagnosticClient) CloseEntityListBySize(ctx context.Context, ent
 	return err
 }
 
-// TODO: Document.
+/*
+The Destroy method will destroy and perform cleanup for the Senzing G2Diagnostic object.
+It should be called after all other calls are complete.
+
+Input
+  - ctx: A context to control lifecycle.
+*/
 func (client *G2diagnosticClient) Destroy(ctx context.Context) error {
 	request := pb.DestroyRequest{}
 	_, err := client.G2DiagnosticGrpcClient.Destroy(ctx, &request)
 	return err
 }
 
-// TODO: Document.
+/*
+The FetchNextEntityBySize method gets the next section of the list created by GetEntityListBySize().
+It is part of the GetEntityListBySize(), FetchNextEntityBySize(), CloseEntityListBySize()
+lifecycle of a list of sized entities.
+The entityListBySizeHandle is created by the GetEntityListBySize() method.
+
+Input
+  - ctx: A context to control lifecycle.
+  - entityListBySizeHandle: A handle created by GetEntityListBySize().
+
+Output
+  - A string containing a JSON document.
+    See the example output.
+*/
 func (client *G2diagnosticClient) FetchNextEntityBySize(ctx context.Context, entityListBySizeHandle interface{}) (string, error) {
 	request := pb.FetchNextEntityBySizeRequest{
 		EntityListBySizeHandle: fmt.Sprintf("%v", entityListBySizeHandle),
@@ -52,7 +91,19 @@ func (client *G2diagnosticClient) FetchNextEntityBySize(ctx context.Context, ent
 	return result, err
 }
 
-// TODO: Document.
+/*
+The FindEntitiesByFeatureIDs method finds entities having any of the lib feat id specified in the "features" JSON document.
+The "features" also contains an entity id.
+This entity is ignored in the returned values.
+
+Input
+  - ctx: A context to control lifecycle.
+  - features: A JSON document having the format: `{"ENTITY_ID":<entity id>,"LIB_FEAT_IDS":[<id1>,<id2>,...<idn>]}` where ENTITY_ID specifies the entity to ignore in the returns and <id#> are the lib feat ids used to query for entities.
+
+Output
+  - A string containing a JSON document.
+    See the example output.
+*/
 func (client *G2diagnosticClient) FindEntitiesByFeatureIDs(ctx context.Context, features string) (string, error) {
 	request := pb.FindEntitiesByFeatureIDsRequest{
 		Features: features,
@@ -62,7 +113,15 @@ func (client *G2diagnosticClient) FindEntitiesByFeatureIDs(ctx context.Context, 
 	return result, err
 }
 
-// GetAvailableMemory returns the available memory, in bytes, on the host system.
+/*
+The GetAvailableMemory method returns the available memory, in bytes, on the host system.
+
+Input
+  - ctx: A context to control lifecycle.
+
+Output
+  - Number of bytes of available memory.
+*/
 func (client *G2diagnosticClient) GetAvailableMemory(ctx context.Context) (int64, error) {
 	request := pb.GetAvailableMemoryRequest{}
 	response, err := client.G2DiagnosticGrpcClient.GetAvailableMemory(ctx, &request)
@@ -70,7 +129,16 @@ func (client *G2diagnosticClient) GetAvailableMemory(ctx context.Context) (int64
 	return result, err
 }
 
-// TODO: Document.
+/*
+The GetDataSourceCounts method returns information about data sources.
+
+Input
+  - ctx: A context to control lifecycle.
+
+Output
+  - A JSON document enumerating data sources.
+    See the example output.
+*/
 func (client *G2diagnosticClient) GetDataSourceCounts(ctx context.Context) (string, error) {
 	request := pb.GetDataSourceCountsRequest{}
 	response, err := client.G2DiagnosticGrpcClient.GetDataSourceCounts(ctx, &request)
@@ -78,7 +146,16 @@ func (client *G2diagnosticClient) GetDataSourceCounts(ctx context.Context) (stri
 	return result, err
 }
 
-// GetDBInfo returns information about the database connection.
+/*
+The GetDBInfo method returns information about the database connection.
+
+Input
+  - ctx: A context to control lifecycle.
+
+Output
+  - A JSON document enumerating data sources.
+    Example: `{"Hybrid Mode":false,"Database Details":[{"Name":"0.0.0.0","Type":"postgresql"}]}`
+*/
 func (client *G2diagnosticClient) GetDBInfo(ctx context.Context) (string, error) {
 	request := pb.GetDBInfoRequest{}
 	response, err := client.G2DiagnosticGrpcClient.GetDBInfo(ctx, &request)
@@ -86,7 +163,18 @@ func (client *G2diagnosticClient) GetDBInfo(ctx context.Context) (string, error)
 	return result, err
 }
 
-// TODO: Document.
+/*
+The GetEntityDetails method returns information about the database connection.
+
+Input
+  - ctx: A context to control lifecycle.
+  - entityID: The unique identifier of an entity.
+  - includeInternalFeatures: FIXME:
+
+Output
+  - A JSON document enumerating FIXME:.
+    See the example output.
+*/
 func (client *G2diagnosticClient) GetEntityDetails(ctx context.Context, entityID int64, includeInternalFeatures int) (string, error) {
 	request := pb.GetEntityDetailsRequest{
 		EntityID:                entityID,
@@ -97,7 +185,19 @@ func (client *G2diagnosticClient) GetEntityDetails(ctx context.Context, entityID
 	return result, err
 }
 
-// TODO: Document.
+/*
+The GetEntityListBySize method gets the next section of the list created by GetEntityListBySize().
+It is part of the GetEntityListBySize(), FetchNextEntityBySize(), CloseEntityListBySize()
+lifecycle of a list of sized entities.
+The entityListBySizeHandle is used by the FetchNextEntityBySize() and CloseEntityListBySize() methods.
+
+Input
+  - ctx: A context to control lifecycle.
+  - entitySize: FIXME:
+
+Output
+  - A handle to an entity list to be used with FetchNextEntityBySize() and CloseEntityListBySize().
+*/
 func (client *G2diagnosticClient) GetEntityListBySize(ctx context.Context, entitySize int) (interface{}, error) {
 	request := pb.GetEntityListBySizeRequest{
 		EntitySize: int32(entitySize),
@@ -107,7 +207,17 @@ func (client *G2diagnosticClient) GetEntityListBySize(ctx context.Context, entit
 	return result, err
 }
 
-// TODO: Document.
+/*
+The GetEntityResume method FIXME:
+
+Input
+  - ctx: A context to control lifecycle.
+  - entityID: The unique identifier of an entity.
+
+Output
+  - A string containing a JSON document.
+    See the example output.
+*/
 func (client *G2diagnosticClient) GetEntityResume(ctx context.Context, entityID int64) (string, error) {
 	request := pb.GetEntityResumeRequest{
 		EntityID: entityID,
@@ -117,7 +227,18 @@ func (client *G2diagnosticClient) GetEntityResume(ctx context.Context, entityID 
 	return result, err
 }
 
-// TODO: Document.
+/*
+The GetEntitySizeBreakdown method FIXME:
+
+Input
+  - ctx: A context to control lifecycle.
+  - minimumEntitySize: FIXME:
+  - includeInternalFeatures: FIXME:
+
+Output
+  - A string containing a JSON document.
+    See the example output.
+*/
 func (client *G2diagnosticClient) GetEntitySizeBreakdown(ctx context.Context, minimumEntitySize int, includeInternalFeatures int) (string, error) {
 	request := pb.GetEntitySizeBreakdownRequest{
 		MinimumEntitySize:       int32(minimumEntitySize),
@@ -128,7 +249,17 @@ func (client *G2diagnosticClient) GetEntitySizeBreakdown(ctx context.Context, mi
 	return result, err
 }
 
-// TODO: Document.
+/*
+The GetFeature method retrieves a stored feature.
+
+Input
+  - ctx: A context to control lifecycle.
+  - libFeatID: The identifier of the feature requested in the search.
+
+Output
+  - A string containing a JSON document.
+    See the example output.
+*/
 func (client *G2diagnosticClient) GetFeature(ctx context.Context, libFeatID int64) (string, error) {
 	request := pb.GetFeatureRequest{
 		LibFeatID: libFeatID,
@@ -138,7 +269,18 @@ func (client *G2diagnosticClient) GetFeature(ctx context.Context, libFeatID int6
 	return result, err
 }
 
-// TODO: Document.
+/*
+The GetGenericFeatures method retrieves a stored feature.
+
+Input
+  - ctx: A context to control lifecycle.
+  - featureType: FIXME:
+  - maximumEstimatedCount: FIXME:
+
+Output
+  - A string containing a JSON document.
+    See the example output.
+*/
 func (client *G2diagnosticClient) GetGenericFeatures(ctx context.Context, featureType string, maximumEstimatedCount int) (string, error) {
 	request := pb.GetGenericFeaturesRequest{
 		FeatureType:           featureType,
@@ -149,7 +291,15 @@ func (client *G2diagnosticClient) GetGenericFeatures(ctx context.Context, featur
 	return result, err
 }
 
-// GetLogicalCores returns the number of logical cores on the host system.
+/*
+The GetLogicalCores method returns the number of logical cores on the host system.
+
+Input
+  - ctx: A context to control lifecycle.
+
+Output
+  - Number of logical cores.
+*/
 func (client *G2diagnosticClient) GetLogicalCores(ctx context.Context) (int, error) {
 	request := pb.GetLogicalCoresRequest{}
 	response, err := client.G2DiagnosticGrpcClient.GetLogicalCores(ctx, &request)
@@ -157,7 +307,17 @@ func (client *G2diagnosticClient) GetLogicalCores(ctx context.Context) (int, err
 	return result, err
 }
 
-// TODO: Document.
+/*
+The GetMappingStatistics method FIXME:
+
+Input
+  - ctx: A context to control lifecycle.
+  - includeInternalFeatures: FIXME:
+
+Output
+  - A string containing a JSON document.
+    See the example output.
+*/
 func (client *G2diagnosticClient) GetMappingStatistics(ctx context.Context, includeInternalFeatures int) (string, error) {
 	request := pb.GetMappingStatisticsRequest{
 		IncludeInternalFeatures: int32(includeInternalFeatures),
@@ -167,7 +327,15 @@ func (client *G2diagnosticClient) GetMappingStatistics(ctx context.Context, incl
 	return result, err
 }
 
-// GetPhysicalCores returns the number of physical cores on the host system.
+/*
+The GetPhysicalCores method returns the number of physical cores on the host system.
+
+Input
+  - ctx: A context to control lifecycle.
+
+Output
+  - Number of physical cores.
+*/
 func (client *G2diagnosticClient) GetPhysicalCores(ctx context.Context) (int, error) {
 	request := pb.GetPhysicalCoresRequest{}
 	response, err := client.G2DiagnosticGrpcClient.GetPhysicalCores(ctx, &request)
@@ -175,7 +343,18 @@ func (client *G2diagnosticClient) GetPhysicalCores(ctx context.Context) (int, er
 	return result, err
 }
 
-// TODO: Document.
+/*
+The GetRelationshipDetails method FIXME:
+
+Input
+  - ctx: A context to control lifecycle.
+  - relationshipID: FIXME:
+  - includeInternalFeatures: FIXME:
+
+Output
+  - A string containing a JSON document.
+    See the example output.
+*/
 func (client *G2diagnosticClient) GetRelationshipDetails(ctx context.Context, relationshipID int64, includeInternalFeatures int) (string, error) {
 	request := pb.GetRelationshipDetailsRequest{
 		RelationshipID:          relationshipID,
@@ -186,7 +365,16 @@ func (client *G2diagnosticClient) GetRelationshipDetails(ctx context.Context, re
 	return result, err
 }
 
-// TODO: Document.
+/*
+The GetResolutionStatistics method FIXME:
+
+Input
+  - ctx: A context to control lifecycle.
+
+Output
+  - A string containing a JSON document.
+    See the example output.
+*/
 func (client *G2diagnosticClient) GetResolutionStatistics(ctx context.Context) (string, error) {
 	request := pb.GetResolutionStatisticsRequest{}
 	response, err := client.G2DiagnosticGrpcClient.GetResolutionStatistics(ctx, &request)
@@ -194,7 +382,15 @@ func (client *G2diagnosticClient) GetResolutionStatistics(ctx context.Context) (
 	return result, err
 }
 
-// GetTotalSystemMemory returns the total memory, in bytes, on the host system.
+/*
+The GetTotalSystemMemory method returns the total memory, in bytes, on the host system.
+
+Input
+  - ctx: A context to control lifecycle.
+
+Output
+  - Number of bytes of memory.
+*/
 func (client *G2diagnosticClient) GetTotalSystemMemory(ctx context.Context) (int64, error) {
 	request := pb.GetTotalSystemMemoryRequest{}
 	response, err := client.G2DiagnosticGrpcClient.GetTotalSystemMemory(ctx, &request)
@@ -202,7 +398,16 @@ func (client *G2diagnosticClient) GetTotalSystemMemory(ctx context.Context) (int
 	return result, err
 }
 
-// Init initializes the Senzing G2diagnosis.
+/*
+The Init method initializes the Senzing G2Diagnosis object.
+It must be called prior to any other calls.
+
+Input
+  - ctx: A context to control lifecycle.
+  - moduleName: A name for the auditing node, to help identify it within system logs.
+  - iniParams: A JSON string containing configuration parameters.
+  - verboseLogging: A flag to enable deeper logging of the G2 processing. 0 for no Senzing logging; 1 for logging.
+*/
 func (client *G2diagnosticClient) Init(ctx context.Context, moduleName string, iniParams string, verboseLogging int) error {
 	request := pb.InitRequest{
 		ModuleName:     moduleName,
@@ -213,7 +418,17 @@ func (client *G2diagnosticClient) Init(ctx context.Context, moduleName string, i
 	return err
 }
 
-// TODO: Document.
+/*
+The InitWithConfigID method initializes the Senzing G2Diagnosis object with a non-default configuration ID.
+It must be called prior to any other calls.
+
+Input
+  - ctx: A context to control lifecycle.
+  - moduleName: A name for the auditing node, to help identify it within system logs.
+  - iniParams: A JSON string containing configuration parameters.
+  - initConfigID: The configuration ID used for the initialization.
+  - verboseLogging: A flag to enable deeper logging of the G2 processing. 0 for no Senzing logging; 1 for logging.
+*/
 func (client *G2diagnosticClient) InitWithConfigID(ctx context.Context, moduleName string, iniParams string, initConfigID int64, verboseLogging int) error {
 	request := pb.InitWithConfigIDRequest{
 		ModuleName:     moduleName,
@@ -225,7 +440,13 @@ func (client *G2diagnosticClient) InitWithConfigID(ctx context.Context, moduleNa
 	return err
 }
 
-// TODO: Document.
+/*
+The Reinit method re-initializes the Senzing G2Diagnosis object.
+
+Input
+  - ctx: A context to control lifecycle.
+  - initConfigID: The configuration ID used for the initialization.
+*/
 func (client *G2diagnosticClient) Reinit(ctx context.Context, initConfigID int64) error {
 	request := pb.ReinitRequest{
 		InitConfigID: initConfigID,
