@@ -62,7 +62,8 @@ dependencies:
 test:
 #	@go test -v -p 1 ./...
 #	@go test -v ./.
-	@go test -v ./g2configclient
+#	@go test -v ./g2configclient
+	@go test -v ./g2configmgrclient
 #	@go test -v ./g2diagnosticclient
 #	@go test -v ./g2diagnosticclientcli
 

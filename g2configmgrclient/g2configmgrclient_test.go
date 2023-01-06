@@ -500,7 +500,10 @@ func ExampleG2configmgrImpl_GetDefaultConfigID() {
 
 func ExampleG2configmgrImpl_Init() {
 	// For more information, visit https://github.com/Senzing/g2-sdk-go/blob/main/g2configmgr/g2configmgr_test.go
-	g2configmgr := &G2configmgrImpl{}
+	grpcConnection := getGrpcConnection()
+	g2configmgr := &G2configmgrClient{
+		GrpcClient: pb.NewG2ConfigMgrClient(grpcConnection),
+	}
 	ctx := context.TODO()
 	moduleName := "Test module name"
 	iniParams, err := g2engineconfigurationjson.BuildSimpleSystemConfigurationJson("") // See https://pkg.go.dev/github.com/senzing/go-helpers
