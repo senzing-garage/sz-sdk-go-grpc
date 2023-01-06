@@ -35,8 +35,7 @@ func (client *G2diagnosticClient) CheckDBPerf(ctx context.Context, secondsToRun 
 		SecondsToRun: int32(secondsToRun),
 	}
 	response, err := client.GrpcClient.CheckDBPerf(ctx, &request)
-	result := response.GetResult()
-	return result, err
+	return response.GetResult(), err
 }
 
 /*
@@ -89,8 +88,7 @@ func (client *G2diagnosticClient) FetchNextEntityBySize(ctx context.Context, ent
 		EntityListBySizeHandle: fmt.Sprintf("%v", entityListBySizeHandle),
 	}
 	response, err := client.GrpcClient.FetchNextEntityBySize(ctx, &request)
-	result := response.GetResult()
-	return result, err
+	return response.GetResult(), err
 }
 
 /*
@@ -111,8 +109,7 @@ func (client *G2diagnosticClient) FindEntitiesByFeatureIDs(ctx context.Context, 
 		Features: features,
 	}
 	response, err := client.GrpcClient.FindEntitiesByFeatureIDs(ctx, &request)
-	result := response.GetResult()
-	return result, err
+	return response.GetResult(), err
 }
 
 /*
@@ -127,8 +124,7 @@ Output
 func (client *G2diagnosticClient) GetAvailableMemory(ctx context.Context) (int64, error) {
 	request := pb.GetAvailableMemoryRequest{}
 	response, err := client.GrpcClient.GetAvailableMemory(ctx, &request)
-	result := response.GetResult()
-	return result, err
+	return response.GetResult(), err
 }
 
 /*
@@ -144,8 +140,7 @@ Output
 func (client *G2diagnosticClient) GetDataSourceCounts(ctx context.Context) (string, error) {
 	request := pb.GetDataSourceCountsRequest{}
 	response, err := client.GrpcClient.GetDataSourceCounts(ctx, &request)
-	result := response.GetResult()
-	return result, err
+	return response.GetResult(), err
 }
 
 /*
@@ -161,8 +156,7 @@ Output
 func (client *G2diagnosticClient) GetDBInfo(ctx context.Context) (string, error) {
 	request := pb.GetDBInfoRequest{}
 	response, err := client.GrpcClient.GetDBInfo(ctx, &request)
-	result := response.GetResult()
-	return result, err
+	return response.GetResult(), err
 }
 
 /*
@@ -183,8 +177,7 @@ func (client *G2diagnosticClient) GetEntityDetails(ctx context.Context, entityID
 		IncludeInternalFeatures: int32(includeInternalFeatures),
 	}
 	response, err := client.GrpcClient.GetEntityDetails(ctx, &request)
-	result := response.GetResult()
-	return result, err
+	return response.GetResult(), err
 }
 
 /*
@@ -229,8 +222,7 @@ func (client *G2diagnosticClient) GetEntityResume(ctx context.Context, entityID 
 		EntityID: entityID,
 	}
 	response, err := client.GrpcClient.GetEntityResume(ctx, &request)
-	result := response.GetResult()
-	return result, err
+	return response.GetResult(), err
 }
 
 /*
@@ -251,8 +243,7 @@ func (client *G2diagnosticClient) GetEntitySizeBreakdown(ctx context.Context, mi
 		IncludeInternalFeatures: int32(includeInternalFeatures),
 	}
 	response, err := client.GrpcClient.GetEntitySizeBreakdown(ctx, &request)
-	result := response.GetResult()
-	return result, err
+	return response.GetResult(), err
 }
 
 /*
@@ -271,8 +262,7 @@ func (client *G2diagnosticClient) GetFeature(ctx context.Context, libFeatID int6
 		LibFeatID: libFeatID,
 	}
 	response, err := client.GrpcClient.GetFeature(ctx, &request)
-	result := response.GetResult()
-	return result, err
+	return response.GetResult(), err
 }
 
 /*
@@ -293,8 +283,7 @@ func (client *G2diagnosticClient) GetGenericFeatures(ctx context.Context, featur
 		MaximumEstimatedCount: int32(maximumEstimatedCount),
 	}
 	response, err := client.GrpcClient.GetGenericFeatures(ctx, &request)
-	result := response.GetResult()
-	return result, err
+	return response.GetResult(), err
 }
 
 /*
@@ -309,8 +298,7 @@ Output
 func (client *G2diagnosticClient) GetLogicalCores(ctx context.Context) (int, error) {
 	request := pb.GetLogicalCoresRequest{}
 	response, err := client.GrpcClient.GetLogicalCores(ctx, &request)
-	result := int(response.GetResult())
-	return result, err
+	return int(response.GetResult()), err
 }
 
 /*
@@ -329,8 +317,7 @@ func (client *G2diagnosticClient) GetMappingStatistics(ctx context.Context, incl
 		IncludeInternalFeatures: int32(includeInternalFeatures),
 	}
 	response, err := client.GrpcClient.GetMappingStatistics(ctx, &request)
-	result := response.GetResult()
-	return result, err
+	return response.GetResult(), err
 }
 
 /*
@@ -345,8 +332,7 @@ Output
 func (client *G2diagnosticClient) GetPhysicalCores(ctx context.Context) (int, error) {
 	request := pb.GetPhysicalCoresRequest{}
 	response, err := client.GrpcClient.GetPhysicalCores(ctx, &request)
-	result := int(response.GetResult())
-	return result, err
+	return int(response.GetResult()), err
 }
 
 /*
@@ -367,8 +353,7 @@ func (client *G2diagnosticClient) GetRelationshipDetails(ctx context.Context, re
 		IncludeInternalFeatures: int32(includeInternalFeatures),
 	}
 	response, err := client.GrpcClient.GetRelationshipDetails(ctx, &request)
-	result := response.GetResult()
-	return result, err
+	return response.GetResult(), err
 }
 
 /*
@@ -384,8 +369,7 @@ Output
 func (client *G2diagnosticClient) GetResolutionStatistics(ctx context.Context) (string, error) {
 	request := pb.GetResolutionStatisticsRequest{}
 	response, err := client.GrpcClient.GetResolutionStatistics(ctx, &request)
-	result := response.GetResult()
-	return result, err
+	return response.GetResult(), err
 }
 
 /*
@@ -400,8 +384,7 @@ Output
 func (client *G2diagnosticClient) GetTotalSystemMemory(ctx context.Context) (int64, error) {
 	request := pb.GetTotalSystemMemoryRequest{}
 	response, err := client.GrpcClient.GetTotalSystemMemory(ctx, &request)
-	result := response.GetResult()
-	return result, err
+	return response.GetResult(), err
 }
 
 /*

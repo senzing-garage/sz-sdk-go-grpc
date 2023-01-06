@@ -62,8 +62,7 @@ Output
 func (client *G2productClient) License(ctx context.Context) (string, error) {
 	request := pb.LicenseRequest{}
 	response, err := client.GrpcClient.License(ctx, &request)
-	result := response.GetResult()
-	return result, err
+	return response.GetResult(), err
 }
 
 /*
@@ -95,8 +94,7 @@ func (client *G2productClient) ValidateLicenseFile(ctx context.Context, licenseF
 		LicenseFilePath: licenseFilePath,
 	}
 	response, err := client.GrpcClient.ValidateLicenseFile(ctx, &request)
-	result := response.GetResult()
-	return result, err
+	return response.GetResult(), err
 }
 
 /*
@@ -117,8 +115,7 @@ func (client *G2productClient) ValidateLicenseStringBase64(ctx context.Context, 
 		LicenseString: licenseString,
 	}
 	response, err := client.GrpcClient.ValidateLicenseStringBase64(ctx, &request)
-	result := response.GetResult()
-	return result, err
+	return response.GetResult(), err
 }
 
 /*
@@ -134,6 +131,5 @@ Output
 func (client *G2productClient) Version(ctx context.Context) (string, error) {
 	request := pb.VersionRequest{}
 	response, err := client.GrpcClient.Version(ctx, &request)
-	result := response.GetResult()
-	return result, err
+	return response.GetResult(), err
 }

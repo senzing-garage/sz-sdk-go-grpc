@@ -33,8 +33,7 @@ func (client *G2configmgrClient) AddConfig(ctx context.Context, configStr string
 		ConfigComments: configComments,
 	}
 	response, err := client.GrpcClient.AddConfig(ctx, &request)
-	result := response.GetResult()
-	return result, err
+	return response.GetResult(), err
 }
 
 /*
@@ -66,8 +65,7 @@ func (client *G2configmgrClient) GetConfig(ctx context.Context, configID int64) 
 		ConfigID: configID,
 	}
 	response, err := client.GrpcClient.GetConfig(ctx, &request)
-	result := response.GetResult()
-	return result, err
+	return response.GetResult(), err
 }
 
 /*
@@ -83,8 +81,7 @@ Output
 func (client *G2configmgrClient) GetConfigList(ctx context.Context) (string, error) {
 	request := pb.GetConfigListRequest{}
 	response, err := client.GrpcClient.GetConfigList(ctx, &request)
-	result := response.GetResult()
-	return result, err
+	return response.GetResult(), err
 }
 
 /*
@@ -99,8 +96,7 @@ Output
 func (client *G2configmgrClient) GetDefaultConfigID(ctx context.Context) (int64, error) {
 	request := pb.GetDefaultConfigIDRequest{}
 	response, err := client.GrpcClient.GetDefaultConfigID(ctx, &request)
-	result := response.GetConfigID()
-	return result, err
+	return response.GetConfigID(), err
 }
 
 /*

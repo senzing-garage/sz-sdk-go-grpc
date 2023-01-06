@@ -35,8 +35,7 @@ func (client *G2configClient) AddDataSource(ctx context.Context, configHandle ui
 		InputJson:    inputJson,
 	}
 	response, err := client.GrpcClient.AddDataSource(ctx, &request)
-	result := response.GetResult()
-	return result, err
+	return response.GetResult(), err
 }
 
 /*
@@ -71,8 +70,7 @@ Output
 func (client *G2configClient) Create(ctx context.Context) (uintptr, error) {
 	request := pb.CreateRequest{}
 	response, err := client.GrpcClient.Create(ctx, &request)
-	result := response.GetResult()
-	return uintptr(result), err
+	return uintptr(response.GetResult()), err
 }
 
 /*
@@ -143,8 +141,7 @@ func (client *G2configClient) ListDataSources(ctx context.Context, configHandle 
 		ConfigHandle: int64(configHandle),
 	}
 	response, err := client.GrpcClient.ListDataSources(ctx, &request)
-	result := response.GetResult()
-	return result, err
+	return response.GetResult(), err
 }
 
 /*
@@ -182,8 +179,7 @@ func (client *G2configClient) Save(ctx context.Context, configHandle uintptr) (s
 		ConfigHandle: int64(configHandle),
 	}
 	response, err := client.GrpcClient.Save(ctx, &request)
-	result := response.GetResult()
-	return result, err
+	return response.GetResult(), err
 }
 
 /*
