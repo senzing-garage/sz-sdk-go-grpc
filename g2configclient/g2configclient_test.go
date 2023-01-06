@@ -44,7 +44,6 @@ func getGrpcConnection() *grpc.ClientConn {
 
 func getTestObject(ctx context.Context, test *testing.T) G2configClient {
 	if g2configClientSingleton == nil {
-
 		grpcConnection := getGrpcConnection()
 		g2configClientSingleton = &G2configClient{
 			GrpcClient: pb.NewG2ConfigClient(grpcConnection),

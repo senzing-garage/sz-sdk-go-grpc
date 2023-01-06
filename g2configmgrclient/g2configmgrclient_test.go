@@ -54,7 +54,6 @@ func getGrpcConnection() *grpc.ClientConn {
 
 func getTestObject(ctx context.Context, test *testing.T) G2configmgrClient {
 	if g2configmgrClientSingleton == nil {
-
 		grpcConnection := getGrpcConnection()
 		g2configmgrClientSingleton = &G2configmgrClient{
 			GrpcClient: pb.NewG2ConfigMgrClient(grpcConnection),
@@ -288,10 +287,10 @@ func TestBuildSimpleSystemConfigurationJson(test *testing.T) {
 }
 
 // ----------------------------------------------------------------------------
-// Test interface functions - names begin with "Test"
+// Test interface functions
 // ----------------------------------------------------------------------------
 
-func TestG2configmgrImpl_AddConfig(test *testing.T) {
+func TestG2configmgrClient_AddConfig(test *testing.T) {
 	ctx := context.TODO()
 	g2configmgr := getTestObject(ctx, test)
 	now := time.Now()
@@ -331,7 +330,7 @@ func TestG2configmgrImpl_AddConfig(test *testing.T) {
 	printActual(test, actual)
 }
 
-func TestG2configmgrImpl_GetConfig(test *testing.T) {
+func TestG2configmgrClient_GetConfig(test *testing.T) {
 	ctx := context.TODO()
 	g2configmgr := getTestObject(ctx, test)
 
@@ -348,7 +347,7 @@ func TestG2configmgrImpl_GetConfig(test *testing.T) {
 	printActual(test, actual)
 }
 
-func TestG2configmgrImpl_GetConfigList(test *testing.T) {
+func TestG2configmgrClient_GetConfigList(test *testing.T) {
 	ctx := context.TODO()
 	g2configmgr := getTestObject(ctx, test)
 	actual, err := g2configmgr.GetConfigList(ctx)
@@ -356,7 +355,7 @@ func TestG2configmgrImpl_GetConfigList(test *testing.T) {
 	printActual(test, actual)
 }
 
-func TestG2configmgrImpl_GetDefaultConfigID(test *testing.T) {
+func TestG2configmgrClient_GetDefaultConfigID(test *testing.T) {
 	ctx := context.TODO()
 	g2configmgr := getTestObject(ctx, test)
 	actual, err := g2configmgr.GetDefaultConfigID(ctx)
@@ -364,7 +363,7 @@ func TestG2configmgrImpl_GetDefaultConfigID(test *testing.T) {
 	printActual(test, actual)
 }
 
-func TestG2configmgrImpl_Init(test *testing.T) {
+func TestG2configmgrClient_Init(test *testing.T) {
 	ctx := context.TODO()
 	g2configmgr := getTestObject(ctx, test)
 	moduleName := "Test module name"
@@ -377,7 +376,7 @@ func TestG2configmgrImpl_Init(test *testing.T) {
 	testError(test, ctx, g2configmgr, err)
 }
 
-func TestG2configmgrImpl_ReplaceDefaultConfigID(test *testing.T) {
+func TestG2configmgrClient_ReplaceDefaultConfigID(test *testing.T) {
 	ctx := context.TODO()
 	g2configmgr := getTestObject(ctx, test)
 
@@ -399,7 +398,7 @@ func TestG2configmgrImpl_ReplaceDefaultConfigID(test *testing.T) {
 	testError(test, ctx, g2configmgr, err)
 }
 
-func TestG2configmgrImpl_SetDefaultConfigID(test *testing.T) {
+func TestG2configmgrClient_SetDefaultConfigID(test *testing.T) {
 	ctx := context.TODO()
 	g2configmgr := getTestObject(ctx, test)
 	configID, err1 := g2configmgr.GetDefaultConfigID(ctx)
@@ -411,7 +410,7 @@ func TestG2configmgrImpl_SetDefaultConfigID(test *testing.T) {
 	testError(test, ctx, g2configmgr, err)
 }
 
-func TestG2configmgrImpl_Destroy(test *testing.T) {
+func TestG2configmgrClient_Destroy(test *testing.T) {
 	ctx := context.TODO()
 	g2configmgr := getTestObject(ctx, test)
 	err := g2configmgr.Destroy(ctx)
@@ -422,7 +421,7 @@ func TestG2configmgrImpl_Destroy(test *testing.T) {
 // Examples for godoc documentation
 // ----------------------------------------------------------------------------
 
-func ExampleG2configmgrImpl_AddConfig() {
+func ExampleG2configmgrClient_AddConfig() {
 	// For more information, visit https://github.com/Senzing/g2-sdk-go/blob/main/g2configmgr/g2configmgr_test.go
 
 	// Create an in-memory configuration.
@@ -447,7 +446,7 @@ func ExampleG2configmgrImpl_AddConfig() {
 	// Output: true
 }
 
-func ExampleG2configmgrImpl_Destroy() {
+func ExampleG2configmgrClient_Destroy() {
 	// For more information, visit https://github.com/Senzing/g2-sdk-go/blob/main/g2configmgr/g2configmgr_test.go
 	ctx := context.TODO()
 	g2configmgr := getG2Configmgr(ctx)
@@ -458,7 +457,7 @@ func ExampleG2configmgrImpl_Destroy() {
 	// Output:
 }
 
-func ExampleG2configmgrImpl_GetConfig() {
+func ExampleG2configmgrClient_GetConfig() {
 	// For more information, visit https://github.com/Senzing/g2-sdk-go/blob/main/g2configmgr/g2configmgr_test.go
 	ctx := context.TODO()
 	g2configmgr := getG2Configmgr(ctx)
@@ -474,7 +473,7 @@ func ExampleG2configmgrImpl_GetConfig() {
 	// Output: {"G2_CONFIG":{"CFG_ATTR":[{"ATTR_ID":1001,"ATTR_CODE":"DATA_SOURCE","ATTR...
 }
 
-func ExampleG2configmgrImpl_GetConfigList() {
+func ExampleG2configmgrClient_GetConfigList() {
 	// For more information, visit https://github.com/Senzing/g2-sdk-go/blob/main/g2configmgr/g2configmgr_test.go
 	ctx := context.TODO()
 	g2configmgr := getG2Configmgr(ctx)
@@ -486,7 +485,7 @@ func ExampleG2configmgrImpl_GetConfigList() {
 	// Output: {"CONFIGS":[{"CONFIG_ID":...
 }
 
-func ExampleG2configmgrImpl_GetDefaultConfigID() {
+func ExampleG2configmgrClient_GetDefaultConfigID() {
 	// For more information, visit https://github.com/Senzing/g2-sdk-go/blob/main/g2configmgr/g2configmgr_test.go
 	ctx := context.TODO()
 	g2configmgr := getG2Configmgr(ctx)
@@ -498,7 +497,7 @@ func ExampleG2configmgrImpl_GetDefaultConfigID() {
 	// Output: true
 }
 
-func ExampleG2configmgrImpl_Init() {
+func ExampleG2configmgrClient_Init() {
 	// For more information, visit https://github.com/Senzing/g2-sdk-go/blob/main/g2configmgr/g2configmgr_test.go
 	grpcConnection := getGrpcConnection()
 	g2configmgr := &G2configmgrClient{
@@ -518,7 +517,7 @@ func ExampleG2configmgrImpl_Init() {
 	// Output:
 }
 
-func ExampleG2configmgrImpl_ReplaceDefaultConfigID() {
+func ExampleG2configmgrClient_ReplaceDefaultConfigID() {
 	// For more information, visit https://github.com/Senzing/g2-sdk-go/blob/main/g2configmgr/g2configmgr_test.go
 	ctx := context.TODO()
 	g2configmgr := getG2Configmgr(ctx)
@@ -548,7 +547,7 @@ func ExampleG2configmgrImpl_ReplaceDefaultConfigID() {
 	// Output:
 }
 
-func ExampleG2configmgrImpl_SetDefaultConfigID() {
+func ExampleG2configmgrClient_SetDefaultConfigID() {
 	// For more information, visit https://github.com/Senzing/g2-sdk-go/blob/main/g2configmgr/g2configmgr_test.go
 	ctx := context.TODO()
 	g2configmgr := getG2Configmgr(ctx)
@@ -563,7 +562,7 @@ func ExampleG2configmgrImpl_SetDefaultConfigID() {
 	// Output:
 }
 
-func ExampleG2configmgrImpl_SetLogLevel() {
+func ExampleG2configmgrClient_SetLogLevel() {
 	// For more information, visit https://github.com/Senzing/g2-sdk-go/blob/main/g2configmgr/g2configmgr_test.go
 	ctx := context.TODO()
 	g2configmgr := getG2Configmgr(ctx)

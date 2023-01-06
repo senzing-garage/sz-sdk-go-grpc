@@ -66,7 +66,8 @@ test:
 #	@go test -v ./g2configmgrclient
 #	@go test -v ./g2diagnosticclient
 #	@go test -v ./g2diagnosticclientcli
-	@go test -v ./g2productclient
+	@go test -v ./g2engineclient
+#	@go test -v ./g2productclient
 
 # -----------------------------------------------------------------------------
 # Run
