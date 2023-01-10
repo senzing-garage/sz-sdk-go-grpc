@@ -78,7 +78,10 @@ func getG2Engine(ctx context.Context) G2engineClient {
 	if err != nil {
 		fmt.Println(err)
 	}
-	g2engine.Init(ctx, moduleName, iniParams, verboseLogging)
+	err = g2engine.Init(ctx, moduleName, iniParams, verboseLogging)
+	if err != nil {
+		fmt.Println(err)
+	}
 	return *g2engine
 }
 
@@ -299,6 +302,14 @@ func TestG2engineClient_PurgeRepository(test *testing.T) {
 	ctx := context.TODO()
 	g2engine := getTestObject(ctx, test)
 	err := g2engine.PurgeRepository(ctx)
+	testError(test, ctx, g2engine, err)
+
+	// Reinitialize after a purge.
+
+	moduleName := "Test module name"
+	verboseLogging := 0
+	iniParams, _ := g2engineconfigurationjson.BuildSimpleSystemConfigurationJson("")
+	err = g2engine.Init(ctx, moduleName, iniParams, verboseLogging)
 	testError(test, ctx, g2engine, err)
 }
 
@@ -1084,6 +1095,16 @@ func ExampleG2engineClient_PurgeRepository() {
 	}
 	ctx := context.TODO()
 	err := g2engine.PurgeRepository(ctx)
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	// Reinitialize after a purge.
+
+	moduleName := "Test module name"
+	verboseLogging := 0
+	iniParams, _ := g2engineconfigurationjson.BuildSimpleSystemConfigurationJson("")
+	err = g2engine.Init(ctx, moduleName, iniParams, verboseLogging)
 	if err != nil {
 		fmt.Println(err)
 	}
