@@ -242,10 +242,10 @@ func setup() error {
 	moduleName := "Test module name"
 	verboseLogging := 0
 
-	localLogger, _ := messagelogger.NewSenzingApiLogger(ProductId, IdMessages, IdStatuses, messagelogger.LevelInfo)
-	// if err != nil {
-	// 	return logger.Error(5901, err)
-	// }
+	localLogger, _ = messagelogger.NewSenzingApiLogger(ProductId, IdMessages, IdStatuses, messagelogger.LevelInfo)
+	if localLogger == nil {
+	 	return localLogger.Error(5901, "Crap, no logger")
+	 }
 
 	iniParams, err := g2engineconfigurationjson.BuildSimpleSystemConfigurationJson("")
 	if err != nil {

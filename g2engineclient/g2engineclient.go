@@ -1195,7 +1195,7 @@ Input
   - record: A JSON document containing the record to be added to the Senzing repository.
 */
 func (client *G2engineClient) Process(ctx context.Context, record string) error {
-	request := pb.ProcessRequest{}
+	request := pb.ProcessRequest{ Record: record }
 	_, err := client.GrpcClient.Process(ctx, &request)
 	return err
 }
