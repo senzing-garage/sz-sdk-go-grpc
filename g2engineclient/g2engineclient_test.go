@@ -241,14 +241,15 @@ func setupAddRecords(ctx context.Context, moduleName string, iniParams string, v
 
 func setup() error {
 	ctx := context.TODO()
+	var err error = nil
 
 	moduleName := "Test module name"
 	verboseLogging := 0
 
-	localLogger, _ := messagelogger.NewSenzingApiLogger(ProductId, IdMessages, IdStatuses, messagelogger.LevelInfo)
-	// if err != nil {
-	// 	return logger.Error(5901, err)
-	// }
+	localLogger, err = messagelogger.NewSenzingApiLogger(ProductId, IdMessages, IdStatuses, messagelogger.LevelInfo)
+	if err != nil {
+		return localLogger.Error(5901, err)
+	}
 
 	iniParams, err := g2engineconfigurationjson.BuildSimpleSystemConfigurationJson("")
 	if err != nil {
