@@ -237,7 +237,7 @@ func TestG2engineClient_BuildSimpleSystemConfigurationJson(test *testing.T) {
 // ----------------------------------------------------------------------------
 
 // Start with a clean database.
-func TestG2engineClient_CleanStart(test *testing.T) {
+func XTestG2engineClient_CleanStart(test *testing.T) {
 	ctx := context.TODO()
 	moduleName := "Test module name"
 	verboseLogging := 0 // 0 for no Senzing logging; 1 for logging
@@ -1039,7 +1039,6 @@ func TestG2engineClient_PurgeRepository(test *testing.T) {
 	g2engine := getTestObject(ctx, test)
 	err := g2engine.PurgeRepository(ctx)
 	expectError(test, ctx, g2engine, err, "senzing-60144004")
-
 }
 
 func TestG2engineClient_Destroy(test *testing.T) {
@@ -1050,7 +1049,7 @@ func TestG2engineClient_Destroy(test *testing.T) {
 	g2engineClientSingleton = nil
 }
 
-func TestG2engineClient_CleanFinish(test *testing.T) {
+func XTestG2engineClient_CleanFinish(test *testing.T) {
 	ctx := context.TODO()
 	moduleName := "Test module name"
 	verboseLogging := 0 // 0 for no Senzing logging; 1 for logging

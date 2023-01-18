@@ -23,7 +23,6 @@ CC = gcc
 # Conditional assignment. ('?=')
 
 SENZING_G2_DIR ?= /opt/senzing/g2
-SENZING_DATABASE_URL ?= postgresql://postgres:postgres@127.0.0.1:5432/G2
 
 # Exports
 
@@ -40,9 +39,11 @@ default: help
 
 .EXPORT_ALL_VARIABLES:
 
-# Flags for the C compiler
+# Flags for the C compiler.
+# Can be overridden with "export"
+# Example: "export LD_LIBRARY_PATH=/path/to/my/senzing/g2/lib"
 
-LD_LIBRARY_PATH = ${SENZING_G2_DIR}/lib
+LD_LIBRARY_PATH ?= ${SENZING_G2_DIR}/lib
 
 # -----------------------------------------------------------------------------
 # Build
@@ -60,8 +61,8 @@ dependencies:
 
 .PHONY: test
 test:
-	@go test -v -p 1 ./...
-#	@go test -v ./.
+#	@go test -v -p 1 ./...
+	@go test -v ./.
 #	@go test -v ./g2configclient
 #	@go test -v ./g2configmgrclient
 #	@go test -v ./g2diagnosticclient

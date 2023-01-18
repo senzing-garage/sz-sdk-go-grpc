@@ -278,36 +278,23 @@ func TestG2configmgrClient_AddConfig(test *testing.T) {
 	ctx := context.TODO()
 	g2configmgr := getTestObject(ctx, test)
 	now := time.Now()
-
-	// Create an in-memory configuration.
-
 	g2config := getG2Config(ctx, test)
 	configHandle, err1 := g2config.Create(ctx)
 	if err1 != nil {
 		test.Log("Error:", err1.Error())
 		assert.FailNow(test, "g2config.Create()")
 	}
-
-	// Modify the in-memory configuration so it is different from the created configuration.
-	// If not, on Save Senzing will detect that it is the same and no Save occurs.
-
 	inputJson := `{"DSRC_CODE": "GO_TEST_` + strconv.FormatInt(now.Unix(), 10) + `"}`
 	_, err2 := g2config.AddDataSource(ctx, configHandle, inputJson)
 	if err2 != nil {
 		test.Log("Error:", err2.Error())
 		assert.FailNow(test, "g2config.AddDataSource()")
 	}
-
-	// Create a JSON string from the in-memory version of the configuration.
-
 	configStr, err3 := g2config.Save(ctx, configHandle)
 	if err3 != nil {
 		test.Log("Error:", err2.Error())
 		assert.FailNow(test, configStr)
 	}
-
-	// Perform the test.
-
 	configComments := fmt.Sprintf("g2configmgr_test at %s", now.UTC())
 	actual, err := g2configmgr.AddConfig(ctx, configStr, configComments)
 	testError(test, ctx, g2configmgr, err)
@@ -317,15 +304,11 @@ func TestG2configmgrClient_AddConfig(test *testing.T) {
 func TestG2configmgrClient_GetConfig(test *testing.T) {
 	ctx := context.TODO()
 	g2configmgr := getTestObject(ctx, test)
-
-	// Get a ConfigID.
-
 	configID, err1 := g2configmgr.GetDefaultConfigID(ctx)
 	if err1 != nil {
 		test.Log("Error:", err1.Error())
 		assert.FailNow(test, "g2configmgr.GetDefaultConfigID()")
 	}
-
 	actual, err := g2configmgr.GetConfig(ctx, configID)
 	testError(test, ctx, g2configmgr, err)
 	printActual(test, actual)
@@ -363,7 +346,6 @@ func TestG2configmgrClient_Init(test *testing.T) {
 func TestG2configmgrClient_ReplaceDefaultConfigID(test *testing.T) {
 	ctx := context.TODO()
 	g2configmgr := getTestObject(ctx, test)
-
 	oldConfigID, err1 := g2configmgr.GetDefaultConfigID(ctx)
 	if err1 != nil {
 		test.Log("Error:", err1.Error())
@@ -407,15 +389,12 @@ func TestG2configmgrClient_Destroy(test *testing.T) {
 
 func ExampleG2configmgrClient_AddConfig() {
 	// For more information, visit https://github.com/Senzing/g2-sdk-go/blob/main/g2configmgr/g2configmgr_test.go
-
-	// Create an in-memory configuration.
 	ctx := context.TODO()
 	g2config := &g2config.G2configImpl{}
 	configHandle, err := g2config.Create(ctx)
 	if err != nil {
 		fmt.Println(err)
 	}
-
 	g2configmgr := getG2Configmgr(ctx)
 	configStr, err := g2config.Save(ctx, configHandle)
 	if err != nil {
@@ -498,7 +477,6 @@ func ExampleG2configmgrClient_ReplaceDefaultConfigID() {
 	if err != nil {
 		fmt.Println(err)
 	}
-	// Create an example configuration.
 	g2config := &g2config.G2configImpl{}
 	configHandle, err := g2config.Create(ctx)
 	if err != nil {

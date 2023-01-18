@@ -286,7 +286,7 @@ func TestG2diagnosticClient_BuildSimpleSystemConfigurationJson(test *testing.T) 
 }
 
 // ----------------------------------------------------------------------------
-// Test interface functions - names begin with "Test"
+// Test interface functions
 // ----------------------------------------------------------------------------
 
 func TestG2diagnosticClient_CheckDBPerf(test *testing.T) {
