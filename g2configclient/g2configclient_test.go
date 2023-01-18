@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"strings"
 	"testing"
 
 	truncator "github.com/aquilax/truncate"
@@ -49,18 +50,6 @@ func getTestObject(ctx context.Context, test *testing.T) G2configClient {
 		g2configClientSingleton = &G2configClient{
 			GrpcClient: pb.NewG2ConfigClient(grpcConnection),
 		}
-
-		moduleName := "Test module name"
-		verboseLogging := 0
-		iniParams, jsonErr := g2engineconfigurationjson.BuildSimpleSystemConfigurationJson("")
-		if jsonErr != nil {
-			logger.Fatalf("Cannot construct system configuration: %v", jsonErr)
-		}
-
-		initErr := g2configClientSingleton.Init(ctx, moduleName, iniParams, verboseLogging)
-		if initErr != nil {
-			logger.Fatalf("Cannot Init: %v", initErr)
-		}
 	}
 	return *g2configClientSingleton
 }
@@ -86,10 +75,11 @@ func testError(test *testing.T, ctx context.Context, g2config G2configClient, er
 	}
 }
 
-func expectError(test *testing.T, ctx context.Context, g2configr G2configClient, err error, messageId string) {
+func expectError(test *testing.T, ctx context.Context, g2config G2configClient, err error, messageId string) {
 	if err != nil {
+		errorMessage := err.Error()[strings.Index(err.Error(), "{"):]
 		var dictionary map[string]interface{}
-		unmarshalErr := json.Unmarshal([]byte(err.Error()), &dictionary)
+		unmarshalErr := json.Unmarshal([]byte(errorMessage), &dictionary)
 		if unmarshalErr != nil {
 			test.Log("Unmarshal Error:", unmarshalErr.Error())
 		}
@@ -190,7 +180,7 @@ func TestG2configClient_Init(test *testing.T) {
 	iniParams, jsonErr := g2engineconfigurationjson.BuildSimpleSystemConfigurationJson("")
 	testError(test, ctx, g2config, jsonErr)
 	err := g2config.Init(ctx, moduleName, iniParams, verboseLogging)
-	testError(test, ctx, g2config, err)
+	expectError(test, ctx, g2config, err, "senzing-60114002")
 }
 
 func TestG2configClient_ListDataSources(test *testing.T) {
@@ -230,7 +220,7 @@ func TestG2configClient_Destroy(test *testing.T) {
 	ctx := context.TODO()
 	g2config := getTestObject(ctx, test)
 	err := g2config.Destroy(ctx)
-	testError(test, ctx, g2config, err)
+	expectError(test, ctx, g2config, err, "senzing-60114001")
 }
 
 // ----------------------------------------------------------------------------
@@ -309,20 +299,6 @@ func ExampleG2configClient_DeleteDataSource() {
 	// Output:
 }
 
-func ExampleG2configClient_Destroy() {
-	// For more information, visit https://github.com/Senzing/g2-sdk-go-grpc/blob/main/g2configclient/g2configclient_test.go
-	grpcConnection := getGrpcConnection()
-	g2config := &G2configClient{
-		GrpcClient: pb.NewG2ConfigClient(grpcConnection),
-	}
-	ctx := context.TODO()
-	err := g2config.Destroy(ctx)
-	if err != nil {
-		fmt.Println(err)
-	}
-	// Output:
-}
-
 func ExampleG2configClient_Init() {
 	// For more information, visit https://github.com/Senzing/g2-sdk-go-grpc/blob/main/g2configclient/g2configclient_test.go
 	grpcConnection := getGrpcConnection()
@@ -338,7 +314,7 @@ func ExampleG2configClient_Init() {
 	verboseLogging := 0
 	err = g2config.Init(ctx, moduleName, iniParams, verboseLogging)
 	if err != nil {
-		fmt.Println(err)
+		// This should produce a "senzing-60114002" error.
 	}
 	// Output:
 }
@@ -413,6 +389,20 @@ func ExampleG2configClient_SetLogLevel() {
 	err := g2config.SetLogLevel(ctx, logger.LevelInfo)
 	if err != nil {
 		fmt.Println(err)
+	}
+	// Output:
+}
+
+func ExampleG2configClient_Destroy() {
+	// For more information, visit https://github.com/Senzing/g2-sdk-go-grpc/blob/main/g2configclient/g2configclient_test.go
+	grpcConnection := getGrpcConnection()
+	g2config := &G2configClient{
+		GrpcClient: pb.NewG2ConfigClient(grpcConnection),
+	}
+	ctx := context.TODO()
+	err := g2config.Destroy(ctx)
+	if err != nil {
+		// This should produce a "senzing-60114001" error.
 	}
 	// Output:
 }

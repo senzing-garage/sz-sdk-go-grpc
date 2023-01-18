@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"strings"
 	"testing"
 
 	truncator "github.com/aquilax/truncate"
@@ -44,22 +45,9 @@ func getGrpcConnection() *grpc.ClientConn {
 
 func getTestObject(ctx context.Context, test *testing.T) G2productClient {
 	if g2productClientSingleton == nil {
-
 		grpcConnection := getGrpcConnection()
 		g2productClientSingleton = &G2productClient{
 			GrpcClient: pb.NewG2ProductClient(grpcConnection),
-		}
-
-		moduleName := "Test module name"
-		verboseLogging := 0
-		iniParams, jsonErr := g2engineconfigurationjson.BuildSimpleSystemConfigurationJson("")
-		if jsonErr != nil {
-			test.Logf("Cannot construct system configuration. Error: %v", jsonErr)
-		}
-
-		initErr := g2productClientSingleton.Init(ctx, moduleName, iniParams, verboseLogging)
-		if initErr != nil {
-			test.Logf("Cannot Init. Error: %v", initErr)
 		}
 	}
 	return *g2productClientSingleton
@@ -88,8 +76,9 @@ func testError(test *testing.T, ctx context.Context, g2product G2productClient, 
 
 func expectError(test *testing.T, ctx context.Context, g2product G2productClient, err error, messageId string) {
 	if err != nil {
+		errorMessage := err.Error()[strings.Index(err.Error(), "{"):]
 		var dictionary map[string]interface{}
-		unmarshalErr := json.Unmarshal([]byte(err.Error()), &dictionary)
+		unmarshalErr := json.Unmarshal([]byte(errorMessage), &dictionary)
 		if unmarshalErr != nil {
 			test.Log("Unmarshal Error:", unmarshalErr.Error())
 		}
@@ -154,7 +143,7 @@ func TestG2productImpl_Init(test *testing.T) {
 	iniParams, jsonErr := g2engineconfigurationjson.BuildSimpleSystemConfigurationJson("")
 	testError(test, ctx, g2product, jsonErr)
 	err := g2product.Init(ctx, moduleName, iniParams, verboseLogging)
-	testError(test, ctx, g2product, err)
+	expectError(test, ctx, g2product, err, "senzing-60164002")
 }
 
 func TestG2productImpl_License(test *testing.T) {
@@ -195,26 +184,12 @@ func TestG2productImpl_Destroy(test *testing.T) {
 	ctx := context.TODO()
 	g2product := getTestObject(ctx, test)
 	err := g2product.Destroy(ctx)
-	testError(test, ctx, g2product, err)
+	expectError(test, ctx, g2product, err, "senzing-60164001")
 }
 
 // ----------------------------------------------------------------------------
 // Examples for godoc documentation
 // ----------------------------------------------------------------------------
-
-func ExampleG2productClient_Destroy() {
-	// For more information, visit https://github.com/Senzing/g2-sdk-go-grpc/blob/main/g2productclient/g2productclient_test.go
-	grpcConnection := getGrpcConnection()
-	g2product := &G2productClient{
-		GrpcClient: pb.NewG2ProductClient(grpcConnection),
-	}
-	ctx := context.TODO()
-	err := g2product.Destroy(ctx)
-	if err != nil {
-		fmt.Println(err)
-	}
-	// Output:
-}
 
 func ExampleG2productClient_Init() {
 	// For more information, visit https://github.com/Senzing/g2-sdk-go-grpc/blob/main/g2productclient/g2productclient_test.go
@@ -229,7 +204,10 @@ func ExampleG2productClient_Init() {
 		fmt.Println(err)
 	}
 	verboseLogging := 0
-	g2product.Init(ctx, moduleName, iniParams, verboseLogging)
+	err = g2product.Init(ctx, moduleName, iniParams, verboseLogging)
+	if err != nil {
+		// This should produce a "senzing-60164002" error.
+	}
 	// Output:
 }
 
@@ -308,5 +286,19 @@ func ExampleG2productClient_Version() {
 		fmt.Println(err)
 	}
 	fmt.Println(result)
-	// Output: {"PRODUCT_NAME":"Senzing API","VERSION":"3.3.2","BUILD_VERSION":"3.3.2.22299","BUILD_DATE":"2022-10-26","BUILD_NUMBER":"2022_10_26__19_38","COMPATIBILITY_VERSION":{"CONFIG_VERSION":"10"},"SCHEMA_VERSION":{"ENGINE_SCHEMA_VERSION":"3.3","MINIMUM_REQUIRED_SCHEMA_VERSION":"3.0","MAXIMUM_REQUIRED_SCHEMA_VERSION":"3.99"}}
+	// Output: {"PRODUCT_NAME":"Senzing API","VERSION":"3.4.0","BUILD_VERSION":"3.4.0.23005","BUILD_DATE":"2023-01-04","BUILD_NUMBER":"2023_01_04__23_02","COMPATIBILITY_VERSION":{"CONFIG_VERSION":"10"},"SCHEMA_VERSION":{"ENGINE_SCHEMA_VERSION":"3.4","MINIMUM_REQUIRED_SCHEMA_VERSION":"3.0","MAXIMUM_REQUIRED_SCHEMA_VERSION":"3.99"}}
+}
+
+func ExampleG2productClient_Destroy() {
+	// For more information, visit https://github.com/Senzing/g2-sdk-go-grpc/blob/main/g2productclient/g2productclient_test.go
+	grpcConnection := getGrpcConnection()
+	g2product := &G2productClient{
+		GrpcClient: pb.NewG2ProductClient(grpcConnection),
+	}
+	ctx := context.TODO()
+	err := g2product.Destroy(ctx)
+	if err != nil {
+		// This should produce a "senzing-60164001" error.
+	}
+	// Output:
 }

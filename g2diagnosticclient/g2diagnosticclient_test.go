@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"strings"
 	"testing"
 	"time"
 
@@ -15,7 +16,6 @@ import (
 	"github.com/senzing/g2-sdk-go/testhelpers"
 	pb "github.com/senzing/g2-sdk-proto/go/g2diagnostic"
 	"github.com/senzing/go-helpers/g2engineconfigurationjson"
-	"github.com/senzing/go-logging/logger"
 	"github.com/senzing/go-logging/messagelogger"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc"
@@ -51,40 +51,22 @@ func getGrpcConnection() *grpc.ClientConn {
 
 func getTestObject(ctx context.Context, test *testing.T) G2diagnosticClient {
 	if g2diagnosticClientSingleton == nil {
-
 		grpcConnection := getGrpcConnection()
 		g2diagnosticClientSingleton = &G2diagnosticClient{
 			GrpcClient: pb.NewG2DiagnosticClient(grpcConnection),
-		}
-
-		moduleName := "Test module name"
-		verboseLogging := 0
-		iniParams, jsonErr := g2engineconfigurationjson.BuildSimpleSystemConfigurationJson("")
-		if jsonErr != nil {
-			logger.Fatalf("Cannot construct system configuration: %v", jsonErr)
-		}
-
-		initErr := g2diagnosticClientSingleton.Init(ctx, moduleName, iniParams, verboseLogging)
-		if initErr != nil {
-			logger.Fatalf("Cannot Init: %v", initErr)
 		}
 	}
 	return *g2diagnosticClientSingleton
 }
 
 func getG2Diagnostic(ctx context.Context) G2diagnosticClient {
-	grpcConnection := getGrpcConnection()
-	g2diagnostic := &G2diagnosticClient{
-		GrpcClient: pb.NewG2DiagnosticClient(grpcConnection),
+	if g2diagnosticClientSingleton == nil {
+		grpcConnection := getGrpcConnection()
+		g2diagnosticClientSingleton = &G2diagnosticClient{
+			GrpcClient: pb.NewG2DiagnosticClient(grpcConnection),
+		}
 	}
-	moduleName := "Test module name"
-	verboseLogging := 0
-	iniParams, err := g2engineconfigurationjson.BuildSimpleSystemConfigurationJson("")
-	if err != nil {
-		fmt.Println(err)
-	}
-	g2diagnostic.Init(ctx, moduleName, iniParams, verboseLogging)
-	return *g2diagnostic
+	return *g2diagnosticClientSingleton
 }
 
 func truncate(aString string, length int) string {
@@ -110,8 +92,9 @@ func testError(test *testing.T, ctx context.Context, g2diagnostic G2diagnosticCl
 
 func expectError(test *testing.T, ctx context.Context, g2diagnostic G2diagnosticClient, err error, messageId string) {
 	if err != nil {
+		errorMessage := err.Error()[strings.Index(err.Error(), "{"):]
 		var dictionary map[string]interface{}
-		unmarshalErr := json.Unmarshal([]byte(err.Error()), &dictionary)
+		unmarshalErr := json.Unmarshal([]byte(errorMessage), &dictionary)
 		if unmarshalErr != nil {
 			test.Log("Unmarshal Error:", unmarshalErr.Error())
 		}
@@ -474,11 +457,11 @@ func TestG2diagnosticClient_Init(test *testing.T) {
 
 	moduleName := "Test module name"
 	verboseLogging := 0
-	iniParams, jsonErr := g2engineconfigurationjson.BuildSimpleSystemConfigurationJson("")
-	testError(test, ctx, *g2diagnostic, jsonErr)
+	iniParams, err := g2engineconfigurationjson.BuildSimpleSystemConfigurationJson("")
+	testError(test, ctx, *g2diagnostic, err)
 
-	initErr := g2diagnostic.Init(ctx, moduleName, iniParams, verboseLogging)
-	testError(test, ctx, *g2diagnostic, initErr)
+	err = g2diagnostic.Init(ctx, moduleName, iniParams, verboseLogging)
+	expectError(test, ctx, *g2diagnostic, err, "senzing-60134002")
 }
 
 func TestG2diagnosticClient_InitWithConfigID(test *testing.T) {
@@ -496,7 +479,7 @@ func TestG2diagnosticClient_InitWithConfigID(test *testing.T) {
 	testError(test, ctx, *g2diagnostic, jsonErr)
 
 	err := g2diagnostic.InitWithConfigID(ctx, moduleName, iniParams, initConfigID, verboseLogging)
-	testError(test, ctx, *g2diagnostic, err)
+	expectError(test, ctx, *g2diagnostic, err, "senzing-60134003")
 }
 
 func TestG2diagnosticClient_Reinit(test *testing.T) {
@@ -511,7 +494,7 @@ func TestG2diagnosticClient_Destroy(test *testing.T) {
 	ctx := context.TODO()
 	g2diagnostic := getTestObject(ctx, test)
 	err := g2diagnostic.Destroy(ctx)
-	testError(test, ctx, g2diagnostic, err)
+	expectError(test, ctx, g2diagnostic, err, "senzing-60134001")
 }
 
 // ----------------------------------------------------------------------------
@@ -541,17 +524,6 @@ func ExampleG2diagnosticClient_CloseEntityListBySize() {
 		fmt.Println(err)
 	}
 	err = g2diagnostic.CloseEntityListBySize(ctx, entityListBySizeHandle)
-	if err != nil {
-		fmt.Println(err)
-	}
-	// Output:
-}
-
-func ExampleG2diagnosticClient_Destroy() {
-	// For more information, visit https://github.com/Senzing/g2-sdk-go-grpc/blob/main/g2diagnosticclient/g2diagnosticclient_test.go
-	ctx := context.TODO()
-	g2diagnostic := getG2Diagnostic(ctx)
-	err := g2diagnostic.Destroy(ctx)
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -793,7 +765,7 @@ func ExampleG2diagnosticClient_Init() {
 	}
 	err = g2diagnostic.Init(ctx, moduleName, iniParams, verboseLogging)
 	if err != nil {
-		fmt.Println(err)
+		// This should produce a "senzing-60134002" error.
 	}
 	// Output:
 }
@@ -814,7 +786,7 @@ func ExampleG2diagnosticClient_InitWithConfigID() {
 	}
 	err = g2diagnostic.InitWithConfigID(ctx, moduleName, iniParams, initConfigID, verboseLogging)
 	if err != nil {
-		fmt.Println(err)
+		// This should produce a "senzing-60134003" error.
 	}
 	// Output:
 }
@@ -841,3 +813,14 @@ func ExampleG2diagnosticClient_Reinit() {
 // 	}
 // 	// Output:
 // }
+
+func ExampleG2diagnosticClient_Destroy() {
+	// For more information, visit https://github.com/Senzing/g2-sdk-go-grpc/blob/main/g2diagnosticclient/g2diagnosticclient_test.go
+	ctx := context.TODO()
+	g2diagnostic := getG2Diagnostic(ctx)
+	err := g2diagnostic.Destroy(ctx)
+	if err != nil {
+		// This should produce a "senzing-60134001" error.
+	}
+	// Output:
+}
