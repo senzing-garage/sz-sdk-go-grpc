@@ -12,7 +12,6 @@ import (
 	pb "github.com/senzing/g2-sdk-proto/go/g2config"
 	"github.com/senzing/go-helpers/g2engineconfigurationjson"
 	"github.com/senzing/go-logging/logger"
-	"github.com/senzing/go-logging/messagelogger"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
@@ -26,7 +25,6 @@ var (
 	grpcAddress             = "localhost:8258"
 	grpcConnection          *grpc.ClientConn
 	g2configClientSingleton *G2configClient
-	localLogger             messagelogger.MessageLoggerInterface
 )
 
 // ----------------------------------------------------------------------------
@@ -195,9 +193,9 @@ func TestG2configClient_Init(test *testing.T) {
 	g2config := getTestObject(ctx, test)
 	moduleName := "Test module name"
 	verboseLogging := 0
-	iniParams, jsonErr := g2engineconfigurationjson.BuildSimpleSystemConfigurationJson("")
-	testError(test, ctx, g2config, jsonErr)
-	err := g2config.Init(ctx, moduleName, iniParams, verboseLogging)
+	iniParams, err := g2engineconfigurationjson.BuildSimpleSystemConfigurationJson("")
+	testError(test, ctx, g2config, err)
+	err = g2config.Init(ctx, moduleName, iniParams, verboseLogging)
 	expectError(test, ctx, g2config, err, "senzing-60114002")
 }
 

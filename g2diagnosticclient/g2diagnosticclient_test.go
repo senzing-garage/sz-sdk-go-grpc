@@ -466,19 +466,16 @@ func TestG2diagnosticClient_Init(test *testing.T) {
 
 func TestG2diagnosticClient_InitWithConfigID(test *testing.T) {
 	ctx := context.TODO()
-
 	grpcConnection := getGrpcConnection()
 	g2diagnostic := &G2diagnosticClient{
 		GrpcClient: pb.NewG2DiagnosticClient(grpcConnection),
 	}
-
 	moduleName := "Test module name"
 	initConfigID := int64(1)
 	verboseLogging := 0
-	iniParams, jsonErr := g2engineconfigurationjson.BuildSimpleSystemConfigurationJson("")
-	testError(test, ctx, *g2diagnostic, jsonErr)
-
-	err := g2diagnostic.InitWithConfigID(ctx, moduleName, iniParams, initConfigID, verboseLogging)
+	iniParams, err := g2engineconfigurationjson.BuildSimpleSystemConfigurationJson("")
+	testError(test, ctx, *g2diagnostic, err)
+	err = g2diagnostic.InitWithConfigID(ctx, moduleName, iniParams, initConfigID, verboseLogging)
 	expectError(test, ctx, *g2diagnostic, err, "senzing-60134003")
 }
 

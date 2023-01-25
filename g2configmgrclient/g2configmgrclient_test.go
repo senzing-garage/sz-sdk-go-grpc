@@ -335,11 +335,11 @@ func TestG2configmgrClient_Init(test *testing.T) {
 	g2configmgr := getTestObject(ctx, test)
 	moduleName := "Test module name"
 	verboseLogging := 0
-	iniParams, jsonErr := g2engineconfigurationjson.BuildSimpleSystemConfigurationJson("")
-	if jsonErr != nil {
-		test.Fatalf("Cannot construct system configuration: %v", jsonErr)
+	iniParams, err := g2engineconfigurationjson.BuildSimpleSystemConfigurationJson("")
+	if err != nil {
+		test.Fatalf("Cannot construct system configuration: %v", err)
 	}
-	err := g2configmgr.Init(ctx, moduleName, iniParams, verboseLogging)
+	err = g2configmgr.Init(ctx, moduleName, iniParams, verboseLogging)
 	expectError(test, ctx, g2configmgr, err, "senzing-60124002")
 }
 

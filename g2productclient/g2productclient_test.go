@@ -140,9 +140,9 @@ func TestG2productImpl_Init(test *testing.T) {
 	g2product := getTestObject(ctx, test)
 	moduleName := "Test module name"
 	verboseLogging := 0
-	iniParams, jsonErr := g2engineconfigurationjson.BuildSimpleSystemConfigurationJson("")
-	testError(test, ctx, g2product, jsonErr)
-	err := g2product.Init(ctx, moduleName, iniParams, verboseLogging)
+	iniParams, err := g2engineconfigurationjson.BuildSimpleSystemConfigurationJson("")
+	testError(test, ctx, g2product, err)
+	err = g2product.Init(ctx, moduleName, iniParams, verboseLogging)
 	expectError(test, ctx, g2product, err, "senzing-60164002")
 }
 

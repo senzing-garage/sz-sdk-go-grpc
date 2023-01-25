@@ -746,9 +746,9 @@ func TestG2engineClient_Init(test *testing.T) {
 	g2engine := getTestObject(ctx, test)
 	moduleName := "Test module name"
 	verboseLogging := 0 // 0 for no Senzing logging; 1 for logging
-	iniParams, jsonErr := g2engineconfigurationjson.BuildSimpleSystemConfigurationJson("")
-	testError(test, ctx, g2engine, jsonErr)
-	err := g2engine.Init(ctx, moduleName, iniParams, verboseLogging)
+	iniParams, err := g2engineconfigurationjson.BuildSimpleSystemConfigurationJson("")
+	testError(test, ctx, g2engine, err)
+	err = g2engine.Init(ctx, moduleName, iniParams, verboseLogging)
 	expectError(test, ctx, g2engine, err, "senzing-60144002")
 }
 
@@ -758,9 +758,9 @@ func TestG2engineClient_InitWithConfigID(test *testing.T) {
 	moduleName := "Test module name"
 	var initConfigID int64 = 1
 	verboseLogging := 0 // 0 for no Senzing logging; 1 for logging
-	iniParams, jsonErr := g2engineconfigurationjson.BuildSimpleSystemConfigurationJson("")
-	testError(test, ctx, g2engine, jsonErr)
-	err := g2engine.InitWithConfigID(ctx, moduleName, iniParams, initConfigID, verboseLogging)
+	iniParams, err := g2engineconfigurationjson.BuildSimpleSystemConfigurationJson("")
+	testError(test, ctx, g2engine, err)
+	err = g2engine.InitWithConfigID(ctx, moduleName, iniParams, initConfigID, verboseLogging)
 	expectError(test, ctx, g2engine, err, "senzing-60144003")
 }
 
