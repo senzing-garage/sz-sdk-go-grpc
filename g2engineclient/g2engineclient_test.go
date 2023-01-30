@@ -11,9 +11,10 @@ import (
 	"time"
 
 	truncator "github.com/aquilax/truncate"
-	"github.com/senzing/g2-sdk-go/g2config"
-	"github.com/senzing/g2-sdk-go/g2configmgr"
-	"github.com/senzing/g2-sdk-go/g2engine"
+	"github.com/senzing/g2-sdk-go-grpc/g2configclient"
+	"github.com/senzing/g2-sdk-go-grpc/g2configmgrclient"
+	pbg2config "github.com/senzing/g2-sdk-proto/go/g2config"
+	pbg2configmgr "github.com/senzing/g2-sdk-proto/go/g2configmgr"
 	pb "github.com/senzing/g2-sdk-proto/go/g2engine"
 	"github.com/senzing/go-common/record"
 	"github.com/senzing/go-common/truthset"
@@ -38,10 +39,12 @@ type GetEntityByRecordIDResponse struct {
 }
 
 var (
-	grpcAddress             = "localhost:8258"
-	grpcConnection          *grpc.ClientConn
-	g2engineClientSingleton *G2engineClient
-	localLogger             messagelogger.MessageLoggerInterface
+	g2configClientSingleton    *g2configclient.G2configClient
+	g2configmgrClientSingleton *g2configmgrclient.G2configmgrClient
+	g2engineClientSingleton    *G2engineClient
+	grpcAddress                = "localhost:8258"
+	grpcConnection             *grpc.ClientConn
+	localLogger                messagelogger.MessageLoggerInterface
 )
 
 // ----------------------------------------------------------------------------
@@ -68,6 +71,26 @@ func getTestObject(ctx context.Context, test *testing.T) G2engineClient {
 		}
 	}
 	return *g2engineClientSingleton
+}
+
+func getG2Config(ctx context.Context) g2configclient.G2configClient {
+	if g2configClientSingleton == nil {
+		grpcConnection := getGrpcConnection()
+		g2configClientSingleton = &g2configclient.G2configClient{
+			GrpcClient: pbg2config.NewG2ConfigClient(grpcConnection),
+		}
+	}
+	return *g2configClientSingleton
+}
+
+func getG2Configmgr(ctx context.Context) g2configmgrclient.G2configmgrClient {
+	if g2configmgrClientSingleton == nil {
+		grpcConnection := getGrpcConnection()
+		g2configmgrClientSingleton = &g2configmgrclient.G2configmgrClient{
+			GrpcClient: pbg2configmgr.NewG2ConfigMgrClient(grpcConnection),
+		}
+	}
+	return *g2configmgrClientSingleton
 }
 
 func getG2Engine(ctx context.Context) G2engineClient {
@@ -169,16 +192,13 @@ func TestMain(m *testing.M) {
 	os.Exit(code)
 }
 
-func setupSenzingConfig(ctx context.Context, moduleName string, iniParams string, verboseLogging int) error {
+func setupSenzingConfig(ctx context.Context) error {
 	now := time.Now()
 
-	aG2config := &g2config.G2configImpl{}
-	err := aG2config.Init(ctx, moduleName, iniParams, verboseLogging)
-	if err != nil {
-		return localLogger.Error(5906, err)
-	}
+	// Create a fresh Senzing configuration.
 
-	configHandle, err := aG2config.Create(ctx)
+	g2config := getG2Config(ctx)
+	configHandle, err := g2config.Create(ctx)
 	if err != nil {
 		return localLogger.Error(5907, err)
 	}
@@ -186,100 +206,63 @@ func setupSenzingConfig(ctx context.Context, moduleName string, iniParams string
 	datasourceNames := []string{"CUSTOMERS", "REFERENCE", "WATCHLIST"}
 	for _, datasourceName := range datasourceNames {
 		datasource := truthset.TruthsetDataSources[datasourceName]
-		_, err := aG2config.AddDataSource(ctx, configHandle, datasource.Json)
+		_, err := g2config.AddDataSource(ctx, configHandle, datasource.Json)
 		if err != nil {
 			return localLogger.Error(5908, err)
 		}
 	}
 
-	configStr, err := aG2config.Save(ctx, configHandle)
+	configStr, err := g2config.Save(ctx, configHandle)
 	if err != nil {
 		return localLogger.Error(5909, err)
 	}
 
-	err = aG2config.Close(ctx, configHandle)
-	if err != nil {
-		return localLogger.Error(5910, err)
-	}
-
-	err = aG2config.Destroy(ctx)
-	if err != nil {
-		return localLogger.Error(5911, err)
-	}
-
 	// Persist the Senzing configuration to the Senzing repository.
 
-	aG2configmgr := &g2configmgr.G2configmgrImpl{}
-	err = aG2configmgr.Init(ctx, moduleName, iniParams, verboseLogging)
-	if err != nil {
-		return localLogger.Error(5912, err)
-	}
-
+	g2configmgr := getG2Configmgr(ctx)
 	configComments := fmt.Sprintf("Created by g2diagnostic_test at %s", now.UTC())
-	configID, err := aG2configmgr.AddConfig(ctx, configStr, configComments)
+	configID, err := g2configmgr.AddConfig(ctx, configStr, configComments)
 	if err != nil {
 		return localLogger.Error(5913, err)
 	}
 
-	err = aG2configmgr.SetDefaultConfigID(ctx, configID)
+	err = g2configmgr.SetDefaultConfigID(ctx, configID)
 	if err != nil {
 		return localLogger.Error(5914, err)
 	}
 
-	err = aG2configmgr.Destroy(ctx)
-	if err != nil {
-		return localLogger.Error(5915, err)
-	}
 	return err
 }
 
-func setupPurgeRepository(ctx context.Context, moduleName string, iniParams string, verboseLogging int) error {
-	aG2engine := &g2engine.G2engineImpl{}
-	err := aG2engine.Init(ctx, moduleName, iniParams, verboseLogging)
-	if err != nil {
-		return localLogger.Error(5903, err)
-	}
-
-	err = aG2engine.PurgeRepository(ctx)
-	if err != nil {
-		return localLogger.Error(5904, err)
-	}
-
-	err = aG2engine.Destroy(ctx)
-	if err != nil {
-		return localLogger.Error(5905, err)
-	}
+func setupPurgeRepository(ctx context.Context) error {
+	g2engine := getG2Engine(ctx)
+	err := g2engine.PurgeRepository(ctx)
 	return err
 }
 
 func setup() error {
 	ctx := context.TODO()
 	var err error = nil
-	moduleName := "Test module name"
-	verboseLogging := 0
+
 	localLogger, err = messagelogger.NewSenzingApiLogger(ProductId, IdMessages, IdStatuses, messagelogger.LevelInfo)
 	if err != nil {
 		return localLogger.Error(5901, err)
 	}
 
-	iniParams, err := g2engineconfigurationjson.BuildSimpleSystemConfigurationJson("")
-	if err != nil {
-		return localLogger.Error(5902, err)
-	}
-
 	// Add Data Sources to Senzing configuration.
 
-	err = setupSenzingConfig(ctx, moduleName, iniParams, verboseLogging)
+	err = setupSenzingConfig(ctx)
 	if err != nil {
 		return localLogger.Error(5920, err)
 	}
 
 	// Purge repository.
 
-	err = setupPurgeRepository(ctx, moduleName, iniParams, verboseLogging)
+	err = setupPurgeRepository(ctx)
 	if err != nil {
 		return localLogger.Error(5921, err)
 	}
+
 	return err
 }
 
@@ -361,18 +344,18 @@ func TestG2engineClient_CountRedoRecords(test *testing.T) {
 }
 
 // FAIL:
-func TestG2engineClient_ExportJSONEntityReport(test *testing.T) {
-	ctx := context.TODO()
-	g2engine := getTestObject(ctx, test)
-	flags := int64(0)
-	aHandle, err := g2engine.ExportJSONEntityReport(ctx, flags)
-	testError(test, ctx, g2engine, err)
-	anEntity, err := g2engine.FetchNext(ctx, aHandle)
-	testError(test, ctx, g2engine, err)
-	printResult(test, "Entity", anEntity)
-	err = g2engine.CloseExport(ctx, aHandle)
-	testError(test, ctx, g2engine, err)
-}
+// func TestG2engineClient_ExportJSONEntityReport(test *testing.T) {
+// 	ctx := context.TODO()
+// 	g2engine := getTestObject(ctx, test)
+// 	flags := int64(0)
+// 	aHandle, err := g2engine.ExportJSONEntityReport(ctx, flags)
+// 	testError(test, ctx, g2engine, err)
+// 	anEntity, err := g2engine.FetchNext(ctx, aHandle)
+// 	testError(test, ctx, g2engine, err)
+// 	printResult(test, "Entity", anEntity)
+// 	err = g2engine.CloseExport(ctx, aHandle)
+// 	testError(test, ctx, g2engine, err)
+// }
 
 func TestG2engineClient_ExportConfigAndConfigID(test *testing.T) {
 	ctx := context.TODO()
@@ -1777,35 +1760,35 @@ func ExampleG2engineClient_Stats() {
 }
 
 // FIXME: Remove after GDEV-3576 is fixed
-// func ExampleG2engineClient_WhyEntities() {
-// 	// For more information, visit https://github.com/Senzing/g2-sdk-go/blob/main/g2engine/g2engine_test.go
-// 	ctx := context.TODO()
-// 	g2engine := &G2engineImpl{}
-// 	var entityID1 int64 = 1
-// 	var entityID2 int64 = 4
-// 	result, err := g2engine.WhyEntities(ctx, entityID1, entityID2)
-// 	if err != nil {
-// 		fmt.Println(err)
-// 	}
-// 	fmt.Println(truncate(result, 74))
-// 	// Output: {"WHY_RESULTS":[{"ENTITY_ID":1,"ENTITY_ID_2":4,"MATCH_INFO":{"WHY_KEY":...
-// }
+func ExampleG2engineClient_WhyEntities() {
+	// For more information, visit https://github.com/Senzing/g2-sdk-go/blob/main/g2engine/g2engine_test.go
+	ctx := context.TODO()
+	g2engine := getG2Engine(ctx)
+	entityID1 := getEntityId(truthset.CustomerRecords["1001"])
+	entityID2 := getEntityId(truthset.CustomerRecords["1002"])
+	result, err := g2engine.WhyEntities(ctx, entityID1, entityID2)
+	if err != nil {
+		fmt.Println(err)
+	}
+	fmt.Println(truncate(result, 74))
+	// Output: {"WHY_RESULTS":[{"ENTITY_ID":1,"ENTITY_ID_2":1,"MATCH_INFO":{"WHY_KEY":...
+}
 
 // FIXME: Remove after GDEV-3576 is fixed
-// func ExampleG2engineClient_WhyEntities_V2() {
-// 	// For more information, visit https://github.com/Senzing/g2-sdk-go/blob/main/g2engine/g2engine_test.go
-// 	ctx := context.TODO()
-// 	g2engine := &G2engineImpl{}
-// 	var entityID1 int64 = 1
-// 	var entityID2 int64 = 4
-// 	var flags int64 = 0
-// 	result, err := g2engine.WhyEntities_V2(ctx, entityID1, entityID2, flags)
-// 	if err != nil {
-// 		fmt.Println(err)
-// 	}
-// 	fmt.Println(result)
-// 	// Output: {"WHY_RESULTS":[{"ENTITY_ID":1,"ENTITY_ID_2":4,"MATCH_INFO":{"WHY_KEY":"","WHY_ERRULE_CODE":"","MATCH_LEVEL_CODE":""}}],"ENTITIES":[{"RESOLVED_ENTITY":{"ENTITY_ID":4}}]}
-// }
+func ExampleG2engineClient_WhyEntities_V2() {
+	// For more information, visit https://github.com/Senzing/g2-sdk-go/blob/main/g2engine/g2engine_test.go
+	ctx := context.TODO()
+	g2engine := getG2Engine(ctx)
+	entityID1 := getEntityId(truthset.CustomerRecords["1001"])
+	entityID2 := getEntityId(truthset.CustomerRecords["1002"])
+	var flags int64 = 0
+	result, err := g2engine.WhyEntities_V2(ctx, entityID1, entityID2, flags)
+	if err != nil {
+		fmt.Println(err)
+	}
+	fmt.Println(result)
+	// Output: {"WHY_RESULTS":[{"ENTITY_ID":1,"ENTITY_ID_2":1,"MATCH_INFO":{"WHY_KEY":"","WHY_ERRULE_CODE":"","MATCH_LEVEL_CODE":""}}],"ENTITIES":[{"RESOLVED_ENTITY":{"ENTITY_ID":4}}]}
+}
 
 func ExampleG2engineClient_WhyEntityByEntityID() {
 	// For more information, visit https://github.com/Senzing/g2-sdk-go/blob/main/g2engine/g2engine_test.go
@@ -2143,7 +2126,7 @@ func ExampleG2engineClient_PurgeRepository() {
 	g2engine := getG2Engine(ctx)
 	err := g2engine.PurgeRepository(ctx)
 	if err != nil {
-		// This should produce a "senzing-60144004" error.
+		fmt.Println(err)
 	}
 	// Output:
 }

@@ -12,11 +12,10 @@ import (
 
 	truncator "github.com/aquilax/truncate"
 	"github.com/senzing/g2-sdk-go-grpc/g2configclient"
-	"github.com/senzing/g2-sdk-go/g2config"
-	"github.com/senzing/g2-sdk-go/g2configmgr"
-	"github.com/senzing/g2-sdk-go/g2engine"
+	"github.com/senzing/g2-sdk-go-grpc/g2engineclient"
 	pbg2config "github.com/senzing/g2-sdk-proto/go/g2config"
 	pb "github.com/senzing/g2-sdk-proto/go/g2configmgr"
+	pbg2engine "github.com/senzing/g2-sdk-proto/go/g2engine"
 	"github.com/senzing/go-common/truthset"
 	"github.com/senzing/go-helpers/g2engineconfigurationjson"
 	"github.com/senzing/go-logging/logger"
@@ -32,10 +31,11 @@ const (
 )
 
 var (
-	grpcAddress                = "localhost:8258"
-	grpcConnection             *grpc.ClientConn
 	g2configClientSingleton    *g2configclient.G2configClient
 	g2configmgrClientSingleton *G2configmgrClient
+	g2engineClientSingleton    *g2engineclient.G2engineClient
+	grpcAddress                = "localhost:8258"
+	grpcConnection             *grpc.ClientConn
 	localLogger                messagelogger.MessageLoggerInterface
 )
 
@@ -64,6 +64,16 @@ func getTestObject(ctx context.Context, test *testing.T) G2configmgrClient {
 	return *g2configmgrClientSingleton
 }
 
+func getG2Config(ctx context.Context) g2configclient.G2configClient {
+	if g2configClientSingleton == nil {
+		grpcConnection := getGrpcConnection()
+		g2configClientSingleton = &g2configclient.G2configClient{
+			GrpcClient: pbg2config.NewG2ConfigClient(grpcConnection),
+		}
+	}
+	return *g2configClientSingleton
+}
+
 func getG2Configmgr(ctx context.Context) G2configmgrClient {
 	if g2configmgrClientSingleton == nil {
 		grpcConnection := getGrpcConnection()
@@ -74,14 +84,14 @@ func getG2Configmgr(ctx context.Context) G2configmgrClient {
 	return *g2configmgrClientSingleton
 }
 
-func getG2Config(ctx context.Context) g2configclient.G2configClient {
-	if g2configClientSingleton == nil {
+func getG2Engine(ctx context.Context) g2engineclient.G2engineClient {
+	if g2engineClientSingleton == nil {
 		grpcConnection := getGrpcConnection()
-		g2configClientSingleton = &g2configclient.G2configClient{
-			GrpcClient: pbg2config.NewG2ConfigClient(grpcConnection),
+		g2engineClientSingleton = &g2engineclient.G2engineClient{
+			GrpcClient: pbg2engine.NewG2EngineClient(grpcConnection),
 		}
 	}
-	return *g2configClientSingleton
+	return *g2engineClientSingleton
 }
 
 func truncate(aString string, length int) string {
@@ -143,16 +153,13 @@ func TestMain(m *testing.M) {
 	os.Exit(code)
 }
 
-func setupSenzingConfig(ctx context.Context, moduleName string, iniParams string, verboseLogging int) error {
+func setupSenzingConfig(ctx context.Context) error {
 	now := time.Now()
 
-	aG2config := &g2config.G2configImpl{}
-	err := aG2config.Init(ctx, moduleName, iniParams, verboseLogging)
-	if err != nil {
-		return localLogger.Error(5906, err)
-	}
+	// Create a fresh Senzing configuration.
 
-	configHandle, err := aG2config.Create(ctx)
+	g2config := getG2Config(ctx)
+	configHandle, err := g2config.Create(ctx)
 	if err != nil {
 		return localLogger.Error(5907, err)
 	}
@@ -160,97 +167,59 @@ func setupSenzingConfig(ctx context.Context, moduleName string, iniParams string
 	datasourceNames := []string{"CUSTOMERS", "REFERENCE", "WATCHLIST"}
 	for _, datasourceName := range datasourceNames {
 		datasource := truthset.TruthsetDataSources[datasourceName]
-		_, err := aG2config.AddDataSource(ctx, configHandle, datasource.Json)
+		_, err := g2config.AddDataSource(ctx, configHandle, datasource.Json)
 		if err != nil {
 			return localLogger.Error(5908, err)
 		}
 	}
 
-	configStr, err := aG2config.Save(ctx, configHandle)
+	configStr, err := g2config.Save(ctx, configHandle)
 	if err != nil {
 		return localLogger.Error(5909, err)
 	}
 
-	err = aG2config.Close(ctx, configHandle)
-	if err != nil {
-		return localLogger.Error(5910, err)
-	}
-
-	err = aG2config.Destroy(ctx)
-	if err != nil {
-		return localLogger.Error(5911, err)
-	}
-
 	// Persist the Senzing configuration to the Senzing repository.
 
-	aG2configmgr := &g2configmgr.G2configmgrImpl{}
-	err = aG2configmgr.Init(ctx, moduleName, iniParams, verboseLogging)
-	if err != nil {
-		return localLogger.Error(5912, err)
-	}
-
+	g2configmgr := getG2Configmgr(ctx)
 	configComments := fmt.Sprintf("Created by g2diagnostic_test at %s", now.UTC())
-	configID, err := aG2configmgr.AddConfig(ctx, configStr, configComments)
+	configID, err := g2configmgr.AddConfig(ctx, configStr, configComments)
 	if err != nil {
 		return localLogger.Error(5913, err)
 	}
 
-	err = aG2configmgr.SetDefaultConfigID(ctx, configID)
+	err = g2configmgr.SetDefaultConfigID(ctx, configID)
 	if err != nil {
 		return localLogger.Error(5914, err)
 	}
 
-	err = aG2configmgr.Destroy(ctx)
-	if err != nil {
-		return localLogger.Error(5915, err)
-	}
 	return err
 }
 
-func setupPurgeRepository(ctx context.Context, moduleName string, iniParams string, verboseLogging int) error {
-	aG2engine := &g2engine.G2engineImpl{}
-	err := aG2engine.Init(ctx, moduleName, iniParams, verboseLogging)
-	if err != nil {
-		return localLogger.Error(5903, err)
-	}
-
-	err = aG2engine.PurgeRepository(ctx)
-	if err != nil {
-		return localLogger.Error(5904, err)
-	}
-
-	err = aG2engine.Destroy(ctx)
-	if err != nil {
-		return localLogger.Error(5905, err)
-	}
+func setupPurgeRepository(ctx context.Context) error {
+	g2engine := getG2Engine(ctx)
+	err := g2engine.PurgeRepository(ctx)
 	return err
 }
 
 func setup() error {
 	ctx := context.TODO()
 	var err error = nil
-	moduleName := "Test module name"
-	verboseLogging := 0
+
 	localLogger, err = messagelogger.NewSenzingApiLogger(ProductId, IdMessages, IdStatuses, messagelogger.LevelInfo)
 	if err != nil {
 		return localLogger.Error(5901, err)
 	}
 
-	iniParams, err := g2engineconfigurationjson.BuildSimpleSystemConfigurationJson("")
-	if err != nil {
-		return localLogger.Error(5902, err)
-	}
-
 	// Add Data Sources to Senzing configuration.
 
-	err = setupSenzingConfig(ctx, moduleName, iniParams, verboseLogging)
+	err = setupSenzingConfig(ctx)
 	if err != nil {
 		return localLogger.Error(5920, err)
 	}
 
 	// Purge repository.
 
-	err = setupPurgeRepository(ctx, moduleName, iniParams, verboseLogging)
+	err = setupPurgeRepository(ctx)
 	if err != nil {
 		return localLogger.Error(5921, err)
 	}
@@ -459,7 +428,8 @@ func ExampleG2configmgrClient_ReplaceDefaultConfigID() {
 	if err != nil {
 		fmt.Println(err)
 	}
-	g2config := &g2config.G2configImpl{}
+
+	g2config := getG2Config(ctx)
 	configHandle, err := g2config.Create(ctx)
 	if err != nil {
 		fmt.Println(err)

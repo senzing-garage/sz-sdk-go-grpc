@@ -10,12 +10,13 @@ import (
 	"time"
 
 	truncator "github.com/aquilax/truncate"
+	"github.com/senzing/g2-sdk-go-grpc/g2configclient"
 	"github.com/senzing/g2-sdk-go-grpc/g2configmgrclient"
-	"github.com/senzing/g2-sdk-go/g2config"
-	"github.com/senzing/g2-sdk-go/g2configmgr"
-	"github.com/senzing/g2-sdk-go/g2engine"
+	"github.com/senzing/g2-sdk-go-grpc/g2engineclient"
+	pbg2config "github.com/senzing/g2-sdk-proto/go/g2config"
 	pbg2configmgr "github.com/senzing/g2-sdk-proto/go/g2configmgr"
 	pb "github.com/senzing/g2-sdk-proto/go/g2diagnostic"
+	pbg2engine "github.com/senzing/g2-sdk-proto/go/g2engine"
 	"github.com/senzing/go-common/truthset"
 	"github.com/senzing/go-helpers/g2engineconfigurationjson"
 	"github.com/senzing/go-logging/messagelogger"
@@ -30,8 +31,10 @@ const (
 )
 
 var (
+	g2configClientSingleton     *g2configclient.G2configClient
 	g2configmgrClientSingleton  *g2configmgrclient.G2configmgrClient
 	g2diagnosticClientSingleton *G2diagnosticClient
+	g2engineClientSingleton     *g2engineclient.G2engineClient
 	grpcAddress                 = "localhost:8258"
 	grpcConnection              *grpc.ClientConn
 	localLogger                 messagelogger.MessageLoggerInterface
@@ -63,14 +66,14 @@ func getTestObject(ctx context.Context, test *testing.T) G2diagnosticClient {
 	return *g2diagnosticClientSingleton
 }
 
-func getG2Diagnostic(ctx context.Context) G2diagnosticClient {
-	if g2diagnosticClientSingleton == nil {
+func getG2Config(ctx context.Context) g2configclient.G2configClient {
+	if g2configClientSingleton == nil {
 		grpcConnection := getGrpcConnection()
-		g2diagnosticClientSingleton = &G2diagnosticClient{
-			GrpcClient: pb.NewG2DiagnosticClient(grpcConnection),
+		g2configClientSingleton = &g2configclient.G2configClient{
+			GrpcClient: pbg2config.NewG2ConfigClient(grpcConnection),
 		}
 	}
-	return *g2diagnosticClientSingleton
+	return *g2configClientSingleton
 }
 
 func getG2Configmgr(ctx context.Context) g2configmgrclient.G2configmgrClient {
@@ -81,6 +84,26 @@ func getG2Configmgr(ctx context.Context) g2configmgrclient.G2configmgrClient {
 		}
 	}
 	return *g2configmgrClientSingleton
+}
+
+func getG2Diagnostic(ctx context.Context) G2diagnosticClient {
+	if g2diagnosticClientSingleton == nil {
+		grpcConnection := getGrpcConnection()
+		g2diagnosticClientSingleton = &G2diagnosticClient{
+			GrpcClient: pb.NewG2DiagnosticClient(grpcConnection),
+		}
+	}
+	return *g2diagnosticClientSingleton
+}
+
+func getG2Engine(ctx context.Context) g2engineclient.G2engineClient {
+	if g2engineClientSingleton == nil {
+		grpcConnection := getGrpcConnection()
+		g2engineClientSingleton = &g2engineclient.G2engineClient{
+			GrpcClient: pbg2engine.NewG2EngineClient(grpcConnection),
+		}
+	}
+	return *g2engineClientSingleton
 }
 
 func truncate(aString string, length int) string {
@@ -142,16 +165,13 @@ func TestMain(m *testing.M) {
 	os.Exit(code)
 }
 
-func setupSenzingConfig(ctx context.Context, moduleName string, iniParams string, verboseLogging int) error {
+func setupSenzingConfig(ctx context.Context) error {
 	now := time.Now()
 
-	aG2config := &g2config.G2configImpl{}
-	err := aG2config.Init(ctx, moduleName, iniParams, verboseLogging)
-	if err != nil {
-		return localLogger.Error(5906, err)
-	}
+	// Create a fresh Senzing configuration.
 
-	configHandle, err := aG2config.Create(ctx)
+	g2config := getG2Config(ctx)
+	configHandle, err := g2config.Create(ctx)
 	if err != nil {
 		return localLogger.Error(5907, err)
 	}
@@ -159,92 +179,50 @@ func setupSenzingConfig(ctx context.Context, moduleName string, iniParams string
 	datasourceNames := []string{"CUSTOMERS", "REFERENCE", "WATCHLIST"}
 	for _, datasourceName := range datasourceNames {
 		datasource := truthset.TruthsetDataSources[datasourceName]
-		_, err := aG2config.AddDataSource(ctx, configHandle, datasource.Json)
+		_, err := g2config.AddDataSource(ctx, configHandle, datasource.Json)
 		if err != nil {
 			return localLogger.Error(5908, err)
 		}
 	}
 
-	configStr, err := aG2config.Save(ctx, configHandle)
+	configStr, err := g2config.Save(ctx, configHandle)
 	if err != nil {
 		return localLogger.Error(5909, err)
 	}
 
-	err = aG2config.Close(ctx, configHandle)
-	if err != nil {
-		return localLogger.Error(5910, err)
-	}
-
-	err = aG2config.Destroy(ctx)
-	if err != nil {
-		return localLogger.Error(5911, err)
-	}
-
 	// Persist the Senzing configuration to the Senzing repository.
 
-	aG2configmgr := &g2configmgr.G2configmgrImpl{}
-	err = aG2configmgr.Init(ctx, moduleName, iniParams, verboseLogging)
-	if err != nil {
-		return localLogger.Error(5912, err)
-	}
-
+	g2configmgr := getG2Configmgr(ctx)
 	configComments := fmt.Sprintf("Created by g2diagnostic_test at %s", now.UTC())
-	configID, err := aG2configmgr.AddConfig(ctx, configStr, configComments)
+	configID, err := g2configmgr.AddConfig(ctx, configStr, configComments)
 	if err != nil {
 		return localLogger.Error(5913, err)
 	}
 
-	err = aG2configmgr.SetDefaultConfigID(ctx, configID)
+	err = g2configmgr.SetDefaultConfigID(ctx, configID)
 	if err != nil {
 		return localLogger.Error(5914, err)
 	}
 
-	err = aG2configmgr.Destroy(ctx)
-	if err != nil {
-		return localLogger.Error(5915, err)
-	}
 	return err
 }
 
-func setupPurgeRepository(ctx context.Context, moduleName string, iniParams string, verboseLogging int) error {
-	aG2engine := &g2engine.G2engineImpl{}
-	err := aG2engine.Init(ctx, moduleName, iniParams, verboseLogging)
-	if err != nil {
-		return localLogger.Error(5903, err)
-	}
-
-	err = aG2engine.PurgeRepository(ctx)
-	if err != nil {
-		return localLogger.Error(5904, err)
-	}
-
-	err = aG2engine.Destroy(ctx)
-	if err != nil {
-		return localLogger.Error(5905, err)
-	}
+func setupPurgeRepository(ctx context.Context) error {
+	g2engine := getG2Engine(ctx)
+	err := g2engine.PurgeRepository(ctx)
 	return err
 }
 
-func setupAddRecords(ctx context.Context, moduleName string, iniParams string, verboseLogging int) error {
-
-	aG2engine := &g2engine.G2engineImpl{}
-	err := aG2engine.Init(ctx, moduleName, iniParams, verboseLogging)
-	if err != nil {
-		return localLogger.Error(5916, err)
-	}
-
+func setupAddRecords(ctx context.Context) error {
+	var err error = nil
+	g2engine := getG2Engine(ctx)
 	testRecordIds := []string{"1001", "1002", "1003", "1004", "1005", "1039", "1040"}
 	for _, testRecordId := range testRecordIds {
 		testRecord := truthset.CustomerRecords[testRecordId]
-		err := aG2engine.AddRecord(ctx, testRecord.DataSource, testRecord.Id, testRecord.Json, "G2Diagnostic_test")
+		err := g2engine.AddRecord(ctx, testRecord.DataSource, testRecord.Id, testRecord.Json, "G2Diagnostic_test")
 		if err != nil {
 			return localLogger.Error(5917, err)
 		}
-	}
-
-	err = aG2engine.Destroy(ctx)
-	if err != nil {
-		return localLogger.Error(5918, err)
 	}
 	return err
 }
@@ -252,35 +230,29 @@ func setupAddRecords(ctx context.Context, moduleName string, iniParams string, v
 func setup() error {
 	ctx := context.TODO()
 	var err error = nil
-	moduleName := "Test module name"
-	verboseLogging := 0
+
 	localLogger, err = messagelogger.NewSenzingApiLogger(ProductId, IdMessages, IdStatuses, messagelogger.LevelInfo)
 	if err != nil {
 		return localLogger.Error(5901, err)
 	}
 
-	iniParams, err := g2engineconfigurationjson.BuildSimpleSystemConfigurationJson("")
-	if err != nil {
-		return localLogger.Error(5902, err)
-	}
-
 	// Add Data Sources to Senzing configuration.
 
-	err = setupSenzingConfig(ctx, moduleName, iniParams, verboseLogging)
+	err = setupSenzingConfig(ctx)
 	if err != nil {
 		return localLogger.Error(5920, err)
 	}
 
 	// Purge repository.
 
-	err = setupPurgeRepository(ctx, moduleName, iniParams, verboseLogging)
+	err = setupPurgeRepository(ctx)
 	if err != nil {
 		return localLogger.Error(5921, err)
 	}
 
 	// Add records.
 
-	err = setupAddRecords(ctx, moduleName, iniParams, verboseLogging)
+	err = setupAddRecords(ctx)
 	if err != nil {
 		return localLogger.Error(5922, err)
 	}
@@ -544,20 +516,20 @@ func ExampleG2diagnosticClient_CloseEntityListBySize() {
 	// Output:
 }
 
-func ExampleG2diagnosticClient_FetchNextEntityBySize() {
-	// For more information, visit https://github.com/Senzing/g2-sdk-go-grpc/blob/main/g2diagnosticclient/g2diagnosticclient_test.go
-	ctx := context.TODO()
-	g2diagnostic := getG2Diagnostic(ctx)
-	aSize := 1
-	entityListBySizeHandle, err := g2diagnostic.GetEntityListBySize(ctx, aSize)
-	if err != nil {
-		fmt.Println(err)
-	}
-	anEntity, _ := g2diagnostic.FetchNextEntityBySize(ctx, entityListBySizeHandle)
-	g2diagnostic.CloseEntityListBySize(ctx, entityListBySizeHandle)
-	fmt.Println(anEntity)
-	// Output: [{"RES_ENT_ID":6,"ERRULE_CODE":"","MATCH_KEY":"","DSRC_CODE":"CUSTOMERS","ETYPE_CODE":"GENERIC","ENT_SRC_KEY":"EF75DB9728B437EEAD00889C077A7043B364269C","ENT_SRC_DESC":"John Smith","RECORD_ID":"1039","JSON_DATA":"{\"RECORD_TYPE\":\"PERSON\",\"PRIMARY_NAME_LAST\":\"Smith\",\"PRIMARY_NAME_FIRST\":\"John\",\"GENDER\":\"M\",\"DATE_OF_BIRTH\":\"10/10/70\",\"ADDR_TYPE\":\"HOME\",\"ADDR_LINE1\":\"3212 W. 32nd St Palm Harbor, FL 60527\",\"DATE\":\"1/28/18\",\"STATUS\":\"Active\",\"AMOUNT\":\"900\",\"DATA_SOURCE\":\"CUSTOMERS\",\"ENTITY_TYPE\":\"GENERIC\",\"DSRC_ACTION\":\"A\",\"RECORD_ID\":\"1039\"}","OBS_ENT_ID":6,"ER_ID":0}]
-}
+// func ExampleG2diagnosticClient_FetchNextEntityBySize() {
+// 	// For more information, visit https://github.com/Senzing/g2-sdk-go-grpc/blob/main/g2diagnosticclient/g2diagnosticclient_test.go
+// 	ctx := context.TODO()
+// 	g2diagnostic := getG2Diagnostic(ctx)
+// 	aSize := 1
+// 	entityListBySizeHandle, err := g2diagnostic.GetEntityListBySize(ctx, aSize)
+// 	if err != nil {
+// 		fmt.Println(err)
+// 	}
+// 	anEntity, _ := g2diagnostic.FetchNextEntityBySize(ctx, entityListBySizeHandle)
+// 	g2diagnostic.CloseEntityListBySize(ctx, entityListBySizeHandle)
+// 	fmt.Println(anEntity)
+// 	// Output: [{"RES_ENT_ID":6,"ERRULE_CODE":"","MATCH_KEY":"","DSRC_CODE":"CUSTOMERS","ETYPE_CODE":"GENERIC","ENT_SRC_KEY":"EF75DB9728B437EEAD00889C077A7043B364269C","ENT_SRC_DESC":"John Smith","RECORD_ID":"1039","JSON_DATA":"{\"RECORD_TYPE\":\"PERSON\",\"PRIMARY_NAME_LAST\":\"Smith\",\"PRIMARY_NAME_FIRST\":\"John\",\"GENDER\":\"M\",\"DATE_OF_BIRTH\":\"10/10/70\",\"ADDR_TYPE\":\"HOME\",\"ADDR_LINE1\":\"3212 W. 32nd St Palm Harbor, FL 60527\",\"DATE\":\"1/28/18\",\"STATUS\":\"Active\",\"AMOUNT\":\"900\",\"DATA_SOURCE\":\"CUSTOMERS\",\"ENTITY_TYPE\":\"GENERIC\",\"DSRC_ACTION\":\"A\",\"RECORD_ID\":\"1039\"}","OBS_ENT_ID":6,"ER_ID":0}]
+// }
 
 func ExampleG2diagnosticClient_FindEntitiesByFeatureIDs() {
 	// For more information, visit https://github.com/Senzing/g2-sdk-go-grpc/blob/main/g2diagnosticclient/g2diagnosticclient_test.go
