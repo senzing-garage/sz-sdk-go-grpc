@@ -10,8 +10,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 -
 
-## [1.0.0] - yyyy-mm-dd
+## [1.0.0] - 2023-01-31
 
-### Added to 1.0.0
+### Added to 0.1.0
 
-- Thing 2
+- Initial implementation
