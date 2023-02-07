@@ -2,6 +2,8 @@ package g2diagnosticclient
 
 import (
 	pb "github.com/senzing/g2-sdk-proto/go/g2diagnostic"
+	"github.com/senzing/go-logging/messagelogger"
+	"github.com/senzing/go-observing/subject"
 )
 
 // ----------------------------------------------------------------------------
@@ -10,6 +12,9 @@ import (
 
 type G2diagnosticClient struct {
 	GrpcClient pb.G2DiagnosticClient
+	isTrace    bool
+	logger     messagelogger.MessageLoggerInterface
+	observers  subject.Subject
 }
 
 // ----------------------------------------------------------------------------
