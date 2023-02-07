@@ -18,18 +18,19 @@ import (
 	"github.com/senzing/g2-sdk-go/g2diagnostic"
 	"github.com/senzing/g2-sdk-go/g2engine"
 	"github.com/senzing/g2-sdk-go/g2product"
-	"github.com/senzing/g2-sdk-go/testhelpers"
 	pbg2config "github.com/senzing/g2-sdk-proto/go/g2config"
 	pbg2configmgr "github.com/senzing/g2-sdk-proto/go/g2configmgr"
 	pbg2diagnostic "github.com/senzing/g2-sdk-proto/go/g2diagnostic"
 	pbg2engine "github.com/senzing/g2-sdk-proto/go/g2engine"
 	pbg2product "github.com/senzing/g2-sdk-proto/go/g2product"
+	"github.com/senzing/go-common/truthset"
 	"github.com/senzing/go-logging/messageformat"
 	"github.com/senzing/go-logging/messageid"
 	"github.com/senzing/go-logging/messagelevel"
 	"github.com/senzing/go-logging/messagelogger"
 	"github.com/senzing/go-logging/messagestatus"
 	"github.com/senzing/go-logging/messagetext"
+	"github.com/senzing/go-observing/observer"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 )
@@ -156,8 +157,8 @@ func demonstrateConfigFunctions(ctx context.Context, g2Config g2config.G2config,
 
 	// Using G2Config: Add data source to in-memory configuration.
 
-	for _, testDataSource := range testhelpers.TestDataSources {
-		_, err := g2Config.AddDataSource(ctx, configHandle, testDataSource.Data)
+	for _, testDataSource := range truthset.TruthsetDataSources {
+		_, err := g2Config.AddDataSource(ctx, configHandle, testDataSource.Json)
 		if err != nil {
 			return logger.Error(5101, err)
 		}
@@ -205,8 +206,6 @@ func demonstrateAddRecord(ctx context.Context, g2Engine g2engine.G2engine) (stri
 }
 
 func demonstrateAdditionalFunctions(ctx context.Context, g2Diagnostic g2diagnostic.G2diagnostic, g2Engine g2engine.G2engine, g2Product g2product.G2product) error {
-	var err error = nil
-
 	// Using G2Diagnostic: Check physical cores.
 
 	actual, err := g2Diagnostic.GetPhysicalCores(ctx)
@@ -265,17 +264,29 @@ func main() {
 	fmt.Printf("\n-------------------------------------------------------------------------------\n\n")
 	logger.Log(2001, "Just a test of logging", programmMetadataMap)
 
+	// Create 2 observers.
+
+	observer1 := &observer.ObserverNull{
+		Id: "Observer 1",
+	}
+	observer2 := &observer.ObserverNull{
+		Id: "Observer 2",
+	}
+
 	// Get Senzing objects for installing a Senzing Engine configuration.
 
 	g2Config, err := getG2config(ctx)
 	if err != nil {
 		logger.Log(5001, err)
 	}
+	g2Config.RegisterObserver(ctx, observer1)
+	g2Config.RegisterObserver(ctx, observer2)
 
 	g2Configmgr, err := getG2configmgr(ctx)
 	if err != nil {
 		logger.Log(5002, err)
 	}
+	g2Configmgr.RegisterObserver(ctx, observer1)
 
 	// Persist the Senzing configuration to the Senzing repository.
 
@@ -290,16 +301,19 @@ func main() {
 	if err != nil {
 		logger.Log(5004, err)
 	}
+	g2Diagnostic.RegisterObserver(ctx, observer1)
 
 	g2Engine, err := getG2engine(ctx)
 	if err != nil {
 		logger.Log(5005, err)
 	}
+	g2Engine.RegisterObserver(ctx, observer1)
 
 	g2Product, err := getG2product(ctx)
 	if err != nil {
 		logger.Log(5006, err)
 	}
+	g2Product.RegisterObserver(ctx, observer1)
 
 	// Demonstrate tests.
 
