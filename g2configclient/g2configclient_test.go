@@ -317,7 +317,6 @@ func ExampleG2configClient_DeleteDataSource() {
 	// Output:
 }
 
-
 func ExampleG2configClient_ListDataSources() {
 	// For more information, visit https://github.com/Senzing/g2-sdk-go-grpc/blob/main/g2configclient/g2configclient_test.go
 
