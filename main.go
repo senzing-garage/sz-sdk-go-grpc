@@ -238,8 +238,8 @@ func demonstrateAdditionalFunctions(ctx context.Context, g2Diagnostic g2diagnost
 // ----------------------------------------------------------------------------
 
 func main() {
-	ctx := context.TODO()
 	var err error = nil
+	ctx := context.TODO()
 
 	// Randomize random number generator.
 
