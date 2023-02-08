@@ -45,7 +45,7 @@ var (
 // ----------------------------------------------------------------------------
 
 func getGrpcConnection() *grpc.ClientConn {
-	var err error
+	var err error = nil
 	if grpcConnection == nil {
 		grpcConnection, err = grpc.Dial(grpcAddress, grpc.WithTransportCredentials(insecure.NewCredentials()))
 		if err != nil {
