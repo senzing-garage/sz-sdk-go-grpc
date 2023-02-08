@@ -2,6 +2,8 @@ package g2engineclient
 
 import (
 	pb "github.com/senzing/g2-sdk-proto/go/g2engine"
+	"github.com/senzing/go-logging/messagelogger"
+	"github.com/senzing/go-observing/subject"
 )
 
 // ----------------------------------------------------------------------------
