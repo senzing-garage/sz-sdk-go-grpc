@@ -10,6 +10,9 @@ import (
 
 type G2engineClient struct {
 	GrpcClient pb.G2EngineClient
+	isTrace    bool
+	logger     messagelogger.MessageLoggerInterface
+	observers  subject.Subject
 }
 
 // ----------------------------------------------------------------------------

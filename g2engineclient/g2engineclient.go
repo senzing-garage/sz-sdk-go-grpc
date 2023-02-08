@@ -6,11 +6,50 @@
 package g2engineclient
 
 import (
-	"context"
+    "context"
 
-	pb "github.com/senzing/g2-sdk-proto/go/g2engine"
-	"github.com/senzing/go-logging/logger"
+    pb "github.com/senzing/g2-sdk-proto/go/g2engine"
+    "github.com/senzing/go-logging/logger"
 )
+
+// ----------------------------------------------------------------------------
+// Internal methods
+// ----------------------------------------------------------------------------
+
+
+// Get the Logger singleton.
+func (client *G2engineClient) getLogger() messagelogger.MessageLoggerInterface {
+    if g2engine.logger == nil {
+        g2engine.logger, _ = messagelogger.NewSenzingApiLogger(ProductId, IdMessages, IdStatuses, messagelogger.LevelInfo)
+    }
+    return g2engine.logger
+}
+
+func (client *G2engineClient) notify(ctx context.Context, messageId int, err error, details map[string]string) {
+    now := time.Now()
+    details["subjectId"] = strconv.Itoa(ProductId)
+    details["messageId"] = strconv.Itoa(messageId)
+    details["messageTime"] = strconv.FormatInt(now.UnixNano(), 10)
+    if err != nil {
+        details["error"] = err.Error()
+    }
+    message, err := json.Marshal(details)
+    if err != nil {
+        fmt.Printf("Error: %s", err.Error())
+    } else {
+        g2engine.observers.NotifyObservers(ctx, string(message))
+    }
+}
+
+// Trace method entry.
+func (gclient *G2engineClient) traceEntry(errorNumber int, details ...interface{}) {
+    g2engine.getLogger().Log(errorNumber, details...)
+}
+
+// Trace method exit.
+func (client *G2engineClient) traceExit(errorNumber int, details ...interface{}) {
+    g2engine.getLogger().Log(errorNumber, details...)
+}
 
 // ----------------------------------------------------------------------------
 // Interface methods
@@ -27,14 +66,31 @@ Input
   - loadID: An identifier used to distinguish different load batches/sessions. An empty string is acceptable.
 */
 func (client *G2engineClient) AddRecord(ctx context.Context, dataSourceCode string, recordID string, jsonData string, loadID string) error {
-	request := pb.AddRecordRequest{
-		DataSourceCode: dataSourceCode,
-		RecordID:       recordID,
-		JsonData:       jsonData,
-		LoadID:         loadID,
-	}
-	_, err := client.GrpcClient.AddRecord(ctx, &request)
-	return err
+    if g2engine.isTrace {
+        g2engine.traceEntry(1, dataSourceCode, recordID, jsonData, loadID)
+    }
+    entryTime := time.Now()
+    request := pb.AddRecordRequest{
+        DataSourceCode: dataSourceCode,
+        RecordID:       recordID,
+        JsonData:       jsonData,
+        LoadID:         loadID,
+    }
+    _, err := client.GrpcClient.AddRecord(ctx, &request)
+    if g2engine.observers != nil {
+        go func() {
+            details := map[string]string{
+                "dataSourceCode": dataSourceCode,
+                "recordID":       recordID,
+                "loadID":         loadID,
+            }
+            g2engine.notify(ctx, 8001, err, details)
+        }()
+    }
+    if g2engine.isTrace {
+        defer g2engine.traceExit(2, dataSourceCode, recordID, jsonData, loadID, err, time.Since(entryTime))
+    }
+    return err
 }
 
 /*
@@ -53,15 +109,32 @@ Output
     See the example output.
 */
 func (client *G2engineClient) AddRecordWithInfo(ctx context.Context, dataSourceCode string, recordID string, jsonData string, loadID string, flags int64) (string, error) {
-	request := pb.AddRecordWithInfoRequest{
-		DataSourceCode: dataSourceCode,
-		RecordID:       recordID,
-		JsonData:       jsonData,
-		LoadID:         loadID,
-		Flags:          flags,
-	}
-	response, err := client.GrpcClient.AddRecordWithInfo(ctx, &request)
-	return response.GetResult(), err
+    if g2engine.isTrace {
+        g2engine.traceEntry(3, dataSourceCode, recordID, jsonData, loadID, flags)
+    }
+    entryTime := time.Now()
+    request := pb.AddRecordWithInfoRequest{
+        DataSourceCode: dataSourceCode,
+        RecordID:       recordID,
+        JsonData:       jsonData,
+        LoadID:         loadID,
+        Flags:          flags,
+    }
+    response, err := client.GrpcClient.AddRecordWithInfo(ctx, &request)
+    if g2engine.observers != nil {
+        go func() {
+            details := map[string]string{
+                "dataSourceCode": dataSourceCode,
+                "recordID":       recordID,
+                "loadID":         loadID,
+            }
+            g2engine.notify(ctx, 8002, err, details)
+        }()
+    }
+    if g2engine.isTrace {
+        defer g2engine.traceExit(4, dataSourceCode, recordID, jsonData, loadID, flags, C.GoString(result.response), err, time.Since(entryTime))
+    }
+    return response.GetResult(), err
 }
 
 /*
@@ -81,14 +154,31 @@ Output
     Example: `2D4DABB3FAEAFBD452E9487D06FABC22DC69C846`
 */
 func (client *G2engineClient) AddRecordWithInfoWithReturnedRecordID(ctx context.Context, dataSourceCode string, jsonData string, loadID string, flags int64) (string, string, error) {
-	request := pb.AddRecordWithInfoWithReturnedRecordIDRequest{
-		DataSourceCode: dataSourceCode,
-		JsonData:       jsonData,
-		LoadID:         loadID,
-		Flags:          flags,
-	}
-	response, err := client.GrpcClient.AddRecordWithInfoWithReturnedRecordID(ctx, &request)
-	return response.GetWithInfo(), response.GetRecordID(), err
+    if g2engine.isTrace {
+        g2engine.traceEntry(5, dataSourceCode, jsonData, loadID, flags)
+    }
+    entryTime := time.Now()
+    request := pb.AddRecordWithInfoWithReturnedRecordIDRequest{
+        DataSourceCode: dataSourceCode,
+        JsonData:       jsonData,
+        LoadID:         loadID,
+        Flags:          flags,
+    }
+    response, err := client.GrpcClient.AddRecordWithInfoWithReturnedRecordID(ctx, &request)
+    if g2engine.observers != nil {
+        go func() {
+            details := map[string]string{
+                "dataSourceCode": dataSourceCode,
+                "recordID":       C.GoString(result.recordID),
+                "loadID":         loadID,
+            }
+            g2engine.notify(ctx, 8003, err, details)
+        }()
+    }
+    if g2engine.isTrace {
+        defer g2engine.traceExit(6, dataSourceCode, jsonData, loadID, flags, C.GoString(result.withInfo), C.GoString(result.recordID), err, time.Since(entryTime))
+    }
+    return response.GetWithInfo(), response.GetRecordID(), err
 }
 
 /*
@@ -105,13 +195,30 @@ Output
     Example: `2D4DABB3FAEAFBD452E9487D06FABC22DC69C846`
 */
 func (client *G2engineClient) AddRecordWithReturnedRecordID(ctx context.Context, dataSourceCode string, jsonData string, loadID string) (string, error) {
-	request := pb.AddRecordWithReturnedRecordIDRequest{
-		DataSourceCode: dataSourceCode,
-		JsonData:       jsonData,
-		LoadID:         loadID,
-	}
-	response, err := client.GrpcClient.AddRecordWithReturnedRecordID(ctx, &request)
-	return response.GetResult(), err
+    if g2engine.isTrace {
+        g2engine.traceEntry(7, dataSourceCode, jsonData, loadID)
+    }
+    entryTime := time.Now()
+    request := pb.AddRecordWithReturnedRecordIDRequest{
+        DataSourceCode: dataSourceCode,
+        JsonData:       jsonData,
+        LoadID:         loadID,
+    }
+    response, err := client.GrpcClient.AddRecordWithReturnedRecordID(ctx, &request)
+    if g2engine.observers != nil {
+        go func() {
+            details := map[string]string{
+                "dataSourceCode": dataSourceCode,
+                "recordID":       string(stringBuffer),
+                "loadID":         loadID,
+            }
+            g2engine.notify(ctx, 8004, err, details)
+        }()
+    }
+    if g2engine.isTrace {
+        defer g2engine.traceExit(8, dataSourceCode, jsonData, loadID, string(stringBuffer), err, time.Since(entryTime))
+    }
+    return response.GetResult(), err
 }
 
 /*
@@ -128,12 +235,25 @@ Output
     See the example output.
 */
 func (client *G2engineClient) CheckRecord(ctx context.Context, record string, recordQueryList string) (string, error) {
-	request := pb.CheckRecordRequest{
-		Record:          record,
-		RecordQueryList: recordQueryList,
-	}
-	response, err := client.GrpcClient.CheckRecord(ctx, &request)
-	return response.GetResult(), err
+    if g2engine.isTrace {
+        g2engine.traceEntry(9, record, recordQueryList)
+    }
+    entryTime := time.Now()
+    request := pb.CheckRecordRequest{
+        Record:          record,
+        RecordQueryList: recordQueryList,
+    }
+    response, err := client.GrpcClient.CheckRecord(ctx, &request)
+    if g2engine.observers != nil {
+        go func() {
+            details := map[string]string{}
+            g2engine.notify(ctx, 8005, err, details)
+        }()
+    }
+    if g2engine.isTrace {
+        defer g2engine.traceExit(10, record, recordQueryList, C.GoString(result.response), err, time.Since(entryTime))
+    }
+    return response.GetResult(), err
 }
 
 /*
@@ -146,11 +266,24 @@ Input
   - responseHandle: A handle created by ExportJSONEntityReport() or ExportCSVEntityReport().
 */
 func (client *G2engineClient) CloseExport(ctx context.Context, responseHandle uintptr) error {
-	request := pb.CloseExportRequest{
-		ResponseHandle: int64(responseHandle),
-	}
-	_, err := client.GrpcClient.CloseExport(ctx, &request)
-	return err
+    if g2engine.isTrace {
+        g2engine.traceEntry(13, responseHandle)
+    }
+    entryTime := time.Now()
+    request := pb.CloseExportRequest{
+        ResponseHandle: int64(responseHandle),
+    }
+    _, err := client.GrpcClient.CloseExport(ctx, &request)
+    if g2engine.observers != nil {
+        go func() {
+            details := map[string]string{}
+            g2engine.notify(ctx, 8006, err, details)
+        }()
+    }
+    if g2engine.isTrace {
+        defer g2engine.traceExit(14, responseHandle, err, time.Since(entryTime))
+    }
+    return err
 }
 
 /*
@@ -163,9 +296,22 @@ Output
   - The number of redo records in Senzing's redo queue.
 */
 func (client *G2engineClient) CountRedoRecords(ctx context.Context) (int64, error) {
-	request := pb.CountRedoRecordsRequest{}
-	response, err := client.GrpcClient.CountRedoRecords(ctx, &request)
-	return response.GetResult(), err
+    if g2engine.isTrace {
+        g2engine.traceEntry(15)
+    }
+    entryTime := time.Now()
+    request := pb.CountRedoRecordsRequest{}
+    response, err := client.GrpcClient.CountRedoRecords(ctx, &request)
+    if g2engine.observers != nil {
+        go func() {
+            details := map[string]string{}
+            g2engine.notify(ctx, 8007, err, details)
+        }()
+    }
+    if g2engine.isTrace {
+        defer g2engine.traceExit(16, int64(result), err, time.Since(entryTime))
+    }
+    return response.GetResult(), err
 }
 
 /*
@@ -179,13 +325,30 @@ Input
     FIXME: How does the "loadID" affect what is deleted?
 */
 func (client *G2engineClient) DeleteRecord(ctx context.Context, dataSourceCode string, recordID string, loadID string) error {
-	request := pb.DeleteRecordRequest{
-		DataSourceCode: dataSourceCode,
-		RecordID:       recordID,
-		LoadID:         loadID,
-	}
-	_, err := client.GrpcClient.DeleteRecord(ctx, &request)
-	return err
+    if g2engine.isTrace {
+        g2engine.traceEntry(17, dataSourceCode, recordID, loadID)
+    }
+    entryTime := time.Now()
+    request := pb.DeleteRecordRequest{
+        DataSourceCode: dataSourceCode,
+        RecordID:       recordID,
+        LoadID:         loadID,
+    }
+    _, err := client.GrpcClient.DeleteRecord(ctx, &request)
+    if g2engine.observers != nil {
+        go func() {
+            details := map[string]string{
+                "dataSourceCode": dataSourceCode,
+                "recordID":       recordID,
+                "loadID":         loadID,
+            }
+            g2engine.notify(ctx, 8008, err, details)
+        }()
+    }
+    if g2engine.isTrace {
+        defer g2engine.traceExit(18, dataSourceCode, recordID, loadID, err, time.Since(entryTime))
+    }
+    return err
 }
 
 /*
@@ -204,14 +367,31 @@ Output
     See the example output.
 */
 func (client *G2engineClient) DeleteRecordWithInfo(ctx context.Context, dataSourceCode string, recordID string, loadID string, flags int64) (string, error) {
-	request := pb.DeleteRecordWithInfoRequest{
-		DataSourceCode: dataSourceCode,
-		RecordID:       recordID,
-		LoadID:         loadID,
-		Flags:          flags,
-	}
-	response, err := client.GrpcClient.DeleteRecordWithInfo(ctx, &request)
-	return response.GetResult(), err
+    if g2engine.isTrace {
+        g2engine.traceEntry(19, dataSourceCode, recordID, loadID, flags)
+    }
+    entryTime := time.Now()
+    request := pb.DeleteRecordWithInfoRequest{
+        DataSourceCode: dataSourceCode,
+        RecordID:       recordID,
+        LoadID:         loadID,
+        Flags:          flags,
+    }
+    response, err := client.GrpcClient.DeleteRecordWithInfo(ctx, &request)
+    if g2engine.observers != nil {
+        go func() {
+            details := map[string]string{
+                "dataSourceCode": dataSourceCode,
+                "recordID":       recordID,
+                "loadID":         loadID,
+            }
+            g2engine.notify(ctx, 8009, err, details)
+        }()
+    }
+    if g2engine.isTrace {
+        defer g2engine.traceExit(20, dataSourceCode, recordID, loadID, flags, C.GoString(result.response), err, time.Since(entryTime))
+    }
+    return response.GetResult(), err
 }
 
 /*
@@ -222,9 +402,22 @@ Input
   - ctx: A context to control lifecycle.
 */
 func (client *G2engineClient) Destroy(ctx context.Context) error {
-	request := pb.DestroyRequest{}
-	_, err := client.GrpcClient.Destroy(ctx, &request)
-	return err
+    if g2engine.isTrace {
+        g2engine.traceEntry(21)
+    }
+    entryTime := time.Now()
+    request := pb.DestroyRequest{}
+    _, err := client.GrpcClient.Destroy(ctx, &request)
+    if g2engine.observers != nil {
+        go func() {
+            details := map[string]string{}
+            g2engine.notify(ctx, 8010, err, details)
+        }()
+    }
+    if g2engine.isTrace {
+        defer g2engine.traceExit(22, err, time.Since(entryTime))
+    }
+    return err
 }
 
 /*
@@ -237,9 +430,22 @@ Output
   - A JSON document containing the current Senzing Engine configuration.
 */
 func (client *G2engineClient) ExportConfig(ctx context.Context) (string, error) {
-	request := pb.ExportConfigRequest{}
-	response, err := client.GrpcClient.ExportConfig(ctx, &request)
-	return response.GetResult(), err
+    if g2engine.isTrace {
+        g2engine.traceEntry(25)
+    }
+    entryTime := time.Now()
+    request := pb.ExportConfigRequest{}
+    response, err := client.GrpcClient.ExportConfig(ctx, &request)
+    if g2engine.observers != nil {
+        go func() {
+            details := map[string]string{}
+            g2engine.notify(ctx, 8011, err, details)
+        }()
+    }
+    if g2engine.isTrace {
+        defer g2engine.traceExit(26, C.GoString(result.response), err, time.Since(entryTime))
+    }
+    return response.GetResult(), err
 }
 
 /*
@@ -253,9 +459,24 @@ Output
   - The unique identifier of the Senzing Engine configuration.
 */
 func (client *G2engineClient) ExportConfigAndConfigID(ctx context.Context) (string, int64, error) {
-	request := pb.ExportConfigAndConfigIDRequest{}
-	response, err := client.GrpcClient.ExportConfigAndConfigID(ctx, &request)
-	return response.GetConfig(), response.GetConfigID(), err
+    if g2engine.isTrace {
+        g2engine.traceEntry(23)
+    }
+    entryTime := time.Now()
+    request := pb.ExportConfigAndConfigIDRequest{}
+    response, err := client.GrpcClient.ExportConfigAndConfigID(ctx, &request)
+    if g2engine.observers != nil {
+        go func() {
+            details := map[string]string{
+                "configID": strconv.FormatInt(int64(C.longlong(result.configID)), 10),
+            }
+            g2engine.notify(ctx, 8012, err, details)
+        }()
+    }
+    if g2engine.isTrace {
+        defer g2engine.traceExit(24, C.GoString(result.config), int64(C.longlong(result.configID)), err, time.Since(entryTime))
+    }
+    return response.GetConfig(), response.GetConfigID(), err
 }
 
 /*
@@ -272,12 +493,25 @@ Output
   - A handle that identifies the document to be scrolled through using FetchNext().
 */
 func (client *G2engineClient) ExportCSVEntityReport(ctx context.Context, csvColumnList string, flags int64) (uintptr, error) {
-	request := pb.ExportCSVEntityReportRequest{
-		CsvColumnList: csvColumnList,
-		Flags:         flags,
-	}
-	response, err := client.GrpcClient.ExportCSVEntityReport(ctx, &request)
-	return uintptr(response.GetResult()), err
+    if g2engine.isTrace {
+        g2engine.traceEntry(27, csvColumnList, flags)
+    }
+    entryTime := time.Now()
+    request := pb.ExportCSVEntityReportRequest{
+        CsvColumnList: csvColumnList,
+        Flags:         flags,
+    }
+    response, err := client.GrpcClient.ExportCSVEntityReport(ctx, &request)
+    if g2engine.observers != nil {
+        go func() {
+            details := map[string]string{}
+            g2engine.notify(ctx, 8013, err, details)
+        }()
+    }
+    if g2engine.isTrace {
+        defer g2engine.traceExit(28, csvColumnList, flags, (uintptr)(result.exportHandle), err, time.Since(entryTime))
+    }
+    return uintptr(response.GetResult()), err
 }
 
 /*
@@ -293,11 +527,24 @@ Output
   - A handle that identifies the document to be scrolled through using FetchNext().
 */
 func (client *G2engineClient) ExportJSONEntityReport(ctx context.Context, flags int64) (uintptr, error) {
-	request := pb.ExportJSONEntityReportRequest{
-		Flags: flags,
-	}
-	response, err := client.GrpcClient.ExportJSONEntityReport(ctx, &request)
-	return uintptr(response.GetResult()), err
+    if g2engine.isTrace {
+        g2engine.traceEntry(29, flags)
+    }
+    entryTime := time.Now()
+    request := pb.ExportJSONEntityReportRequest{
+        Flags: flags,
+    }
+    response, err := client.GrpcClient.ExportJSONEntityReport(ctx, &request)
+    if g2engine.observers != nil {
+        go func() {
+            details := map[string]string{}
+            g2engine.notify(ctx, 8014, err, details)
+        }()
+    }
+    if g2engine.isTrace {
+        defer g2engine.traceExit(30, flags, (uintptr)(result.exportHandle), err, time.Since(entryTime))
+    }
+    return uintptr(response.GetResult()), err
 }
 
 /*
@@ -313,11 +560,24 @@ Output
   - FIXME:
 */
 func (client *G2engineClient) FetchNext(ctx context.Context, responseHandle uintptr) (string, error) {
-	request := pb.FetchNextRequest{
-		ResponseHandle: int64(responseHandle),
-	}
-	response, err := client.GrpcClient.FetchNext(ctx, &request)
-	return response.GetResult(), err
+    if g2engine.isTrace {
+        g2engine.traceEntry(31, responseHandle)
+    }
+    entryTime := time.Now()
+    request := pb.FetchNextRequest{
+        ResponseHandle: int64(responseHandle),
+    }
+    response, err := client.GrpcClient.FetchNext(ctx, &request)
+    if g2engine.observers != nil {
+        go func() {
+            details := map[string]string{}
+            g2engine.notify(ctx, 8015, err, details)
+        }()
+    }
+    if g2engine.isTrace {
+        defer g2engine.traceExit(32, responseHandle, C.GoString(result.response), err, time.Since(entryTime))
+    }
+    return response.GetResult(), err
 }
 
 /*
@@ -333,12 +593,27 @@ Output
     See the example output.
 */
 func (client *G2engineClient) FindInterestingEntitiesByEntityID(ctx context.Context, entityID int64, flags int64) (string, error) {
-	request := pb.FindInterestingEntitiesByEntityIDRequest{
-		EntityID: entityID,
-		Flags:    flags,
-	}
-	response, err := client.GrpcClient.FindInterestingEntitiesByEntityID(ctx, &request)
-	return response.GetResult(), err
+    if g2engine.isTrace {
+        g2engine.traceEntry(33, entityID, flags)
+    }
+    entryTime := time.Now()
+    request := pb.FindInterestingEntitiesByEntityIDRequest{
+        EntityID: entityID,
+        Flags:    flags,
+    }
+    response, err := client.GrpcClient.FindInterestingEntitiesByEntityID(ctx, &request)
+    if g2engine.observers != nil {
+        go func() {
+            details := map[string]string{
+                "entityID": strconv.FormatInt(entityID, 10),
+            }
+            g2engine.notify(ctx, 8016, err, details)
+        }()
+    }
+    if g2engine.isTrace {
+        defer g2engine.traceExit(34, entityID, flags, C.GoString(result.response), err, time.Since(entryTime))
+    }
+    return response.GetResult(), err
 }
 
 /*
@@ -355,13 +630,29 @@ Output
     See the example output.
 */
 func (client *G2engineClient) FindInterestingEntitiesByRecordID(ctx context.Context, dataSourceCode string, recordID string, flags int64) (string, error) {
-	request := pb.FindInterestingEntitiesByRecordIDRequest{
-		DataSourceCode: dataSourceCode,
-		RecordID:       recordID,
-		Flags:          flags,
-	}
-	response, err := client.GrpcClient.FindInterestingEntitiesByRecordID(ctx, &request)
-	return response.GetResult(), err
+    if g2engine.isTrace {
+        g2engine.traceEntry(35, dataSourceCode, recordID, flags)
+    }
+    entryTime := time.Now()
+    request := pb.FindInterestingEntitiesByRecordIDRequest{
+        DataSourceCode: dataSourceCode,
+        RecordID:       recordID,
+        Flags:          flags,
+    }
+    response, err := client.GrpcClient.FindInterestingEntitiesByRecordID(ctx, &request)
+    if g2engine.observers != nil {
+        go func() {
+            details := map[string]string{
+                "dataSourceCode": dataSourceCode,
+                "recordID":       recordID,
+            }
+            g2engine.notify(ctx, 8017, err, details)
+        }()
+    }
+    if g2engine.isTrace {
+        defer g2engine.traceExit(36, dataSourceCode, recordID, flags, C.GoString(result.response), err, time.Since(entryTime))
+    }
+    return response.GetResult(), err
 }
 
 /*
@@ -382,14 +673,29 @@ Output
     Example: `{"ENTITY_PATHS":[{"START_ENTITY_ID":1,"END_ENTITY_ID":2,"ENTITIES":[1,2]}],"ENTITIES":[{"RESOLVED_ENTITY":{"ENTITY_ID":1,"ENTITY_NAME":"SEAMAN","RECORD_SUMMARY":[{"DATA_SOURCE":"TEST","RECORD_COUNT":2,"FIRST_SEEN_DT":"2022-11-29 22:25:18.997","LAST_SEEN_DT":"2022-11-29 22:25:19.005"}],"LAST_SEEN_DT":"2022-11-29 22:25:19.005"},"RELATED_ENTITIES":[{"ENTITY_ID":2,"MATCH_LEVEL":3,"MATCH_LEVEL_CODE":"POSSIBLY_RELATED","MATCH_KEY":"+PHONE+ACCT_NUM-DOB-SSN","ERRULE_CODE":"SF1","IS_DISCLOSED":0,"IS_AMBIGUOUS":0}]},{"RESOLVED_ENTITY":{"ENTITY_ID":2,"ENTITY_NAME":"Smith","RECORD_SUMMARY":[{"DATA_SOURCE":"TEST","RECORD_COUNT":1,"FIRST_SEEN_DT":"2022-11-29 22:25:19.009","LAST_SEEN_DT":"2022-11-29 22:25:19.009"}],"LAST_SEEN_DT":"2022-11-29 22:25:19.009"},"RELATED_ENTITIES":[{"ENTITY_ID":1,"MATCH_LEVEL":3,"MATCH_LEVEL_CODE":"POSSIBLY_RELATED","MATCH_KEY":"+PHONE+ACCT_NUM-DOB-SSN","ERRULE_CODE":"SF1","IS_DISCLOSED":0,"IS_AMBIGUOUS":0}]}]}`
 */
 func (client *G2engineClient) FindNetworkByEntityID(ctx context.Context, entityList string, maxDegree int, buildOutDegree int, maxEntities int) (string, error) {
-	request := pb.FindNetworkByEntityIDRequest{
-		EntityList:     entityList,
-		MaxDegree:      int32(maxDegree),
-		BuildOutDegree: int32(buildOutDegree),
-		MaxEntities:    int32(maxEntities),
-	}
-	response, err := client.GrpcClient.FindNetworkByEntityID(ctx, &request)
-	return response.GetResult(), err
+    if g2engine.isTrace {
+        g2engine.traceEntry(37, entityList, maxDegree, buildOutDegree, maxDegree)
+    }
+    entryTime := time.Now()
+    request := pb.FindNetworkByEntityIDRequest{
+        EntityList:     entityList,
+        MaxDegree:      int32(maxDegree),
+        BuildOutDegree: int32(buildOutDegree),
+        MaxEntities:    int32(maxEntities),
+    }
+    response, err := client.GrpcClient.FindNetworkByEntityID(ctx, &request)
+    if g2engine.observers != nil {
+        go func() {
+            details := map[string]string{
+                "entityList": entityList,
+            }
+            g2engine.notify(ctx, 8018, err, details)
+        }()
+    }
+    if g2engine.isTrace {
+        defer g2engine.traceExit(38, entityList, maxDegree, buildOutDegree, maxDegree, C.GoString(result.response), err, time.Since(entryTime))
+    }
+    return response.GetResult(), err
 }
 
 /*
@@ -411,15 +717,30 @@ Output
     See the example output.
 */
 func (client *G2engineClient) FindNetworkByEntityID_V2(ctx context.Context, entityList string, maxDegree int, buildOutDegree int, maxEntities int, flags int64) (string, error) {
-	request := pb.FindNetworkByEntityID_V2Request{
-		EntityList:     entityList,
-		MaxDegree:      int32(maxDegree),
-		BuildOutDegree: int32(buildOutDegree),
-		MaxEntities:    int32(maxEntities),
-		Flags:          flags,
-	}
-	response, err := client.GrpcClient.FindNetworkByEntityID_V2(ctx, &request)
-	return response.GetResult(), err
+    if g2engine.isTrace {
+        g2engine.traceEntry(39, entityList, maxDegree, buildOutDegree, maxDegree, flags)
+    }
+    entryTime := time.Now()
+    request := pb.FindNetworkByEntityID_V2Request{
+        EntityList:     entityList,
+        MaxDegree:      int32(maxDegree),
+        BuildOutDegree: int32(buildOutDegree),
+        MaxEntities:    int32(maxEntities),
+        Flags:          flags,
+    }
+    response, err := client.GrpcClient.FindNetworkByEntityID_V2(ctx, &request)
+    if g2engine.observers != nil {
+        go func() {
+            details := map[string]string{
+                "entityList": entityList,
+            }
+            g2engine.notify(ctx, 8019, err, details)
+        }()
+    }
+    if g2engine.isTrace {
+        defer g2engine.traceExit(40, entityList, maxDegree, buildOutDegree, maxDegree, flags, C.GoString(result.response), err, time.Since(entryTime))
+    }
+    return response.GetResult(), err
 }
 
 /*
@@ -440,14 +761,29 @@ Output
     Example: `{"ENTITY_PATHS":[{"START_ENTITY_ID":1,"END_ENTITY_ID":2,"ENTITIES":[1,2]}],"ENTITIES":[{"RESOLVED_ENTITY":{"ENTITY_ID":1,"ENTITY_NAME":"JOHNSON","RECORD_SUMMARY":[{"DATA_SOURCE":"TEST","RECORD_COUNT":2,"FIRST_SEEN_DT":"2022-12-06 14:40:34.285","LAST_SEEN_DT":"2022-12-06 14:40:34.420"}],"LAST_SEEN_DT":"2022-12-06 14:40:34.420"},"RELATED_ENTITIES":[{"ENTITY_ID":2,"MATCH_LEVEL":3,"MATCH_LEVEL_CODE":"POSSIBLY_RELATED","MATCH_KEY":"+PHONE+ACCT_NUM-SSN","ERRULE_CODE":"SF1","IS_DISCLOSED":0,"IS_AMBIGUOUS":0},{"ENTITY_ID":3,"MATCH_LEVEL":3,"MATCH_LEVEL_CODE":"POSSIBLY_RELATED","MATCH_KEY":"+PHONE+ACCT_NUM-DOB-SSN","ERRULE_CODE":"SF1","IS_DISCLOSED":0,"IS_AMBIGUOUS":0}]},{"RESOLVED_ENTITY":{"ENTITY_ID":2,"ENTITY_NAME":"OCEANGUY","RECORD_SUMMARY":[{"DATA_SOURCE":"TEST","RECORD_COUNT":1,"FIRST_SEEN_DT":"2022-12-06 14:40:34.359","LAST_SEEN_DT":"2022-12-06 14:40:34.359"}],"LAST_SEEN_DT":"2022-12-06 14:40:34.359"},"RELATED_ENTITIES":[{"ENTITY_ID":1,"MATCH_LEVEL":3,"MATCH_LEVEL_CODE":"POSSIBLY_RELATED","MATCH_KEY":"+PHONE+ACCT_NUM-SSN","ERRULE_CODE":"SF1","IS_DISCLOSED":0,"IS_AMBIGUOUS":0},{"ENTITY_ID":3,"MATCH_LEVEL":3,"MATCH_LEVEL_CODE":"POSSIBLY_RELATED","MATCH_KEY":"+ADDRESS+PHONE+ACCT_NUM-DOB-SSN","ERRULE_CODE":"SF1","IS_DISCLOSED":0,"IS_AMBIGUOUS":0}]},{"RESOLVED_ENTITY":{"ENTITY_ID":3,"ENTITY_NAME":"Smith","RECORD_SUMMARY":[{"DATA_SOURCE":"TEST","RECORD_COUNT":1,"FIRST_SEEN_DT":"2022-12-06 14:40:34.424","LAST_SEEN_DT":"2022-12-06 14:40:34.424"}],"LAST_SEEN_DT":"2022-12-06 14:40:34.424"},"RELATED_ENTITIES":[{"ENTITY_ID":1,"MATCH_LEVEL":3,"MATCH_LEVEL_CODE":"POSSIBLY_RELATED","MATCH_KEY":"+PHONE+ACCT_NUM-DOB-SSN","ERRULE_CODE":"SF1","IS_DISCLOSED":0,"IS_AMBIGUOUS":0},{"ENTITY_ID":2,"MATCH_LEVEL":3,"MATCH_LEVEL_CODE":"POSSIBLY_RELATED","MATCH_KEY":"+ADDRESS+PHONE+ACCT_NUM-DOB-SSN","ERRULE_CODE":"SF1","IS_DISCLOSED":0,"IS_AMBIGUOUS":0}]}]}`
 */
 func (client *G2engineClient) FindNetworkByRecordID(ctx context.Context, recordList string, maxDegree int, buildOutDegree int, maxEntities int) (string, error) {
-	request := pb.FindNetworkByRecordIDRequest{
-		RecordList:     recordList,
-		MaxDegree:      int32(maxDegree),
-		BuildOutDegree: int32(buildOutDegree),
-		MaxEntities:    int32(maxEntities),
-	}
-	response, err := client.GrpcClient.FindNetworkByRecordID(ctx, &request)
-	return response.GetResult(), err
+    if g2engine.isTrace {
+        g2engine.traceEntry(41, recordList, maxDegree, buildOutDegree, maxDegree)
+    }
+    entryTime := time.Now()
+    request := pb.FindNetworkByRecordIDRequest{
+        RecordList:     recordList,
+        MaxDegree:      int32(maxDegree),
+        BuildOutDegree: int32(buildOutDegree),
+        MaxEntities:    int32(maxEntities),
+    }
+    response, err := client.GrpcClient.FindNetworkByRecordID(ctx, &request)
+    if g2engine.observers != nil {
+        go func() {
+            details := map[string]string{
+                "recordList": recordList,
+            }
+            g2engine.notify(ctx, 8020, err, details)
+        }()
+    }
+    if g2engine.isTrace {
+        defer g2engine.traceExit(42, recordList, maxDegree, buildOutDegree, maxDegree, C.GoString(result.response), err, time.Since(entryTime))
+    }
+    return response.GetResult(), err
 }
 
 /*
@@ -469,15 +805,30 @@ Output
     See the example output.
 */
 func (client *G2engineClient) FindNetworkByRecordID_V2(ctx context.Context, recordList string, maxDegree int, buildOutDegree int, maxEntities int, flags int64) (string, error) {
-	request := pb.FindNetworkByRecordID_V2Request{
-		RecordList:     recordList,
-		MaxDegree:      int32(maxDegree),
-		BuildOutDegree: int32(buildOutDegree),
-		MaxEntities:    int32(maxEntities),
-		Flags:          flags,
-	}
-	response, err := client.GrpcClient.FindNetworkByRecordID_V2(ctx, &request)
-	return response.GetResult(), err
+    if g2engine.isTrace {
+        g2engine.traceEntry(43, recordList, maxDegree, buildOutDegree, maxDegree, flags)
+    }
+    entryTime := time.Now()
+    request := pb.FindNetworkByRecordID_V2Request{
+        RecordList:     recordList,
+        MaxDegree:      int32(maxDegree),
+        BuildOutDegree: int32(buildOutDegree),
+        MaxEntities:    int32(maxEntities),
+        Flags:          flags,
+    }
+    response, err := client.GrpcClient.FindNetworkByRecordID_V2(ctx, &request)
+    if g2engine.observers != nil {
+        go func() {
+            details := map[string]string{
+                "recordList": recordList,
+            }
+            g2engine.notify(ctx, 8021, err, details)
+        }()
+    }
+    if g2engine.isTrace {
+        defer g2engine.traceExit(44, recordList, maxDegree, buildOutDegree, maxDegree, flags, C.GoString(result.response), err, time.Since(entryTime))
+    }
+    return response.GetResult(), err
 }
 
 /*
@@ -496,13 +847,29 @@ Output
     Example: `{"ENTITY_PATHS":[{"START_ENTITY_ID":1,"END_ENTITY_ID":2,"ENTITIES":[1,2]}],"ENTITIES":[{"RESOLVED_ENTITY":{"ENTITY_ID":1,"ENTITY_NAME":"JOHNSON","RECORD_SUMMARY":[{"DATA_SOURCE":"TEST","RECORD_COUNT":2,"FIRST_SEEN_DT":"2022-12-06 14:43:49.024","LAST_SEEN_DT":"2022-12-06 14:43:49.164"}],"LAST_SEEN_DT":"2022-12-06 14:43:49.164"},"RELATED_ENTITIES":[{"ENTITY_ID":2,"MATCH_LEVEL":3,"MATCH_LEVEL_CODE":"POSSIBLY_RELATED","MATCH_KEY":"+PHONE+ACCT_NUM-SSN","ERRULE_CODE":"SF1","IS_DISCLOSED":0,"IS_AMBIGUOUS":0},{"ENTITY_ID":3,"MATCH_LEVEL":3,"MATCH_LEVEL_CODE":"POSSIBLY_RELATED","MATCH_KEY":"+PHONE+ACCT_NUM-DOB-SSN","ERRULE_CODE":"SF1","IS_DISCLOSED":0,"IS_AMBIGUOUS":0}]},{"RESOLVED_ENTITY":{"ENTITY_ID":2,"ENTITY_NAME":"OCEANGUY","RECORD_SUMMARY":[{"DATA_SOURCE":"TEST","RECORD_COUNT":1,"FIRST_SEEN_DT":"2022-12-06 14:43:49.104","LAST_SEEN_DT":"2022-12-06 14:43:49.104"}],"LAST_SEEN_DT":"2022-12-06 14:43:49.104"},"RELATED_ENTITIES":[{"ENTITY_ID":1,"MATCH_LEVEL":3,"MATCH_LEVEL_CODE":"POSSIBLY_RELATED","MATCH_KEY":"+PHONE+ACCT_NUM-SSN","ERRULE_CODE":"SF1","IS_DISCLOSED":0,"IS_AMBIGUOUS":0},{"ENTITY_ID":3,"MATCH_LEVEL":3,"MATCH_LEVEL_CODE":"POSSIBLY_RELATED","MATCH_KEY":"+ADDRESS+PHONE+ACCT_NUM-DOB-SSN","ERRULE_CODE":"SF1","IS_DISCLOSED":0,"IS_AMBIGUOUS":0}]}]}`
 */
 func (client *G2engineClient) FindPathByEntityID(ctx context.Context, entityID1 int64, entityID2 int64, maxDegree int) (string, error) {
-	request := pb.FindPathByEntityIDRequest{
-		EntityID1: entityID1,
-		EntityID2: entityID2,
-		MaxDegree: int32(maxDegree),
-	}
-	response, err := client.GrpcClient.FindPathByEntityID(ctx, &request)
-	return response.GetResult(), err
+    if g2engine.isTrace {
+        g2engine.traceEntry(45, entityID1, entityID2, maxDegree)
+    }
+    entryTime := time.Now()
+    request := pb.FindPathByEntityIDRequest{
+        EntityID1: entityID1,
+        EntityID2: entityID2,
+        MaxDegree: int32(maxDegree),
+    }
+    response, err := client.GrpcClient.FindPathByEntityID(ctx, &request)
+    if g2engine.observers != nil {
+        go func() {
+            details := map[string]string{
+                "entityID1": strconv.FormatInt(entityID1, 10),
+                "entityID2": strconv.FormatInt(entityID2, 10),
+            }
+            g2engine.notify(ctx, 8022, err, details)
+        }()
+    }
+    if g2engine.isTrace {
+        defer g2engine.traceExit(46, entityID1, entityID2, maxDegree, C.GoString(result.response), err, time.Since(entryTime))
+    }
+    return response.GetResult(), err
 }
 
 /*
@@ -522,14 +889,30 @@ Output
     See the example output.
 */
 func (client *G2engineClient) FindPathByEntityID_V2(ctx context.Context, entityID1 int64, entityID2 int64, maxDegree int, flags int64) (string, error) {
-	request := pb.FindPathByEntityID_V2Request{
-		EntityID1: entityID1,
-		EntityID2: entityID2,
-		MaxDegree: int32(maxDegree),
-		Flags:     flags,
-	}
-	response, err := client.GrpcClient.FindPathByEntityID_V2(ctx, &request)
-	return response.GetResult(), err
+    if g2engine.isTrace {
+        g2engine.traceEntry(47, entityID1, entityID2, maxDegree, flags)
+    }
+    entryTime := time.Now()
+    request := pb.FindPathByEntityID_V2Request{
+        EntityID1: entityID1,
+        EntityID2: entityID2,
+        MaxDegree: int32(maxDegree),
+        Flags:     flags,
+    }
+    response, err := client.GrpcClient.FindPathByEntityID_V2(ctx, &request)
+    if g2engine.observers != nil {
+        go func() {
+            details := map[string]string{
+                "entityID1": strconv.FormatInt(entityID1, 10),
+                "entityID2": strconv.FormatInt(entityID2, 10),
+            }
+            g2engine.notify(ctx, 8023, err, details)
+        }()
+    }
+    if g2engine.isTrace {
+        defer g2engine.traceExit(48, entityID1, entityID2, maxDegree, flags, C.GoString(result.response), err, time.Since(entryTime))
+    }
+    return response.GetResult(), err
 }
 
 /*
@@ -552,15 +935,33 @@ Output
     Example: `{"ENTITY_PATHS":[{"START_ENTITY_ID":1,"END_ENTITY_ID":2,"ENTITIES":[1,2]}],"ENTITIES":[{"RESOLVED_ENTITY":{"ENTITY_ID":1,"ENTITY_NAME":"JOHNSON","RECORD_SUMMARY":[{"DATA_SOURCE":"TEST","RECORD_COUNT":2,"FIRST_SEEN_DT":"2022-12-06 14:48:19.522","LAST_SEEN_DT":"2022-12-06 14:48:19.667"}],"LAST_SEEN_DT":"2022-12-06 14:48:19.667"},"RELATED_ENTITIES":[{"ENTITY_ID":2,"MATCH_LEVEL":3,"MATCH_LEVEL_CODE":"POSSIBLY_RELATED","MATCH_KEY":"+PHONE+ACCT_NUM-SSN","ERRULE_CODE":"SF1","IS_DISCLOSED":0,"IS_AMBIGUOUS":0},{"ENTITY_ID":3,"MATCH_LEVEL":3,"MATCH_LEVEL_CODE":"POSSIBLY_RELATED","MATCH_KEY":"+PHONE+ACCT_NUM-DOB-SSN","ERRULE_CODE":"SF1","IS_DISCLOSED":0,"IS_AMBIGUOUS":0}]},{"RESOLVED_ENTITY":{"ENTITY_ID":2,"ENTITY_NAME":"OCEANGUY","RECORD_SUMMARY":[{"DATA_SOURCE":"TEST","RECORD_COUNT":1,"FIRST_SEEN_DT":"2022-12-06 14:48:19.593","LAST_SEEN_DT":"2022-12-06 14:48:19.593"}],"LAST_SEEN_DT":"2022-12-06 14:48:19.593"},"RELATED_ENTITIES":[{"ENTITY_ID":1,"MATCH_LEVEL":3,"MATCH_LEVEL_CODE":"POSSIBLY_RELATED","MATCH_KEY":"+PHONE+ACCT_NUM-SSN","ERRULE_CODE":"SF1","IS_DISCLOSED":0,"IS_AMBIGUOUS":0},{"ENTITY_ID":3,"MATCH_LEVEL":3,"MATCH_LEVEL_CODE":"POSSIBLY_RELATED","MATCH_KEY":"+ADDRESS+PHONE+ACCT_NUM-DOB-SSN","ERRULE_CODE":"SF1","IS_DISCLOSED":0,"IS_AMBIGUOUS":0}]}]}`
 */
 func (client *G2engineClient) FindPathByRecordID(ctx context.Context, dataSourceCode1 string, recordID1 string, dataSourceCode2 string, recordID2 string, maxDegree int) (string, error) {
-	request := pb.FindPathByRecordIDRequest{
-		DataSourceCode1: dataSourceCode1,
-		RecordID1:       recordID1,
-		DataSourceCode2: dataSourceCode2,
-		RecordID2:       recordID2,
-		MaxDegree:       int32(maxDegree),
-	}
-	response, err := client.GrpcClient.FindPathByRecordID(ctx, &request)
-	return response.GetResult(), err
+    if g2engine.isTrace {
+        g2engine.traceEntry(49, dataSourceCode1, recordID1, dataSourceCode2, recordID2, maxDegree)
+    }
+    entryTime := time.Now()
+    request := pb.FindPathByRecordIDRequest{
+        DataSourceCode1: dataSourceCode1,
+        RecordID1:       recordID1,
+        DataSourceCode2: dataSourceCode2,
+        RecordID2:       recordID2,
+        MaxDegree:       int32(maxDegree),
+    }
+    response, err := client.GrpcClient.FindPathByRecordID(ctx, &request)
+    if g2engine.observers != nil {
+        go func() {
+            details := map[string]string{
+                "dataSourceCode1": dataSourceCode1,
+                "recordID1":       recordID1,
+                "dataSourceCode2": dataSourceCode2,
+                "recordID2":       recordID2,
+            }
+            g2engine.notify(ctx, 8024, err, details)
+        }()
+    }
+    if g2engine.isTrace {
+        defer g2engine.traceExit(50, dataSourceCode1, recordID1, dataSourceCode2, recordID2, maxDegree, C.GoString(result.response), err, time.Since(entryTime))
+    }
+    return response.GetResult(), err
 }
 
 /*
@@ -583,16 +984,34 @@ Output
     See the example output.
 */
 func (client *G2engineClient) FindPathByRecordID_V2(ctx context.Context, dataSourceCode1 string, recordID1 string, dataSourceCode2 string, recordID2 string, maxDegree int, flags int64) (string, error) {
-	request := pb.FindPathByRecordID_V2Request{
-		DataSourceCode1: dataSourceCode1,
-		RecordID1:       recordID1,
-		DataSourceCode2: dataSourceCode2,
-		RecordID2:       recordID2,
-		MaxDegree:       int32(maxDegree),
-		Flags:           flags,
-	}
-	response, err := client.GrpcClient.FindPathByRecordID_V2(ctx, &request)
-	return response.GetResult(), err
+    if g2engine.isTrace {
+        g2engine.traceEntry(51, dataSourceCode1, recordID1, dataSourceCode2, recordID2, maxDegree, flags)
+    }
+    entryTime := time.Now()
+    request := pb.FindPathByRecordID_V2Request{
+        DataSourceCode1: dataSourceCode1,
+        RecordID1:       recordID1,
+        DataSourceCode2: dataSourceCode2,
+        RecordID2:       recordID2,
+        MaxDegree:       int32(maxDegree),
+        Flags:           flags,
+    }
+    response, err := client.GrpcClient.FindPathByRecordID_V2(ctx, &request)
+    if g2engine.observers != nil {
+        go func() {
+            details := map[string]string{
+                "dataSourceCode1": dataSourceCode1,
+                "recordID1":       recordID1,
+                "dataSourceCode2": dataSourceCode2,
+                "recordID2":       recordID2,
+            }
+            g2engine.notify(ctx, 8025, err, details)
+        }()
+    }
+    if g2engine.isTrace {
+        defer g2engine.traceExit(52, dataSourceCode1, recordID1, dataSourceCode2, recordID2, maxDegree, flags, C.GoString(result.response), err, time.Since(entryTime))
+    }
+    return response.GetResult(), err
 }
 
 /*
@@ -613,14 +1032,30 @@ Output
     Example: `{"ENTITY_PATHS":[{"START_ENTITY_ID":1,"END_ENTITY_ID":2,"ENTITIES":[1,2]}],"ENTITIES":[{"RESOLVED_ENTITY":{"ENTITY_ID":1,"ENTITY_NAME":"JOHNSON","RECORD_SUMMARY":[{"DATA_SOURCE":"TEST","RECORD_COUNT":2,"FIRST_SEEN_DT":"2022-12-06 14:50:49.222","LAST_SEEN_DT":"2022-12-06 14:50:49.356"}],"LAST_SEEN_DT":"2022-12-06 14:50:49.356"},"RELATED_ENTITIES":[{"ENTITY_ID":2,"MATCH_LEVEL":3,"MATCH_LEVEL_CODE":"POSSIBLY_RELATED","MATCH_KEY":"+PHONE+ACCT_NUM-SSN","ERRULE_CODE":"SF1","IS_DISCLOSED":0,"IS_AMBIGUOUS":0},{"ENTITY_ID":3,"MATCH_LEVEL":3,"MATCH_LEVEL_CODE":"POSSIBLY_RELATED","MATCH_KEY":"+PHONE+ACCT_NUM-DOB-SSN","ERRULE_CODE":"SF1","IS_DISCLOSED":0,"IS_AMBIGUOUS":0}]},{"RESOLVED_ENTITY":{"ENTITY_ID":2,"ENTITY_NAME":"OCEANGUY","RECORD_SUMMARY":[{"DATA_SOURCE":"TEST","RECORD_COUNT":1,"FIRST_SEEN_DT":"2022-12-06 14:50:49.295","LAST_SEEN_DT":"2022-12-06 14:50:49.295"}],"LAST_SEEN_DT":"2022-12-06 14:50:49.295"},"RELATED_ENTITIES":[{"ENTITY_ID":1,"MATCH_LEVEL":3,"MATCH_LEVEL_CODE":"POSSIBLY_RELATED","MATCH_KEY":"+PHONE+ACCT_NUM-SSN","ERRULE_CODE":"SF1","IS_DISCLOSED":0,"IS_AMBIGUOUS":0},{"ENTITY_ID":3,"MATCH_LEVEL":3,"MATCH_LEVEL_CODE":"POSSIBLY_RELATED","MATCH_KEY":"+ADDRESS+PHONE+ACCT_NUM-DOB-SSN","ERRULE_CODE":"SF1","IS_DISCLOSED":0,"IS_AMBIGUOUS":0}]}]}`
 */
 func (client *G2engineClient) FindPathExcludingByEntityID(ctx context.Context, entityID1 int64, entityID2 int64, maxDegree int, excludedEntities string) (string, error) {
-	request := pb.FindPathExcludingByEntityIDRequest{
-		EntityID1:        entityID1,
-		EntityID2:        entityID2,
-		MaxDegree:        int32(maxDegree),
-		ExcludedEntities: excludedEntities,
-	}
-	response, err := client.GrpcClient.FindPathExcludingByEntityID(ctx, &request)
-	return response.GetResult(), err
+    if g2engine.isTrace {
+        g2engine.traceEntry(53, entityID1, entityID2, maxDegree, excludedEntities)
+    }
+    entryTime := time.Now()
+    request := pb.FindPathExcludingByEntityIDRequest{
+        EntityID1:        entityID1,
+        EntityID2:        entityID2,
+        MaxDegree:        int32(maxDegree),
+        ExcludedEntities: excludedEntities,
+    }
+    response, err := client.GrpcClient.FindPathExcludingByEntityID(ctx, &request)
+    if g2engine.observers != nil {
+        go func() {
+            details := map[string]string{
+                "entityID1": strconv.FormatInt(entityID1, 10),
+                "entityID2": strconv.FormatInt(entityID2, 10),
+            }
+            g2engine.notify(ctx, 8026, err, details)
+        }()
+    }
+    if g2engine.isTrace {
+        defer g2engine.traceExit(54, entityID1, entityID2, maxDegree, excludedEntities, C.GoString(result.response), err, time.Since(entryTime))
+    }
+    return response.GetResult(), err
 }
 
 /*
@@ -647,15 +1082,31 @@ Output
     See the example output.
 */
 func (client *G2engineClient) FindPathExcludingByEntityID_V2(ctx context.Context, entityID1 int64, entityID2 int64, maxDegree int, excludedEntities string, flags int64) (string, error) {
-	request := pb.FindPathExcludingByEntityID_V2Request{
-		EntityID1:        entityID1,
-		EntityID2:        entityID2,
-		MaxDegree:        int32(maxDegree),
-		ExcludedEntities: excludedEntities,
-		Flags:            flags,
-	}
-	response, err := client.GrpcClient.FindPathExcludingByEntityID_V2(ctx, &request)
-	return response.GetResult(), err
+    if g2engine.isTrace {
+        g2engine.traceEntry(55, entityID1, entityID2, maxDegree, excludedEntities, flags)
+    }
+    entryTime := time.Now()
+    request := pb.FindPathExcludingByEntityID_V2Request{
+        EntityID1:        entityID1,
+        EntityID2:        entityID2,
+        MaxDegree:        int32(maxDegree),
+        ExcludedEntities: excludedEntities,
+        Flags:            flags,
+    }
+    response, err := client.GrpcClient.FindPathExcludingByEntityID_V2(ctx, &request)
+    if g2engine.observers != nil {
+        go func() {
+            details := map[string]string{
+                "entityID1": strconv.FormatInt(entityID1, 10),
+                "entityID2": strconv.FormatInt(entityID2, 10),
+            }
+            g2engine.notify(ctx, 8027, err, details)
+        }()
+    }
+    if g2engine.isTrace {
+        defer g2engine.traceExit(56, entityID1, entityID2, maxDegree, excludedEntities, flags, C.GoString(result.response), err, time.Since(entryTime))
+    }
+    return response.GetResult(), err
 }
 
 /*
@@ -678,15 +1129,33 @@ Output
     Example: `{"ENTITY_PATHS":[{"START_ENTITY_ID":1,"END_ENTITY_ID":2,"ENTITIES":[1,2]}],"ENTITIES":[{"RESOLVED_ENTITY":{"ENTITY_ID":1,"ENTITY_NAME":"JOHNSON","RECORD_SUMMARY":[{"DATA_SOURCE":"TEST","RECORD_COUNT":2,"FIRST_SEEN_DT":"2022-12-06 14:55:02.577","LAST_SEEN_DT":"2022-12-06 14:55:02.711"}],"LAST_SEEN_DT":"2022-12-06 14:55:02.711"},"RELATED_ENTITIES":[{"ENTITY_ID":2,"MATCH_LEVEL":3,"MATCH_LEVEL_CODE":"POSSIBLY_RELATED","MATCH_KEY":"+PHONE+ACCT_NUM-SSN","ERRULE_CODE":"SF1","IS_DISCLOSED":0,"IS_AMBIGUOUS":0},{"ENTITY_ID":3,"MATCH_LEVEL":3,"MATCH_LEVEL_CODE":"POSSIBLY_RELATED","MATCH_KEY":"+PHONE+ACCT_NUM-DOB-SSN","ERRULE_CODE":"SF1","IS_DISCLOSED":0,"IS_AMBIGUOUS":0}]},{"RESOLVED_ENTITY":{"ENTITY_ID":2,"ENTITY_NAME":"OCEANGUY","RECORD_SUMMARY":[{"DATA_SOURCE":"TEST","RECORD_COUNT":1,"FIRST_SEEN_DT":"2022-12-06 14:55:02.649","LAST_SEEN_DT":"2022-12-06 14:55:02.649"}],"LAST_SEEN_DT":"2022-12-06 14:55:02.649"},"RELATED_ENTITIES":[{"ENTITY_ID":1,"MATCH_LEVEL":3,"MATCH_LEVEL_CODE":"POSSIBLY_RELATED","MATCH_KEY":"+PHONE+ACCT_NUM-SSN","ERRULE_CODE":"SF1","IS_DISCLOSED":0,"IS_AMBIGUOUS":0},{"ENTITY_ID":3,"MATCH_LEVEL":3,"MATCH_LEVEL_CODE":"POSSIBLY_RELATED","MATCH_KEY":"+ADDRESS+PHONE+ACCT_NUM-DOB-SSN","ERRULE_CODE":"SF1","IS_DISCLOSED":0,"IS_AMBIGUOUS":0}]}]}`
 */
 func (client *G2engineClient) FindPathExcludingByRecordID(ctx context.Context, dataSourceCode1 string, recordID1 string, dataSourceCode2 string, recordID2 string, maxDegree int, excludedRecords string) (string, error) {
-	request := pb.FindPathExcludingByRecordIDRequest{
-		DataSourceCode1: dataSourceCode1,
-		RecordID1:       recordID1,
-		DataSourceCode2: dataSourceCode2,
-		RecordID2:       recordID2,
-		MaxDegree:       int32(maxDegree),
-	}
-	response, err := client.GrpcClient.FindPathExcludingByRecordID(ctx, &request)
-	return response.GetResult(), err
+    if g2engine.isTrace {
+        g2engine.traceEntry(57, dataSourceCode1, recordID1, dataSourceCode2, recordID2, maxDegree, excludedRecords)
+    }
+    entryTime := time.Now()
+    request := pb.FindPathExcludingByRecordIDRequest{
+        DataSourceCode1: dataSourceCode1,
+        RecordID1:       recordID1,
+        DataSourceCode2: dataSourceCode2,
+        RecordID2:       recordID2,
+        MaxDegree:       int32(maxDegree),
+    }
+    response, err := client.GrpcClient.FindPathExcludingByRecordID(ctx, &request)
+    if g2engine.observers != nil {
+        go func() {
+            details := map[string]string{
+                "dataSourceCode1": dataSourceCode1,
+                "recordID1":       recordID1,
+                "dataSourceCode2": dataSourceCode2,
+                "recordID2":       recordID2,
+            }
+            g2engine.notify(ctx, 8028, err, details)
+        }()
+    }
+    if g2engine.isTrace {
+        defer g2engine.traceExit(58, dataSourceCode1, recordID1, dataSourceCode2, recordID2, maxDegree, excludedRecords, C.GoString(result.response), err, time.Since(entryTime))
+    }
+    return response.GetResult(), err
 }
 
 /*
@@ -715,16 +1184,34 @@ Output
     See the example output.
 */
 func (client *G2engineClient) FindPathExcludingByRecordID_V2(ctx context.Context, dataSourceCode1 string, recordID1 string, dataSourceCode2 string, recordID2 string, maxDegree int, excludedRecords string, flags int64) (string, error) {
-	request := pb.FindPathExcludingByRecordID_V2Request{
-		DataSourceCode1: dataSourceCode1,
-		RecordID1:       recordID1,
-		DataSourceCode2: dataSourceCode2,
-		RecordID2:       recordID2,
-		MaxDegree:       int32(maxDegree),
-		Flags:           flags,
-	}
-	response, err := client.GrpcClient.FindPathExcludingByRecordID_V2(ctx, &request)
-	return response.GetResult(), err
+    if g2engine.isTrace {
+        g2engine.traceEntry(59, dataSourceCode1, recordID1, dataSourceCode2, recordID2, maxDegree, excludedRecords, flags)
+    }
+    entryTime := time.Now()
+    request := pb.FindPathExcludingByRecordID_V2Request{
+        DataSourceCode1: dataSourceCode1,
+        RecordID1:       recordID1,
+        DataSourceCode2: dataSourceCode2,
+        RecordID2:       recordID2,
+        MaxDegree:       int32(maxDegree),
+        Flags:           flags,
+    }
+    response, err := client.GrpcClient.FindPathExcludingByRecordID_V2(ctx, &request)
+    if g2engine.observers != nil {
+        go func() {
+            details := map[string]string{
+                "dataSourceCode1": dataSourceCode1,
+                "recordID1":       recordID1,
+                "dataSourceCode2": dataSourceCode2,
+                "recordID2":       recordID2,
+            }
+            g2engine.notify(ctx, 8029, err, details)
+        }()
+    }
+    if g2engine.isTrace {
+        defer g2engine.traceExit(60, dataSourceCode1, recordID1, dataSourceCode2, recordID2, maxDegree, excludedRecords, flags, C.GoString(result.response), err, time.Since(entryTime))
+    }
+    return response.GetResult(), err
 }
 
 /*
@@ -747,15 +1234,31 @@ Output
     Example: `{"ENTITY_PATHS":[{"START_ENTITY_ID":1,"END_ENTITY_ID":2,"ENTITIES":[]}],"ENTITIES":[{"RESOLVED_ENTITY":{"ENTITY_ID":1,"ENTITY_NAME":"JOHNSON","RECORD_SUMMARY":[{"DATA_SOURCE":"TEST","RECORD_COUNT":2,"FIRST_SEEN_DT":"2022-12-06 15:00:30.268","LAST_SEEN_DT":"2022-12-06 15:00:30.429"}],"LAST_SEEN_DT":"2022-12-06 15:00:30.429"},"RELATED_ENTITIES":[{"ENTITY_ID":2,"MATCH_LEVEL":3,"MATCH_LEVEL_CODE":"POSSIBLY_RELATED","MATCH_KEY":"+PHONE+ACCT_NUM-SSN","ERRULE_CODE":"SF1","IS_DISCLOSED":0,"IS_AMBIGUOUS":0},{"ENTITY_ID":3,"MATCH_LEVEL":3,"MATCH_LEVEL_CODE":"POSSIBLY_RELATED","MATCH_KEY":"+PHONE+ACCT_NUM-DOB-SSN","ERRULE_CODE":"SF1","IS_DISCLOSED":0,"IS_AMBIGUOUS":0}]},{"RESOLVED_ENTITY":{"ENTITY_ID":2,"ENTITY_NAME":"OCEANGUY","RECORD_SUMMARY":[{"DATA_SOURCE":"TEST","RECORD_COUNT":1,"FIRST_SEEN_DT":"2022-12-06 15:00:30.339","LAST_SEEN_DT":"2022-12-06 15:00:30.339"}],"LAST_SEEN_DT":"2022-12-06 15:00:30.339"},"RELATED_ENTITIES":[{"ENTITY_ID":1,"MATCH_LEVEL":3,"MATCH_LEVEL_CODE":"POSSIBLY_RELATED","MATCH_KEY":"+PHONE+ACCT_NUM-SSN","ERRULE_CODE":"SF1","IS_DISCLOSED":0,"IS_AMBIGUOUS":0},{"ENTITY_ID":3,"MATCH_LEVEL":3,"MATCH_LEVEL_CODE":"POSSIBLY_RELATED","MATCH_KEY":"+ADDRESS+PHONE+ACCT_NUM-DOB-SSN","ERRULE_CODE":"SF1","IS_DISCLOSED":0,"IS_AMBIGUOUS":0}]}]}`
 */
 func (client *G2engineClient) FindPathIncludingSourceByEntityID(ctx context.Context, entityID1 int64, entityID2 int64, maxDegree int, excludedEntities string, requiredDsrcs string) (string, error) {
-	request := pb.FindPathIncludingSourceByEntityIDRequest{
-		EntityID1:        entityID1,
-		EntityID2:        entityID2,
-		MaxDegree:        int32(maxDegree),
-		ExcludedEntities: excludedEntities,
-		RequiredDsrcs:    requiredDsrcs,
-	}
-	response, err := client.GrpcClient.FindPathIncludingSourceByEntityID(ctx, &request)
-	return response.GetResult(), err
+    if g2engine.isTrace {
+        g2engine.traceEntry(61, entityID1, entityID2, maxDegree, excludedEntities, requiredDsrcs)
+    }
+    entryTime := time.Now()
+    request := pb.FindPathIncludingSourceByEntityIDRequest{
+        EntityID1:        entityID1,
+        EntityID2:        entityID2,
+        MaxDegree:        int32(maxDegree),
+        ExcludedEntities: excludedEntities,
+        RequiredDsrcs:    requiredDsrcs,
+    }
+    response, err := client.GrpcClient.FindPathIncludingSourceByEntityID(ctx, &request)
+    if g2engine.observers != nil {
+        go func() {
+            details := map[string]string{
+                "entityID1": strconv.FormatInt(entityID1, 10),
+                "entityID2": strconv.FormatInt(entityID2, 10),
+            }
+            g2engine.notify(ctx, 8030, err, details)
+        }()
+    }
+    if g2engine.isTrace {
+        defer g2engine.traceExit(62, entityID1, entityID2, maxDegree, excludedEntities, requiredDsrcs, C.GoString(result.response), err, time.Since(entryTime))
+    }
+    return response.GetResult(), err
 }
 
 /*
@@ -779,16 +1282,32 @@ Output
     See the example output.
 */
 func (client *G2engineClient) FindPathIncludingSourceByEntityID_V2(ctx context.Context, entityID1 int64, entityID2 int64, maxDegree int, excludedEntities string, requiredDsrcs string, flags int64) (string, error) {
-	request := pb.FindPathIncludingSourceByEntityID_V2Request{
-		EntityID1:        entityID1,
-		EntityID2:        entityID2,
-		MaxDegree:        int32(maxDegree),
-		ExcludedEntities: excludedEntities,
-		RequiredDsrcs:    requiredDsrcs,
-		Flags:            flags,
-	}
-	response, err := client.GrpcClient.FindPathIncludingSourceByEntityID_V2(ctx, &request)
-	return response.GetResult(), err
+    if g2engine.isTrace {
+        g2engine.traceEntry(63, entityID1, entityID2, maxDegree, excludedEntities, requiredDsrcs, flags)
+    }
+    entryTime := time.Now()
+    request := pb.FindPathIncludingSourceByEntityID_V2Request{
+        EntityID1:        entityID1,
+        EntityID2:        entityID2,
+        MaxDegree:        int32(maxDegree),
+        ExcludedEntities: excludedEntities,
+        RequiredDsrcs:    requiredDsrcs,
+        Flags:            flags,
+    }
+    response, err := client.GrpcClient.FindPathIncludingSourceByEntityID_V2(ctx, &request)
+    if g2engine.observers != nil {
+        go func() {
+            details := map[string]string{
+                "entityID1": strconv.FormatInt(entityID1, 10),
+                "entityID2": strconv.FormatInt(entityID2, 10),
+            }
+            g2engine.notify(ctx, 8031, err, details)
+        }()
+    }
+    if g2engine.isTrace {
+        defer g2engine.traceExit(64, entityID1, entityID2, maxDegree, excludedEntities, requiredDsrcs, flags, C.GoString(result.response), err, time.Since(entryTime))
+    }
+    return response.GetResult(), err
 }
 
 /*
@@ -813,17 +1332,35 @@ Output
     Example: `{"ENTITY_PATHS":[{"START_ENTITY_ID":1,"END_ENTITY_ID":2,"ENTITIES":[]}],"ENTITIES":[{"RESOLVED_ENTITY":{"ENTITY_ID":1,"ENTITY_NAME":"JOHNSON","RECORD_SUMMARY":[{"DATA_SOURCE":"TEST","RECORD_COUNT":2,"FIRST_SEEN_DT":"2022-12-06 15:03:52.805","LAST_SEEN_DT":"2022-12-06 15:03:52.947"}],"LAST_SEEN_DT":"2022-12-06 15:03:52.947"},"RELATED_ENTITIES":[{"ENTITY_ID":2,"MATCH_LEVEL":3,"MATCH_LEVEL_CODE":"POSSIBLY_RELATED","MATCH_KEY":"+PHONE+ACCT_NUM-SSN","ERRULE_CODE":"SF1","IS_DISCLOSED":0,"IS_AMBIGUOUS":0},{"ENTITY_ID":3,"MATCH_LEVEL":3,"MATCH_LEVEL_CODE":"POSSIBLY_RELATED","MATCH_KEY":"+PHONE+ACCT_NUM-DOB-SSN","ERRULE_CODE":"SF1","IS_DISCLOSED":0,"IS_AMBIGUOUS":0}]},{"RESOLVED_ENTITY":{"ENTITY_ID":2,"ENTITY_NAME":"OCEANGUY","RECORD_SUMMARY":[{"DATA_SOURCE":"TEST","RECORD_COUNT":1,"FIRST_SEEN_DT":"2022-12-06 15:03:52.876","LAST_SEEN_DT":"2022-12-06 15:03:52.876"}],"LAST_SEEN_DT":"2022-12-06 15:03:52.876"},"RELATED_ENTITIES":[{"ENTITY_ID":1,"MATCH_LEVEL":3,"MATCH_LEVEL_CODE":"POSSIBLY_RELATED","MATCH_KEY":"+PHONE+ACCT_NUM-SSN","ERRULE_CODE":"SF1","IS_DISCLOSED":0,"IS_AMBIGUOUS":0},{"ENTITY_ID":3,"MATCH_LEVEL":3,"MATCH_LEVEL_CODE":"POSSIBLY_RELATED","MATCH_KEY":"+ADDRESS+PHONE+ACCT_NUM-DOB-SSN","ERRULE_CODE":"SF1","IS_DISCLOSED":0,"IS_AMBIGUOUS":0}]}]}`
 */
 func (client *G2engineClient) FindPathIncludingSourceByRecordID(ctx context.Context, dataSourceCode1 string, recordID1 string, dataSourceCode2 string, recordID2 string, maxDegree int, excludedRecords string, requiredDsrcs string) (string, error) {
-	request := pb.FindPathIncludingSourceByRecordIDRequest{
-		DataSourceCode1: dataSourceCode1,
-		RecordID1:       recordID1,
-		DataSourceCode2: dataSourceCode2,
-		RecordID2:       recordID2,
-		MaxDegree:       int32(maxDegree),
-		ExcludedRecords: excludedRecords,
-		RequiredDsrcs:   requiredDsrcs,
-	}
-	response, err := client.GrpcClient.FindPathIncludingSourceByRecordID(ctx, &request)
-	return response.GetResult(), err
+    if g2engine.isTrace {
+        g2engine.traceEntry(65, dataSourceCode1, recordID1, dataSourceCode2, recordID2, maxDegree, excludedRecords, requiredDsrcs)
+    }
+    entryTime := time.Now()
+    request := pb.FindPathIncludingSourceByRecordIDRequest{
+        DataSourceCode1: dataSourceCode1,
+        RecordID1:       recordID1,
+        DataSourceCode2: dataSourceCode2,
+        RecordID2:       recordID2,
+        MaxDegree:       int32(maxDegree),
+        ExcludedRecords: excludedRecords,
+        RequiredDsrcs:   requiredDsrcs,
+    }
+    response, err := client.GrpcClient.FindPathIncludingSourceByRecordID(ctx, &request)
+    if g2engine.observers != nil {
+        go func() {
+            details := map[string]string{
+                "dataSourceCode1": dataSourceCode1,
+                "recordID1":       recordID1,
+                "dataSourceCode2": dataSourceCode2,
+                "recordID2":       recordID2,
+            }
+            g2engine.notify(ctx, 8032, err, details)
+        }()
+    }
+    if g2engine.isTrace {
+        defer g2engine.traceExit(66, dataSourceCode1, recordID1, dataSourceCode2, recordID2, maxDegree, excludedRecords, requiredDsrcs, C.GoString(result.response), err, time.Since(entryTime))
+    }
+    return response.GetResult(), err
 }
 
 /*
@@ -849,18 +1386,36 @@ Output
     See the example output.
 */
 func (client *G2engineClient) FindPathIncludingSourceByRecordID_V2(ctx context.Context, dataSourceCode1 string, recordID1 string, dataSourceCode2 string, recordID2 string, maxDegree int, excludedRecords string, requiredDsrcs string, flags int64) (string, error) {
-	request := pb.FindPathIncludingSourceByRecordID_V2Request{
-		DataSourceCode1: dataSourceCode1,
-		RecordID1:       recordID1,
-		DataSourceCode2: dataSourceCode2,
-		RecordID2:       recordID2,
-		MaxDegree:       int32(maxDegree),
-		ExcludedRecords: excludedRecords,
-		RequiredDsrcs:   requiredDsrcs,
-		Flags:           flags,
-	}
-	response, err := client.GrpcClient.FindPathIncludingSourceByRecordID_V2(ctx, &request)
-	return response.GetResult(), err
+    if g2engine.isTrace {
+        g2engine.traceEntry(67, dataSourceCode1, recordID1, dataSourceCode2, recordID2, maxDegree, excludedRecords, requiredDsrcs, flags)
+    }
+    entryTime := time.Now()
+    request := pb.FindPathIncludingSourceByRecordID_V2Request{
+        DataSourceCode1: dataSourceCode1,
+        RecordID1:       recordID1,
+        DataSourceCode2: dataSourceCode2,
+        RecordID2:       recordID2,
+        MaxDegree:       int32(maxDegree),
+        ExcludedRecords: excludedRecords,
+        RequiredDsrcs:   requiredDsrcs,
+        Flags:           flags,
+    }
+    response, err := client.GrpcClient.FindPathIncludingSourceByRecordID_V2(ctx, &request)
+    if g2engine.observers != nil {
+        go func() {
+            details := map[string]string{
+                "dataSourceCode1": dataSourceCode1,
+                "recordID1":       recordID1,
+                "dataSourceCode2": dataSourceCode2,
+                "recordID2":       recordID2,
+            }
+            g2engine.notify(ctx, 8033, err, details)
+        }()
+    }
+    if g2engine.isTrace {
+        defer g2engine.traceExit(68, dataSourceCode1, recordID1, dataSourceCode2, recordID2, maxDegree, excludedRecords, requiredDsrcs, flags, C.GoString(result.response), err, time.Since(entryTime))
+    }
+    return response.GetResult(), err
 }
 
 /*
@@ -873,9 +1428,22 @@ Output
   - The identifier of the active Senzing Engine configuration.
 */
 func (client *G2engineClient) GetActiveConfigID(ctx context.Context) (int64, error) {
-	request := pb.GetActiveConfigIDRequest{}
-	response, err := client.GrpcClient.GetActiveConfigID(ctx, &request)
-	return response.GetResult(), err
+    if g2engine.isTrace {
+        g2engine.traceEntry(69)
+    }
+    entryTime := time.Now()
+    request := pb.GetActiveConfigIDRequest{}
+    response, err := client.GrpcClient.GetActiveConfigID(ctx, &request)
+    if g2engine.observers != nil {
+        go func() {
+            details := map[string]string{}
+            g2engine.notify(ctx, 8034, err, details)
+        }()
+    }
+    if g2engine.isTrace {
+        defer g2engine.traceExit(70, int64(C.longlong(result.configID)), err, time.Since(entryTime))
+    }
+    return response.GetResult(), err
 }
 
 /*
@@ -892,11 +1460,26 @@ Output
     Example: `{"RESOLVED_ENTITY":{"ENTITY_ID":1,"ENTITY_NAME":"JOHNSON","FEATURES":{"ACCT_NUM":[{"FEAT_DESC":"5534202208773608","LIB_FEAT_ID":8,"USAGE_TYPE":"CC","FEAT_DESC_VALUES":[{"FEAT_DESC":"5534202208773608","LIB_FEAT_ID":8}]}],"ADDRESS":[{"FEAT_DESC":"772 Armstrong RD Delhi LA 71232","LIB_FEAT_ID":4,"FEAT_DESC_VALUES":[{"FEAT_DESC":"772 Armstrong RD Delhi LA 71232","LIB_FEAT_ID":4}]}],"DOB":[{"FEAT_DESC":"4/8/1983","LIB_FEAT_ID":2,"FEAT_DESC_VALUES":[{"FEAT_DESC":"4/8/1983","LIB_FEAT_ID":2}]}],"GENDER":[{"FEAT_DESC":"F","LIB_FEAT_ID":3,"FEAT_DESC_VALUES":[{"FEAT_DESC":"F","LIB_FEAT_ID":3}]}],"LOGIN_ID":[{"FEAT_DESC":"flavorh","LIB_FEAT_ID":7,"FEAT_DESC_VALUES":[{"FEAT_DESC":"flavorh","LIB_FEAT_ID":7}]}],"NAME":[{"FEAT_DESC":"JOHNSON","LIB_FEAT_ID":1,"FEAT_DESC_VALUES":[{"FEAT_DESC":"JOHNSON","LIB_FEAT_ID":1}]}],"PHONE":[{"FEAT_DESC":"225-671-0796","LIB_FEAT_ID":5,"FEAT_DESC_VALUES":[{"FEAT_DESC":"225-671-0796","LIB_FEAT_ID":5}]}],"SSN":[{"FEAT_DESC":"053-39-3251","LIB_FEAT_ID":6,"FEAT_DESC_VALUES":[{"FEAT_DESC":"053-39-3251","LIB_FEAT_ID":6}]}]},"RECORD_SUMMARY":[{"DATA_SOURCE":"TEST","RECORD_COUNT":2,"FIRST_SEEN_DT":"2022-12-06 15:09:48.577","LAST_SEEN_DT":"2022-12-06 15:09:48.705"}],"LAST_SEEN_DT":"2022-12-06 15:09:48.705","RECORDS":[{"DATA_SOURCE":"TEST","RECORD_ID":"111","ENTITY_TYPE":"TEST","INTERNAL_ID":1,"ENTITY_KEY":"C6063D4396612FBA7324DB0739273BA1FE815C43","ENTITY_DESC":"JOHNSON","MATCH_KEY":"","MATCH_LEVEL":0,"MATCH_LEVEL_CODE":"","ERRULE_CODE":"","LAST_SEEN_DT":"2022-12-06 15:09:48.577"},{"DATA_SOURCE":"TEST","RECORD_ID":"FCCE9793DAAD23159DBCCEB97FF2745B92CE7919","ENTITY_TYPE":"TEST","INTERNAL_ID":1,"ENTITY_KEY":"C6063D4396612FBA7324DB0739273BA1FE815C43","ENTITY_DESC":"JOHNSON","MATCH_KEY":"+EXACTLY_SAME","MATCH_LEVEL":0,"MATCH_LEVEL_CODE":"","ERRULE_CODE":"","LAST_SEEN_DT":"2022-12-06 15:09:48.705"}]},"RELATED_ENTITIES":[{"ENTITY_ID":2,"MATCH_LEVEL":3,"MATCH_LEVEL_CODE":"POSSIBLY_RELATED","MATCH_KEY":"+PHONE+ACCT_NUM-SSN","ERRULE_CODE":"SF1","IS_DISCLOSED":0,"IS_AMBIGUOUS":0,"ENTITY_NAME":"OCEANGUY","RECORD_SUMMARY":[{"DATA_SOURCE":"TEST","RECORD_COUNT":1,"FIRST_SEEN_DT":"2022-12-06 15:09:48.647","LAST_SEEN_DT":"2022-12-06 15:09:48.647"}],"LAST_SEEN_DT":"2022-12-06 15:09:48.647"},{"ENTITY_ID":3,"MATCH_LEVEL":3,"MATCH_LEVEL_CODE":"POSSIBLY_RELATED","MATCH_KEY":"+PHONE+ACCT_NUM-DOB-SSN","ERRULE_CODE":"SF1","IS_DISCLOSED":0,"IS_AMBIGUOUS":0,"ENTITY_NAME":"Smith","RECORD_SUMMARY":[{"DATA_SOURCE":"TEST","RECORD_COUNT":1,"FIRST_SEEN_DT":"2022-12-06 15:09:48.709","LAST_SEEN_DT":"2022-12-06 15:09:48.709"}],"LAST_SEEN_DT":"2022-12-06 15:09:48.709"}]}`
 */
 func (client *G2engineClient) GetEntityByEntityID(ctx context.Context, entityID int64) (string, error) {
-	request := pb.GetEntityByEntityIDRequest{
-		EntityID: entityID,
-	}
-	response, err := client.GrpcClient.GetEntityByEntityID(ctx, &request)
-	return response.GetResult(), err
+    if g2engine.isTrace {
+        g2engine.traceEntry(71, entityID)
+    }
+    entryTime := time.Now()
+    request := pb.GetEntityByEntityIDRequest{
+        EntityID: entityID,
+    }
+    response, err := client.GrpcClient.GetEntityByEntityID(ctx, &request)
+    if g2engine.observers != nil {
+        go func() {
+            details := map[string]string{
+                "entityID": strconv.FormatInt(entityID, 10),
+            }
+            g2engine.notify(ctx, 8035, err, details)
+        }()
+    }
+    if g2engine.isTrace {
+        defer g2engine.traceExit(72, entityID, C.GoString(result.response), err, time.Since(entryTime))
+    }
+    return response.GetResult(), err
 }
 
 /*
@@ -913,12 +1496,27 @@ Output
     See the example output.
 */
 func (client *G2engineClient) GetEntityByEntityID_V2(ctx context.Context, entityID int64, flags int64) (string, error) {
-	request := pb.GetEntityByEntityID_V2Request{
-		EntityID: entityID,
-		Flags:    flags,
-	}
-	response, err := client.GrpcClient.GetEntityByEntityID_V2(ctx, &request)
-	return response.GetResult(), err
+    if g2engine.isTrace {
+        g2engine.traceEntry(73, entityID, flags)
+    }
+    entryTime := time.Now()
+    request := pb.GetEntityByEntityID_V2Request{
+        EntityID: entityID,
+        Flags:    flags,
+    }
+    response, err := client.GrpcClient.GetEntityByEntityID_V2(ctx, &request)
+    if g2engine.observers != nil {
+        go func() {
+            details := map[string]string{
+                "entityID": strconv.FormatInt(entityID, 10),
+            }
+            g2engine.notify(ctx, 8036, err, details)
+        }()
+    }
+    if g2engine.isTrace {
+        defer g2engine.traceExit(74, entityID, flags, C.GoString(result.response), err, time.Since(entryTime))
+    }
+    return response.GetResult(), err
 }
 
 /*
@@ -935,12 +1533,28 @@ Output
     Example: `{"RESOLVED_ENTITY":{"ENTITY_ID":1,"ENTITY_NAME":"JOHNSON","FEATURES":{"ACCT_NUM":[{"FEAT_DESC":"5534202208773608","LIB_FEAT_ID":8,"USAGE_TYPE":"CC","FEAT_DESC_VALUES":[{"FEAT_DESC":"5534202208773608","LIB_FEAT_ID":8}]}],"ADDRESS":[{"FEAT_DESC":"772 Armstrong RD Delhi LA 71232","LIB_FEAT_ID":4,"FEAT_DESC_VALUES":[{"FEAT_DESC":"772 Armstrong RD Delhi LA 71232","LIB_FEAT_ID":4}]}],"DOB":[{"FEAT_DESC":"4/8/1983","LIB_FEAT_ID":2,"FEAT_DESC_VALUES":[{"FEAT_DESC":"4/8/1983","LIB_FEAT_ID":2}]}],"GENDER":[{"FEAT_DESC":"F","LIB_FEAT_ID":3,"FEAT_DESC_VALUES":[{"FEAT_DESC":"F","LIB_FEAT_ID":3}]}],"LOGIN_ID":[{"FEAT_DESC":"flavorh","LIB_FEAT_ID":7,"FEAT_DESC_VALUES":[{"FEAT_DESC":"flavorh","LIB_FEAT_ID":7}]}],"NAME":[{"FEAT_DESC":"JOHNSON","LIB_FEAT_ID":1,"FEAT_DESC_VALUES":[{"FEAT_DESC":"JOHNSON","LIB_FEAT_ID":1}]}],"PHONE":[{"FEAT_DESC":"225-671-0796","LIB_FEAT_ID":5,"FEAT_DESC_VALUES":[{"FEAT_DESC":"225-671-0796","LIB_FEAT_ID":5}]}],"SSN":[{"FEAT_DESC":"053-39-3251","LIB_FEAT_ID":6,"FEAT_DESC_VALUES":[{"FEAT_DESC":"053-39-3251","LIB_FEAT_ID":6}]}]},"RECORD_SUMMARY":[{"DATA_SOURCE":"TEST","RECORD_COUNT":2,"FIRST_SEEN_DT":"2022-12-06 15:12:25.464","LAST_SEEN_DT":"2022-12-06 15:12:25.597"}],"LAST_SEEN_DT":"2022-12-06 15:12:25.597","RECORDS":[{"DATA_SOURCE":"TEST","RECORD_ID":"111","ENTITY_TYPE":"TEST","INTERNAL_ID":1,"ENTITY_KEY":"C6063D4396612FBA7324DB0739273BA1FE815C43","ENTITY_DESC":"JOHNSON","MATCH_KEY":"","MATCH_LEVEL":0,"MATCH_LEVEL_CODE":"","ERRULE_CODE":"","LAST_SEEN_DT":"2022-12-06 15:12:25.464"},{"DATA_SOURCE":"TEST","RECORD_ID":"FCCE9793DAAD23159DBCCEB97FF2745B92CE7919","ENTITY_TYPE":"TEST","INTERNAL_ID":1,"ENTITY_KEY":"C6063D4396612FBA7324DB0739273BA1FE815C43","ENTITY_DESC":"JOHNSON","MATCH_KEY":"+EXACTLY_SAME","MATCH_LEVEL":0,"MATCH_LEVEL_CODE":"","ERRULE_CODE":"","LAST_SEEN_DT":"2022-12-06 15:12:25.597"}]},"RELATED_ENTITIES":[{"ENTITY_ID":2,"MATCH_LEVEL":3,"MATCH_LEVEL_CODE":"POSSIBLY_RELATED","MATCH_KEY":"+PHONE+ACCT_NUM-SSN","ERRULE_CODE":"SF1","IS_DISCLOSED":0,"IS_AMBIGUOUS":0,"ENTITY_NAME":"OCEANGUY","RECORD_SUMMARY":[{"DATA_SOURCE":"TEST","RECORD_COUNT":1,"FIRST_SEEN_DT":"2022-12-06 15:12:25.536","LAST_SEEN_DT":"2022-12-06 15:12:25.536"}],"LAST_SEEN_DT":"2022-12-06 15:12:25.536"},{"ENTITY_ID":3,"MATCH_LEVEL":3,"MATCH_LEVEL_CODE":"POSSIBLY_RELATED","MATCH_KEY":"+PHONE+ACCT_NUM-DOB-SSN","ERRULE_CODE":"SF1","IS_DISCLOSED":0,"IS_AMBIGUOUS":0,"ENTITY_NAME":"Smith","RECORD_SUMMARY":[{"DATA_SOURCE":"TEST","RECORD_COUNT":1,"FIRST_SEEN_DT":"2022-12-06 15:12:25.603","LAST_SEEN_DT":"2022-12-06 15:12:25.603"}],"LAST_SEEN_DT":"2022-12-06 15:12:25.603"}]}`
 */
 func (client *G2engineClient) GetEntityByRecordID(ctx context.Context, dataSourceCode string, recordID string) (string, error) {
-	request := pb.GetEntityByRecordIDRequest{
-		DataSourceCode: dataSourceCode,
-		RecordID:       recordID,
-	}
-	response, err := client.GrpcClient.GetEntityByRecordID(ctx, &request)
-	return response.GetResult(), err
+    if g2engine.isTrace {
+        g2engine.traceEntry(75, dataSourceCode, recordID)
+    }
+    entryTime := time.Now()
+    request := pb.GetEntityByRecordIDRequest{
+        DataSourceCode: dataSourceCode,
+        RecordID:       recordID,
+    }
+    response, err := client.GrpcClient.GetEntityByRecordID(ctx, &request)
+    if g2engine.observers != nil {
+        go func() {
+            details := map[string]string{
+                "dataSourceCode": dataSourceCode,
+                "recordID":       recordID,
+            }
+            g2engine.notify(ctx, 8037, err, details)
+        }()
+    }
+    if g2engine.isTrace {
+        defer g2engine.traceExit(76, dataSourceCode, recordID, C.GoString(result.response), err, time.Since(entryTime))
+    }
+    return response.GetResult(), err
 }
 
 /*
@@ -958,13 +1572,29 @@ Output
     See the example output.
 */
 func (client *G2engineClient) GetEntityByRecordID_V2(ctx context.Context, dataSourceCode string, recordID string, flags int64) (string, error) {
-	request := pb.GetEntityByRecordID_V2Request{
-		DataSourceCode: dataSourceCode,
-		RecordID:       recordID,
-		Flags:          flags,
-	}
-	response, err := client.GrpcClient.GetEntityByRecordID_V2(ctx, &request)
-	return response.GetResult(), err
+    if g2engine.isTrace {
+        g2engine.traceEntry(77, dataSourceCode, recordID, flags)
+    }
+    entryTime := time.Now()
+    request := pb.GetEntityByRecordID_V2Request{
+        DataSourceCode: dataSourceCode,
+        RecordID:       recordID,
+        Flags:          flags,
+    }
+    response, err := client.GrpcClient.GetEntityByRecordID_V2(ctx, &request)
+    if g2engine.observers != nil {
+        go func() {
+            details := map[string]string{
+                "dataSourceCode": dataSourceCode,
+                "recordID":       recordID,
+            }
+            g2engine.notify(ctx, 8038, err, details)
+        }()
+    }
+    if g2engine.isTrace {
+        defer g2engine.traceExit(78, dataSourceCode, recordID, flags, C.GoString(result.response), err, time.Since(entryTime))
+    }
+    return response.GetResult(), err
 }
 
 /*
@@ -981,12 +1611,28 @@ Output
     See the example output.
 */
 func (client *G2engineClient) GetRecord(ctx context.Context, dataSourceCode string, recordID string) (string, error) {
-	request := pb.GetRecordRequest{
-		DataSourceCode: dataSourceCode,
-		RecordID:       recordID,
-	}
-	response, err := client.GrpcClient.GetRecord(ctx, &request)
-	return response.GetResult(), err
+    if g2engine.isTrace {
+        g2engine.traceEntry(83, dataSourceCode, recordID)
+    }
+    entryTime := time.Now()
+    request := pb.GetRecordRequest{
+        DataSourceCode: dataSourceCode,
+        RecordID:       recordID,
+    }
+    response, err := client.GrpcClient.GetRecord(ctx, &request)
+    if g2engine.observers != nil {
+        go func() {
+            details := map[string]string{
+                "dataSourceCode": dataSourceCode,
+                "recordID":       recordID,
+            }
+            g2engine.notify(ctx, 8039, err, details)
+        }()
+    }
+    if g2engine.isTrace {
+        defer g2engine.traceExit(84, dataSourceCode, recordID, C.GoString(result.response), err, time.Since(entryTime))
+    }
+    return response.GetResult(), err
 }
 
 /*
@@ -1004,13 +1650,29 @@ Output
     See the example output.
 */
 func (client *G2engineClient) GetRecord_V2(ctx context.Context, dataSourceCode string, recordID string, flags int64) (string, error) {
-	request := pb.GetRecord_V2Request{
-		DataSourceCode: dataSourceCode,
-		RecordID:       recordID,
-		Flags:          flags,
-	}
-	response, err := client.GrpcClient.GetRecord_V2(ctx, &request)
-	return response.GetResult(), err
+    if g2engine.isTrace {
+        g2engine.traceEntry(85, dataSourceCode, recordID, flags)
+    }
+    entryTime := time.Now()
+    request := pb.GetRecord_V2Request{
+        DataSourceCode: dataSourceCode,
+        RecordID:       recordID,
+        Flags:          flags,
+    }
+    response, err := client.GrpcClient.GetRecord_V2(ctx, &request)
+    if g2engine.observers != nil {
+        go func() {
+            details := map[string]string{
+                "dataSourceCode": dataSourceCode,
+                "recordID":       recordID,
+            }
+            g2engine.notify(ctx, 8040, err, details)
+        }()
+    }
+    if g2engine.isTrace {
+        defer g2engine.traceExit(86, dataSourceCode, recordID, flags, C.GoString(result.response), err, time.Since(entryTime))
+    }
+    return response.GetResult(), err
 }
 
 /*
@@ -1025,9 +1687,22 @@ Output
   - A JSON document.
 */
 func (client *G2engineClient) GetRedoRecord(ctx context.Context) (string, error) {
-	request := pb.GetRedoRecordRequest{}
-	response, err := client.GrpcClient.GetRedoRecord(ctx, &request)
-	return response.GetResult(), err
+    if g2engine.isTrace {
+        g2engine.traceEntry(87)
+    }
+    entryTime := time.Now()
+    request := pb.GetRedoRecordRequest{}
+    response, err := client.GrpcClient.GetRedoRecord(ctx, &request)
+    if g2engine.observers != nil {
+        go func() {
+            details := map[string]string{}
+            g2engine.notify(ctx, 8041, err, details)
+        }()
+    }
+    if g2engine.isTrace {
+        defer g2engine.traceExit(88, C.GoString(result.response), err, time.Since(entryTime))
+    }
+    return response.GetResult(), err
 }
 
 /*
@@ -1041,9 +1716,22 @@ Output
   - A Unix Timestamp.
 */
 func (client *G2engineClient) GetRepositoryLastModifiedTime(ctx context.Context) (int64, error) {
-	request := pb.GetRepositoryLastModifiedTimeRequest{}
-	response, err := client.GrpcClient.GetRepositoryLastModifiedTime(ctx, &request)
-	return response.GetResult(), err
+    if g2engine.isTrace {
+        g2engine.traceEntry(89)
+    }
+    entryTime := time.Now()
+    request := pb.GetRepositoryLastModifiedTimeRequest{}
+    response, err := client.GrpcClient.GetRepositoryLastModifiedTime(ctx, &request)
+    if g2engine.observers != nil {
+        go func() {
+            details := map[string]string{}
+            g2engine.notify(ctx, 8042, err, details)
+        }()
+    }
+    if g2engine.isTrace {
+        defer g2engine.traceExit(90, int64(result.time), err, time.Since(entryTime))
+    }
+    return response.GetResult(), err
 }
 
 /*
@@ -1059,11 +1747,26 @@ Output
     Example: `{"RESOLVED_ENTITY":{"ENTITY_ID":1,"ENTITY_NAME":"JOHNSON","FEATURES":{"ACCT_NUM":[{"FEAT_DESC":"5534202208773608","LIB_FEAT_ID":8,"USAGE_TYPE":"CC","FEAT_DESC_VALUES":[{"FEAT_DESC":"5534202208773608","LIB_FEAT_ID":8,"USED_FOR_CAND":"Y","USED_FOR_SCORING":"Y","ENTITY_COUNT":3,"CANDIDATE_CAP_REACHED":"N","SCORING_CAP_REACHED":"N","SUPPRESSED":"N"}]}],"ADDRESS":[{"FEAT_DESC":"772 Armstrong RD Delhi LA 71232","LIB_FEAT_ID":4,"FEAT_DESC_VALUES":[{"FEAT_DESC":"772 Armstrong RD Delhi LA 71232","LIB_FEAT_ID":4,"USED_FOR_CAND":"N","USED_FOR_SCORING":"Y","ENTITY_COUNT":1,"CANDIDATE_CAP_REACHED":"N","SCORING_CAP_REACHED":"N","SUPPRESSED":"N"}]},{"FEAT_DESC":"772 Armstrong RD Delhi WI 53543","LIB_FEAT_ID":26,"FEAT_DESC_VALUES":[{"FEAT_DESC":"772 Armstrong RD Delhi WI 53543","LIB_FEAT_ID":26,"USED_FOR_CAND":"N","USED_FOR_SCORING":"Y","ENTITY_COUNT":1,"CANDIDATE_CAP_REACHED":"N","SCORING_CAP_REACHED":"N","SUPPRESSED":"N"}]}],"ADDR_KEY":[{"FEAT_DESC":"772|ARMSTRNK||53543","LIB_FEAT_ID":37,"FEAT_DESC_VALUES":[{"FEAT_DESC":"772|ARMSTRNK||53543","LIB_FEAT_ID":37,"USED_FOR_CAND":"Y","USED_FOR_SCORING":"N","ENTITY_COUNT":1,"CANDIDATE_CAP_REACHED":"N","SCORING_CAP_REACHED":"N","SUPPRESSED":"N"}]},{"FEAT_DESC":"772|ARMSTRNK||71232","LIB_FEAT_ID":18,"FEAT_DESC_VALUES":[{"FEAT_DESC":"772|ARMSTRNK||71232","LIB_FEAT_ID":18,"USED_FOR_CAND":"Y","USED_FOR_SCORING":"N","ENTITY_COUNT":1,"CANDIDATE_CAP_REACHED":"N","SCORING_CAP_REACHED":"N","SUPPRESSED":"N"}]},{"FEAT_DESC":"772|ARMSTRNK||TL","LIB_FEAT_ID":17,"FEAT_DESC_VALUES":[{"FEAT_DESC":"772|ARMSTRNK||TL","LIB_FEAT_ID":17,"USED_FOR_CAND":"Y","USED_FOR_SCORING":"N","ENTITY_COUNT":3,"CANDIDATE_CAP_REACHED":"N","SCORING_CAP_REACHED":"N","SUPPRESSED":"N"}]}],"DOB":[{"FEAT_DESC":"4/8/1983","LIB_FEAT_ID":2,"FEAT_DESC_VALUES":[{"FEAT_DESC":"4/8/1983","LIB_FEAT_ID":2,"USED_FOR_CAND":"Y","USED_FOR_SCORING":"Y","ENTITY_COUNT":1,"CANDIDATE_CAP_REACHED":"N","SCORING_CAP_REACHED":"N","SUPPRESSED":"N"}]},{"FEAT_DESC":"6/9/1983","LIB_FEAT_ID":25,"FEAT_DESC_VALUES":[{"FEAT_DESC":"6/9/1983","LIB_FEAT_ID":25,"USED_FOR_CAND":"Y","USED_FOR_SCORING":"Y","ENTITY_COUNT":1,"CANDIDATE_CAP_REACHED":"N","SCORING_CAP_REACHED":"N","SUPPRESSED":"N"}]}],"GENDER":[{"FEAT_DESC":"F","LIB_FEAT_ID":3,"FEAT_DESC_VALUES":[{"FEAT_DESC":"F","LIB_FEAT_ID":3,"USED_FOR_CAND":"N","USED_FOR_SCORING":"Y","ENTITY_COUNT":3,"CANDIDATE_CAP_REACHED":"N","SCORING_CAP_REACHED":"N","SUPPRESSED":"N"}]}],"ID_KEY":[{"FEAT_DESC":"ACCT_NUM=5534202208773608","LIB_FEAT_ID":19,"FEAT_DESC_VALUES":[{"FEAT_DESC":"ACCT_NUM=5534202208773608","LIB_FEAT_ID":19,"USED_FOR_CAND":"Y","USED_FOR_SCORING":"N","ENTITY_COUNT":3,"CANDIDATE_CAP_REACHED":"N","SCORING_CAP_REACHED":"N","SUPPRESSED":"N"}]},{"FEAT_DESC":"SSN=053-39-3251","LIB_FEAT_ID":20,"FEAT_DESC_VALUES":[{"FEAT_DESC":"SSN=053-39-3251","LIB_FEAT_ID":20,"USED_FOR_CAND":"Y","USED_FOR_SCORING":"N","ENTITY_COUNT":1,"CANDIDATE_CAP_REACHED":"N","SCORING_CAP_REACHED":"N","SUPPRESSED":"N"}]},{"FEAT_DESC":"SSN=153-33-5185","LIB_FEAT_ID":38,"FEAT_DESC_VALUES":[{"FEAT_DESC":"SSN=153-33-5185","LIB_FEAT_ID":38,"USED_FOR_CAND":"Y","USED_FOR_SCORING":"N","ENTITY_COUNT":1,"CANDIDATE_CAP_REACHED":"N","SCORING_CAP_REACHED":"N","SUPPRESSED":"N"}]}],"LOGIN_ID":[{"FEAT_DESC":"flavorh","LIB_FEAT_ID":7,"FEAT_DESC_VALUES":[{"FEAT_DESC":"flavorh","LIB_FEAT_ID":7,"USED_FOR_CAND":"Y","USED_FOR_SCORING":"Y","ENTITY_COUNT":1,"CANDIDATE_CAP_REACHED":"N","SCORING_CAP_REACHED":"N","SUPPRESSED":"N"}]},{"FEAT_DESC":"flavorh2","LIB_FEAT_ID":28,"FEAT_DESC_VALUES":[{"FEAT_DESC":"flavorh2","LIB_FEAT_ID":28,"USED_FOR_CAND":"Y","USED_FOR_SCORING":"Y","ENTITY_COUNT":1,"CANDIDATE_CAP_REACHED":"N","SCORING_CAP_REACHED":"N","SUPPRESSED":"N"}]}],"NAME":[{"FEAT_DESC":"JOHNSON","LIB_FEAT_ID":1,"FEAT_DESC_VALUES":[{"FEAT_DESC":"JOHNSON","LIB_FEAT_ID":1,"USED_FOR_CAND":"N","USED_FOR_SCORING":"Y","ENTITY_COUNT":1,"CANDIDATE_CAP_REACHED":"N","SCORING_CAP_REACHED":"N","SUPPRESSED":"N"}]},{"FEAT_DESC":"OCEANGUY","LIB_FEAT_ID":24,"FEAT_DESC_VALUES":[{"FEAT_DESC":"OCEANGUY","LIB_FEAT_ID":24,"USED_FOR_CAND":"N","USED_FOR_SCORING":"Y","ENTITY_COUNT":1,"CANDIDATE_CAP_REACHED":"N","SCORING_CAP_REACHED":"N","SUPPRESSED":"N"}]}],"NAME_KEY":[{"FEAT_DESC":"ASNK","LIB_FEAT_ID":29,"FEAT_DESC_VALUES":[{"FEAT_DESC":"ASNK","LIB_FEAT_ID":29,"USED_FOR_CAND":"Y","USED_FOR_SCORING":"N","ENTITY_COUNT":1,"CANDIDATE_CAP_REACHED":"N","SCORING_CAP_REACHED":"N","SUPPRESSED":"N"}]},{"FEAT_DESC":"ASNK|ADDRESS.CITY_STD=TL","LIB_FEAT_ID":34,"FEAT_DESC_VALUES":[{"FEAT_DESC":"ASNK|ADDRESS.CITY_STD=TL","LIB_FEAT_ID":34,"USED_FOR_CAND":"Y","USED_FOR_SCORING":"N","ENTITY_COUNT":1,"CANDIDATE_CAP_REACHED":"N","SCORING_CAP_REACHED":"N","SUPPRESSED":"N"}]},{"FEAT_DESC":"ASNK|DOB.MMDD_HASH=0906","LIB_FEAT_ID":32,"FEAT_DESC_VALUES":[{"FEAT_DESC":"ASNK|DOB.MMDD_HASH=0906","LIB_FEAT_ID":32,"USED_FOR_CAND":"Y","USED_FOR_SCORING":"N","ENTITY_COUNT":1,"CANDIDATE_CAP_REACHED":"N","SCORING_CAP_REACHED":"N","SUPPRESSED":"N"}]},{"FEAT_DESC":"ASNK|DOB.MMYY_HASH=0683","LIB_FEAT_ID":30,"FEAT_DESC_VALUES":[{"FEAT_DESC":"ASNK|DOB.MMYY_HASH=0683","LIB_FEAT_ID":30,"USED_FOR_CAND":"Y","USED_FOR_SCORING":"N","ENTITY_COUNT":1,"CANDIDATE_CAP_REACHED":"N","SCORING_CAP_REACHED":"N","SUPPRESSED":"N"}]},{"FEAT_DESC":"ASNK|DOB=80906","LIB_FEAT_ID":31,"FEAT_DESC_VALUES":[{"FEAT_DESC":"ASNK|DOB=80906","LIB_FEAT_ID":31,"USED_FOR_CAND":"Y","USED_FOR_SCORING":"N","ENTITY_COUNT":1,"CANDIDATE_CAP_REACHED":"N","SCORING_CAP_REACHED":"N","SUPPRESSED":"N"}]},{"FEAT_DESC":"ASNK|PHONE.PHONE_LAST_5=10796","LIB_FEAT_ID":33,"FEAT_DESC_VALUES":[{"FEAT_DESC":"ASNK|PHONE.PHONE_LAST_5=10796","LIB_FEAT_ID":33,"USED_FOR_CAND":"Y","USED_FOR_SCORING":"N","ENTITY_COUNT":1,"CANDIDATE_CAP_REACHED":"N","SCORING_CAP_REACHED":"N","SUPPRESSED":"N"}]},{"FEAT_DESC":"ASNK|POST=53543","LIB_FEAT_ID":36,"FEAT_DESC_VALUES":[{"FEAT_DESC":"ASNK|POST=53543","LIB_FEAT_ID":36,"USED_FOR_CAND":"Y","USED_FOR_SCORING":"N","ENTITY_COUNT":1,"CANDIDATE_CAP_REACHED":"N","SCORING_CAP_REACHED":"N","SUPPRESSED":"N"}]},{"FEAT_DESC":"ASNK|SSN=5185","LIB_FEAT_ID":35,"FEAT_DESC_VALUES":[{"FEAT_DESC":"ASNK|SSN=5185","LIB_FEAT_ID":35,"USED_FOR_CAND":"Y","USED_FOR_SCORING":"N","ENTITY_COUNT":1,"CANDIDATE_CAP_REACHED":"N","SCORING_CAP_REACHED":"N","SUPPRESSED":"N"}]},{"FEAT_DESC":"JNSN","LIB_FEAT_ID":11,"FEAT_DESC_VALUES":[{"FEAT_DESC":"JNSN","LIB_FEAT_ID":11,"USED_FOR_CAND":"Y","USED_FOR_SCORING":"N","ENTITY_COUNT":1,"CANDIDATE_CAP_REACHED":"N","SCORING_CAP_REACHED":"N","SUPPRESSED":"N"}]},{"FEAT_DESC":"JNSN|ADDRESS.CITY_STD=TL","LIB_FEAT_ID":12,"FEAT_DESC_VALUES":[{"FEAT_DESC":"JNSN|ADDRESS.CITY_STD=TL","LIB_FEAT_ID":12,"USED_FOR_CAND":"Y","USED_FOR_SCORING":"N","ENTITY_COUNT":1,"CANDIDATE_CAP_REACHED":"N","SCORING_CAP_REACHED":"N","SUPPRESSED":"N"}]},{"FEAT_DESC":"JNSN|DOB.MMDD_HASH=0804","LIB_FEAT_ID":9,"FEAT_DESC_VALUES":[{"FEAT_DESC":"JNSN|DOB.MMDD_HASH=0804","LIB_FEAT_ID":9,"USED_FOR_CAND":"Y","USED_FOR_SCORING":"N","ENTITY_COUNT":1,"CANDIDATE_CAP_REACHED":"N","SCORING_CAP_REACHED":"N","SUPPRESSED":"N"}]},{"FEAT_DESC":"JNSN|DOB.MMYY_HASH=0483","LIB_FEAT_ID":10,"FEAT_DESC_VALUES":[{"FEAT_DESC":"JNSN|DOB.MMYY_HASH=0483","LIB_FEAT_ID":10,"USED_FOR_CAND":"Y","USED_FOR_SCORING":"N","ENTITY_COUNT":1,"CANDIDATE_CAP_REACHED":"N","SCORING_CAP_REACHED":"N","SUPPRESSED":"N"}]},{"FEAT_DESC":"JNSN|DOB=80804","LIB_FEAT_ID":13,"FEAT_DESC_VALUES":[{"FEAT_DESC":"JNSN|DOB=80804","LIB_FEAT_ID":13,"USED_FOR_CAND":"Y","USED_FOR_SCORING":"N","ENTITY_COUNT":1,"CANDIDATE_CAP_REACHED":"N","SCORING_CAP_REACHED":"N","SUPPRESSED":"N"}]},{"FEAT_DESC":"JNSN|PHONE.PHONE_LAST_5=10796","LIB_FEAT_ID":15,"FEAT_DESC_VALUES":[{"FEAT_DESC":"JNSN|PHONE.PHONE_LAST_5=10796","LIB_FEAT_ID":15,"USED_FOR_CAND":"Y","USED_FOR_SCORING":"N","ENTITY_COUNT":1,"CANDIDATE_CAP_REACHED":"N","SCORING_CAP_REACHED":"N","SUPPRESSED":"N"}]},{"FEAT_DESC":"JNSN|POST=71232","LIB_FEAT_ID":14,"FEAT_DESC_VALUES":[{"FEAT_DESC":"JNSN|POST=71232","LIB_FEAT_ID":14,"USED_FOR_CAND":"Y","USED_FOR_SCORING":"N","ENTITY_COUNT":1,"CANDIDATE_CAP_REACHED":"N","SCORING_CAP_REACHED":"N","SUPPRESSED":"N"}]},{"FEAT_DESC":"JNSN|SSN=3251","LIB_FEAT_ID":16,"FEAT_DESC_VALUES":[{"FEAT_DESC":"JNSN|SSN=3251","LIB_FEAT_ID":16,"USED_FOR_CAND":"Y","USED_FOR_SCORING":"N","ENTITY_COUNT":1,"CANDIDATE_CAP_REACHED":"N","SCORING_CAP_REACHED":"N","SUPPRESSED":"N"}]}],"PHONE":[{"FEAT_DESC":"225-671-0796","LIB_FEAT_ID":5,"FEAT_DESC_VALUES":[{"FEAT_DESC":"225-671-0796","LIB_FEAT_ID":5,"USED_FOR_CAND":"Y","USED_FOR_SCORING":"Y","ENTITY_COUNT":3,"CANDIDATE_CAP_REACHED":"N","SCORING_CAP_REACHED":"N","SUPPRESSED":"N"}]}],"PHONE_KEY":[{"FEAT_DESC":"2256710796","LIB_FEAT_ID":21,"FEAT_DESC_VALUES":[{"FEAT_DESC":"2256710796","LIB_FEAT_ID":21,"USED_FOR_CAND":"Y","USED_FOR_SCORING":"N","ENTITY_COUNT":3,"CANDIDATE_CAP_REACHED":"N","SCORING_CAP_REACHED":"N","SUPPRESSED":"N"}]}],"SEARCH_KEY":[{"FEAT_DESC":"LOGIN_ID:FLAVORH2|","LIB_FEAT_ID":40,"FEAT_DESC_VALUES":[{"FEAT_DESC":"LOGIN_ID:FLAVORH2|","LIB_FEAT_ID":40,"USED_FOR_CAND":"Y","USED_FOR_SCORING":"N","ENTITY_COUNT":1,"CANDIDATE_CAP_REACHED":"N","SCORING_CAP_REACHED":"N","SUPPRESSED":"N"}]},{"FEAT_DESC":"LOGIN_ID:FLAVORH|","LIB_FEAT_ID":22,"FEAT_DESC_VALUES":[{"FEAT_DESC":"LOGIN_ID:FLAVORH|","LIB_FEAT_ID":22,"USED_FOR_CAND":"Y","USED_FOR_SCORING":"N","ENTITY_COUNT":1,"CANDIDATE_CAP_REACHED":"N","SCORING_CAP_REACHED":"N","SUPPRESSED":"N"}]},{"FEAT_DESC":"SSN:3251|80804|","LIB_FEAT_ID":23,"FEAT_DESC_VALUES":[{"FEAT_DESC":"SSN:3251|80804|","LIB_FEAT_ID":23,"USED_FOR_CAND":"Y","USED_FOR_SCORING":"N","ENTITY_COUNT":1,"CANDIDATE_CAP_REACHED":"N","SCORING_CAP_REACHED":"N","SUPPRESSED":"N"}]},{"FEAT_DESC":"SSN:5185|80906|","LIB_FEAT_ID":39,"FEAT_DESC_VALUES":[{"FEAT_DESC":"SSN:5185|80906|","LIB_FEAT_ID":39,"USED_FOR_CAND":"Y","USED_FOR_SCORING":"N","ENTITY_COUNT":1,"CANDIDATE_CAP_REACHED":"N","SCORING_CAP_REACHED":"N","SUPPRESSED":"N"}]}],"SSN":[{"FEAT_DESC":"053-39-3251","LIB_FEAT_ID":6,"FEAT_DESC_VALUES":[{"FEAT_DESC":"053-39-3251","LIB_FEAT_ID":6,"USED_FOR_CAND":"Y","USED_FOR_SCORING":"Y","ENTITY_COUNT":1,"CANDIDATE_CAP_REACHED":"N","SCORING_CAP_REACHED":"N","SUPPRESSED":"N"}]},{"FEAT_DESC":"153-33-5185","LIB_FEAT_ID":27,"FEAT_DESC_VALUES":[{"FEAT_DESC":"153-33-5185","LIB_FEAT_ID":27,"USED_FOR_CAND":"Y","USED_FOR_SCORING":"Y","ENTITY_COUNT":1,"CANDIDATE_CAP_REACHED":"N","SCORING_CAP_REACHED":"N","SUPPRESSED":"N"}]}]},"RECORD_SUMMARY":[{"DATA_SOURCE":"TEST","RECORD_COUNT":2,"FIRST_SEEN_DT":"2022-12-06 15:20:17.088","LAST_SEEN_DT":"2022-12-06 15:20:17.161"}],"LAST_SEEN_DT":"2022-12-06 15:20:17.161","RECORDS":[{"DATA_SOURCE":"TEST","RECORD_ID":"111","ENTITY_TYPE":"TEST","INTERNAL_ID":1,"ENTITY_KEY":"C6063D4396612FBA7324DB0739273BA1FE815C43","ENTITY_DESC":"JOHNSON","LAST_SEEN_DT":"2022-12-06 15:20:17.088","FEATURES":[{"LIB_FEAT_ID":1},{"LIB_FEAT_ID":2},{"LIB_FEAT_ID":3},{"LIB_FEAT_ID":4},{"LIB_FEAT_ID":5},{"LIB_FEAT_ID":6},{"LIB_FEAT_ID":7},{"LIB_FEAT_ID":8,"USAGE_TYPE":"CC"},{"LIB_FEAT_ID":9},{"LIB_FEAT_ID":10},{"LIB_FEAT_ID":11},{"LIB_FEAT_ID":12},{"LIB_FEAT_ID":13},{"LIB_FEAT_ID":14},{"LIB_FEAT_ID":15},{"LIB_FEAT_ID":16},{"LIB_FEAT_ID":17},{"LIB_FEAT_ID":18},{"LIB_FEAT_ID":19},{"LIB_FEAT_ID":20},{"LIB_FEAT_ID":21},{"LIB_FEAT_ID":22},{"LIB_FEAT_ID":23}]},{"DATA_SOURCE":"TEST","RECORD_ID":"222","ENTITY_TYPE":"TEST","INTERNAL_ID":2,"ENTITY_KEY":"740BA22D15CA88462A930AF8A7C904FF5E48226C","ENTITY_DESC":"OCEANGUY","LAST_SEEN_DT":"2022-12-06 15:20:17.161","FEATURES":[{"LIB_FEAT_ID":3},{"LIB_FEAT_ID":5},{"LIB_FEAT_ID":8,"USAGE_TYPE":"CC"},{"LIB_FEAT_ID":17},{"LIB_FEAT_ID":19},{"LIB_FEAT_ID":21},{"LIB_FEAT_ID":24},{"LIB_FEAT_ID":25},{"LIB_FEAT_ID":26},{"LIB_FEAT_ID":27},{"LIB_FEAT_ID":28},{"LIB_FEAT_ID":29},{"LIB_FEAT_ID":30},{"LIB_FEAT_ID":31},{"LIB_FEAT_ID":32},{"LIB_FEAT_ID":33},{"LIB_FEAT_ID":34},{"LIB_FEAT_ID":35},{"LIB_FEAT_ID":36},{"LIB_FEAT_ID":37},{"LIB_FEAT_ID":38},{"LIB_FEAT_ID":39},{"LIB_FEAT_ID":40}]}]}}`
 */
 func (client *G2engineClient) GetVirtualEntityByRecordID(ctx context.Context, recordList string) (string, error) {
-	request := pb.GetVirtualEntityByRecordIDRequest{
-		RecordList: recordList,
-	}
-	response, err := client.GrpcClient.GetVirtualEntityByRecordID(ctx, &request)
-	return response.GetResult(), err
+    if g2engine.isTrace {
+        g2engine.traceEntry(91, recordList)
+    }
+    entryTime := time.Now()
+    request := pb.GetVirtualEntityByRecordIDRequest{
+        RecordList: recordList,
+    }
+    response, err := client.GrpcClient.GetVirtualEntityByRecordID(ctx, &request)
+    if g2engine.observers != nil {
+        go func() {
+            details := map[string]string{
+                "recordList": recordList,
+            }
+            g2engine.notify(ctx, 8043, err, details)
+        }()
+    }
+    if g2engine.isTrace {
+        defer g2engine.traceExit(92, recordList, C.GoString(result.response), err, time.Since(entryTime))
+    }
+    return response.GetResult(), err
 }
 
 /*
@@ -1081,12 +1784,27 @@ Output
     See the example output.
 */
 func (client *G2engineClient) GetVirtualEntityByRecordID_V2(ctx context.Context, recordList string, flags int64) (string, error) {
-	request := pb.GetVirtualEntityByRecordID_V2Request{
-		RecordList: recordList,
-		Flags:      flags,
-	}
-	response, err := client.GrpcClient.GetVirtualEntityByRecordID_V2(ctx, &request)
-	return response.GetResult(), err
+    if g2engine.isTrace {
+        g2engine.traceEntry(93, recordList, flags)
+    }
+    entryTime := time.Now()
+    request := pb.GetVirtualEntityByRecordID_V2Request{
+        RecordList: recordList,
+        Flags:      flags,
+    }
+    response, err := client.GrpcClient.GetVirtualEntityByRecordID_V2(ctx, &request)
+    if g2engine.observers != nil {
+        go func() {
+            details := map[string]string{
+                "recordList": recordList,
+            }
+            g2engine.notify(ctx, 8044, err, details)
+        }()
+    }
+    if g2engine.isTrace {
+        defer g2engine.traceExit(94, recordList, flags, C.GoString(result.response), err, time.Since(entryTime))
+    }
+    return response.GetResult(), err
 }
 
 /*
@@ -1102,11 +1820,26 @@ Output
     See the example output.
 */
 func (client *G2engineClient) HowEntityByEntityID(ctx context.Context, entityID int64) (string, error) {
-	request := pb.HowEntityByEntityIDRequest{
-		EntityID: entityID,
-	}
-	response, err := client.GrpcClient.HowEntityByEntityID(ctx, &request)
-	return response.GetResult(), err
+    if g2engine.isTrace {
+        g2engine.traceEntry(95, entityID)
+    }
+    entryTime := time.Now()
+    request := pb.HowEntityByEntityIDRequest{
+        EntityID: entityID,
+    }
+    response, err := client.GrpcClient.HowEntityByEntityID(ctx, &request)
+    if g2engine.observers != nil {
+        go func() {
+            details := map[string]string{
+                "entityID": strconv.FormatInt(entityID, 10),
+            }
+            g2engine.notify(ctx, 8045, err, details)
+        }()
+    }
+    if g2engine.isTrace {
+        defer g2engine.traceExit(96, entityID, C.GoString(result.response), err, time.Since(entryTime))
+    }
+    return response.GetResult(), err
 }
 
 /*
@@ -1123,12 +1856,27 @@ Output
     See the example output.
 */
 func (client *G2engineClient) HowEntityByEntityID_V2(ctx context.Context, entityID int64, flags int64) (string, error) {
-	request := pb.HowEntityByEntityID_V2Request{
-		EntityID: entityID,
-		Flags:    flags,
-	}
-	response, err := client.GrpcClient.HowEntityByEntityID_V2(ctx, &request)
-	return response.GetResult(), err
+    if g2engine.isTrace {
+        g2engine.traceEntry(97, entityID, flags)
+    }
+    entryTime := time.Now()
+    request := pb.HowEntityByEntityID_V2Request{
+        EntityID: entityID,
+        Flags:    flags,
+    }
+    response, err := client.GrpcClient.HowEntityByEntityID_V2(ctx, &request)
+    if g2engine.observers != nil {
+        go func() {
+            details := map[string]string{
+                "entityID": strconv.FormatInt(entityID, 10),
+            }
+            g2engine.notify(ctx, 8046, err, details)
+        }()
+    }
+    if g2engine.isTrace {
+        defer g2engine.traceExit(98, entityID, flags, C.GoString(result.response), err, time.Since(entryTime))
+    }
+    return response.GetResult(), err
 }
 
 /*
@@ -1142,13 +1890,30 @@ Input
   - verboseLogging: A flag to enable deeper logging of the G2 processing. 0 for no Senzing logging; 1 for logging.
 */
 func (client *G2engineClient) Init(ctx context.Context, moduleName string, iniParams string, verboseLogging int) error {
-	request := pb.InitRequest{
-		ModuleName:     moduleName,
-		IniParams:      iniParams,
-		VerboseLogging: int32(verboseLogging),
-	}
-	_, err := client.GrpcClient.Init(ctx, &request)
-	return err
+    if g2engine.isTrace {
+        g2engine.traceEntry(99, moduleName, iniParams, verboseLogging)
+    }
+    entryTime := time.Now()
+    request := pb.InitRequest{
+        ModuleName:     moduleName,
+        IniParams:      iniParams,
+        VerboseLogging: int32(verboseLogging),
+    }
+    _, err := client.GrpcClient.Init(ctx, &request)
+    if g2engine.observers != nil {
+        go func() {
+            details := map[string]string{
+                "iniParams":      iniParams,
+                "moduleName":     moduleName,
+                "verboseLogging": strconv.Itoa(verboseLogging),
+            }
+            g2engine.notify(ctx, 8047, err, details)
+        }()
+    }
+    if g2engine.isTrace {
+        defer g2engine.traceExit(100, moduleName, iniParams, verboseLogging, err, time.Since(entryTime))
+    }
+    return err
 }
 
 /*
@@ -1163,14 +1928,32 @@ Input
   - verboseLogging: A flag to enable deeper logging of the G2 processing. 0 for no Senzing logging; 1 for logging.
 */
 func (client *G2engineClient) InitWithConfigID(ctx context.Context, moduleName string, iniParams string, initConfigID int64, verboseLogging int) error {
-	request := pb.InitWithConfigIDRequest{
-		ModuleName:     moduleName,
-		IniParams:      iniParams,
-		InitConfigID:   initConfigID,
-		VerboseLogging: int32(verboseLogging),
-	}
-	_, err := client.GrpcClient.InitWithConfigID(ctx, &request)
-	return err
+    if g2engine.isTrace {
+        g2engine.traceEntry(101, moduleName, iniParams, initConfigID, verboseLogging)
+    }
+    entryTime := time.Now()
+    request := pb.InitWithConfigIDRequest{
+        ModuleName:     moduleName,
+        IniParams:      iniParams,
+        InitConfigID:   initConfigID,
+        VerboseLogging: int32(verboseLogging),
+    }
+    _, err := client.GrpcClient.InitWithConfigID(ctx, &request)
+    if g2engine.observers != nil {
+        go func() {
+            details := map[string]string{
+                "iniParams":      iniParams,
+                "initConfigID":   strconv.FormatInt(initConfigID, 10),
+                "moduleName":     moduleName,
+                "verboseLogging": strconv.Itoa(verboseLogging),
+            }
+            g2engine.notify(ctx, 8048, err, details)
+        }()
+    }
+    if g2engine.isTrace {
+        defer g2engine.traceExit(102, moduleName, iniParams, initConfigID, verboseLogging, err, time.Since(entryTime))
+    }
+    return err
 }
 
 /*
@@ -1182,9 +1965,22 @@ Input
   - ctx: A context to control lifecycle.
 */
 func (client *G2engineClient) PrimeEngine(ctx context.Context) error {
-	request := pb.PrimeEngineRequest{}
-	_, err := client.GrpcClient.PrimeEngine(ctx, &request)
-	return err
+    if g2engine.isTrace {
+        g2engine.traceEntry(103)
+    }
+    entryTime := time.Now()
+    request := pb.PrimeEngineRequest{}
+    _, err := client.GrpcClient.PrimeEngine(ctx, &request)
+    if g2engine.observers != nil {
+        go func() {
+            details := map[string]string{}
+            g2engine.notify(ctx, 8049, err, details)
+        }()
+    }
+    if g2engine.isTrace {
+        defer g2engine.traceExit(104, err, time.Since(entryTime))
+    }
+    return err
 }
 
 /*
@@ -1195,11 +1991,24 @@ Input
   - record: A JSON document containing the record to be added to the Senzing repository.
 */
 func (client *G2engineClient) Process(ctx context.Context, record string) error {
-	request := pb.ProcessRequest{
-		Record: record,
-	}
-	_, err := client.GrpcClient.Process(ctx, &request)
-	return err
+    if g2engine.isTrace {
+        g2engine.traceEntry(105, record)
+    }
+    entryTime := time.Now()
+    request := pb.ProcessRequest{
+        Record: record,
+    }
+    _, err := client.GrpcClient.Process(ctx, &request)
+    if g2engine.observers != nil {
+        go func() {
+            details := map[string]string{}
+            g2engine.notify(ctx, 8050, err, details)
+        }()
+    }
+    if g2engine.isTrace {
+        defer g2engine.traceExit(106, record, err, time.Since(entryTime))
+    }
+    return err
 }
 
 /*
@@ -1213,9 +2022,22 @@ Output
   - A JSON document.
 */
 func (client *G2engineClient) ProcessRedoRecord(ctx context.Context) (string, error) {
-	request := pb.ProcessRedoRecordRequest{}
-	response, err := client.GrpcClient.ProcessRedoRecord(ctx, &request)
-	return response.GetResult(), err
+    if g2engine.isTrace {
+        g2engine.traceEntry(107)
+    }
+    entryTime := time.Now()
+    request := pb.ProcessRedoRecordRequest{}
+    response, err := client.GrpcClient.ProcessRedoRecord(ctx, &request)
+    if g2engine.observers != nil {
+        go func() {
+            details := map[string]string{}
+            g2engine.notify(ctx, 8051, err, details)
+        }()
+    }
+    if g2engine.isTrace {
+        defer g2engine.traceExit(108, C.GoString(result.response), err, time.Since(entryTime))
+    }
+    return response.GetResult(), err
 }
 
 /*
@@ -1231,11 +2053,25 @@ Output
   - A JSON document with affected entities.
 */
 func (client *G2engineClient) ProcessRedoRecordWithInfo(ctx context.Context, flags int64) (string, string, error) {
-	request := pb.ProcessRedoRecordWithInfoRequest{
-		Flags: flags,
-	}
-	response, err := client.GrpcClient.ProcessRedoRecordWithInfo(ctx, &request)
-	return response.GetResult(), response.GetWithInfo(), err
+    if g2engine.isTrace {
+        g2engine.traceEntry(109, flags)
+    }
+    entryTime := time.Now()
+    request := pb.ProcessRedoRecordWithInfoRequest{
+        Flags: flags,
+    }
+    response, err := client.GrpcClient.ProcessRedoRecordWithInfo(ctx, &request)
+    if g2engine.observers != nil {
+        go func() {
+            details := map[string]string{}
+            g2engine.notify(ctx, 8052, err, details)
+        }()
+    }
+    if g2engine.isTrace {
+        defer g2engine.traceExit(110, flags, C.GoString(result.response), C.GoString(result.withInfo), err, time.Since(entryTime))
+    }
+    return C.GoString(result.response), C.GoString(result.withInfo), err
+    return response.GetResult(), response.GetWithInfo(), err
 }
 
 /*
@@ -1251,12 +2087,25 @@ Output
     See the example output.
 */
 func (client *G2engineClient) ProcessWithInfo(ctx context.Context, record string, flags int64) (string, error) {
-	request := pb.ProcessWithInfoRequest{
-		Record: record,
-		Flags:  flags,
-	}
-	response, err := client.GrpcClient.ProcessWithInfo(ctx, &request)
-	return response.GetResult(), err
+    if g2engine.isTrace {
+        g2engine.traceEntry(111, record, flags)
+    }
+    entryTime := time.Now()
+    request := pb.ProcessWithInfoRequest{
+        Record: record,
+        Flags:  flags,
+    }
+    response, err := client.GrpcClient.ProcessWithInfo(ctx, &request)
+    if g2engine.observers != nil {
+        go func() {
+            details := map[string]string{}
+            g2engine.notify(ctx, 8053, err, details)
+        }()
+    }
+    if g2engine.isTrace {
+        defer g2engine.traceExit(112, record, flags, C.GoString(result.response), err, time.Since(entryTime))
+    }
+    return response.GetResult(), err
 }
 
 /*
@@ -1271,11 +2120,24 @@ Output
     See the example output.
 */
 func (client *G2engineClient) ProcessWithResponse(ctx context.Context, record string) (string, error) {
-	request := pb.ProcessWithResponseRequest{
-		Record: record,
-	}
-	response, err := client.GrpcClient.ProcessWithResponse(ctx, &request)
-	return response.GetResult(), err
+    if g2engine.isTrace {
+        g2engine.traceEntry(113, record)
+    }
+    entryTime := time.Now()
+    request := pb.ProcessWithResponseRequest{
+        Record: record,
+    }
+    response, err := client.GrpcClient.ProcessWithResponse(ctx, &request)
+    if g2engine.observers != nil {
+        go func() {
+            details := map[string]string{}
+            g2engine.notify(ctx, 8054, err, details)
+        }()
+    }
+    if g2engine.isTrace {
+        defer g2engine.traceExit(114, record, C.GoString(result.response), err, time.Since(entryTime))
+    }
+    return response.GetResult(), err
 }
 
 /*
@@ -1290,11 +2152,24 @@ Output
     See the example output.
 */
 func (client *G2engineClient) ProcessWithResponseResize(ctx context.Context, record string) (string, error) {
-	request := pb.ProcessWithResponseResizeRequest{
-		Record: record,
-	}
-	response, err := client.GrpcClient.ProcessWithResponseResize(ctx, &request)
-	return response.GetResult(), err
+    if g2engine.isTrace {
+        g2engine.traceEntry(115, record)
+    }
+    entryTime := time.Now()
+    request := pb.ProcessWithResponseResizeRequest{
+        Record: record,
+    }
+    response, err := client.GrpcClient.ProcessWithResponseResize(ctx, &request)
+    if g2engine.observers != nil {
+        go func() {
+            details := map[string]string{}
+            g2engine.notify(ctx, 8055, err, details)
+        }()
+    }
+    if g2engine.isTrace {
+        defer g2engine.traceExit(116, record, C.GoString(result.response), err, time.Since(entryTime))
+    }
+    return response.GetResult(), err
 }
 
 /*
@@ -1308,9 +2183,22 @@ Input
   - ctx: A context to control lifecycle.
 */
 func (client *G2engineClient) PurgeRepository(ctx context.Context) error {
-	request := pb.PurgeRepositoryRequest{}
-	_, err := client.GrpcClient.PurgeRepository(ctx, &request)
-	return err
+        if g2engine.isTrace {
+        g2engine.traceEntry(117)
+    }
+    entryTime := time.Now()
+    request := pb.PurgeRepositoryRequest{}
+    _, err := client.GrpcClient.PurgeRepository(ctx, &request)
+    if g2engine.observers != nil {
+        go func() {
+            details := map[string]string{}
+            g2engine.notify(ctx, 8056, err, details)
+        }()
+    }
+    if g2engine.isTrace {
+        defer g2engine.traceExit(118, err, time.Since(entryTime))
+    }
+    return err
 }
 
 /*
@@ -1322,12 +2210,27 @@ Input
   - flags: Flags used to control information returned.
 */
 func (client *G2engineClient) ReevaluateEntity(ctx context.Context, entityID int64, flags int64) error {
-	request := pb.ReevaluateEntityRequest{
-		EntityID: entityID,
-		Flags:    flags,
-	}
-	_, err := client.GrpcClient.ReevaluateEntity(ctx, &request)
-	return err
+    if g2engine.isTrace {
+        g2engine.traceEntry(119, entityID, flags)
+    }
+    entryTime := time.Now()
+    request := pb.ReevaluateEntityRequest{
+        EntityID: entityID,
+        Flags:    flags,
+    }
+    _, err := client.GrpcClient.ReevaluateEntity(ctx, &request)
+    if g2engine.observers != nil {
+        go func() {
+            details := map[string]string{
+                "entityID": strconv.FormatInt(entityID, 10),
+            }
+            g2engine.notify(ctx, 8057, err, details)
+        }()
+    }
+    if g2engine.isTrace {
+        defer g2engine.traceExit(120, entityID, flags, err, time.Since(entryTime))
+    }
+    return err
 }
 
 /*
@@ -1344,12 +2247,27 @@ Output
     See the example output.
 */
 func (client *G2engineClient) ReevaluateEntityWithInfo(ctx context.Context, entityID int64, flags int64) (string, error) {
-	request := pb.ReevaluateEntityWithInfoRequest{
-		EntityID: entityID,
-		Flags:    flags,
-	}
-	response, err := client.GrpcClient.ReevaluateEntityWithInfo(ctx, &request)
-	return response.GetResult(), err
+    if g2engine.isTrace {
+        g2engine.traceEntry(121, entityID, flags)
+    }
+    entryTime := time.Now()
+    request := pb.ReevaluateEntityWithInfoRequest{
+        EntityID: entityID,
+        Flags:    flags,
+    }
+    response, err := client.GrpcClient.ReevaluateEntityWithInfo(ctx, &request)
+    if g2engine.observers != nil {
+        go func() {
+            details := map[string]string{
+                "entityID": strconv.FormatInt(entityID, 10),
+            }
+            g2engine.notify(ctx, 8058, err, details)
+        }()
+    }
+    if g2engine.isTrace {
+        defer g2engine.traceExit(122, entityID, flags, C.GoString(result.response), err, time.Since(entryTime))
+    }
+    return response.GetResult(), err
 }
 
 /*
@@ -1362,13 +2280,29 @@ Input
   - flags: Flags used to control information returned.
 */
 func (client *G2engineClient) ReevaluateRecord(ctx context.Context, dataSourceCode string, recordID string, flags int64) error {
-	request := pb.ReevaluateRecordRequest{
-		DataSourceCode: dataSourceCode,
-		RecordID:       recordID,
-		Flags:          flags,
-	}
-	_, err := client.GrpcClient.ReevaluateRecord(ctx, &request)
-	return err
+    if g2engine.isTrace {
+        g2engine.traceEntry(123, dataSourceCode, recordID, flags)
+    }
+    entryTime := time.Now()
+    request := pb.ReevaluateRecordRequest{
+        DataSourceCode: dataSourceCode,
+        RecordID:       recordID,
+        Flags:          flags,
+    }
+    _, err := client.GrpcClient.ReevaluateRecord(ctx, &request)
+    if g2engine.observers != nil {
+        go func() {
+            details := map[string]string{
+                "dataSourceCode": dataSourceCode,
+                "recordID":       recordID,
+            }
+            g2engine.notify(ctx, 8059, err, details)
+        }()
+    }
+    if g2engine.isTrace {
+        defer g2engine.traceExit(124, dataSourceCode, recordID, flags, err, time.Since(entryTime))
+    }
+    return err
 }
 
 /*
@@ -1386,13 +2320,43 @@ Output
     See the example output.
 */
 func (client *G2engineClient) ReevaluateRecordWithInfo(ctx context.Context, dataSourceCode string, recordID string, flags int64) (string, error) {
-	request := pb.ReevaluateRecordWithInfoRequest{
-		DataSourceCode: dataSourceCode,
-		RecordID:       recordID,
-		Flags:          flags,
-	}
-	response, err := client.GrpcClient.ReevaluateRecordWithInfo(ctx, &request)
-	return response.GetResult(), err
+    if g2engine.isTrace {
+        g2engine.traceEntry(125, dataSourceCode, recordID, flags)
+    }
+    entryTime := time.Now()
+    request := pb.ReevaluateRecordWithInfoRequest{
+        DataSourceCode: dataSourceCode,
+        RecordID:       recordID,
+        Flags:          flags,
+    }
+    response, err := client.GrpcClient.ReevaluateRecordWithInfo(ctx, &request)
+    if g2engine.observers != nil {
+        go func() {
+            details := map[string]string{
+                "dataSourceCode": dataSourceCode,
+                "recordID":       recordID,
+            }
+            g2engine.notify(ctx, 8060, err, details)
+        }()
+    }
+    if g2engine.isTrace {
+        defer g2engine.traceExit(126, dataSourceCode, recordID, flags, C.GoString(result.response), err, time.Since(entryTime))
+    }
+    return response.GetResult(), err
+}
+
+/*
+The RegisterObserver method adds the observer to the list of observers notified.
+
+Input
+  - ctx: A context to control lifecycle.
+  - observer: The observer to be added.
+*/
+func (client *G2engineClient) RegisterObserver(ctx context.Context, observer observer.Observer) error {
+    if g2engine.observers == nil {
+        g2engine.observers = &subject.SubjectImpl{}
+    }
+    return g2engine.observers.RegisterObserver(ctx, observer)
 }
 
 /*
@@ -1403,11 +2367,26 @@ Input
   - initConfigID: The configuration ID used for the initialization.
 */
 func (client *G2engineClient) Reinit(ctx context.Context, initConfigID int64) error {
-	request := pb.ReinitRequest{
-		InitConfigID: initConfigID,
-	}
-	_, err := client.GrpcClient.Reinit(ctx, &request)
-	return err
+    if g2engine.isTrace {
+        g2engine.traceEntry(127, initConfigID)
+    }
+    entryTime := time.Now()
+    request := pb.ReinitRequest{
+        InitConfigID: initConfigID,
+    }
+    _, err := client.GrpcClient.Reinit(ctx, &request)
+    if g2engine.observers != nil {
+        go func() {
+            details := map[string]string{
+                "initConfigID": strconv.FormatInt(initConfigID, 10),
+            }
+            g2engine.notify(ctx, 8061, err, details)
+        }()
+    }
+    if g2engine.isTrace {
+        defer g2engine.traceExit(128, initConfigID, err, time.Since(entryTime))
+    }
+    return err
 }
 
 /*
@@ -1422,14 +2401,31 @@ Input
   - loadID: An identifier used to distinguish different load batches/sessions. An empty string is acceptable.
 */
 func (client *G2engineClient) ReplaceRecord(ctx context.Context, dataSourceCode string, recordID string, jsonData string, loadID string) error {
-	request := pb.ReplaceRecordRequest{
-		DataSourceCode: dataSourceCode,
-		RecordID:       recordID,
-		JsonData:       jsonData,
-		LoadID:         loadID,
-	}
-	_, err := client.GrpcClient.ReplaceRecord(ctx, &request)
-	return err
+    if g2engine.isTrace {
+        g2engine.traceEntry(129, dataSourceCode, recordID, jsonData, loadID)
+    }
+    entryTime := time.Now()
+    request := pb.ReplaceRecordRequest{
+        DataSourceCode: dataSourceCode,
+        RecordID:       recordID,
+        JsonData:       jsonData,
+        LoadID:         loadID,
+    }
+    _, err := client.GrpcClient.ReplaceRecord(ctx, &request)
+    if g2engine.observers != nil {
+        go func() {
+            details := map[string]string{
+                "dataSourceCode": dataSourceCode,
+                "recordID":       recordID,
+                "loadID":         loadID,
+            }
+            g2engine.notify(ctx, 8062, err, details)
+        }()
+    }
+    if g2engine.isTrace {
+        defer g2engine.traceExit(130, dataSourceCode, recordID, jsonData, loadID, err, time.Since(entryTime))
+    }
+    return err
 }
 
 /*
@@ -1449,15 +2445,32 @@ Output
     See the example output.
 */
 func (client *G2engineClient) ReplaceRecordWithInfo(ctx context.Context, dataSourceCode string, recordID string, jsonData string, loadID string, flags int64) (string, error) {
-	request := pb.ReplaceRecordWithInfoRequest{
-		DataSourceCode: dataSourceCode,
-		RecordID:       recordID,
-		JsonData:       jsonData,
-		LoadID:         loadID,
-		Flags:          flags,
-	}
-	response, err := client.GrpcClient.ReplaceRecordWithInfo(ctx, &request)
-	return response.GetResult(), err
+    if g2engine.isTrace {
+        g2engine.traceEntry(131, dataSourceCode, recordID, jsonData, loadID, flags)
+    }
+    entryTime := time.Now()
+    request := pb.ReplaceRecordWithInfoRequest{
+        DataSourceCode: dataSourceCode,
+        RecordID:       recordID,
+        JsonData:       jsonData,
+        LoadID:         loadID,
+        Flags:          flags,
+    }
+    response, err := client.GrpcClient.ReplaceRecordWithInfo(ctx, &request)
+    if g2engine.observers != nil {
+        go func() {
+            details := map[string]string{
+                "dataSourceCode": dataSourceCode,
+                "recordID":       recordID,
+                "loadID":         loadID,
+            }
+            g2engine.notify(ctx, 8063, err, details)
+        }()
+    }
+    if g2engine.isTrace {
+        defer g2engine.traceExit(132, dataSourceCode, recordID, jsonData, loadID, flags, C.GoString(result.response), err, time.Since(entryTime))
+    }
+    return response.GetResult(), err
 }
 
 /*
@@ -1473,11 +2486,24 @@ Output
     Example: `{"RESOLVED_ENTITIES":[{"MATCH_INFO":{"MATCH_LEVEL":1,"MATCH_LEVEL_CODE":"RESOLVED","MATCH_KEY":"+NAME+SSN","ERRULE_CODE":"SF1_PNAME_CSTAB","FEATURE_SCORES":{"NAME":[{"INBOUND_FEAT":"JOHNSON","CANDIDATE_FEAT":"JOHNSON","GNR_FN":100,"GNR_SN":100,"GNR_GN":70,"GENERATION_MATCH":-1,"GNR_ON":-1}],"SSN":[{"INBOUND_FEAT":"053-39-3251","CANDIDATE_FEAT":"053-39-3251","FULL_SCORE":100}]}},"ENTITY":{"RESOLVED_ENTITY":{"ENTITY_ID":1,"ENTITY_NAME":"JOHNSON","FEATURES":{"ACCT_NUM":[{"FEAT_DESC":"5534202208773608","LIB_FEAT_ID":8,"USAGE_TYPE":"CC","FEAT_DESC_VALUES":[{"FEAT_DESC":"5534202208773608","LIB_FEAT_ID":8}]}],"ADDRESS":[{"FEAT_DESC":"772 Armstrong RD Delhi LA 71232","LIB_FEAT_ID":4,"FEAT_DESC_VALUES":[{"FEAT_DESC":"772 Armstrong RD Delhi LA 71232","LIB_FEAT_ID":4}]}],"DOB":[{"FEAT_DESC":"4/8/1983","LIB_FEAT_ID":2,"FEAT_DESC_VALUES":[{"FEAT_DESC":"4/8/1983","LIB_FEAT_ID":2}]},{"FEAT_DESC":"4/8/1985","LIB_FEAT_ID":100001,"FEAT_DESC_VALUES":[{"FEAT_DESC":"4/8/1985","LIB_FEAT_ID":100001}]}],"GENDER":[{"FEAT_DESC":"F","LIB_FEAT_ID":3,"FEAT_DESC_VALUES":[{"FEAT_DESC":"F","LIB_FEAT_ID":3}]}],"LOGIN_ID":[{"FEAT_DESC":"flavorh","LIB_FEAT_ID":7,"FEAT_DESC_VALUES":[{"FEAT_DESC":"flavorh","LIB_FEAT_ID":7}]}],"NAME":[{"FEAT_DESC":"JOHNSON","LIB_FEAT_ID":1,"FEAT_DESC_VALUES":[{"FEAT_DESC":"JOHNSON","LIB_FEAT_ID":1}]}],"PHONE":[{"FEAT_DESC":"225-671-0796","LIB_FEAT_ID":5,"FEAT_DESC_VALUES":[{"FEAT_DESC":"225-671-0796","LIB_FEAT_ID":5}]}],"SSN":[{"FEAT_DESC":"053-39-3251","LIB_FEAT_ID":6,"FEAT_DESC_VALUES":[{"FEAT_DESC":"053-39-3251","LIB_FEAT_ID":6}]}]},"RECORD_SUMMARY":[{"DATA_SOURCE":"TEST","RECORD_COUNT":6,"FIRST_SEEN_DT":"2022-12-06 15:38:06.175","LAST_SEEN_DT":"2022-12-06 15:38:06.957"}],"LAST_SEEN_DT":"2022-12-06 15:38:06.957"}}}]}`
 */
 func (client *G2engineClient) SearchByAttributes(ctx context.Context, jsonData string) (string, error) {
-	request := pb.SearchByAttributesRequest{
-		JsonData: jsonData,
-	}
-	response, err := client.GrpcClient.SearchByAttributes(ctx, &request)
-	return response.GetResult(), err
+    if g2engine.isTrace {
+        g2engine.traceEntry(133, jsonData)
+    }
+    entryTime := time.Now()
+    request := pb.SearchByAttributesRequest{
+        JsonData: jsonData,
+    }
+    response, err := client.GrpcClient.SearchByAttributes(ctx, &request)
+    if g2engine.observers != nil {
+        go func() {
+            details := map[string]string{}
+            g2engine.notify(ctx, 8064, err, details)
+        }()
+    }
+    if g2engine.isTrace {
+        defer g2engine.traceExit(134, jsonData, C.GoString(result.response), err, time.Since(entryTime))
+    }
+    return response.GetResult(), err
 }
 
 /*
@@ -1494,12 +2520,25 @@ Output
     See the example output.
 */
 func (client *G2engineClient) SearchByAttributes_V2(ctx context.Context, jsonData string, flags int64) (string, error) {
-	request := pb.SearchByAttributes_V2Request{
-		JsonData: jsonData,
-		Flags:    flags,
-	}
-	response, err := client.GrpcClient.SearchByAttributes_V2(ctx, &request)
-	return response.GetResult(), err
+    if g2engine.isTrace {
+        g2engine.traceEntry(135, jsonData, flags)
+    }
+    entryTime := time.Now()
+    request := pb.SearchByAttributes_V2Request{
+        JsonData: jsonData,
+        Flags:    flags,
+    }
+    response, err := client.GrpcClient.SearchByAttributes_V2(ctx, &request)
+    if g2engine.observers != nil {
+        go func() {
+            details := map[string]string{}
+            g2engine.notify(ctx, 8065, err, details)
+        }()
+    }
+    if g2engine.isTrace {
+        defer g2engine.traceExit(136, jsonData, flags, C.GoString(result.response), err, time.Since(entryTime))
+    }
+    return response.GetResult(), err
 }
 
 /*
@@ -1510,8 +2549,15 @@ Input
   - logLevel: The desired log level. TRACE, DEBUG, INFO, WARN, ERROR, FATAL or PANIC.
 */
 func (client *G2engineClient) SetLogLevel(ctx context.Context, logLevel logger.Level) error {
-	var err error = nil
-	return err
+    if g2engine.isTrace {
+        g2engine.traceEntry(137, logLevel)
+    }
+    entryTime := time.Now()
+    var err error = nil
+    if g2engine.isTrace {
+        defer g2engine.traceExit(138, logLevel, err, time.Since(entryTime))
+    }
+    return err
 }
 
 /*
@@ -1526,9 +2572,22 @@ Output
     Example: `{"workload":{"loadedRecords":5,"addedRecords":2,"deletedRecords":0,"reevaluations":0,"repairedEntities":0,"duration":56,"retries":0,"candidates":19,"actualAmbiguousTest":0,"cachedAmbiguousTest":0,"libFeatCacheHit":219,"libFeatCacheMiss":73,"unresolveTest":1,"abortedUnresolve":0,"gnrScorersUsed":1,"unresolveTriggers":{"normalResolve":0,"update":0,"relLink":0,"extensiveResolve":0,"ambiguousNoResolve":1,"ambiguousMultiResolve":0},"reresolveTriggers":{"abortRetry":0,"unresolveMovement":0,"multipleResolvableCandidates":0,"resolveNewFeatures":1,"newFeatureFTypes":[{"DOB":1}]},"reresolveSkipped":0,"filteredObsFeat":0,"expressedFeatureCalls":[{"EFCALL_ID":1,"EFUNC_CODE":"PHONE_HASHER","numCalls":1},{"EFCALL_ID":2,"EFUNC_CODE":"EXPRESS_ID","numCalls":1},{"EFCALL_ID":3,"EFUNC_CODE":"EXPRESS_ID","numCalls":1},{"EFCALL_ID":5,"EFUNC_CODE":"EXPRESS_BOM","numCalls":1},{"EFCALL_ID":7,"EFUNC_CODE":"NAME_HASHER","numCalls":4},{"EFCALL_ID":9,"EFUNC_CODE":"ADDR_HASHER","numCalls":1},{"EFCALL_ID":10,"EFUNC_CODE":"EXPRESS_BOM","numCalls":1},{"EFCALL_ID":14,"EFUNC_CODE":"EXPRESS_ID","numCalls":1},{"EFCALL_ID":16,"EFUNC_CODE":"EXPRESS_ID","numCalls":4}],"expressedFeaturesCreated":[{"ADDR_KEY":2},{"ID_KEY":7},{"NAME_KEY":14},{"PHONE_KEY":1},{"SEARCH_KEY":2}],"scoredPairs":[{"ACCT_NUM":16},{"ADDRESS":16},{"DOB":25},{"GENDER":16},{"LOGIN_ID":16},{"NAME":19},{"PHONE":16},{"SSN":19}],"cacheHit":[{"ADDRESS":12},{"DOB":18},{"NAME":13},{"PHONE":15}],"cacheMiss":[{"ADDRESS":4},{"DOB":7},{"NAME":6},{"PHONE":1}],"redoTriggers":[],"latchContention":[],"highContentionFeat":[],"highContentionResEnt":[],"genericDetect":[],"candidateBuilders":[{"ACCT_NUM":7},{"ADDR_KEY":7},{"DOB":7},{"ID_KEY":9},{"LOGIN_ID":7},{"NAME_KEY":9},{"PHONE":7},{"PHONE_KEY":7},{"SEARCH_KEY":7},{"SSN":9}],"suppressedCandidateBuilders":[],"suppressedScoredFeatureType":[],"reducedScoredFeatureType":[],"suppressedDisclosedRelationshipDomainCount":0,"CorruptEntityTestDiagnosis":{},"threadState":{"active":0,"idle":4,"sqlExecuting":0,"loader":0,"resolver":0,"scoring":0,"dataLatchContention":0,"obsEntContention":0,"resEntContention":0},"systemResources":{"initResources":[{"physicalCores":16},{"logicalCores":16},{"totalMemory":"62.6GB"},{"availableMemory":"49.5GB"}],"currResources":[{"availableMemory":"47.4GB"},{"activeThreads":0},{"workerThreads":4},{"systemLoad":[{"cpuUser":13.442277},{"cpuSystem":2.635741},{"cpuIdle":82.024246},{"cpuWait":1.634159},{"cpuSoftIrq":0.263574}]}]}}}`
 */
 func (client *G2engineClient) Stats(ctx context.Context) (string, error) {
-	request := pb.StatsRequest{}
-	response, err := client.GrpcClient.Stats(ctx, &request)
-	return response.GetResult(), err
+    if g2engine.isTrace {
+        g2engine.traceEntry(139)
+    }
+    entryTime := time.Now()
+    request := pb.StatsRequest{}
+    response, err := client.GrpcClient.Stats(ctx, &request)
+    if g2engine.observers != nil {
+        go func() {
+            details := map[string]string{}
+            g2engine.notify(ctx, 8066, err, details)
+        }()
+    }
+    if g2engine.isTrace {
+        defer g2engine.traceExit(140, C.GoString(result.response), err, time.Since(entryTime))
+    }
+    return response.GetResult(), err
 }
 
 /*
@@ -1548,12 +2607,28 @@ Output
     Example: `{"WHY_RESULTS":[{"ENTITY_ID":1,"ENTITY_ID_2":2,"MATCH_INFO":{"WHY_KEY":"+PHONE+ACCT_NUM-SSN","WHY_ERRULE_CODE":"SF1","MATCH_LEVEL_CODE":"POSSIBLY_RELATED","CANDIDATE_KEYS":{"ACCT_NUM":[{"FEAT_ID":8,"FEAT_DESC":"5534202208773608"}],"ADDR_KEY":[{"FEAT_ID":17,"FEAT_DESC":"772|ARMSTRNK||TL"}],"ID_KEY":[{"FEAT_ID":19,"FEAT_DESC":"ACCT_NUM=5534202208773608"}],"PHONE":[{"FEAT_ID":5,"FEAT_DESC":"225-671-0796"}],"PHONE_KEY":[{"FEAT_ID":21,"FEAT_DESC":"2256710796"}]},"DISCLOSED_RELATIONS":{},"FEATURE_SCORES":{"ACCT_NUM":[{"INBOUND_FEAT_ID":8,"INBOUND_FEAT":"5534202208773608","INBOUND_FEAT_USAGE_TYPE":"CC","CANDIDATE_FEAT_ID":8,"CANDIDATE_FEAT":"5534202208773608","CANDIDATE_FEAT_USAGE_TYPE":"CC","FULL_SCORE":100,"SCORE_BUCKET":"SAME","SCORE_BEHAVIOR":"F1"}],"ADDRESS":[{"INBOUND_FEAT_ID":4,"INBOUND_FEAT":"772 Armstrong RD Delhi LA 71232","INBOUND_FEAT_USAGE_TYPE":"","CANDIDATE_FEAT_ID":26,"CANDIDATE_FEAT":"772 Armstrong RD Delhi WI 53543","CANDIDATE_FEAT_USAGE_TYPE":"","FULL_SCORE":81,"SCORE_BUCKET":"LIKELY","SCORE_BEHAVIOR":"FF"}],"DOB":[{"INBOUND_FEAT_ID":100001,"INBOUND_FEAT":"4/8/1985","INBOUND_FEAT_USAGE_TYPE":"","CANDIDATE_FEAT_ID":25,"CANDIDATE_FEAT":"6/9/1983","CANDIDATE_FEAT_USAGE_TYPE":"","FULL_SCORE":79,"SCORE_BUCKET":"NO_CHANCE","SCORE_BEHAVIOR":"FMES"},{"INBOUND_FEAT_ID":2,"INBOUND_FEAT":"4/8/1983","INBOUND_FEAT_USAGE_TYPE":"","CANDIDATE_FEAT_ID":25,"CANDIDATE_FEAT":"6/9/1983","CANDIDATE_FEAT_USAGE_TYPE":"","FULL_SCORE":86,"SCORE_BUCKET":"PLAUSIBLE","SCORE_BEHAVIOR":"FMES"}],"GENDER":[{"INBOUND_FEAT_ID":3,"INBOUND_FEAT":"F","INBOUND_FEAT_USAGE_TYPE":"","CANDIDATE_FEAT_ID":3,"CANDIDATE_FEAT":"F","CANDIDATE_FEAT_USAGE_TYPE":"","FULL_SCORE":100,"SCORE_BUCKET":"SAME","SCORE_BEHAVIOR":"FVME"}],"LOGIN_ID":[{"INBOUND_FEAT_ID":7,"INBOUND_FEAT":"flavorh","INBOUND_FEAT_USAGE_TYPE":"","CANDIDATE_FEAT_ID":28,"CANDIDATE_FEAT":"flavorh2","CANDIDATE_FEAT_USAGE_TYPE":"","FULL_SCORE":0,"SCORE_BUCKET":"NO_CHANCE","SCORE_BEHAVIOR":"F1"}],"NAME":[{"INBOUND_FEAT_ID":1,"INBOUND_FEAT":"JOHNSON","INBOUND_FEAT_USAGE_TYPE":"","CANDIDATE_FEAT_ID":24,"CANDIDATE_FEAT":"OCEANGUY","CANDIDATE_FEAT_USAGE_TYPE":"","GNR_FN":33,"GNR_SN":32,"GNR_GN":70,"GENERATION_MATCH":-1,"GNR_ON":-1,"SCORE_BUCKET":"NO_CHANCE","SCORE_BEHAVIOR":"NAME"}],"PHONE":[{"INBOUND_FEAT_ID":5,"INBOUND_FEAT":"225-671-0796","INBOUND_FEAT_USAGE_TYPE":"","CANDIDATE_FEAT_ID":5,"CANDIDATE_FEAT":"225-671-0796","CANDIDATE_FEAT_USAGE_TYPE":"","FULL_SCORE":100,"SCORE_BUCKET":"SAME","SCORE_BEHAVIOR":"FF"}],"SSN":[{"INBOUND_FEAT_ID":6,"INBOUND_FEAT":"053-39-3251","INBOUND_FEAT_USAGE_TYPE":"","CANDIDATE_FEAT_ID":27,"CANDIDATE_FEAT":"153-33-5185","CANDIDATE_FEAT_USAGE_TYPE":"","FULL_SCORE":0,"SCORE_BUCKET":"NO_CHANCE","SCORE_BEHAVIOR":"F1ES"}]}}}],"ENTITIES":[{"RESOLVED_ENTITY":{"ENTITY_ID":1,"ENTITY_NAME":"JOHNSON","FEATURES":{"ACCT_NUM":[{"FEAT_DESC":"5534202208773608","LIB_FEAT_ID":8,"USAGE_TYPE":"CC","FEAT_DESC_VALUES":[{"FEAT_DESC":"5534202208773608","LIB_FEAT_ID":8,"USED_FOR_CAND":"Y","USED_FOR_SCORING":"Y","ENTITY_COUNT":3,"CANDIDATE_CAP_REACHED":"N","SCORING_CAP_REACHED":"N","SUPPRESSED":"N"}]}],"ADDRESS":[{"FEAT_DESC":"772 Armstrong RD Delhi LA 71232","LIB_FEAT_ID":4,"FEAT_DESC_VALUES":[{"FEAT_DESC":"772 Armstrong RD Delhi LA 71232","LIB_FEAT_ID":4,"USED_FOR_CAND":"N","USED_FOR_SCORING":"Y","ENTITY_COUNT":1,"CANDIDATE_CAP_REACHED":"N","SCORING_CAP_REACHED":"N","SUPPRESSED":"N"}]}],"ADDR_KEY":[{"FEAT_DESC":"772|ARMSTRNK||71232","LIB_FEAT_ID":18,"FEAT_DESC_VALUES":[{"FEAT_DESC":"772|ARMSTRNK||71232","LIB_FEAT_ID":18,"USED_FOR_CAND":"Y","USED_FOR_SCORING":"N","ENTITY_COUNT":1,"CANDIDATE_CAP_REACHED":"N","SCORING_CAP_REACHED":"N","SUPPRESSED":"N"}]},{"FEAT_DESC":"772|ARMSTRNK||TL","LIB_FEAT_ID":17,"FEAT_DESC_VALUES":[{"FEAT_DESC":"772|ARMSTRNK||TL","LIB_FEAT_ID":17,"USED_FOR_CAND":"Y","USED_FOR_SCORING":"N","ENTITY_COUNT":3,"CANDIDATE_CAP_REACHED":"N","SCORING_CAP_REACHED":"N","SUPPRESSED":"N"}]}],"DOB":[{"FEAT_DESC":"4/8/1983","LIB_FEAT_ID":2,"FEAT_DESC_VALUES":[{"FEAT_DESC":"4/8/1983","LIB_FEAT_ID":2,"USED_FOR_CAND":"Y","USED_FOR_SCORING":"Y","ENTITY_COUNT":1,"CANDIDATE_CAP_REACHED":"N","SCORING_CAP_REACHED":"N","SUPPRESSED":"N"}]},{"FEAT_DESC":"4/8/1985","LIB_FEAT_ID":100001,"FEAT_DESC_VALUES":[{"FEAT_DESC":"4/8/1985","LIB_FEAT_ID":100001,"USED_FOR_CAND":"Y","USED_FOR_SCORING":"Y","ENTITY_COUNT":1,"CANDIDATE_CAP_REACHED":"N","SCORING_CAP_REACHED":"N","SUPPRESSED":"N"}]}],"GENDER":[{"FEAT_DESC":"F","LIB_FEAT_ID":3,"FEAT_DESC_VALUES":[{"FEAT_DESC":"F","LIB_FEAT_ID":3,"USED_FOR_CAND":"N","USED_FOR_SCORING":"Y","ENTITY_COUNT":3,"CANDIDATE_CAP_REACHED":"N","SCORING_CAP_REACHED":"N","SUPPRESSED":"N"}]}],"ID_KEY":[{"FEAT_DESC":"ACCT_NUM=5534202208773608","LIB_FEAT_ID":19,"FEAT_DESC_VALUES":[{"FEAT_DESC":"ACCT_NUM=5534202208773608","LIB_FEAT_ID":19,"USED_FOR_CAND":"Y","USED_FOR_SCORING":"N","ENTITY_COUNT":3,"CANDIDATE_CAP_REACHED":"N","SCORING_CAP_REACHED":"N","SUPPRESSED":"N"}]},{"FEAT_DESC":"SSN=053-39-3251","LIB_FEAT_ID":20,"FEAT_DESC_VALUES":[{"FEAT_DESC":"SSN=053-39-3251","LIB_FEAT_ID":20,"USED_FOR_CAND":"Y","USED_FOR_SCORING":"N","ENTITY_COUNT":1,"CANDIDATE_CAP_REACHED":"N","SCORING_CAP_REACHED":"N","SUPPRESSED":"N"}]}],"LOGIN_ID":[{"FEAT_DESC":"flavorh","LIB_FEAT_ID":7,"FEAT_DESC_VALUES":[{"FEAT_DESC":"flavorh","LIB_FEAT_ID":7,"USED_FOR_CAND":"Y","USED_FOR_SCORING":"Y","ENTITY_COUNT":1,"CANDIDATE_CAP_REACHED":"N","SCORING_CAP_REACHED":"N","SUPPRESSED":"N"}]}],"NAME":[{"FEAT_DESC":"JOHNSON","LIB_FEAT_ID":1,"FEAT_DESC_VALUES":[{"FEAT_DESC":"JOHNSON","LIB_FEAT_ID":1,"USED_FOR_CAND":"N","USED_FOR_SCORING":"Y","ENTITY_COUNT":1,"CANDIDATE_CAP_REACHED":"N","SCORING_CAP_REACHED":"N","SUPPRESSED":"N"}]}],"NAME_KEY":[{"FEAT_DESC":"JNSN","LIB_FEAT_ID":11,"FEAT_DESC_VALUES":[{"FEAT_DESC":"JNSN","LIB_FEAT_ID":11,"USED_FOR_CAND":"Y","USED_FOR_SCORING":"N","ENTITY_COUNT":1,"CANDIDATE_CAP_REACHED":"N","SCORING_CAP_REACHED":"N","SUPPRESSED":"N"}]},{"FEAT_DESC":"JNSN|ADDRESS.CITY_STD=TL","LIB_FEAT_ID":12,"FEAT_DESC_VALUES":[{"FEAT_DESC":"JNSN|ADDRESS.CITY_STD=TL","LIB_FEAT_ID":12,"USED_FOR_CAND":"Y","USED_FOR_SCORING":"N","ENTITY_COUNT":1,"CANDIDATE_CAP_REACHED":"N","SCORING_CAP_REACHED":"N","SUPPRESSED":"N"}]},{"FEAT_DESC":"JNSN|DOB.MMDD_HASH=0804","LIB_FEAT_ID":9,"FEAT_DESC_VALUES":[{"FEAT_DESC":"JNSN|DOB.MMDD_HASH=0804","LIB_FEAT_ID":9,"USED_FOR_CAND":"Y","USED_FOR_SCORING":"N","ENTITY_COUNT":1,"CANDIDATE_CAP_REACHED":"N","SCORING_CAP_REACHED":"N","SUPPRESSED":"N"}]},{"FEAT_DESC":"JNSN|DOB.MMYY_HASH=0483","LIB_FEAT_ID":10,"FEAT_DESC_VALUES":[{"FEAT_DESC":"JNSN|DOB.MMYY_HASH=0483","LIB_FEAT_ID":10,"USED_FOR_CAND":"Y","USED_FOR_SCORING":"N","ENTITY_COUNT":1,"CANDIDATE_CAP_REACHED":"N","SCORING_CAP_REACHED":"N","SUPPRESSED":"N"}]},{"FEAT_DESC":"JNSN|DOB.MMYY_HASH=0485","LIB_FEAT_ID":100002,"FEAT_DESC_VALUES":[{"FEAT_DESC":"JNSN|DOB.MMYY_HASH=0485","LIB_FEAT_ID":100002,"USED_FOR_CAND":"Y","USED_FOR_SCORING":"N","ENTITY_COUNT":1,"CANDIDATE_CAP_REACHED":"N","SCORING_CAP_REACHED":"N","SUPPRESSED":"N"}]},{"FEAT_DESC":"JNSN|DOB=80804","LIB_FEAT_ID":13,"FEAT_DESC_VALUES":[{"FEAT_DESC":"JNSN|DOB=80804","LIB_FEAT_ID":13,"USED_FOR_CAND":"Y","USED_FOR_SCORING":"N","ENTITY_COUNT":1,"CANDIDATE_CAP_REACHED":"N","SCORING_CAP_REACHED":"N","SUPPRESSED":"N"}]},{"FEAT_DESC":"JNSN|PHONE.PHONE_LAST_5=10796","LIB_FEAT_ID":15,"FEAT_DESC_VALUES":[{"FEAT_DESC":"JNSN|PHONE.PHONE_LAST_5=10796","LIB_FEAT_ID":15,"USED_FOR_CAND":"Y","USED_FOR_SCORING":"N","ENTITY_COUNT":1,"CANDIDATE_CAP_REACHED":"N","SCORING_CAP_REACHED":"N","SUPPRESSED":"N"}]},{"FEAT_DESC":"JNSN|POST=71232","LIB_FEAT_ID":14,"FEAT_DESC_VALUES":[{"FEAT_DESC":"JNSN|POST=71232","LIB_FEAT_ID":14,"USED_FOR_CAND":"Y","USED_FOR_SCORING":"N","ENTITY_COUNT":1,"CANDIDATE_CAP_REACHED":"N","SCORING_CAP_REACHED":"N","SUPPRESSED":"N"}]},{"FEAT_DESC":"JNSN|SSN=3251","LIB_FEAT_ID":16,"FEAT_DESC_VALUES":[{"FEAT_DESC":"JNSN|SSN=3251","LIB_FEAT_ID":16,"USED_FOR_CAND":"Y","USED_FOR_SCORING":"N","ENTITY_COUNT":1,"CANDIDATE_CAP_REACHED":"N","SCORING_CAP_REACHED":"N","SUPPRESSED":"N"}]}],"PHONE":[{"FEAT_DESC":"225-671-0796","LIB_FEAT_ID":5,"FEAT_DESC_VALUES":[{"FEAT_DESC":"225-671-0796","LIB_FEAT_ID":5,"USED_FOR_CAND":"Y","USED_FOR_SCORING":"Y","ENTITY_COUNT":3,"CANDIDATE_CAP_REACHED":"N","SCORING_CAP_REACHED":"N","SUPPRESSED":"N"}]}],"PHONE_KEY":[{"FEAT_DESC":"2256710796","LIB_FEAT_ID":21,"FEAT_DESC_VALUES":[{"FEAT_DESC":"2256710796","LIB_FEAT_ID":21,"USED_FOR_CAND":"Y","USED_FOR_SCORING":"N","ENTITY_COUNT":3,"CANDIDATE_CAP_REACHED":"N","SCORING_CAP_REACHED":"N","SUPPRESSED":"N"}]}],"SEARCH_KEY":[{"FEAT_DESC":"LOGIN_ID:FLAVORH|","LIB_FEAT_ID":22,"FEAT_DESC_VALUES":[{"FEAT_DESC":"LOGIN_ID:FLAVORH|","LIB_FEAT_ID":22,"USED_FOR_CAND":"Y","USED_FOR_SCORING":"N","ENTITY_COUNT":1,"CANDIDATE_CAP_REACHED":"N","SCORING_CAP_REACHED":"N","SUPPRESSED":"N"}]},{"FEAT_DESC":"SSN:3251|80804|","LIB_FEAT_ID":23,"FEAT_DESC_VALUES":[{"FEAT_DESC":"SSN:3251|80804|","LIB_FEAT_ID":23,"USED_FOR_CAND":"Y","USED_FOR_SCORING":"N","ENTITY_COUNT":1,"CANDIDATE_CAP_REACHED":"N","SCORING_CAP_REACHED":"N","SUPPRESSED":"N"}]}],"SSN":[{"FEAT_DESC":"053-39-3251","LIB_FEAT_ID":6,"FEAT_DESC_VALUES":[{"FEAT_DESC":"053-39-3251","LIB_FEAT_ID":6,"USED_FOR_CAND":"Y","USED_FOR_SCORING":"Y","ENTITY_COUNT":1,"CANDIDATE_CAP_REACHED":"N","SCORING_CAP_REACHED":"N","SUPPRESSED":"N"}]}]},"RECORD_SUMMARY":[{"DATA_SOURCE":"TEST","RECORD_COUNT":6,"FIRST_SEEN_DT":"2022-12-06 15:58:57.129","LAST_SEEN_DT":"2022-12-06 15:58:57.906"}],"LAST_SEEN_DT":"2022-12-06 15:58:57.906","RECORDS":[{"DATA_SOURCE":"TEST","RECORD_ID":"111","ENTITY_TYPE":"TEST","INTERNAL_ID":100001,"ENTITY_KEY":"A6C927986DF7329D1D2CDE0E8F34328AE640FB7E","ENTITY_DESC":"JOHNSON","MATCH_KEY":"","MATCH_LEVEL":0,"MATCH_LEVEL_CODE":"","ERRULE_CODE":"","LAST_SEEN_DT":"2022-12-06 15:58:57.906","FEATURES":[{"LIB_FEAT_ID":1},{"LIB_FEAT_ID":3},{"LIB_FEAT_ID":4},{"LIB_FEAT_ID":5},{"LIB_FEAT_ID":6},{"LIB_FEAT_ID":7},{"LIB_FEAT_ID":8,"USAGE_TYPE":"CC"},{"LIB_FEAT_ID":9},{"LIB_FEAT_ID":11},{"LIB_FEAT_ID":12},{"LIB_FEAT_ID":13},{"LIB_FEAT_ID":14},{"LIB_FEAT_ID":15},{"LIB_FEAT_ID":16},{"LIB_FEAT_ID":17},{"LIB_FEAT_ID":18},{"LIB_FEAT_ID":19},{"LIB_FEAT_ID":20},{"LIB_FEAT_ID":21},{"LIB_FEAT_ID":22},{"LIB_FEAT_ID":23},{"LIB_FEAT_ID":100001},{"LIB_FEAT_ID":100002}]},{"DATA_SOURCE":"TEST","RECORD_ID":"444","ENTITY_TYPE":"TEST","INTERNAL_ID":1,"ENTITY_KEY":"C6063D4396612FBA7324DB0739273BA1FE815C43","ENTITY_DESC":"JOHNSON","MATCH_KEY":"+NAME+ADDRESS+PHONE+SSN+LOGIN_ID+ACCT_NUM","MATCH_LEVEL":1,"MATCH_LEVEL_CODE":"RESOLVED","ERRULE_CODE":"SF1_PNAME_CFF_CSTAB","LAST_SEEN_DT":"2022-12-06 15:58:57.400","FEATURES":[{"LIB_FEAT_ID":1},{"LIB_FEAT_ID":2},{"LIB_FEAT_ID":3},{"LIB_FEAT_ID":4},{"LIB_FEAT_ID":5},{"LIB_FEAT_ID":6},{"LIB_FEAT_ID":7},{"LIB_FEAT_ID":8,"USAGE_TYPE":"CC"},{"LIB_FEAT_ID":9},{"LIB_FEAT_ID":10},{"LIB_FEAT_ID":11},{"LIB_FEAT_ID":12},{"LIB_FEAT_ID":13},{"LIB_FEAT_ID":14},{"LIB_FEAT_ID":15},{"LIB_FEAT_ID":16},{"LIB_FEAT_ID":17},{"LIB_FEAT_ID":18},{"LIB_FEAT_ID":19},{"LIB_FEAT_ID":20},{"LIB_FEAT_ID":21},{"LIB_FEAT_ID":22},{"LIB_FEAT_ID":23}]},{"DATA_SOURCE":"TEST","RECORD_ID":"555","ENTITY_TYPE":"TEST","INTERNAL_ID":1,"ENTITY_KEY":"C6063D4396612FBA7324DB0739273BA1FE815C43","ENTITY_DESC":"JOHNSON","MATCH_KEY":"+NAME+ADDRESS+PHONE+SSN+LOGIN_ID+ACCT_NUM","MATCH_LEVEL":1,"MATCH_LEVEL_CODE":"RESOLVED","ERRULE_CODE":"SF1_PNAME_CFF_CSTAB","LAST_SEEN_DT":"2022-12-06 15:58:57.404","FEATURES":[{"LIB_FEAT_ID":1},{"LIB_FEAT_ID":2},{"LIB_FEAT_ID":3},{"LIB_FEAT_ID":4},{"LIB_FEAT_ID":5},{"LIB_FEAT_ID":6},{"LIB_FEAT_ID":7},{"LIB_FEAT_ID":8,"USAGE_TYPE":"CC"},{"LIB_FEAT_ID":9},{"LIB_FEAT_ID":10},{"LIB_FEAT_ID":11},{"LIB_FEAT_ID":12},{"LIB_FEAT_ID":13},{"LIB_FEAT_ID":14},{"LIB_FEAT_ID":15},{"LIB_FEAT_ID":16},{"LIB_FEAT_ID":17},{"LIB_FEAT_ID":18},{"LIB_FEAT_ID":19},{"LIB_FEAT_ID":20},{"LIB_FEAT_ID":21},{"LIB_FEAT_ID":22},{"LIB_FEAT_ID":23}]},{"DATA_SOURCE":"TEST","RECORD_ID":"666","ENTITY_TYPE":"TEST","INTERNAL_ID":1,"ENTITY_KEY":"C6063D4396612FBA7324DB0739273BA1FE815C43","ENTITY_DESC":"JOHNSON","MATCH_KEY":"+NAME+ADDRESS+PHONE+SSN+LOGIN_ID+ACCT_NUM","MATCH_LEVEL":1,"MATCH_LEVEL_CODE":"RESOLVED","ERRULE_CODE":"SF1_PNAME_CFF_CSTAB","LAST_SEEN_DT":"2022-12-06 15:58:57.407","FEATURES":[{"LIB_FEAT_ID":1},{"LIB_FEAT_ID":2},{"LIB_FEAT_ID":3},{"LIB_FEAT_ID":4},{"LIB_FEAT_ID":5},{"LIB_FEAT_ID":6},{"LIB_FEAT_ID":7},{"LIB_FEAT_ID":8,"USAGE_TYPE":"CC"},{"LIB_FEAT_ID":9},{"LIB_FEAT_ID":10},{"LIB_FEAT_ID":11},{"LIB_FEAT_ID":12},{"LIB_FEAT_ID":13},{"LIB_FEAT_ID":14},{"LIB_FEAT_ID":15},{"LIB_FEAT_ID":16},{"LIB_FEAT_ID":17},{"LIB_FEAT_ID":18},{"LIB_FEAT_ID":19},{"LIB_FEAT_ID":20},{"LIB_FEAT_ID":21},{"LIB_FEAT_ID":22},{"LIB_FEAT_ID":23}]},{"DATA_SOURCE":"TEST","RECORD_ID":"777","ENTITY_TYPE":"TEST","INTERNAL_ID":1,"ENTITY_KEY":"C6063D4396612FBA7324DB0739273BA1FE815C43","ENTITY_DESC":"JOHNSON","MATCH_KEY":"+NAME+ADDRESS+PHONE+SSN+LOGIN_ID+ACCT_NUM","MATCH_LEVEL":1,"MATCH_LEVEL_CODE":"RESOLVED","ERRULE_CODE":"SF1_PNAME_CFF_CSTAB","LAST_SEEN_DT":"2022-12-06 15:58:57.410","FEATURES":[{"LIB_FEAT_ID":1},{"LIB_FEAT_ID":2},{"LIB_FEAT_ID":3},{"LIB_FEAT_ID":4},{"LIB_FEAT_ID":5},{"LIB_FEAT_ID":6},{"LIB_FEAT_ID":7},{"LIB_FEAT_ID":8,"USAGE_TYPE":"CC"},{"LIB_FEAT_ID":9},{"LIB_FEAT_ID":10},{"LIB_FEAT_ID":11},{"LIB_FEAT_ID":12},{"LIB_FEAT_ID":13},{"LIB_FEAT_ID":14},{"LIB_FEAT_ID":15},{"LIB_FEAT_ID":16},{"LIB_FEAT_ID":17},{"LIB_FEAT_ID":18},{"LIB_FEAT_ID":19},{"LIB_FEAT_ID":20},{"LIB_FEAT_ID":21},{"LIB_FEAT_ID":22},{"LIB_FEAT_ID":23}]},{"DATA_SOURCE":"TEST","RECORD_ID":"FCCE9793DAAD23159DBCCEB97FF2745B92CE7919","ENTITY_TYPE":"TEST","INTERNAL_ID":1,"ENTITY_KEY":"C6063D4396612FBA7324DB0739273BA1FE815C43","ENTITY_DESC":"JOHNSON","MATCH_KEY":"+NAME+ADDRESS+PHONE+SSN+LOGIN_ID+ACCT_NUM","MATCH_LEVEL":1,"MATCH_LEVEL_CODE":"RESOLVED","ERRULE_CODE":"SF1_PNAME_CFF_CSTAB","LAST_SEEN_DT":"2022-12-06 15:58:57.259","FEATURES":[{"LIB_FEAT_ID":1},{"LIB_FEAT_ID":2},{"LIB_FEAT_ID":3},{"LIB_FEAT_ID":4},{"LIB_FEAT_ID":5},{"LIB_FEAT_ID":6},{"LIB_FEAT_ID":7},{"LIB_FEAT_ID":8,"USAGE_TYPE":"CC"},{"LIB_FEAT_ID":9},{"LIB_FEAT_ID":10},{"LIB_FEAT_ID":11},{"LIB_FEAT_ID":12},{"LIB_FEAT_ID":13},{"LIB_FEAT_ID":14},{"LIB_FEAT_ID":15},{"LIB_FEAT_ID":16},{"LIB_FEAT_ID":17},{"LIB_FEAT_ID":18},{"LIB_FEAT_ID":19},{"LIB_FEAT_ID":20},{"LIB_FEAT_ID":21},{"LIB_FEAT_ID":22},{"LIB_FEAT_ID":23}]}]},"RELATED_ENTITIES":[{"ENTITY_ID":2,"MATCH_LEVEL":3,"MATCH_LEVEL_CODE":"POSSIBLY_RELATED","MATCH_KEY":"+PHONE+ACCT_NUM-SSN","ERRULE_CODE":"SF1","IS_DISCLOSED":0,"IS_AMBIGUOUS":0,"ENTITY_NAME":"OCEANGUY","RECORD_SUMMARY":[{"DATA_SOURCE":"TEST","RECORD_COUNT":1,"FIRST_SEEN_DT":"2022-12-06 15:58:57.201","LAST_SEEN_DT":"2022-12-06 15:58:57.201"}],"LAST_SEEN_DT":"2022-12-06 15:58:57.201"},{"ENTITY_ID":3,"MATCH_LEVEL":3,"MATCH_LEVEL_CODE":"POSSIBLY_RELATED","MATCH_KEY":"+PHONE+ACCT_NUM-DOB-SSN","ERRULE_CODE":"SF1","IS_DISCLOSED":0,"IS_AMBIGUOUS":0,"ENTITY_NAME":"Smith","RECORD_SUMMARY":[{"DATA_SOURCE":"TEST","RECORD_COUNT":1,"FIRST_SEEN_DT":"2022-12-06 15:58:57.263","LAST_SEEN_DT":"2022-12-06 15:58:57.263"}],"LAST_SEEN_DT":"2022-12-06 15:58:57.263"}]},{"RESOLVED_ENTITY":{"ENTITY_ID":2,"ENTITY_NAME":"OCEANGUY","FEATURES":{"ACCT_NUM":[{"FEAT_DESC":"5534202208773608","LIB_FEAT_ID":8,"USAGE_TYPE":"CC","FEAT_DESC_VALUES":[{"FEAT_DESC":"5534202208773608","LIB_FEAT_ID":8,"USED_FOR_CAND":"Y","USED_FOR_SCORING":"Y","ENTITY_COUNT":3,"CANDIDATE_CAP_REACHED":"N","SCORING_CAP_REACHED":"N","SUPPRESSED":"N"}]}],"ADDRESS":[{"FEAT_DESC":"772 Armstrong RD Delhi WI 53543","LIB_FEAT_ID":26,"FEAT_DESC_VALUES":[{"FEAT_DESC":"772 Armstrong RD Delhi WI 53543","LIB_FEAT_ID":26,"USED_FOR_CAND":"N","USED_FOR_SCORING":"Y","ENTITY_COUNT":1,"CANDIDATE_CAP_REACHED":"N","SCORING_CAP_REACHED":"N","SUPPRESSED":"N"}]}],"ADDR_KEY":[{"FEAT_DESC":"772|ARMSTRNK||53543","LIB_FEAT_ID":37,"FEAT_DESC_VALUES":[{"FEAT_DESC":"772|ARMSTRNK||53543","LIB_FEAT_ID":37,"USED_FOR_CAND":"Y","USED_FOR_SCORING":"N","ENTITY_COUNT":1,"CANDIDATE_CAP_REACHED":"N","SCORING_CAP_REACHED":"N","SUPPRESSED":"N"}]},{"FEAT_DESC":"772|ARMSTRNK||TL","LIB_FEAT_ID":17,"FEAT_DESC_VALUES":[{"FEAT_DESC":"772|ARMSTRNK||TL","LIB_FEAT_ID":17,"USED_FOR_CAND":"Y","USED_FOR_SCORING":"N","ENTITY_COUNT":3,"CANDIDATE_CAP_REACHED":"N","SCORING_CAP_REACHED":"N","SUPPRESSED":"N"}]}],"DOB":[{"FEAT_DESC":"6/9/1983","LIB_FEAT_ID":25,"FEAT_DESC_VALUES":[{"FEAT_DESC":"6/9/1983","LIB_FEAT_ID":25,"USED_FOR_CAND":"Y","USED_FOR_SCORING":"Y","ENTITY_COUNT":1,"CANDIDATE_CAP_REACHED":"N","SCORING_CAP_REACHED":"N","SUPPRESSED":"N"}]}],"GENDER":[{"FEAT_DESC":"F","LIB_FEAT_ID":3,"FEAT_DESC_VALUES":[{"FEAT_DESC":"F","LIB_FEAT_ID":3,"USED_FOR_CAND":"N","USED_FOR_SCORING":"Y","ENTITY_COUNT":3,"CANDIDATE_CAP_REACHED":"N","SCORING_CAP_REACHED":"N","SUPPRESSED":"N"}]}],"ID_KEY":[{"FEAT_DESC":"ACCT_NUM=5534202208773608","LIB_FEAT_ID":19,"FEAT_DESC_VALUES":[{"FEAT_DESC":"ACCT_NUM=5534202208773608","LIB_FEAT_ID":19,"USED_FOR_CAND":"Y","USED_FOR_SCORING":"N","ENTITY_COUNT":3,"CANDIDATE_CAP_REACHED":"N","SCORING_CAP_REACHED":"N","SUPPRESSED":"N"}]},{"FEAT_DESC":"SSN=153-33-5185","LIB_FEAT_ID":38,"FEAT_DESC_VALUES":[{"FEAT_DESC":"SSN=153-33-5185","LIB_FEAT_ID":38,"USED_FOR_CAND":"Y","USED_FOR_SCORING":"N","ENTITY_COUNT":1,"CANDIDATE_CAP_REACHED":"N","SCORING_CAP_REACHED":"N","SUPPRESSED":"N"}]}],"LOGIN_ID":[{"FEAT_DESC":"flavorh2","LIB_FEAT_ID":28,"FEAT_DESC_VALUES":[{"FEAT_DESC":"flavorh2","LIB_FEAT_ID":28,"USED_FOR_CAND":"Y","USED_FOR_SCORING":"Y","ENTITY_COUNT":1,"CANDIDATE_CAP_REACHED":"N","SCORING_CAP_REACHED":"N","SUPPRESSED":"N"}]}],"NAME":[{"FEAT_DESC":"OCEANGUY","LIB_FEAT_ID":24,"FEAT_DESC_VALUES":[{"FEAT_DESC":"OCEANGUY","LIB_FEAT_ID":24,"USED_FOR_CAND":"N","USED_FOR_SCORING":"Y","ENTITY_COUNT":1,"CANDIDATE_CAP_REACHED":"N","SCORING_CAP_REACHED":"N","SUPPRESSED":"N"}]}],"NAME_KEY":[{"FEAT_DESC":"ASNK","LIB_FEAT_ID":29,"FEAT_DESC_VALUES":[{"FEAT_DESC":"ASNK","LIB_FEAT_ID":29,"USED_FOR_CAND":"Y","USED_FOR_SCORING":"N","ENTITY_COUNT":1,"CANDIDATE_CAP_REACHED":"N","SCORING_CAP_REACHED":"N","SUPPRESSED":"N"}]},{"FEAT_DESC":"ASNK|ADDRESS.CITY_STD=TL","LIB_FEAT_ID":34,"FEAT_DESC_VALUES":[{"FEAT_DESC":"ASNK|ADDRESS.CITY_STD=TL","LIB_FEAT_ID":34,"USED_FOR_CAND":"Y","USED_FOR_SCORING":"N","ENTITY_COUNT":1,"CANDIDATE_CAP_REACHED":"N","SCORING_CAP_REACHED":"N","SUPPRESSED":"N"}]},{"FEAT_DESC":"ASNK|DOB.MMDD_HASH=0906","LIB_FEAT_ID":32,"FEAT_DESC_VALUES":[{"FEAT_DESC":"ASNK|DOB.MMDD_HASH=0906","LIB_FEAT_ID":32,"USED_FOR_CAND":"Y","USED_FOR_SCORING":"N","ENTITY_COUNT":1,"CANDIDATE_CAP_REACHED":"N","SCORING_CAP_REACHED":"N","SUPPRESSED":"N"}]},{"FEAT_DESC":"ASNK|DOB.MMYY_HASH=0683","LIB_FEAT_ID":30,"FEAT_DESC_VALUES":[{"FEAT_DESC":"ASNK|DOB.MMYY_HASH=0683","LIB_FEAT_ID":30,"USED_FOR_CAND":"Y","USED_FOR_SCORING":"N","ENTITY_COUNT":1,"CANDIDATE_CAP_REACHED":"N","SCORING_CAP_REACHED":"N","SUPPRESSED":"N"}]},{"FEAT_DESC":"ASNK|DOB=80906","LIB_FEAT_ID":31,"FEAT_DESC_VALUES":[{"FEAT_DESC":"ASNK|DOB=80906","LIB_FEAT_ID":31,"USED_FOR_CAND":"Y","USED_FOR_SCORING":"N","ENTITY_COUNT":1,"CANDIDATE_CAP_REACHED":"N","SCORING_CAP_REACHED":"N","SUPPRESSED":"N"}]},{"FEAT_DESC":"ASNK|PHONE.PHONE_LAST_5=10796","LIB_FEAT_ID":33,"FEAT_DESC_VALUES":[{"FEAT_DESC":"ASNK|PHONE.PHONE_LAST_5=10796","LIB_FEAT_ID":33,"USED_FOR_CAND":"Y","USED_FOR_SCORING":"N","ENTITY_COUNT":1,"CANDIDATE_CAP_REACHED":"N","SCORING_CAP_REACHED":"N","SUPPRESSED":"N"}]},{"FEAT_DESC":"ASNK|POST=53543","LIB_FEAT_ID":36,"FEAT_DESC_VALUES":[{"FEAT_DESC":"ASNK|POST=53543","LIB_FEAT_ID":36,"USED_FOR_CAND":"Y","USED_FOR_SCORING":"N","ENTITY_COUNT":1,"CANDIDATE_CAP_REACHED":"N","SCORING_CAP_REACHED":"N","SUPPRESSED":"N"}]},{"FEAT_DESC":"ASNK|SSN=5185","LIB_FEAT_ID":35,"FEAT_DESC_VALUES":[{"FEAT_DESC":"ASNK|SSN=5185","LIB_FEAT_ID":35,"USED_FOR_CAND":"Y","USED_FOR_SCORING":"N","ENTITY_COUNT":1,"CANDIDATE_CAP_REACHED":"N","SCORING_CAP_REACHED":"N","SUPPRESSED":"N"}]}],"PHONE":[{"FEAT_DESC":"225-671-0796","LIB_FEAT_ID":5,"FEAT_DESC_VALUES":[{"FEAT_DESC":"225-671-0796","LIB_FEAT_ID":5,"USED_FOR_CAND":"Y","USED_FOR_SCORING":"Y","ENTITY_COUNT":3,"CANDIDATE_CAP_REACHED":"N","SCORING_CAP_REACHED":"N","SUPPRESSED":"N"}]}],"PHONE_KEY":[{"FEAT_DESC":"2256710796","LIB_FEAT_ID":21,"FEAT_DESC_VALUES":[{"FEAT_DESC":"2256710796","LIB_FEAT_ID":21,"USED_FOR_CAND":"Y","USED_FOR_SCORING":"N","ENTITY_COUNT":3,"CANDIDATE_CAP_REACHED":"N","SCORING_CAP_REACHED":"N","SUPPRESSED":"N"}]}],"SEARCH_KEY":[{"FEAT_DESC":"LOGIN_ID:FLAVORH2|","LIB_FEAT_ID":40,"FEAT_DESC_VALUES":[{"FEAT_DESC":"LOGIN_ID:FLAVORH2|","LIB_FEAT_ID":40,"USED_FOR_CAND":"Y","USED_FOR_SCORING":"N","ENTITY_COUNT":1,"CANDIDATE_CAP_REACHED":"N","SCORING_CAP_REACHED":"N","SUPPRESSED":"N"}]},{"FEAT_DESC":"SSN:5185|80906|","LIB_FEAT_ID":39,"FEAT_DESC_VALUES":[{"FEAT_DESC":"SSN:5185|80906|","LIB_FEAT_ID":39,"USED_FOR_CAND":"Y","USED_FOR_SCORING":"N","ENTITY_COUNT":1,"CANDIDATE_CAP_REACHED":"N","SCORING_CAP_REACHED":"N","SUPPRESSED":"N"}]}],"SSN":[{"FEAT_DESC":"153-33-5185","LIB_FEAT_ID":27,"FEAT_DESC_VALUES":[{"FEAT_DESC":"153-33-5185","LIB_FEAT_ID":27,"USED_FOR_CAND":"Y","USED_FOR_SCORING":"Y","ENTITY_COUNT":1,"CANDIDATE_CAP_REACHED":"N","SCORING_CAP_REACHED":"N","SUPPRESSED":"N"}]}]},"RECORD_SUMMARY":[{"DATA_SOURCE":"TEST","RECORD_COUNT":1,"FIRST_SEEN_DT":"2022-12-06 15:58:57.201","LAST_SEEN_DT":"2022-12-06 15:58:57.201"}],"LAST_SEEN_DT":"2022-12-06 15:58:57.201","RECORDS":[{"DATA_SOURCE":"TEST","RECORD_ID":"222","ENTITY_TYPE":"TEST","INTERNAL_ID":2,"ENTITY_KEY":"740BA22D15CA88462A930AF8A7C904FF5E48226C","ENTITY_DESC":"OCEANGUY","MATCH_KEY":"","MATCH_LEVEL":0,"MATCH_LEVEL_CODE":"","ERRULE_CODE":"","LAST_SEEN_DT":"2022-12-06 15:58:57.201","FEATURES":[{"LIB_FEAT_ID":3},{"LIB_FEAT_ID":5},{"LIB_FEAT_ID":8,"USAGE_TYPE":"CC"},{"LIB_FEAT_ID":17},{"LIB_FEAT_ID":19},{"LIB_FEAT_ID":21},{"LIB_FEAT_ID":24},{"LIB_FEAT_ID":25},{"LIB_FEAT_ID":26},{"LIB_FEAT_ID":27},{"LIB_FEAT_ID":28},{"LIB_FEAT_ID":29},{"LIB_FEAT_ID":30},{"LIB_FEAT_ID":31},{"LIB_FEAT_ID":32},{"LIB_FEAT_ID":33},{"LIB_FEAT_ID":34},{"LIB_FEAT_ID":35},{"LIB_FEAT_ID":36},{"LIB_FEAT_ID":37},{"LIB_FEAT_ID":38},{"LIB_FEAT_ID":39},{"LIB_FEAT_ID":40}]}]},"RELATED_ENTITIES":[{"ENTITY_ID":1,"MATCH_LEVEL":3,"MATCH_LEVEL_CODE":"POSSIBLY_RELATED","MATCH_KEY":"+PHONE+ACCT_NUM-SSN","ERRULE_CODE":"SF1","IS_DISCLOSED":0,"IS_AMBIGUOUS":0,"ENTITY_NAME":"JOHNSON","RECORD_SUMMARY":[{"DATA_SOURCE":"TEST","RECORD_COUNT":6,"FIRST_SEEN_DT":"2022-12-06 15:58:57.129","LAST_SEEN_DT":"2022-12-06 15:58:57.906"}],"LAST_SEEN_DT":"2022-12-06 15:58:57.906"},{"ENTITY_ID":3,"MATCH_LEVEL":3,"MATCH_LEVEL_CODE":"POSSIBLY_RELATED","MATCH_KEY":"+ADDRESS+PHONE+ACCT_NUM-DOB-SSN","ERRULE_CODE":"SF1","IS_DISCLOSED":0,"IS_AMBIGUOUS":0,"ENTITY_NAME":"Smith","RECORD_SUMMARY":[{"DATA_SOURCE":"TEST","RECORD_COUNT":1,"FIRST_SEEN_DT":"2022-12-06 15:58:57.263","LAST_SEEN_DT":"2022-12-06 15:58:57.263"}],"LAST_SEEN_DT":"2022-12-06 15:58:57.263"}]}]}`
 */
 func (client *G2engineClient) WhyEntities(ctx context.Context, entityID1 int64, entityID2 int64) (string, error) {
-	request := pb.WhyEntitiesRequest{
-		EntityID1: entityID1,
-		EntityID2: entityID2,
-	}
-	response, err := client.GrpcClient.WhyEntities(ctx, &request)
-	return response.GetResult(), err
+    if g2engine.isTrace {
+        g2engine.traceEntry(141, entityID1, entityID2)
+    }
+    entryTime := time.Now()
+    request := pb.WhyEntitiesRequest{
+        EntityID1: entityID1,
+        EntityID2: entityID2,
+    }
+    response, err := client.GrpcClient.WhyEntities(ctx, &request)
+    if g2engine.observers != nil {
+        go func() {
+            details := map[string]string{
+                "entityID1": strconv.FormatInt(entityID1, 10),
+                "entityID2": strconv.FormatInt(entityID2, 10),
+            }
+            g2engine.notify(ctx, 8067, err, details)
+        }()
+    }
+    if g2engine.isTrace {
+        defer g2engine.traceExit(142, entityID1, entityID2, C.GoString(result.response), err, time.Since(entryTime))
+    }
+    return response.GetResult(), err
 }
 
 /*
@@ -1574,13 +2649,29 @@ Output
     See the example output.
 */
 func (client *G2engineClient) WhyEntities_V2(ctx context.Context, entityID1 int64, entityID2 int64, flags int64) (string, error) {
-	request := pb.WhyEntities_V2Request{
-		EntityID1: entityID1,
-		EntityID2: entityID2,
-		Flags:     flags,
-	}
-	response, err := client.GrpcClient.WhyEntities_V2(ctx, &request)
-	return response.GetResult(), err
+    if g2engine.isTrace {
+        g2engine.traceEntry(143, entityID1, entityID2, flags)
+    }
+    entryTime := time.Now()
+    request := pb.WhyEntities_V2Request{
+        EntityID1: entityID1,
+        EntityID2: entityID2,
+        Flags:     flags,
+    }
+    response, err := client.GrpcClient.WhyEntities_V2(ctx, &request)
+    if g2engine.observers != nil {
+        go func() {
+            details := map[string]string{
+                "entityID1": strconv.FormatInt(entityID1, 10),
+                "entityID2": strconv.FormatInt(entityID2, 10),
+            }
+            g2engine.notify(ctx, 8068, err, details)
+        }()
+    }
+    if g2engine.isTrace {
+        defer g2engine.traceExit(144, entityID1, entityID2, flags, C.GoString(result.response), err, time.Since(entryTime))
+    }
+    return response.GetResult(), err
 }
 
 /*
@@ -1597,11 +2688,26 @@ Output
     Example: `{"WHY_RESULTS":[{"INTERNAL_ID":1,"ENTITY_ID":1,"FOCUS_RECORDS":[{"DATA_SOURCE":"TEST","RECORD_ID":"444"},{"DATA_SOURCE":"TEST","RECORD_ID":"555"},{"DATA_SOURCE":"TEST","RECORD_ID":"666"},{"DATA_SOURCE":"TEST","RECORD_ID":"777"},{"DATA_SOURCE":"TEST","RECORD_ID":"FCCE9793DAAD23159DBCCEB97FF2745B92CE7919"}],"MATCH_INFO":{"WHY_KEY":"+NAME+ADDRESS+PHONE+SSN+LOGIN_ID+ACCT_NUM","WHY_ERRULE_CODE":"SF1_PNAME_CFF_CSTAB","MATCH_LEVEL_CODE":"RESOLVED","CANDIDATE_KEYS":{"ACCT_NUM":[{"FEAT_ID":8,"FEAT_DESC":"5534202208773608"}],"ADDR_KEY":[{"FEAT_ID":17,"FEAT_DESC":"772|ARMSTRNK||TL"},{"FEAT_ID":18,"FEAT_DESC":"772|ARMSTRNK||71232"}],"ID_KEY":[{"FEAT_ID":19,"FEAT_DESC":"ACCT_NUM=5534202208773608"},{"FEAT_ID":20,"FEAT_DESC":"SSN=053-39-3251"}],"LOGIN_ID":[{"FEAT_ID":7,"FEAT_DESC":"flavorh"}],"NAME_KEY":[{"FEAT_ID":9,"FEAT_DESC":"JNSN|DOB.MMDD_HASH=0804"},{"FEAT_ID":11,"FEAT_DESC":"JNSN"},{"FEAT_ID":12,"FEAT_DESC":"JNSN|ADDRESS.CITY_STD=TL"},{"FEAT_ID":13,"FEAT_DESC":"JNSN|DOB=80804"},{"FEAT_ID":14,"FEAT_DESC":"JNSN|POST=71232"},{"FEAT_ID":15,"FEAT_DESC":"JNSN|PHONE.PHONE_LAST_5=10796"},{"FEAT_ID":16,"FEAT_DESC":"JNSN|SSN=3251"}],"PHONE":[{"FEAT_ID":5,"FEAT_DESC":"225-671-0796"}],"PHONE_KEY":[{"FEAT_ID":21,"FEAT_DESC":"2256710796"}],"SEARCH_KEY":[{"FEAT_ID":22,"FEAT_DESC":"LOGIN_ID:FLAVORH|"},{"FEAT_ID":23,"FEAT_DESC":"SSN:3251|80804|"}],"SSN":[{"FEAT_ID":6,"FEAT_DESC":"053-39-3251"}]},"FEATURE_SCORES":{"ACCT_NUM":[{"INBOUND_FEAT_ID":8,"INBOUND_FEAT":"5534202208773608","INBOUND_FEAT_USAGE_TYPE":"CC","CANDIDATE_FEAT_ID":8,"CANDIDATE_FEAT":"5534202208773608","CANDIDATE_FEAT_USAGE_TYPE":"CC","FULL_SCORE":100,"SCORE_BUCKET":"SAME","SCORE_BEHAVIOR":"F1"}],"ADDRESS":[{"INBOUND_FEAT_ID":4,"INBOUND_FEAT":"772 Armstrong RD Delhi LA 71232","INBOUND_FEAT_USAGE_TYPE":"","CANDIDATE_FEAT_ID":4,"CANDIDATE_FEAT":"772 Armstrong RD Delhi LA 71232","CANDIDATE_FEAT_USAGE_TYPE":"","FULL_SCORE":100,"SCORE_BUCKET":"SAME","SCORE_BEHAVIOR":"FF"}],"DOB":[{"INBOUND_FEAT_ID":2,"INBOUND_FEAT":"4/8/1983","INBOUND_FEAT_USAGE_TYPE":"","CANDIDATE_FEAT_ID":100001,"CANDIDATE_FEAT":"4/8/1985","CANDIDATE_FEAT_USAGE_TYPE":"","FULL_SCORE":88,"SCORE_BUCKET":"PLAUSIBLE","SCORE_BEHAVIOR":"FMES"}],"GENDER":[{"INBOUND_FEAT_ID":3,"INBOUND_FEAT":"F","INBOUND_FEAT_USAGE_TYPE":"","CANDIDATE_FEAT_ID":3,"CANDIDATE_FEAT":"F","CANDIDATE_FEAT_USAGE_TYPE":"","FULL_SCORE":100,"SCORE_BUCKET":"SAME","SCORE_BEHAVIOR":"FVME"}],"LOGIN_ID":[{"INBOUND_FEAT_ID":7,"INBOUND_FEAT":"flavorh","INBOUND_FEAT_USAGE_TYPE":"","CANDIDATE_FEAT_ID":7,"CANDIDATE_FEAT":"flavorh","CANDIDATE_FEAT_USAGE_TYPE":"","FULL_SCORE":100,"SCORE_BUCKET":"SAME","SCORE_BEHAVIOR":"F1"}],"NAME":[{"INBOUND_FEAT_ID":1,"INBOUND_FEAT":"JOHNSON","INBOUND_FEAT_USAGE_TYPE":"","CANDIDATE_FEAT_ID":1,"CANDIDATE_FEAT":"JOHNSON","CANDIDATE_FEAT_USAGE_TYPE":"","GNR_FN":100,"GNR_SN":100,"GNR_GN":70,"GENERATION_MATCH":-1,"GNR_ON":-1,"SCORE_BUCKET":"SAME","SCORE_BEHAVIOR":"NAME"}],"PHONE":[{"INBOUND_FEAT_ID":5,"INBOUND_FEAT":"225-671-0796","INBOUND_FEAT_USAGE_TYPE":"","CANDIDATE_FEAT_ID":5,"CANDIDATE_FEAT":"225-671-0796","CANDIDATE_FEAT_USAGE_TYPE":"","FULL_SCORE":100,"SCORE_BUCKET":"SAME","SCORE_BEHAVIOR":"FF"}],"SSN":[{"INBOUND_FEAT_ID":6,"INBOUND_FEAT":"053-39-3251","INBOUND_FEAT_USAGE_TYPE":"","CANDIDATE_FEAT_ID":6,"CANDIDATE_FEAT":"053-39-3251","CANDIDATE_FEAT_USAGE_TYPE":"","FULL_SCORE":100,"SCORE_BUCKET":"SAME","SCORE_BEHAVIOR":"F1ES"}]}}},{"INTERNAL_ID":100001,"ENTITY_ID":1,"FOCUS_RECORDS":[{"DATA_SOURCE":"TEST","RECORD_ID":"111"}],"MATCH_INFO":{"WHY_KEY":"+NAME+ADDRESS+PHONE+SSN+LOGIN_ID+ACCT_NUM","WHY_ERRULE_CODE":"SF1_PNAME_CFF_CSTAB","MATCH_LEVEL_CODE":"RESOLVED","CANDIDATE_KEYS":{"ACCT_NUM":[{"FEAT_ID":8,"FEAT_DESC":"5534202208773608"}],"ADDR_KEY":[{"FEAT_ID":17,"FEAT_DESC":"772|ARMSTRNK||TL"},{"FEAT_ID":18,"FEAT_DESC":"772|ARMSTRNK||71232"}],"ID_KEY":[{"FEAT_ID":19,"FEAT_DESC":"ACCT_NUM=5534202208773608"},{"FEAT_ID":20,"FEAT_DESC":"SSN=053-39-3251"}],"LOGIN_ID":[{"FEAT_ID":7,"FEAT_DESC":"flavorh"}],"NAME_KEY":[{"FEAT_ID":9,"FEAT_DESC":"JNSN|DOB.MMDD_HASH=0804"},{"FEAT_ID":11,"FEAT_DESC":"JNSN"},{"FEAT_ID":12,"FEAT_DESC":"JNSN|ADDRESS.CITY_STD=TL"},{"FEAT_ID":13,"FEAT_DESC":"JNSN|DOB=80804"},{"FEAT_ID":14,"FEAT_DESC":"JNSN|POST=71232"},{"FEAT_ID":15,"FEAT_DESC":"JNSN|PHONE.PHONE_LAST_5=10796"},{"FEAT_ID":16,"FEAT_DESC":"JNSN|SSN=3251"}],"PHONE":[{"FEAT_ID":5,"FEAT_DESC":"225-671-0796"}],"PHONE_KEY":[{"FEAT_ID":21,"FEAT_DESC":"2256710796"}],"SEARCH_KEY":[{"FEAT_ID":22,"FEAT_DESC":"LOGIN_ID:FLAVORH|"},{"FEAT_ID":23,"FEAT_DESC":"SSN:3251|80804|"}],"SSN":[{"FEAT_ID":6,"FEAT_DESC":"053-39-3251"}]},"FEATURE_SCORES":{"ACCT_NUM":[{"INBOUND_FEAT_ID":8,"INBOUND_FEAT":"5534202208773608","INBOUND_FEAT_USAGE_TYPE":"CC","CANDIDATE_FEAT_ID":8,"CANDIDATE_FEAT":"5534202208773608","CANDIDATE_FEAT_USAGE_TYPE":"CC","FULL_SCORE":100,"SCORE_BUCKET":"SAME","SCORE_BEHAVIOR":"F1"}],"ADDRESS":[{"INBOUND_FEAT_ID":4,"INBOUND_FEAT":"772 Armstrong RD Delhi LA 71232","INBOUND_FEAT_USAGE_TYPE":"","CANDIDATE_FEAT_ID":4,"CANDIDATE_FEAT":"772 Armstrong RD Delhi LA 71232","CANDIDATE_FEAT_USAGE_TYPE":"","FULL_SCORE":100,"SCORE_BUCKET":"SAME","SCORE_BEHAVIOR":"FF"}],"DOB":[{"INBOUND_FEAT_ID":100001,"INBOUND_FEAT":"4/8/1985","INBOUND_FEAT_USAGE_TYPE":"","CANDIDATE_FEAT_ID":2,"CANDIDATE_FEAT":"4/8/1983","CANDIDATE_FEAT_USAGE_TYPE":"","FULL_SCORE":88,"SCORE_BUCKET":"PLAUSIBLE","SCORE_BEHAVIOR":"FMES"}],"GENDER":[{"INBOUND_FEAT_ID":3,"INBOUND_FEAT":"F","INBOUND_FEAT_USAGE_TYPE":"","CANDIDATE_FEAT_ID":3,"CANDIDATE_FEAT":"F","CANDIDATE_FEAT_USAGE_TYPE":"","FULL_SCORE":100,"SCORE_BUCKET":"SAME","SCORE_BEHAVIOR":"FVME"}],"LOGIN_ID":[{"INBOUND_FEAT_ID":7,"INBOUND_FEAT":"flavorh","INBOUND_FEAT_USAGE_TYPE":"","CANDIDATE_FEAT_ID":7,"CANDIDATE_FEAT":"flavorh","CANDIDATE_FEAT_USAGE_TYPE":"","FULL_SCORE":100,"SCORE_BUCKET":"SAME","SCORE_BEHAVIOR":"F1"}],"NAME":[{"INBOUND_FEAT_ID":1,"INBOUND_FEAT":"JOHNSON","INBOUND_FEAT_USAGE_TYPE":"","CANDIDATE_FEAT_ID":1,"CANDIDATE_FEAT":"JOHNSON","CANDIDATE_FEAT_USAGE_TYPE":"","GNR_FN":100,"GNR_SN":100,"GNR_GN":70,"GENERATION_MATCH":-1,"GNR_ON":-1,"SCORE_BUCKET":"SAME","SCORE_BEHAVIOR":"NAME"}],"PHONE":[{"INBOUND_FEAT_ID":5,"INBOUND_FEAT":"225-671-0796","INBOUND_FEAT_USAGE_TYPE":"","CANDIDATE_FEAT_ID":5,"CANDIDATE_FEAT":"225-671-0796","CANDIDATE_FEAT_USAGE_TYPE":"","FULL_SCORE":100,"SCORE_BUCKET":"SAME","SCORE_BEHAVIOR":"FF"}],"SSN":[{"INBOUND_FEAT_ID":6,"INBOUND_FEAT":"053-39-3251","INBOUND_FEAT_USAGE_TYPE":"","CANDIDATE_FEAT_ID":6,"CANDIDATE_FEAT":"053-39-3251","CANDIDATE_FEAT_USAGE_TYPE":"","FULL_SCORE":100,"SCORE_BUCKET":"SAME","SCORE_BEHAVIOR":"F1ES"}]}}}],"ENTITIES":[{"RESOLVED_ENTITY":{"ENTITY_ID":1,"ENTITY_NAME":"JOHNSON","FEATURES":{"ACCT_NUM":[{"FEAT_DESC":"5534202208773608","LIB_FEAT_ID":8,"USAGE_TYPE":"CC","FEAT_DESC_VALUES":[{"FEAT_DESC":"5534202208773608","LIB_FEAT_ID":8,"USED_FOR_CAND":"Y","USED_FOR_SCORING":"Y","ENTITY_COUNT":3,"CANDIDATE_CAP_REACHED":"N","SCORING_CAP_REACHED":"N","SUPPRESSED":"N"}]}],"ADDRESS":[{"FEAT_DESC":"772 Armstrong RD Delhi LA 71232","LIB_FEAT_ID":4,"FEAT_DESC_VALUES":[{"FEAT_DESC":"772 Armstrong RD Delhi LA 71232","LIB_FEAT_ID":4,"USED_FOR_CAND":"N","USED_FOR_SCORING":"Y","ENTITY_COUNT":1,"CANDIDATE_CAP_REACHED":"N","SCORING_CAP_REACHED":"N","SUPPRESSED":"N"}]}],"ADDR_KEY":[{"FEAT_DESC":"772|ARMSTRNK||71232","LIB_FEAT_ID":18,"FEAT_DESC_VALUES":[{"FEAT_DESC":"772|ARMSTRNK||71232","LIB_FEAT_ID":18,"USED_FOR_CAND":"Y","USED_FOR_SCORING":"N","ENTITY_COUNT":1,"CANDIDATE_CAP_REACHED":"N","SCORING_CAP_REACHED":"N","SUPPRESSED":"N"}]},{"FEAT_DESC":"772|ARMSTRNK||TL","LIB_FEAT_ID":17,"FEAT_DESC_VALUES":[{"FEAT_DESC":"772|ARMSTRNK||TL","LIB_FEAT_ID":17,"USED_FOR_CAND":"Y","USED_FOR_SCORING":"N","ENTITY_COUNT":3,"CANDIDATE_CAP_REACHED":"N","SCORING_CAP_REACHED":"N","SUPPRESSED":"N"}]}],"DOB":[{"FEAT_DESC":"4/8/1983","LIB_FEAT_ID":2,"FEAT_DESC_VALUES":[{"FEAT_DESC":"4/8/1983","LIB_FEAT_ID":2,"USED_FOR_CAND":"Y","USED_FOR_SCORING":"Y","ENTITY_COUNT":1,"CANDIDATE_CAP_REACHED":"N","SCORING_CAP_REACHED":"N","SUPPRESSED":"N"}]},{"FEAT_DESC":"4/8/1985","LIB_FEAT_ID":100001,"FEAT_DESC_VALUES":[{"FEAT_DESC":"4/8/1985","LIB_FEAT_ID":100001,"USED_FOR_CAND":"Y","USED_FOR_SCORING":"Y","ENTITY_COUNT":1,"CANDIDATE_CAP_REACHED":"N","SCORING_CAP_REACHED":"N","SUPPRESSED":"N"}]}],"GENDER":[{"FEAT_DESC":"F","LIB_FEAT_ID":3,"FEAT_DESC_VALUES":[{"FEAT_DESC":"F","LIB_FEAT_ID":3,"USED_FOR_CAND":"N","USED_FOR_SCORING":"Y","ENTITY_COUNT":3,"CANDIDATE_CAP_REACHED":"N","SCORING_CAP_REACHED":"N","SUPPRESSED":"N"}]}],"ID_KEY":[{"FEAT_DESC":"ACCT_NUM=5534202208773608","LIB_FEAT_ID":19,"FEAT_DESC_VALUES":[{"FEAT_DESC":"ACCT_NUM=5534202208773608","LIB_FEAT_ID":19,"USED_FOR_CAND":"Y","USED_FOR_SCORING":"N","ENTITY_COUNT":3,"CANDIDATE_CAP_REACHED":"N","SCORING_CAP_REACHED":"N","SUPPRESSED":"N"}]},{"FEAT_DESC":"SSN=053-39-3251","LIB_FEAT_ID":20,"FEAT_DESC_VALUES":[{"FEAT_DESC":"SSN=053-39-3251","LIB_FEAT_ID":20,"USED_FOR_CAND":"Y","USED_FOR_SCORING":"N","ENTITY_COUNT":1,"CANDIDATE_CAP_REACHED":"N","SCORING_CAP_REACHED":"N","SUPPRESSED":"N"}]}],"LOGIN_ID":[{"FEAT_DESC":"flavorh","LIB_FEAT_ID":7,"FEAT_DESC_VALUES":[{"FEAT_DESC":"flavorh","LIB_FEAT_ID":7,"USED_FOR_CAND":"Y","USED_FOR_SCORING":"Y","ENTITY_COUNT":1,"CANDIDATE_CAP_REACHED":"N","SCORING_CAP_REACHED":"N","SUPPRESSED":"N"}]}],"NAME":[{"FEAT_DESC":"JOHNSON","LIB_FEAT_ID":1,"FEAT_DESC_VALUES":[{"FEAT_DESC":"JOHNSON","LIB_FEAT_ID":1,"USED_FOR_CAND":"N","USED_FOR_SCORING":"Y","ENTITY_COUNT":1,"CANDIDATE_CAP_REACHED":"N","SCORING_CAP_REACHED":"N","SUPPRESSED":"N"}]}],"NAME_KEY":[{"FEAT_DESC":"JNSN","LIB_FEAT_ID":11,"FEAT_DESC_VALUES":[{"FEAT_DESC":"JNSN","LIB_FEAT_ID":11,"USED_FOR_CAND":"Y","USED_FOR_SCORING":"N","ENTITY_COUNT":1,"CANDIDATE_CAP_REACHED":"N","SCORING_CAP_REACHED":"N","SUPPRESSED":"N"}]},{"FEAT_DESC":"JNSN|ADDRESS.CITY_STD=TL","LIB_FEAT_ID":12,"FEAT_DESC_VALUES":[{"FEAT_DESC":"JNSN|ADDRESS.CITY_STD=TL","LIB_FEAT_ID":12,"USED_FOR_CAND":"Y","USED_FOR_SCORING":"N","ENTITY_COUNT":1,"CANDIDATE_CAP_REACHED":"N","SCORING_CAP_REACHED":"N","SUPPRESSED":"N"}]},{"FEAT_DESC":"JNSN|DOB.MMDD_HASH=0804","LIB_FEAT_ID":9,"FEAT_DESC_VALUES":[{"FEAT_DESC":"JNSN|DOB.MMDD_HASH=0804","LIB_FEAT_ID":9,"USED_FOR_CAND":"Y","USED_FOR_SCORING":"N","ENTITY_COUNT":1,"CANDIDATE_CAP_REACHED":"N","SCORING_CAP_REACHED":"N","SUPPRESSED":"N"}]},{"FEAT_DESC":"JNSN|DOB.MMYY_HASH=0483","LIB_FEAT_ID":10,"FEAT_DESC_VALUES":[{"FEAT_DESC":"JNSN|DOB.MMYY_HASH=0483","LIB_FEAT_ID":10,"USED_FOR_CAND":"Y","USED_FOR_SCORING":"N","ENTITY_COUNT":1,"CANDIDATE_CAP_REACHED":"N","SCORING_CAP_REACHED":"N","SUPPRESSED":"N"}]},{"FEAT_DESC":"JNSN|DOB.MMYY_HASH=0485","LIB_FEAT_ID":100002,"FEAT_DESC_VALUES":[{"FEAT_DESC":"JNSN|DOB.MMYY_HASH=0485","LIB_FEAT_ID":100002,"USED_FOR_CAND":"Y","USED_FOR_SCORING":"N","ENTITY_COUNT":1,"CANDIDATE_CAP_REACHED":"N","SCORING_CAP_REACHED":"N","SUPPRESSED":"N"}]},{"FEAT_DESC":"JNSN|DOB=80804","LIB_FEAT_ID":13,"FEAT_DESC_VALUES":[{"FEAT_DESC":"JNSN|DOB=80804","LIB_FEAT_ID":13,"USED_FOR_CAND":"Y","USED_FOR_SCORING":"N","ENTITY_COUNT":1,"CANDIDATE_CAP_REACHED":"N","SCORING_CAP_REACHED":"N","SUPPRESSED":"N"}]},{"FEAT_DESC":"JNSN|PHONE.PHONE_LAST_5=10796","LIB_FEAT_ID":15,"FEAT_DESC_VALUES":[{"FEAT_DESC":"JNSN|PHONE.PHONE_LAST_5=10796","LIB_FEAT_ID":15,"USED_FOR_CAND":"Y","USED_FOR_SCORING":"N","ENTITY_COUNT":1,"CANDIDATE_CAP_REACHED":"N","SCORING_CAP_REACHED":"N","SUPPRESSED":"N"}]},{"FEAT_DESC":"JNSN|POST=71232","LIB_FEAT_ID":14,"FEAT_DESC_VALUES":[{"FEAT_DESC":"JNSN|POST=71232","LIB_FEAT_ID":14,"USED_FOR_CAND":"Y","USED_FOR_SCORING":"N","ENTITY_COUNT":1,"CANDIDATE_CAP_REACHED":"N","SCORING_CAP_REACHED":"N","SUPPRESSED":"N"}]},{"FEAT_DESC":"JNSN|SSN=3251","LIB_FEAT_ID":16,"FEAT_DESC_VALUES":[{"FEAT_DESC":"JNSN|SSN=3251","LIB_FEAT_ID":16,"USED_FOR_CAND":"Y","USED_FOR_SCORING":"N","ENTITY_COUNT":1,"CANDIDATE_CAP_REACHED":"N","SCORING_CAP_REACHED":"N","SUPPRESSED":"N"}]}],"PHONE":[{"FEAT_DESC":"225-671-0796","LIB_FEAT_ID":5,"FEAT_DESC_VALUES":[{"FEAT_DESC":"225-671-0796","LIB_FEAT_ID":5,"USED_FOR_CAND":"Y","USED_FOR_SCORING":"Y","ENTITY_COUNT":3,"CANDIDATE_CAP_REACHED":"N","SCORING_CAP_REACHED":"N","SUPPRESSED":"N"}]}],"PHONE_KEY":[{"FEAT_DESC":"2256710796","LIB_FEAT_ID":21,"FEAT_DESC_VALUES":[{"FEAT_DESC":"2256710796","LIB_FEAT_ID":21,"USED_FOR_CAND":"Y","USED_FOR_SCORING":"N","ENTITY_COUNT":3,"CANDIDATE_CAP_REACHED":"N","SCORING_CAP_REACHED":"N","SUPPRESSED":"N"}]}],"SEARCH_KEY":[{"FEAT_DESC":"LOGIN_ID:FLAVORH|","LIB_FEAT_ID":22,"FEAT_DESC_VALUES":[{"FEAT_DESC":"LOGIN_ID:FLAVORH|","LIB_FEAT_ID":22,"USED_FOR_CAND":"Y","USED_FOR_SCORING":"N","ENTITY_COUNT":1,"CANDIDATE_CAP_REACHED":"N","SCORING_CAP_REACHED":"N","SUPPRESSED":"N"}]},{"FEAT_DESC":"SSN:3251|80804|","LIB_FEAT_ID":23,"FEAT_DESC_VALUES":[{"FEAT_DESC":"SSN:3251|80804|","LIB_FEAT_ID":23,"USED_FOR_CAND":"Y","USED_FOR_SCORING":"N","ENTITY_COUNT":1,"CANDIDATE_CAP_REACHED":"N","SCORING_CAP_REACHED":"N","SUPPRESSED":"N"}]}],"SSN":[{"FEAT_DESC":"053-39-3251","LIB_FEAT_ID":6,"FEAT_DESC_VALUES":[{"FEAT_DESC":"053-39-3251","LIB_FEAT_ID":6,"USED_FOR_CAND":"Y","USED_FOR_SCORING":"Y","ENTITY_COUNT":1,"CANDIDATE_CAP_REACHED":"N","SCORING_CAP_REACHED":"N","SUPPRESSED":"N"}]}]},"RECORD_SUMMARY":[{"DATA_SOURCE":"TEST","RECORD_COUNT":6,"FIRST_SEEN_DT":"2022-12-06 16:02:35.306","LAST_SEEN_DT":"2022-12-06 16:02:36.083"}],"LAST_SEEN_DT":"2022-12-06 16:02:36.083","RECORDS":[{"DATA_SOURCE":"TEST","RECORD_ID":"111","ENTITY_TYPE":"TEST","INTERNAL_ID":100001,"ENTITY_KEY":"A6C927986DF7329D1D2CDE0E8F34328AE640FB7E","ENTITY_DESC":"JOHNSON","MATCH_KEY":"","MATCH_LEVEL":0,"MATCH_LEVEL_CODE":"","ERRULE_CODE":"","LAST_SEEN_DT":"2022-12-06 16:02:36.083","FEATURES":[{"LIB_FEAT_ID":1},{"LIB_FEAT_ID":3},{"LIB_FEAT_ID":4},{"LIB_FEAT_ID":5},{"LIB_FEAT_ID":6},{"LIB_FEAT_ID":7},{"LIB_FEAT_ID":8,"USAGE_TYPE":"CC"},{"LIB_FEAT_ID":9},{"LIB_FEAT_ID":11},{"LIB_FEAT_ID":12},{"LIB_FEAT_ID":13},{"LIB_FEAT_ID":14},{"LIB_FEAT_ID":15},{"LIB_FEAT_ID":16},{"LIB_FEAT_ID":17},{"LIB_FEAT_ID":18},{"LIB_FEAT_ID":19},{"LIB_FEAT_ID":20},{"LIB_FEAT_ID":21},{"LIB_FEAT_ID":22},{"LIB_FEAT_ID":23},{"LIB_FEAT_ID":100001},{"LIB_FEAT_ID":100002}]},{"DATA_SOURCE":"TEST","RECORD_ID":"444","ENTITY_TYPE":"TEST","INTERNAL_ID":1,"ENTITY_KEY":"C6063D4396612FBA7324DB0739273BA1FE815C43","ENTITY_DESC":"JOHNSON","MATCH_KEY":"+NAME+ADDRESS+PHONE+SSN+LOGIN_ID+ACCT_NUM","MATCH_LEVEL":1,"MATCH_LEVEL_CODE":"RESOLVED","ERRULE_CODE":"SF1_PNAME_CFF_CSTAB","LAST_SEEN_DT":"2022-12-06 16:02:35.572","FEATURES":[{"LIB_FEAT_ID":1},{"LIB_FEAT_ID":2},{"LIB_FEAT_ID":3},{"LIB_FEAT_ID":4},{"LIB_FEAT_ID":5},{"LIB_FEAT_ID":6},{"LIB_FEAT_ID":7},{"LIB_FEAT_ID":8,"USAGE_TYPE":"CC"},{"LIB_FEAT_ID":9},{"LIB_FEAT_ID":10},{"LIB_FEAT_ID":11},{"LIB_FEAT_ID":12},{"LIB_FEAT_ID":13},{"LIB_FEAT_ID":14},{"LIB_FEAT_ID":15},{"LIB_FEAT_ID":16},{"LIB_FEAT_ID":17},{"LIB_FEAT_ID":18},{"LIB_FEAT_ID":19},{"LIB_FEAT_ID":20},{"LIB_FEAT_ID":21},{"LIB_FEAT_ID":22},{"LIB_FEAT_ID":23}]},{"DATA_SOURCE":"TEST","RECORD_ID":"555","ENTITY_TYPE":"TEST","INTERNAL_ID":1,"ENTITY_KEY":"C6063D4396612FBA7324DB0739273BA1FE815C43","ENTITY_DESC":"JOHNSON","MATCH_KEY":"+NAME+ADDRESS+PHONE+SSN+LOGIN_ID+ACCT_NUM","MATCH_LEVEL":1,"MATCH_LEVEL_CODE":"RESOLVED","ERRULE_CODE":"SF1_PNAME_CFF_CSTAB","LAST_SEEN_DT":"2022-12-06 16:02:35.575","FEATURES":[{"LIB_FEAT_ID":1},{"LIB_FEAT_ID":2},{"LIB_FEAT_ID":3},{"LIB_FEAT_ID":4},{"LIB_FEAT_ID":5},{"LIB_FEAT_ID":6},{"LIB_FEAT_ID":7},{"LIB_FEAT_ID":8,"USAGE_TYPE":"CC"},{"LIB_FEAT_ID":9},{"LIB_FEAT_ID":10},{"LIB_FEAT_ID":11},{"LIB_FEAT_ID":12},{"LIB_FEAT_ID":13},{"LIB_FEAT_ID":14},{"LIB_FEAT_ID":15},{"LIB_FEAT_ID":16},{"LIB_FEAT_ID":17},{"LIB_FEAT_ID":18},{"LIB_FEAT_ID":19},{"LIB_FEAT_ID":20},{"LIB_FEAT_ID":21},{"LIB_FEAT_ID":22},{"LIB_FEAT_ID":23}]},{"DATA_SOURCE":"TEST","RECORD_ID":"666","ENTITY_TYPE":"TEST","INTERNAL_ID":1,"ENTITY_KEY":"C6063D4396612FBA7324DB0739273BA1FE815C43","ENTITY_DESC":"JOHNSON","MATCH_KEY":"+NAME+ADDRESS+PHONE+SSN+LOGIN_ID+ACCT_NUM","MATCH_LEVEL":1,"MATCH_LEVEL_CODE":"RESOLVED","ERRULE_CODE":"SF1_PNAME_CFF_CSTAB","LAST_SEEN_DT":"2022-12-06 16:02:35.579","FEATURES":[{"LIB_FEAT_ID":1},{"LIB_FEAT_ID":2},{"LIB_FEAT_ID":3},{"LIB_FEAT_ID":4},{"LIB_FEAT_ID":5},{"LIB_FEAT_ID":6},{"LIB_FEAT_ID":7},{"LIB_FEAT_ID":8,"USAGE_TYPE":"CC"},{"LIB_FEAT_ID":9},{"LIB_FEAT_ID":10},{"LIB_FEAT_ID":11},{"LIB_FEAT_ID":12},{"LIB_FEAT_ID":13},{"LIB_FEAT_ID":14},{"LIB_FEAT_ID":15},{"LIB_FEAT_ID":16},{"LIB_FEAT_ID":17},{"LIB_FEAT_ID":18},{"LIB_FEAT_ID":19},{"LIB_FEAT_ID":20},{"LIB_FEAT_ID":21},{"LIB_FEAT_ID":22},{"LIB_FEAT_ID":23}]},{"DATA_SOURCE":"TEST","RECORD_ID":"777","ENTITY_TYPE":"TEST","INTERNAL_ID":1,"ENTITY_KEY":"C6063D4396612FBA7324DB0739273BA1FE815C43","ENTITY_DESC":"JOHNSON","MATCH_KEY":"+NAME+ADDRESS+PHONE+SSN+LOGIN_ID+ACCT_NUM","MATCH_LEVEL":1,"MATCH_LEVEL_CODE":"RESOLVED","ERRULE_CODE":"SF1_PNAME_CFF_CSTAB","LAST_SEEN_DT":"2022-12-06 16:02:35.582","FEATURES":[{"LIB_FEAT_ID":1},{"LIB_FEAT_ID":2},{"LIB_FEAT_ID":3},{"LIB_FEAT_ID":4},{"LIB_FEAT_ID":5},{"LIB_FEAT_ID":6},{"LIB_FEAT_ID":7},{"LIB_FEAT_ID":8,"USAGE_TYPE":"CC"},{"LIB_FEAT_ID":9},{"LIB_FEAT_ID":10},{"LIB_FEAT_ID":11},{"LIB_FEAT_ID":12},{"LIB_FEAT_ID":13},{"LIB_FEAT_ID":14},{"LIB_FEAT_ID":15},{"LIB_FEAT_ID":16},{"LIB_FEAT_ID":17},{"LIB_FEAT_ID":18},{"LIB_FEAT_ID":19},{"LIB_FEAT_ID":20},{"LIB_FEAT_ID":21},{"LIB_FEAT_ID":22},{"LIB_FEAT_ID":23}]},{"DATA_SOURCE":"TEST","RECORD_ID":"FCCE9793DAAD23159DBCCEB97FF2745B92CE7919","ENTITY_TYPE":"TEST","INTERNAL_ID":1,"ENTITY_KEY":"C6063D4396612FBA7324DB0739273BA1FE815C43","ENTITY_DESC":"JOHNSON","MATCH_KEY":"+NAME+ADDRESS+PHONE+SSN+LOGIN_ID+ACCT_NUM","MATCH_LEVEL":1,"MATCH_LEVEL_CODE":"RESOLVED","ERRULE_CODE":"SF1_PNAME_CFF_CSTAB","LAST_SEEN_DT":"2022-12-06 16:02:35.432","FEATURES":[{"LIB_FEAT_ID":1},{"LIB_FEAT_ID":2},{"LIB_FEAT_ID":3},{"LIB_FEAT_ID":4},{"LIB_FEAT_ID":5},{"LIB_FEAT_ID":6},{"LIB_FEAT_ID":7},{"LIB_FEAT_ID":8,"USAGE_TYPE":"CC"},{"LIB_FEAT_ID":9},{"LIB_FEAT_ID":10},{"LIB_FEAT_ID":11},{"LIB_FEAT_ID":12},{"LIB_FEAT_ID":13},{"LIB_FEAT_ID":14},{"LIB_FEAT_ID":15},{"LIB_FEAT_ID":16},{"LIB_FEAT_ID":17},{"LIB_FEAT_ID":18},{"LIB_FEAT_ID":19},{"LIB_FEAT_ID":20},{"LIB_FEAT_ID":21},{"LIB_FEAT_ID":22},{"LIB_FEAT_ID":23}]}]},"RELATED_ENTITIES":[{"ENTITY_ID":2,"MATCH_LEVEL":3,"MATCH_LEVEL_CODE":"POSSIBLY_RELATED","MATCH_KEY":"+PHONE+ACCT_NUM-SSN","ERRULE_CODE":"SF1","IS_DISCLOSED":0,"IS_AMBIGUOUS":0,"ENTITY_NAME":"OCEANGUY","RECORD_SUMMARY":[{"DATA_SOURCE":"TEST","RECORD_COUNT":1,"FIRST_SEEN_DT":"2022-12-06 16:02:35.373","LAST_SEEN_DT":"2022-12-06 16:02:35.373"}],"LAST_SEEN_DT":"2022-12-06 16:02:35.373"},{"ENTITY_ID":3,"MATCH_LEVEL":3,"MATCH_LEVEL_CODE":"POSSIBLY_RELATED","MATCH_KEY":"+PHONE+ACCT_NUM-DOB-SSN","ERRULE_CODE":"SF1","IS_DISCLOSED":0,"IS_AMBIGUOUS":0,"ENTITY_NAME":"Smith","RECORD_SUMMARY":[{"DATA_SOURCE":"TEST","RECORD_COUNT":1,"FIRST_SEEN_DT":"2022-12-06 16:02:35.436","LAST_SEEN_DT":"2022-12-06 16:02:35.436"}],"LAST_SEEN_DT":"2022-12-06 16:02:35.436"}]}]}`
 */
 func (client *G2engineClient) WhyEntityByEntityID(ctx context.Context, entityID int64) (string, error) {
-	request := pb.WhyEntityByEntityIDRequest{
-		EntityID: entityID,
-	}
-	response, err := client.GrpcClient.WhyEntityByEntityID(ctx, &request)
-	return response.GetResult(), err
+    if g2engine.isTrace {
+        g2engine.traceEntry(145, entityID)
+    }
+    entryTime := time.Now()
+    request := pb.WhyEntityByEntityIDRequest{
+        EntityID: entityID,
+    }
+    response, err := client.GrpcClient.WhyEntityByEntityID(ctx, &request)
+    if g2engine.observers != nil {
+        go func() {
+            details := map[string]string{
+                "entityID": strconv.FormatInt(entityID, 10),
+            }
+            g2engine.notify(ctx, 8069, err, details)
+        }()
+    }
+    if g2engine.isTrace {
+        defer g2engine.traceExit(146, entityID, C.GoString(result.response), err, time.Since(entryTime))
+    }
+    return response.GetResult(), err
 }
 
 /*
@@ -1618,12 +2724,27 @@ Output
     Example: `{"WHY_RESULTS":[{"INTERNAL_ID":1,"ENTITY_ID":1,"FOCUS_RECORDS":[{"DATA_SOURCE":"TEST","RECORD_ID":"444"},{"DATA_SOURCE":"TEST","RECORD_ID":"555"},{"DATA_SOURCE":"TEST","RECORD_ID":"666"},{"DATA_SOURCE":"TEST","RECORD_ID":"777"},{"DATA_SOURCE":"TEST","RECORD_ID":"FCCE9793DAAD23159DBCCEB97FF2745B92CE7919"}],"MATCH_INFO":{"WHY_KEY":"+NAME+ADDRESS+PHONE+SSN+LOGIN_ID+ACCT_NUM","WHY_ERRULE_CODE":"SF1_PNAME_CFF_CSTAB","MATCH_LEVEL_CODE":"RESOLVED"}},{"INTERNAL_ID":100001,"ENTITY_ID":1,"FOCUS_RECORDS":[{"DATA_SOURCE":"TEST","RECORD_ID":"111"}],"MATCH_INFO":{"WHY_KEY":"+NAME+ADDRESS+PHONE+SSN+LOGIN_ID+ACCT_NUM","WHY_ERRULE_CODE":"SF1_PNAME_CFF_CSTAB","MATCH_LEVEL_CODE":"RESOLVED"}}],"ENTITIES":[{"RESOLVED_ENTITY":{"ENTITY_ID":1}}]}`
 */
 func (client *G2engineClient) WhyEntityByEntityID_V2(ctx context.Context, entityID int64, flags int64) (string, error) {
-	request := pb.WhyEntityByEntityID_V2Request{
-		EntityID: entityID,
-		Flags:    flags,
-	}
-	response, err := client.GrpcClient.WhyEntityByEntityID_V2(ctx, &request)
-	return response.GetResult(), err
+    if g2engine.isTrace {
+        g2engine.traceEntry(147, entityID, flags)
+    }
+    entryTime := time.Now()
+    request := pb.WhyEntityByEntityID_V2Request{
+        EntityID: entityID,
+        Flags:    flags,
+    }
+    response, err := client.GrpcClient.WhyEntityByEntityID_V2(ctx, &request)
+    if g2engine.observers != nil {
+        go func() {
+            details := map[string]string{
+                "entityID": strconv.FormatInt(entityID, 10),
+            }
+            g2engine.notify(ctx, 8070, err, details)
+        }()
+    }
+    if g2engine.isTrace {
+        defer g2engine.traceExit(148, entityID, flags, C.GoString(result.response), err, time.Since(entryTime))
+    }
+    return response.GetResult(), err
 }
 
 /*
@@ -1640,12 +2761,28 @@ Output
     Example: `{"WHY_RESULTS":[{"INTERNAL_ID":1,"ENTITY_ID":1,"FOCUS_RECORDS":[{"DATA_SOURCE":"TEST","RECORD_ID":"444"},{"DATA_SOURCE":"TEST","RECORD_ID":"555"},{"DATA_SOURCE":"TEST","RECORD_ID":"666"},{"DATA_SOURCE":"TEST","RECORD_ID":"777"},{"DATA_SOURCE":"TEST","RECORD_ID":"FCCE9793DAAD23159DBCCEB97FF2745B92CE7919"}],"MATCH_INFO":{"WHY_KEY":"+NAME+ADDRESS+PHONE+SSN+LOGIN_ID+ACCT_NUM","WHY_ERRULE_CODE":"SF1_PNAME_CFF_CSTAB","MATCH_LEVEL_CODE":"RESOLVED","CANDIDATE_KEYS":{"ACCT_NUM":[{"FEAT_ID":8,"FEAT_DESC":"5534202208773608"}],"ADDR_KEY":[{"FEAT_ID":17,"FEAT_DESC":"772|ARMSTRNK||TL"},{"FEAT_ID":18,"FEAT_DESC":"772|ARMSTRNK||71232"}],"ID_KEY":[{"FEAT_ID":19,"FEAT_DESC":"ACCT_NUM=5534202208773608"},{"FEAT_ID":20,"FEAT_DESC":"SSN=053-39-3251"}],"LOGIN_ID":[{"FEAT_ID":7,"FEAT_DESC":"flavorh"}],"NAME_KEY":[{"FEAT_ID":9,"FEAT_DESC":"JNSN|DOB.MMDD_HASH=0804"},{"FEAT_ID":11,"FEAT_DESC":"JNSN"},{"FEAT_ID":12,"FEAT_DESC":"JNSN|ADDRESS.CITY_STD=TL"},{"FEAT_ID":13,"FEAT_DESC":"JNSN|DOB=80804"},{"FEAT_ID":14,"FEAT_DESC":"JNSN|POST=71232"},{"FEAT_ID":15,"FEAT_DESC":"JNSN|PHONE.PHONE_LAST_5=10796"},{"FEAT_ID":16,"FEAT_DESC":"JNSN|SSN=3251"}],"PHONE":[{"FEAT_ID":5,"FEAT_DESC":"225-671-0796"}],"PHONE_KEY":[{"FEAT_ID":21,"FEAT_DESC":"2256710796"}],"SEARCH_KEY":[{"FEAT_ID":22,"FEAT_DESC":"LOGIN_ID:FLAVORH|"},{"FEAT_ID":23,"FEAT_DESC":"SSN:3251|80804|"}],"SSN":[{"FEAT_ID":6,"FEAT_DESC":"053-39-3251"}]},"FEATURE_SCORES":{"ACCT_NUM":[{"INBOUND_FEAT_ID":8,"INBOUND_FEAT":"5534202208773608","INBOUND_FEAT_USAGE_TYPE":"CC","CANDIDATE_FEAT_ID":8,"CANDIDATE_FEAT":"5534202208773608","CANDIDATE_FEAT_USAGE_TYPE":"CC","FULL_SCORE":100,"SCORE_BUCKET":"SAME","SCORE_BEHAVIOR":"F1"}],"ADDRESS":[{"INBOUND_FEAT_ID":4,"INBOUND_FEAT":"772 Armstrong RD Delhi LA 71232","INBOUND_FEAT_USAGE_TYPE":"","CANDIDATE_FEAT_ID":4,"CANDIDATE_FEAT":"772 Armstrong RD Delhi LA 71232","CANDIDATE_FEAT_USAGE_TYPE":"","FULL_SCORE":100,"SCORE_BUCKET":"SAME","SCORE_BEHAVIOR":"FF"}],"DOB":[{"INBOUND_FEAT_ID":2,"INBOUND_FEAT":"4/8/1983","INBOUND_FEAT_USAGE_TYPE":"","CANDIDATE_FEAT_ID":100001,"CANDIDATE_FEAT":"4/8/1985","CANDIDATE_FEAT_USAGE_TYPE":"","FULL_SCORE":88,"SCORE_BUCKET":"PLAUSIBLE","SCORE_BEHAVIOR":"FMES"}],"GENDER":[{"INBOUND_FEAT_ID":3,"INBOUND_FEAT":"F","INBOUND_FEAT_USAGE_TYPE":"","CANDIDATE_FEAT_ID":3,"CANDIDATE_FEAT":"F","CANDIDATE_FEAT_USAGE_TYPE":"","FULL_SCORE":100,"SCORE_BUCKET":"SAME","SCORE_BEHAVIOR":"FVME"}],"LOGIN_ID":[{"INBOUND_FEAT_ID":7,"INBOUND_FEAT":"flavorh","INBOUND_FEAT_USAGE_TYPE":"","CANDIDATE_FEAT_ID":7,"CANDIDATE_FEAT":"flavorh","CANDIDATE_FEAT_USAGE_TYPE":"","FULL_SCORE":100,"SCORE_BUCKET":"SAME","SCORE_BEHAVIOR":"F1"}],"NAME":[{"INBOUND_FEAT_ID":1,"INBOUND_FEAT":"JOHNSON","INBOUND_FEAT_USAGE_TYPE":"","CANDIDATE_FEAT_ID":1,"CANDIDATE_FEAT":"JOHNSON","CANDIDATE_FEAT_USAGE_TYPE":"","GNR_FN":100,"GNR_SN":100,"GNR_GN":70,"GENERATION_MATCH":-1,"GNR_ON":-1,"SCORE_BUCKET":"SAME","SCORE_BEHAVIOR":"NAME"}],"PHONE":[{"INBOUND_FEAT_ID":5,"INBOUND_FEAT":"225-671-0796","INBOUND_FEAT_USAGE_TYPE":"","CANDIDATE_FEAT_ID":5,"CANDIDATE_FEAT":"225-671-0796","CANDIDATE_FEAT_USAGE_TYPE":"","FULL_SCORE":100,"SCORE_BUCKET":"SAME","SCORE_BEHAVIOR":"FF"}],"SSN":[{"INBOUND_FEAT_ID":6,"INBOUND_FEAT":"053-39-3251","INBOUND_FEAT_USAGE_TYPE":"","CANDIDATE_FEAT_ID":6,"CANDIDATE_FEAT":"053-39-3251","CANDIDATE_FEAT_USAGE_TYPE":"","FULL_SCORE":100,"SCORE_BUCKET":"SAME","SCORE_BEHAVIOR":"F1ES"}]}}},{"INTERNAL_ID":100001,"ENTITY_ID":1,"FOCUS_RECORDS":[{"DATA_SOURCE":"TEST","RECORD_ID":"111"}],"MATCH_INFO":{"WHY_KEY":"+NAME+ADDRESS+PHONE+SSN+LOGIN_ID+ACCT_NUM","WHY_ERRULE_CODE":"SF1_PNAME_CFF_CSTAB","MATCH_LEVEL_CODE":"RESOLVED","CANDIDATE_KEYS":{"ACCT_NUM":[{"FEAT_ID":8,"FEAT_DESC":"5534202208773608"}],"ADDR_KEY":[{"FEAT_ID":17,"FEAT_DESC":"772|ARMSTRNK||TL"},{"FEAT_ID":18,"FEAT_DESC":"772|ARMSTRNK||71232"}],"ID_KEY":[{"FEAT_ID":19,"FEAT_DESC":"ACCT_NUM=5534202208773608"},{"FEAT_ID":20,"FEAT_DESC":"SSN=053-39-3251"}],"LOGIN_ID":[{"FEAT_ID":7,"FEAT_DESC":"flavorh"}],"NAME_KEY":[{"FEAT_ID":9,"FEAT_DESC":"JNSN|DOB.MMDD_HASH=0804"},{"FEAT_ID":11,"FEAT_DESC":"JNSN"},{"FEAT_ID":12,"FEAT_DESC":"JNSN|ADDRESS.CITY_STD=TL"},{"FEAT_ID":13,"FEAT_DESC":"JNSN|DOB=80804"},{"FEAT_ID":14,"FEAT_DESC":"JNSN|POST=71232"},{"FEAT_ID":15,"FEAT_DESC":"JNSN|PHONE.PHONE_LAST_5=10796"},{"FEAT_ID":16,"FEAT_DESC":"JNSN|SSN=3251"}],"PHONE":[{"FEAT_ID":5,"FEAT_DESC":"225-671-0796"}],"PHONE_KEY":[{"FEAT_ID":21,"FEAT_DESC":"2256710796"}],"SEARCH_KEY":[{"FEAT_ID":22,"FEAT_DESC":"LOGIN_ID:FLAVORH|"},{"FEAT_ID":23,"FEAT_DESC":"SSN:3251|80804|"}],"SSN":[{"FEAT_ID":6,"FEAT_DESC":"053-39-3251"}]},"FEATURE_SCORES":{"ACCT_NUM":[{"INBOUND_FEAT_ID":8,"INBOUND_FEAT":"5534202208773608","INBOUND_FEAT_USAGE_TYPE":"CC","CANDIDATE_FEAT_ID":8,"CANDIDATE_FEAT":"5534202208773608","CANDIDATE_FEAT_USAGE_TYPE":"CC","FULL_SCORE":100,"SCORE_BUCKET":"SAME","SCORE_BEHAVIOR":"F1"}],"ADDRESS":[{"INBOUND_FEAT_ID":4,"INBOUND_FEAT":"772 Armstrong RD Delhi LA 71232","INBOUND_FEAT_USAGE_TYPE":"","CANDIDATE_FEAT_ID":4,"CANDIDATE_FEAT":"772 Armstrong RD Delhi LA 71232","CANDIDATE_FEAT_USAGE_TYPE":"","FULL_SCORE":100,"SCORE_BUCKET":"SAME","SCORE_BEHAVIOR":"FF"}],"DOB":[{"INBOUND_FEAT_ID":100001,"INBOUND_FEAT":"4/8/1985","INBOUND_FEAT_USAGE_TYPE":"","CANDIDATE_FEAT_ID":2,"CANDIDATE_FEAT":"4/8/1983","CANDIDATE_FEAT_USAGE_TYPE":"","FULL_SCORE":88,"SCORE_BUCKET":"PLAUSIBLE","SCORE_BEHAVIOR":"FMES"}],"GENDER":[{"INBOUND_FEAT_ID":3,"INBOUND_FEAT":"F","INBOUND_FEAT_USAGE_TYPE":"","CANDIDATE_FEAT_ID":3,"CANDIDATE_FEAT":"F","CANDIDATE_FEAT_USAGE_TYPE":"","FULL_SCORE":100,"SCORE_BUCKET":"SAME","SCORE_BEHAVIOR":"FVME"}],"LOGIN_ID":[{"INBOUND_FEAT_ID":7,"INBOUND_FEAT":"flavorh","INBOUND_FEAT_USAGE_TYPE":"","CANDIDATE_FEAT_ID":7,"CANDIDATE_FEAT":"flavorh","CANDIDATE_FEAT_USAGE_TYPE":"","FULL_SCORE":100,"SCORE_BUCKET":"SAME","SCORE_BEHAVIOR":"F1"}],"NAME":[{"INBOUND_FEAT_ID":1,"INBOUND_FEAT":"JOHNSON","INBOUND_FEAT_USAGE_TYPE":"","CANDIDATE_FEAT_ID":1,"CANDIDATE_FEAT":"JOHNSON","CANDIDATE_FEAT_USAGE_TYPE":"","GNR_FN":100,"GNR_SN":100,"GNR_GN":70,"GENERATION_MATCH":-1,"GNR_ON":-1,"SCORE_BUCKET":"SAME","SCORE_BEHAVIOR":"NAME"}],"PHONE":[{"INBOUND_FEAT_ID":5,"INBOUND_FEAT":"225-671-0796","INBOUND_FEAT_USAGE_TYPE":"","CANDIDATE_FEAT_ID":5,"CANDIDATE_FEAT":"225-671-0796","CANDIDATE_FEAT_USAGE_TYPE":"","FULL_SCORE":100,"SCORE_BUCKET":"SAME","SCORE_BEHAVIOR":"FF"}],"SSN":[{"INBOUND_FEAT_ID":6,"INBOUND_FEAT":"053-39-3251","INBOUND_FEAT_USAGE_TYPE":"","CANDIDATE_FEAT_ID":6,"CANDIDATE_FEAT":"053-39-3251","CANDIDATE_FEAT_USAGE_TYPE":"","FULL_SCORE":100,"SCORE_BUCKET":"SAME","SCORE_BEHAVIOR":"F1ES"}]}}}],"ENTITIES":[{"RESOLVED_ENTITY":{"ENTITY_ID":1,"ENTITY_NAME":"JOHNSON","FEATURES":{"ACCT_NUM":[{"FEAT_DESC":"5534202208773608","LIB_FEAT_ID":8,"USAGE_TYPE":"CC","FEAT_DESC_VALUES":[{"FEAT_DESC":"5534202208773608","LIB_FEAT_ID":8,"USED_FOR_CAND":"Y","USED_FOR_SCORING":"Y","ENTITY_COUNT":3,"CANDIDATE_CAP_REACHED":"N","SCORING_CAP_REACHED":"N","SUPPRESSED":"N"}]}],"ADDRESS":[{"FEAT_DESC":"772 Armstrong RD Delhi LA 71232","LIB_FEAT_ID":4,"FEAT_DESC_VALUES":[{"FEAT_DESC":"772 Armstrong RD Delhi LA 71232","LIB_FEAT_ID":4,"USED_FOR_CAND":"N","USED_FOR_SCORING":"Y","ENTITY_COUNT":1,"CANDIDATE_CAP_REACHED":"N","SCORING_CAP_REACHED":"N","SUPPRESSED":"N"}]}],"ADDR_KEY":[{"FEAT_DESC":"772|ARMSTRNK||71232","LIB_FEAT_ID":18,"FEAT_DESC_VALUES":[{"FEAT_DESC":"772|ARMSTRNK||71232","LIB_FEAT_ID":18,"USED_FOR_CAND":"Y","USED_FOR_SCORING":"N","ENTITY_COUNT":1,"CANDIDATE_CAP_REACHED":"N","SCORING_CAP_REACHED":"N","SUPPRESSED":"N"}]},{"FEAT_DESC":"772|ARMSTRNK||TL","LIB_FEAT_ID":17,"FEAT_DESC_VALUES":[{"FEAT_DESC":"772|ARMSTRNK||TL","LIB_FEAT_ID":17,"USED_FOR_CAND":"Y","USED_FOR_SCORING":"N","ENTITY_COUNT":3,"CANDIDATE_CAP_REACHED":"N","SCORING_CAP_REACHED":"N","SUPPRESSED":"N"}]}],"DOB":[{"FEAT_DESC":"4/8/1983","LIB_FEAT_ID":2,"FEAT_DESC_VALUES":[{"FEAT_DESC":"4/8/1983","LIB_FEAT_ID":2,"USED_FOR_CAND":"Y","USED_FOR_SCORING":"Y","ENTITY_COUNT":1,"CANDIDATE_CAP_REACHED":"N","SCORING_CAP_REACHED":"N","SUPPRESSED":"N"}]},{"FEAT_DESC":"4/8/1985","LIB_FEAT_ID":100001,"FEAT_DESC_VALUES":[{"FEAT_DESC":"4/8/1985","LIB_FEAT_ID":100001,"USED_FOR_CAND":"Y","USED_FOR_SCORING":"Y","ENTITY_COUNT":1,"CANDIDATE_CAP_REACHED":"N","SCORING_CAP_REACHED":"N","SUPPRESSED":"N"}]}],"GENDER":[{"FEAT_DESC":"F","LIB_FEAT_ID":3,"FEAT_DESC_VALUES":[{"FEAT_DESC":"F","LIB_FEAT_ID":3,"USED_FOR_CAND":"N","USED_FOR_SCORING":"Y","ENTITY_COUNT":3,"CANDIDATE_CAP_REACHED":"N","SCORING_CAP_REACHED":"N","SUPPRESSED":"N"}]}],"ID_KEY":[{"FEAT_DESC":"ACCT_NUM=5534202208773608","LIB_FEAT_ID":19,"FEAT_DESC_VALUES":[{"FEAT_DESC":"ACCT_NUM=5534202208773608","LIB_FEAT_ID":19,"USED_FOR_CAND":"Y","USED_FOR_SCORING":"N","ENTITY_COUNT":3,"CANDIDATE_CAP_REACHED":"N","SCORING_CAP_REACHED":"N","SUPPRESSED":"N"}]},{"FEAT_DESC":"SSN=053-39-3251","LIB_FEAT_ID":20,"FEAT_DESC_VALUES":[{"FEAT_DESC":"SSN=053-39-3251","LIB_FEAT_ID":20,"USED_FOR_CAND":"Y","USED_FOR_SCORING":"N","ENTITY_COUNT":1,"CANDIDATE_CAP_REACHED":"N","SCORING_CAP_REACHED":"N","SUPPRESSED":"N"}]}],"LOGIN_ID":[{"FEAT_DESC":"flavorh","LIB_FEAT_ID":7,"FEAT_DESC_VALUES":[{"FEAT_DESC":"flavorh","LIB_FEAT_ID":7,"USED_FOR_CAND":"Y","USED_FOR_SCORING":"Y","ENTITY_COUNT":1,"CANDIDATE_CAP_REACHED":"N","SCORING_CAP_REACHED":"N","SUPPRESSED":"N"}]}],"NAME":[{"FEAT_DESC":"JOHNSON","LIB_FEAT_ID":1,"FEAT_DESC_VALUES":[{"FEAT_DESC":"JOHNSON","LIB_FEAT_ID":1,"USED_FOR_CAND":"N","USED_FOR_SCORING":"Y","ENTITY_COUNT":1,"CANDIDATE_CAP_REACHED":"N","SCORING_CAP_REACHED":"N","SUPPRESSED":"N"}]}],"NAME_KEY":[{"FEAT_DESC":"JNSN","LIB_FEAT_ID":11,"FEAT_DESC_VALUES":[{"FEAT_DESC":"JNSN","LIB_FEAT_ID":11,"USED_FOR_CAND":"Y","USED_FOR_SCORING":"N","ENTITY_COUNT":1,"CANDIDATE_CAP_REACHED":"N","SCORING_CAP_REACHED":"N","SUPPRESSED":"N"}]},{"FEAT_DESC":"JNSN|ADDRESS.CITY_STD=TL","LIB_FEAT_ID":12,"FEAT_DESC_VALUES":[{"FEAT_DESC":"JNSN|ADDRESS.CITY_STD=TL","LIB_FEAT_ID":12,"USED_FOR_CAND":"Y","USED_FOR_SCORING":"N","ENTITY_COUNT":1,"CANDIDATE_CAP_REACHED":"N","SCORING_CAP_REACHED":"N","SUPPRESSED":"N"}]},{"FEAT_DESC":"JNSN|DOB.MMDD_HASH=0804","LIB_FEAT_ID":9,"FEAT_DESC_VALUES":[{"FEAT_DESC":"JNSN|DOB.MMDD_HASH=0804","LIB_FEAT_ID":9,"USED_FOR_CAND":"Y","USED_FOR_SCORING":"N","ENTITY_COUNT":1,"CANDIDATE_CAP_REACHED":"N","SCORING_CAP_REACHED":"N","SUPPRESSED":"N"}]},{"FEAT_DESC":"JNSN|DOB.MMYY_HASH=0483","LIB_FEAT_ID":10,"FEAT_DESC_VALUES":[{"FEAT_DESC":"JNSN|DOB.MMYY_HASH=0483","LIB_FEAT_ID":10,"USED_FOR_CAND":"Y","USED_FOR_SCORING":"N","ENTITY_COUNT":1,"CANDIDATE_CAP_REACHED":"N","SCORING_CAP_REACHED":"N","SUPPRESSED":"N"}]},{"FEAT_DESC":"JNSN|DOB.MMYY_HASH=0485","LIB_FEAT_ID":100002,"FEAT_DESC_VALUES":[{"FEAT_DESC":"JNSN|DOB.MMYY_HASH=0485","LIB_FEAT_ID":100002,"USED_FOR_CAND":"Y","USED_FOR_SCORING":"N","ENTITY_COUNT":1,"CANDIDATE_CAP_REACHED":"N","SCORING_CAP_REACHED":"N","SUPPRESSED":"N"}]},{"FEAT_DESC":"JNSN|DOB=80804","LIB_FEAT_ID":13,"FEAT_DESC_VALUES":[{"FEAT_DESC":"JNSN|DOB=80804","LIB_FEAT_ID":13,"USED_FOR_CAND":"Y","USED_FOR_SCORING":"N","ENTITY_COUNT":1,"CANDIDATE_CAP_REACHED":"N","SCORING_CAP_REACHED":"N","SUPPRESSED":"N"}]},{"FEAT_DESC":"JNSN|PHONE.PHONE_LAST_5=10796","LIB_FEAT_ID":15,"FEAT_DESC_VALUES":[{"FEAT_DESC":"JNSN|PHONE.PHONE_LAST_5=10796","LIB_FEAT_ID":15,"USED_FOR_CAND":"Y","USED_FOR_SCORING":"N","ENTITY_COUNT":1,"CANDIDATE_CAP_REACHED":"N","SCORING_CAP_REACHED":"N","SUPPRESSED":"N"}]},{"FEAT_DESC":"JNSN|POST=71232","LIB_FEAT_ID":14,"FEAT_DESC_VALUES":[{"FEAT_DESC":"JNSN|POST=71232","LIB_FEAT_ID":14,"USED_FOR_CAND":"Y","USED_FOR_SCORING":"N","ENTITY_COUNT":1,"CANDIDATE_CAP_REACHED":"N","SCORING_CAP_REACHED":"N","SUPPRESSED":"N"}]},{"FEAT_DESC":"JNSN|SSN=3251","LIB_FEAT_ID":16,"FEAT_DESC_VALUES":[{"FEAT_DESC":"JNSN|SSN=3251","LIB_FEAT_ID":16,"USED_FOR_CAND":"Y","USED_FOR_SCORING":"N","ENTITY_COUNT":1,"CANDIDATE_CAP_REACHED":"N","SCORING_CAP_REACHED":"N","SUPPRESSED":"N"}]}],"PHONE":[{"FEAT_DESC":"225-671-0796","LIB_FEAT_ID":5,"FEAT_DESC_VALUES":[{"FEAT_DESC":"225-671-0796","LIB_FEAT_ID":5,"USED_FOR_CAND":"Y","USED_FOR_SCORING":"Y","ENTITY_COUNT":3,"CANDIDATE_CAP_REACHED":"N","SCORING_CAP_REACHED":"N","SUPPRESSED":"N"}]}],"PHONE_KEY":[{"FEAT_DESC":"2256710796","LIB_FEAT_ID":21,"FEAT_DESC_VALUES":[{"FEAT_DESC":"2256710796","LIB_FEAT_ID":21,"USED_FOR_CAND":"Y","USED_FOR_SCORING":"N","ENTITY_COUNT":3,"CANDIDATE_CAP_REACHED":"N","SCORING_CAP_REACHED":"N","SUPPRESSED":"N"}]}],"SEARCH_KEY":[{"FEAT_DESC":"LOGIN_ID:FLAVORH|","LIB_FEAT_ID":22,"FEAT_DESC_VALUES":[{"FEAT_DESC":"LOGIN_ID:FLAVORH|","LIB_FEAT_ID":22,"USED_FOR_CAND":"Y","USED_FOR_SCORING":"N","ENTITY_COUNT":1,"CANDIDATE_CAP_REACHED":"N","SCORING_CAP_REACHED":"N","SUPPRESSED":"N"}]},{"FEAT_DESC":"SSN:3251|80804|","LIB_FEAT_ID":23,"FEAT_DESC_VALUES":[{"FEAT_DESC":"SSN:3251|80804|","LIB_FEAT_ID":23,"USED_FOR_CAND":"Y","USED_FOR_SCORING":"N","ENTITY_COUNT":1,"CANDIDATE_CAP_REACHED":"N","SCORING_CAP_REACHED":"N","SUPPRESSED":"N"}]}],"SSN":[{"FEAT_DESC":"053-39-3251","LIB_FEAT_ID":6,"FEAT_DESC_VALUES":[{"FEAT_DESC":"053-39-3251","LIB_FEAT_ID":6,"USED_FOR_CAND":"Y","USED_FOR_SCORING":"Y","ENTITY_COUNT":1,"CANDIDATE_CAP_REACHED":"N","SCORING_CAP_REACHED":"N","SUPPRESSED":"N"}]}]},"RECORD_SUMMARY":[{"DATA_SOURCE":"TEST","RECORD_COUNT":6,"FIRST_SEEN_DT":"2022-12-06 16:09:05.626","LAST_SEEN_DT":"2022-12-06 16:09:06.399"}],"LAST_SEEN_DT":"2022-12-06 16:09:06.399","RECORDS":[{"DATA_SOURCE":"TEST","RECORD_ID":"111","ENTITY_TYPE":"TEST","INTERNAL_ID":100001,"ENTITY_KEY":"A6C927986DF7329D1D2CDE0E8F34328AE640FB7E","ENTITY_DESC":"JOHNSON","MATCH_KEY":"","MATCH_LEVEL":0,"MATCH_LEVEL_CODE":"","ERRULE_CODE":"","LAST_SEEN_DT":"2022-12-06 16:09:06.399","FEATURES":[{"LIB_FEAT_ID":1},{"LIB_FEAT_ID":3},{"LIB_FEAT_ID":4},{"LIB_FEAT_ID":5},{"LIB_FEAT_ID":6},{"LIB_FEAT_ID":7},{"LIB_FEAT_ID":8,"USAGE_TYPE":"CC"},{"LIB_FEAT_ID":9},{"LIB_FEAT_ID":11},{"LIB_FEAT_ID":12},{"LIB_FEAT_ID":13},{"LIB_FEAT_ID":14},{"LIB_FEAT_ID":15},{"LIB_FEAT_ID":16},{"LIB_FEAT_ID":17},{"LIB_FEAT_ID":18},{"LIB_FEAT_ID":19},{"LIB_FEAT_ID":20},{"LIB_FEAT_ID":21},{"LIB_FEAT_ID":22},{"LIB_FEAT_ID":23},{"LIB_FEAT_ID":100001},{"LIB_FEAT_ID":100002}]},{"DATA_SOURCE":"TEST","RECORD_ID":"444","ENTITY_TYPE":"TEST","INTERNAL_ID":1,"ENTITY_KEY":"C6063D4396612FBA7324DB0739273BA1FE815C43","ENTITY_DESC":"JOHNSON","MATCH_KEY":"+NAME+ADDRESS+PHONE+SSN+LOGIN_ID+ACCT_NUM","MATCH_LEVEL":1,"MATCH_LEVEL_CODE":"RESOLVED","ERRULE_CODE":"SF1_PNAME_CFF_CSTAB","LAST_SEEN_DT":"2022-12-06 16:09:05.954","FEATURES":[{"LIB_FEAT_ID":1},{"LIB_FEAT_ID":2},{"LIB_FEAT_ID":3},{"LIB_FEAT_ID":4},{"LIB_FEAT_ID":5},{"LIB_FEAT_ID":6},{"LIB_FEAT_ID":7},{"LIB_FEAT_ID":8,"USAGE_TYPE":"CC"},{"LIB_FEAT_ID":9},{"LIB_FEAT_ID":10},{"LIB_FEAT_ID":11},{"LIB_FEAT_ID":12},{"LIB_FEAT_ID":13},{"LIB_FEAT_ID":14},{"LIB_FEAT_ID":15},{"LIB_FEAT_ID":16},{"LIB_FEAT_ID":17},{"LIB_FEAT_ID":18},{"LIB_FEAT_ID":19},{"LIB_FEAT_ID":20},{"LIB_FEAT_ID":21},{"LIB_FEAT_ID":22},{"LIB_FEAT_ID":23}]},{"DATA_SOURCE":"TEST","RECORD_ID":"555","ENTITY_TYPE":"TEST","INTERNAL_ID":1,"ENTITY_KEY":"C6063D4396612FBA7324DB0739273BA1FE815C43","ENTITY_DESC":"JOHNSON","MATCH_KEY":"+NAME+ADDRESS+PHONE+SSN+LOGIN_ID+ACCT_NUM","MATCH_LEVEL":1,"MATCH_LEVEL_CODE":"RESOLVED","ERRULE_CODE":"SF1_PNAME_CFF_CSTAB","LAST_SEEN_DT":"2022-12-06 16:09:05.957","FEATURES":[{"LIB_FEAT_ID":1},{"LIB_FEAT_ID":2},{"LIB_FEAT_ID":3},{"LIB_FEAT_ID":4},{"LIB_FEAT_ID":5},{"LIB_FEAT_ID":6},{"LIB_FEAT_ID":7},{"LIB_FEAT_ID":8,"USAGE_TYPE":"CC"},{"LIB_FEAT_ID":9},{"LIB_FEAT_ID":10},{"LIB_FEAT_ID":11},{"LIB_FEAT_ID":12},{"LIB_FEAT_ID":13},{"LIB_FEAT_ID":14},{"LIB_FEAT_ID":15},{"LIB_FEAT_ID":16},{"LIB_FEAT_ID":17},{"LIB_FEAT_ID":18},{"LIB_FEAT_ID":19},{"LIB_FEAT_ID":20},{"LIB_FEAT_ID":21},{"LIB_FEAT_ID":22},{"LIB_FEAT_ID":23}]},{"DATA_SOURCE":"TEST","RECORD_ID":"666","ENTITY_TYPE":"TEST","INTERNAL_ID":1,"ENTITY_KEY":"C6063D4396612FBA7324DB0739273BA1FE815C43","ENTITY_DESC":"JOHNSON","MATCH_KEY":"+NAME+ADDRESS+PHONE+SSN+LOGIN_ID+ACCT_NUM","MATCH_LEVEL":1,"MATCH_LEVEL_CODE":"RESOLVED","ERRULE_CODE":"SF1_PNAME_CFF_CSTAB","LAST_SEEN_DT":"2022-12-06 16:09:05.960","FEATURES":[{"LIB_FEAT_ID":1},{"LIB_FEAT_ID":2},{"LIB_FEAT_ID":3},{"LIB_FEAT_ID":4},{"LIB_FEAT_ID":5},{"LIB_FEAT_ID":6},{"LIB_FEAT_ID":7},{"LIB_FEAT_ID":8,"USAGE_TYPE":"CC"},{"LIB_FEAT_ID":9},{"LIB_FEAT_ID":10},{"LIB_FEAT_ID":11},{"LIB_FEAT_ID":12},{"LIB_FEAT_ID":13},{"LIB_FEAT_ID":14},{"LIB_FEAT_ID":15},{"LIB_FEAT_ID":16},{"LIB_FEAT_ID":17},{"LIB_FEAT_ID":18},{"LIB_FEAT_ID":19},{"LIB_FEAT_ID":20},{"LIB_FEAT_ID":21},{"LIB_FEAT_ID":22},{"LIB_FEAT_ID":23}]},{"DATA_SOURCE":"TEST","RECORD_ID":"777","ENTITY_TYPE":"TEST","INTERNAL_ID":1,"ENTITY_KEY":"C6063D4396612FBA7324DB0739273BA1FE815C43","ENTITY_DESC":"JOHNSON","MATCH_KEY":"+NAME+ADDRESS+PHONE+SSN+LOGIN_ID+ACCT_NUM","MATCH_LEVEL":1,"MATCH_LEVEL_CODE":"RESOLVED","ERRULE_CODE":"SF1_PNAME_CFF_CSTAB","LAST_SEEN_DT":"2022-12-06 16:09:05.963","FEATURES":[{"LIB_FEAT_ID":1},{"LIB_FEAT_ID":2},{"LIB_FEAT_ID":3},{"LIB_FEAT_ID":4},{"LIB_FEAT_ID":5},{"LIB_FEAT_ID":6},{"LIB_FEAT_ID":7},{"LIB_FEAT_ID":8,"USAGE_TYPE":"CC"},{"LIB_FEAT_ID":9},{"LIB_FEAT_ID":10},{"LIB_FEAT_ID":11},{"LIB_FEAT_ID":12},{"LIB_FEAT_ID":13},{"LIB_FEAT_ID":14},{"LIB_FEAT_ID":15},{"LIB_FEAT_ID":16},{"LIB_FEAT_ID":17},{"LIB_FEAT_ID":18},{"LIB_FEAT_ID":19},{"LIB_FEAT_ID":20},{"LIB_FEAT_ID":21},{"LIB_FEAT_ID":22},{"LIB_FEAT_ID":23}]},{"DATA_SOURCE":"TEST","RECORD_ID":"FCCE9793DAAD23159DBCCEB97FF2745B92CE7919","ENTITY_TYPE":"TEST","INTERNAL_ID":1,"ENTITY_KEY":"C6063D4396612FBA7324DB0739273BA1FE815C43","ENTITY_DESC":"JOHNSON","MATCH_KEY":"+NAME+ADDRESS+PHONE+SSN+LOGIN_ID+ACCT_NUM","MATCH_LEVEL":1,"MATCH_LEVEL_CODE":"RESOLVED","ERRULE_CODE":"SF1_PNAME_CFF_CSTAB","LAST_SEEN_DT":"2022-12-06 16:09:05.789","FEATURES":[{"LIB_FEAT_ID":1},{"LIB_FEAT_ID":2},{"LIB_FEAT_ID":3},{"LIB_FEAT_ID":4},{"LIB_FEAT_ID":5},{"LIB_FEAT_ID":6},{"LIB_FEAT_ID":7},{"LIB_FEAT_ID":8,"USAGE_TYPE":"CC"},{"LIB_FEAT_ID":9},{"LIB_FEAT_ID":10},{"LIB_FEAT_ID":11},{"LIB_FEAT_ID":12},{"LIB_FEAT_ID":13},{"LIB_FEAT_ID":14},{"LIB_FEAT_ID":15},{"LIB_FEAT_ID":16},{"LIB_FEAT_ID":17},{"LIB_FEAT_ID":18},{"LIB_FEAT_ID":19},{"LIB_FEAT_ID":20},{"LIB_FEAT_ID":21},{"LIB_FEAT_ID":22},{"LIB_FEAT_ID":23}]}]},"RELATED_ENTITIES":[{"ENTITY_ID":2,"MATCH_LEVEL":3,"MATCH_LEVEL_CODE":"POSSIBLY_RELATED","MATCH_KEY":"+PHONE+ACCT_NUM-SSN","ERRULE_CODE":"SF1","IS_DISCLOSED":0,"IS_AMBIGUOUS":0,"ENTITY_NAME":"OCEANGUY","RECORD_SUMMARY":[{"DATA_SOURCE":"TEST","RECORD_COUNT":1,"FIRST_SEEN_DT":"2022-12-06 16:09:05.724","LAST_SEEN_DT":"2022-12-06 16:09:05.724"}],"LAST_SEEN_DT":"2022-12-06 16:09:05.724"},{"ENTITY_ID":3,"MATCH_LEVEL":3,"MATCH_LEVEL_CODE":"POSSIBLY_RELATED","MATCH_KEY":"+PHONE+ACCT_NUM-DOB-SSN","ERRULE_CODE":"SF1","IS_DISCLOSED":0,"IS_AMBIGUOUS":0,"ENTITY_NAME":"Smith","RECORD_SUMMARY":[{"DATA_SOURCE":"TEST","RECORD_COUNT":1,"FIRST_SEEN_DT":"2022-12-06 16:09:05.794","LAST_SEEN_DT":"2022-12-06 16:09:05.794"}],"LAST_SEEN_DT":"2022-12-06 16:09:05.794"}]}]}`
 */
 func (client *G2engineClient) WhyEntityByRecordID(ctx context.Context, dataSourceCode string, recordID string) (string, error) {
-	request := pb.WhyEntityByRecordIDRequest{
-		DataSourceCode: dataSourceCode,
-		RecordID:       recordID,
-	}
-	response, err := client.GrpcClient.WhyEntityByRecordID(ctx, &request)
-	return response.GetResult(), err
+    if g2engine.isTrace {
+        g2engine.traceEntry(149, dataSourceCode, recordID)
+    }
+    entryTime := time.Now()
+    request := pb.WhyEntityByRecordIDRequest{
+        DataSourceCode: dataSourceCode,
+        RecordID:       recordID,
+    }
+    response, err := client.GrpcClient.WhyEntityByRecordID(ctx, &request)
+    if g2engine.observers != nil {
+        go func() {
+            details := map[string]string{
+                "dataSourceCode": dataSourceCode,
+                "recordID":       recordID,
+            }
+            g2engine.notify(ctx, 8071, err, details)
+        }()
+    }
+    if g2engine.isTrace {
+        defer g2engine.traceExit(150, dataSourceCode, recordID, C.GoString(result.response), err, time.Since(entryTime))
+    }
+    return response.GetResult(), err
 }
 
 /*
@@ -1663,13 +2800,28 @@ Output
     Example: `{"WHY_RESULTS":[{"INTERNAL_ID":1,"ENTITY_ID":1,"FOCUS_RECORDS":[{"DATA_SOURCE":"TEST","RECORD_ID":"444"},{"DATA_SOURCE":"TEST","RECORD_ID":"555"},{"DATA_SOURCE":"TEST","RECORD_ID":"666"},{"DATA_SOURCE":"TEST","RECORD_ID":"777"},{"DATA_SOURCE":"TEST","RECORD_ID":"FCCE9793DAAD23159DBCCEB97FF2745B92CE7919"}],"MATCH_INFO":{"WHY_KEY":"+NAME+ADDRESS+PHONE+SSN+LOGIN_ID+ACCT_NUM","WHY_ERRULE_CODE":"SF1_PNAME_CFF_CSTAB","MATCH_LEVEL_CODE":"RESOLVED"}},{"INTERNAL_ID":100001,"ENTITY_ID":1,"FOCUS_RECORDS":[{"DATA_SOURCE":"TEST","RECORD_ID":"111"}],"MATCH_INFO":{"WHY_KEY":"+NAME+ADDRESS+PHONE+SSN+LOGIN_ID+ACCT_NUM","WHY_ERRULE_CODE":"SF1_PNAME_CFF_CSTAB","MATCH_LEVEL_CODE":"RESOLVED"}}],"ENTITIES":[{"RESOLVED_ENTITY":{"ENTITY_ID":1}}]}`
 */
 func (client *G2engineClient) WhyEntityByRecordID_V2(ctx context.Context, dataSourceCode string, recordID string, flags int64) (string, error) {
-	request := pb.WhyEntityByRecordID_V2Request{
-		DataSourceCode: dataSourceCode,
-		RecordID:       recordID,
-		Flags:          flags,
-	}
-	response, err := client.GrpcClient.WhyEntityByRecordID_V2(ctx, &request)
-	return response.GetResult(), err
+    if g2engine.isTrace {
+        g2engine.traceEntry(151, dataSourceCode, recordID, flags)
+    }
+    entryTime := time.Now()
+    request := pb.WhyEntityByRecordID_V2Request{
+        DataSourceCode: dataSourceCode,
+        RecordID:       recordID,
+        Flags:          flags,
+    }
+    response, err := client.GrpcClient.WhyEntityByRecordID_V2(ctx, &request)
+    if g2engine.observers != nil {
+        go func() {
+            details := map[string]string{
+                "dataSourceCode": dataSourceCode,
+                "recordID":       recordID,
+            }
+            g2engine.notify(ctx, 8072, err, details)
+        }()
+    }
+    if g2engine.isTrace {
+        de
+    return response.GetResult(), err
 }
 
 /*
@@ -1689,14 +2841,32 @@ Output
     Example: `{"WHY_RESULTS":[{"INTERNAL_ID":100001,"ENTITY_ID":1,"FOCUS_RECORDS":[{"DATA_SOURCE":"TEST","RECORD_ID":"111"}],"INTERNAL_ID_2":2,"ENTITY_ID_2":2,"FOCUS_RECORDS_2":[{"DATA_SOURCE":"TEST","RECORD_ID":"222"}],"MATCH_INFO":{"WHY_KEY":"+PHONE+ACCT_NUM-DOB-SSN","WHY_ERRULE_CODE":"SF1","MATCH_LEVEL_CODE":"POSSIBLY_RELATED","CANDIDATE_KEYS":{"ACCT_NUM":[{"FEAT_ID":8,"FEAT_DESC":"5534202208773608"}],"ADDR_KEY":[{"FEAT_ID":17,"FEAT_DESC":"772|ARMSTRNK||TL"}],"ID_KEY":[{"FEAT_ID":19,"FEAT_DESC":"ACCT_NUM=5534202208773608"}],"PHONE":[{"FEAT_ID":5,"FEAT_DESC":"225-671-0796"}],"PHONE_KEY":[{"FEAT_ID":21,"FEAT_DESC":"2256710796"}]},"DISCLOSED_RELATIONS":{},"FEATURE_SCORES":{"ACCT_NUM":[{"INBOUND_FEAT_ID":8,"INBOUND_FEAT":"5534202208773608","INBOUND_FEAT_USAGE_TYPE":"CC","CANDIDATE_FEAT_ID":8,"CANDIDATE_FEAT":"5534202208773608","CANDIDATE_FEAT_USAGE_TYPE":"CC","FULL_SCORE":100,"SCORE_BUCKET":"SAME","SCORE_BEHAVIOR":"F1"}],"ADDRESS":[{"INBOUND_FEAT_ID":4,"INBOUND_FEAT":"772 Armstrong RD Delhi LA 71232","INBOUND_FEAT_USAGE_TYPE":"","CANDIDATE_FEAT_ID":26,"CANDIDATE_FEAT":"772 Armstrong RD Delhi WI 53543","CANDIDATE_FEAT_USAGE_TYPE":"","FULL_SCORE":81,"SCORE_BUCKET":"LIKELY","SCORE_BEHAVIOR":"FF"}],"DOB":[{"INBOUND_FEAT_ID":100001,"INBOUND_FEAT":"4/8/1985","INBOUND_FEAT_USAGE_TYPE":"","CANDIDATE_FEAT_ID":25,"CANDIDATE_FEAT":"6/9/1983","CANDIDATE_FEAT_USAGE_TYPE":"","FULL_SCORE":79,"SCORE_BUCKET":"NO_CHANCE","SCORE_BEHAVIOR":"FMES"}],"GENDER":[{"INBOUND_FEAT_ID":3,"INBOUND_FEAT":"F","INBOUND_FEAT_USAGE_TYPE":"","CANDIDATE_FEAT_ID":3,"CANDIDATE_FEAT":"F","CANDIDATE_FEAT_USAGE_TYPE":"","FULL_SCORE":100,"SCORE_BUCKET":"SAME","SCORE_BEHAVIOR":"FVME"}],"LOGIN_ID":[{"INBOUND_FEAT_ID":7,"INBOUND_FEAT":"flavorh","INBOUND_FEAT_USAGE_TYPE":"","CANDIDATE_FEAT_ID":28,"CANDIDATE_FEAT":"flavorh2","CANDIDATE_FEAT_USAGE_TYPE":"","FULL_SCORE":0,"SCORE_BUCKET":"NO_CHANCE","SCORE_BEHAVIOR":"F1"}],"NAME":[{"INBOUND_FEAT_ID":1,"INBOUND_FEAT":"JOHNSON","INBOUND_FEAT_USAGE_TYPE":"","CANDIDATE_FEAT_ID":24,"CANDIDATE_FEAT":"OCEANGUY","CANDIDATE_FEAT_USAGE_TYPE":"","GNR_FN":33,"GNR_SN":32,"GNR_GN":70,"GENERATION_MATCH":-1,"GNR_ON":-1,"SCORE_BUCKET":"NO_CHANCE","SCORE_BEHAVIOR":"NAME"}],"PHONE":[{"INBOUND_FEAT_ID":5,"INBOUND_FEAT":"225-671-0796","INBOUND_FEAT_USAGE_TYPE":"","CANDIDATE_FEAT_ID":5,"CANDIDATE_FEAT":"225-671-0796","CANDIDATE_FEAT_USAGE_TYPE":"","FULL_SCORE":100,"SCORE_BUCKET":"SAME","SCORE_BEHAVIOR":"FF"}],"SSN":[{"INBOUND_FEAT_ID":6,"INBOUND_FEAT":"053-39-3251","INBOUND_FEAT_USAGE_TYPE":"","CANDIDATE_FEAT_ID":27,"CANDIDATE_FEAT":"153-33-5185","CANDIDATE_FEAT_USAGE_TYPE":"","FULL_SCORE":0,"SCORE_BUCKET":"NO_CHANCE","SCORE_BEHAVIOR":"F1ES"}]}}}],"ENTITIES":[{"RESOLVED_ENTITY":{"ENTITY_ID":1,"ENTITY_NAME":"JOHNSON","FEATURES":{"ACCT_NUM":[{"FEAT_DESC":"5534202208773608","LIB_FEAT_ID":8,"USAGE_TYPE":"CC","FEAT_DESC_VALUES":[{"FEAT_DESC":"5534202208773608","LIB_FEAT_ID":8,"USED_FOR_CAND":"Y","USED_FOR_SCORING":"Y","ENTITY_COUNT":3,"CANDIDATE_CAP_REACHED":"N","SCORING_CAP_REACHED":"N","SUPPRESSED":"N"}]}],"ADDRESS":[{"FEAT_DESC":"772 Armstrong RD Delhi LA 71232","LIB_FEAT_ID":4,"FEAT_DESC_VALUES":[{"FEAT_DESC":"772 Armstrong RD Delhi LA 71232","LIB_FEAT_ID":4,"USED_FOR_CAND":"N","USED_FOR_SCORING":"Y","ENTITY_COUNT":1,"CANDIDATE_CAP_REACHED":"N","SCORING_CAP_REACHED":"N","SUPPRESSED":"N"}]}],"ADDR_KEY":[{"FEAT_DESC":"772|ARMSTRNK||71232","LIB_FEAT_ID":18,"FEAT_DESC_VALUES":[{"FEAT_DESC":"772|ARMSTRNK||71232","LIB_FEAT_ID":18,"USED_FOR_CAND":"Y","USED_FOR_SCORING":"N","ENTITY_COUNT":1,"CANDIDATE_CAP_REACHED":"N","SCORING_CAP_REACHED":"N","SUPPRESSED":"N"}]},{"FEAT_DESC":"772|ARMSTRNK||TL","LIB_FEAT_ID":17,"FEAT_DESC_VALUES":[{"FEAT_DESC":"772|ARMSTRNK||TL","LIB_FEAT_ID":17,"USED_FOR_CAND":"Y","USED_FOR_SCORING":"N","ENTITY_COUNT":3,"CANDIDATE_CAP_REACHED":"N","SCORING_CAP_REACHED":"N","SUPPRESSED":"N"}]}],"DOB":[{"FEAT_DESC":"4/8/1983","LIB_FEAT_ID":2,"FEAT_DESC_VALUES":[{"FEAT_DESC":"4/8/1983","LIB_FEAT_ID":2,"USED_FOR_CAND":"Y","USED_FOR_SCORING":"Y","ENTITY_COUNT":1,"CANDIDATE_CAP_REACHED":"N","SCORING_CAP_REACHED":"N","SUPPRESSED":"N"}]},{"FEAT_DESC":"4/8/1985","LIB_FEAT_ID":100001,"FEAT_DESC_VALUES":[{"FEAT_DESC":"4/8/1985","LIB_FEAT_ID":100001,"USED_FOR_CAND":"Y","USED_FOR_SCORING":"Y","ENTITY_COUNT":1,"CANDIDATE_CAP_REACHED":"N","SCORING_CAP_REACHED":"N","SUPPRESSED":"N"}]}],"GENDER":[{"FEAT_DESC":"F","LIB_FEAT_ID":3,"FEAT_DESC_VALUES":[{"FEAT_DESC":"F","LIB_FEAT_ID":3,"USED_FOR_CAND":"N","USED_FOR_SCORING":"Y","ENTITY_COUNT":3,"CANDIDATE_CAP_REACHED":"N","SCORING_CAP_REACHED":"N","SUPPRESSED":"N"}]}],"ID_KEY":[{"FEAT_DESC":"ACCT_NUM=5534202208773608","LIB_FEAT_ID":19,"FEAT_DESC_VALUES":[{"FEAT_DESC":"ACCT_NUM=5534202208773608","LIB_FEAT_ID":19,"USED_FOR_CAND":"Y","USED_FOR_SCORING":"N","ENTITY_COUNT":3,"CANDIDATE_CAP_REACHED":"N","SCORING_CAP_REACHED":"N","SUPPRESSED":"N"}]},{"FEAT_DESC":"SSN=053-39-3251","LIB_FEAT_ID":20,"FEAT_DESC_VALUES":[{"FEAT_DESC":"SSN=053-39-3251","LIB_FEAT_ID":20,"USED_FOR_CAND":"Y","USED_FOR_SCORING":"N","ENTITY_COUNT":1,"CANDIDATE_CAP_REACHED":"N","SCORING_CAP_REACHED":"N","SUPPRESSED":"N"}]}],"LOGIN_ID":[{"FEAT_DESC":"flavorh","LIB_FEAT_ID":7,"FEAT_DESC_VALUES":[{"FEAT_DESC":"flavorh","LIB_FEAT_ID":7,"USED_FOR_CAND":"Y","USED_FOR_SCORING":"Y","ENTITY_COUNT":1,"CANDIDATE_CAP_REACHED":"N","SCORING_CAP_REACHED":"N","SUPPRESSED":"N"}]}],"NAME":[{"FEAT_DESC":"JOHNSON","LIB_FEAT_ID":1,"FEAT_DESC_VALUES":[{"FEAT_DESC":"JOHNSON","LIB_FEAT_ID":1,"USED_FOR_CAND":"N","USED_FOR_SCORING":"Y","ENTITY_COUNT":1,"CANDIDATE_CAP_REACHED":"N","SCORING_CAP_REACHED":"N","SUPPRESSED":"N"}]}],"NAME_KEY":[{"FEAT_DESC":"JNSN","LIB_FEAT_ID":11,"FEAT_DESC_VALUES":[{"FEAT_DESC":"JNSN","LIB_FEAT_ID":11,"USED_FOR_CAND":"Y","USED_FOR_SCORING":"N","ENTITY_COUNT":1,"CANDIDATE_CAP_REACHED":"N","SCORING_CAP_REACHED":"N","SUPPRESSED":"N"}]},{"FEAT_DESC":"JNSN|ADDRESS.CITY_STD=TL","LIB_FEAT_ID":12,"FEAT_DESC_VALUES":[{"FEAT_DESC":"JNSN|ADDRESS.CITY_STD=TL","LIB_FEAT_ID":12,"USED_FOR_CAND":"Y","USED_FOR_SCORING":"N","ENTITY_COUNT":1,"CANDIDATE_CAP_REACHED":"N","SCORING_CAP_REACHED":"N","SUPPRESSED":"N"}]},{"FEAT_DESC":"JNSN|DOB.MMDD_HASH=0804","LIB_FEAT_ID":9,"FEAT_DESC_VALUES":[{"FEAT_DESC":"JNSN|DOB.MMDD_HASH=0804","LIB_FEAT_ID":9,"USED_FOR_CAND":"Y","USED_FOR_SCORING":"N","ENTITY_COUNT":1,"CANDIDATE_CAP_REACHED":"N","SCORING_CAP_REACHED":"N","SUPPRESSED":"N"}]},{"FEAT_DESC":"JNSN|DOB.MMYY_HASH=0483","LIB_FEAT_ID":10,"FEAT_DESC_VALUES":[{"FEAT_DESC":"JNSN|DOB.MMYY_HASH=0483","LIB_FEAT_ID":10,"USED_FOR_CAND":"Y","USED_FOR_SCORING":"N","ENTITY_COUNT":1,"CANDIDATE_CAP_REACHED":"N","SCORING_CAP_REACHED":"N","SUPPRESSED":"N"}]},{"FEAT_DESC":"JNSN|DOB.MMYY_HASH=0485","LIB_FEAT_ID":100002,"FEAT_DESC_VALUES":[{"FEAT_DESC":"JNSN|DOB.MMYY_HASH=0485","LIB_FEAT_ID":100002,"USED_FOR_CAND":"Y","USED_FOR_SCORING":"N","ENTITY_COUNT":1,"CANDIDATE_CAP_REACHED":"N","SCORING_CAP_REACHED":"N","SUPPRESSED":"N"}]},{"FEAT_DESC":"JNSN|DOB=80804","LIB_FEAT_ID":13,"FEAT_DESC_VALUES":[{"FEAT_DESC":"JNSN|DOB=80804","LIB_FEAT_ID":13,"USED_FOR_CAND":"Y","USED_FOR_SCORING":"N","ENTITY_COUNT":1,"CANDIDATE_CAP_REACHED":"N","SCORING_CAP_REACHED":"N","SUPPRESSED":"N"}]},{"FEAT_DESC":"JNSN|PHONE.PHONE_LAST_5=10796","LIB_FEAT_ID":15,"FEAT_DESC_VALUES":[{"FEAT_DESC":"JNSN|PHONE.PHONE_LAST_5=10796","LIB_FEAT_ID":15,"USED_FOR_CAND":"Y","USED_FOR_SCORING":"N","ENTITY_COUNT":1,"CANDIDATE_CAP_REACHED":"N","SCORING_CAP_REACHED":"N","SUPPRESSED":"N"}]},{"FEAT_DESC":"JNSN|POST=71232","LIB_FEAT_ID":14,"FEAT_DESC_VALUES":[{"FEAT_DESC":"JNSN|POST=71232","LIB_FEAT_ID":14,"USED_FOR_CAND":"Y","USED_FOR_SCORING":"N","ENTITY_COUNT":1,"CANDIDATE_CAP_REACHED":"N","SCORING_CAP_REACHED":"N","SUPPRESSED":"N"}]},{"FEAT_DESC":"JNSN|SSN=3251","LIB_FEAT_ID":16,"FEAT_DESC_VALUES":[{"FEAT_DESC":"JNSN|SSN=3251","LIB_FEAT_ID":16,"USED_FOR_CAND":"Y","USED_FOR_SCORING":"N","ENTITY_COUNT":1,"CANDIDATE_CAP_REACHED":"N","SCORING_CAP_REACHED":"N","SUPPRESSED":"N"}]}],"PHONE":[{"FEAT_DESC":"225-671-0796","LIB_FEAT_ID":5,"FEAT_DESC_VALUES":[{"FEAT_DESC":"225-671-0796","LIB_FEAT_ID":5,"USED_FOR_CAND":"Y","USED_FOR_SCORING":"Y","ENTITY_COUNT":3,"CANDIDATE_CAP_REACHED":"N","SCORING_CAP_REACHED":"N","SUPPRESSED":"N"}]}],"PHONE_KEY":[{"FEAT_DESC":"2256710796","LIB_FEAT_ID":21,"FEAT_DESC_VALUES":[{"FEAT_DESC":"2256710796","LIB_FEAT_ID":21,"USED_FOR_CAND":"Y","USED_FOR_SCORING":"N","ENTITY_COUNT":3,"CANDIDATE_CAP_REACHED":"N","SCORING_CAP_REACHED":"N","SUPPRESSED":"N"}]}],"SEARCH_KEY":[{"FEAT_DESC":"LOGIN_ID:FLAVORH|","LIB_FEAT_ID":22,"FEAT_DESC_VALUES":[{"FEAT_DESC":"LOGIN_ID:FLAVORH|","LIB_FEAT_ID":22,"USED_FOR_CAND":"Y","USED_FOR_SCORING":"N","ENTITY_COUNT":1,"CANDIDATE_CAP_REACHED":"N","SCORING_CAP_REACHED":"N","SUPPRESSED":"N"}]},{"FEAT_DESC":"SSN:3251|80804|","LIB_FEAT_ID":23,"FEAT_DESC_VALUES":[{"FEAT_DESC":"SSN:3251|80804|","LIB_FEAT_ID":23,"USED_FOR_CAND":"Y","USED_FOR_SCORING":"N","ENTITY_COUNT":1,"CANDIDATE_CAP_REACHED":"N","SCORING_CAP_REACHED":"N","SUPPRESSED":"N"}]}],"SSN":[{"FEAT_DESC":"053-39-3251","LIB_FEAT_ID":6,"FEAT_DESC_VALUES":[{"FEAT_DESC":"053-39-3251","LIB_FEAT_ID":6,"USED_FOR_CAND":"Y","USED_FOR_SCORING":"Y","ENTITY_COUNT":1,"CANDIDATE_CAP_REACHED":"N","SCORING_CAP_REACHED":"N","SUPPRESSED":"N"}]}]},"RECORD_SUMMARY":[{"DATA_SOURCE":"TEST","RECORD_COUNT":6,"FIRST_SEEN_DT":"2022-12-06 16:13:27.135","LAST_SEEN_DT":"2022-12-06 16:13:27.916"}],"LAST_SEEN_DT":"2022-12-06 16:13:27.916","RECORDS":[{"DATA_SOURCE":"TEST","RECORD_ID":"111","ENTITY_TYPE":"TEST","INTERNAL_ID":100001,"ENTITY_KEY":"A6C927986DF7329D1D2CDE0E8F34328AE640FB7E","ENTITY_DESC":"JOHNSON","MATCH_KEY":"","MATCH_LEVEL":0,"MATCH_LEVEL_CODE":"","ERRULE_CODE":"","LAST_SEEN_DT":"2022-12-06 16:13:27.916","FEATURES":[{"LIB_FEAT_ID":1},{"LIB_FEAT_ID":3},{"LIB_FEAT_ID":4},{"LIB_FEAT_ID":5},{"LIB_FEAT_ID":6},{"LIB_FEAT_ID":7},{"LIB_FEAT_ID":8,"USAGE_TYPE":"CC"},{"LIB_FEAT_ID":9},{"LIB_FEAT_ID":11},{"LIB_FEAT_ID":12},{"LIB_FEAT_ID":13},{"LIB_FEAT_ID":14},{"LIB_FEAT_ID":15},{"LIB_FEAT_ID":16},{"LIB_FEAT_ID":17},{"LIB_FEAT_ID":18},{"LIB_FEAT_ID":19},{"LIB_FEAT_ID":20},{"LIB_FEAT_ID":21},{"LIB_FEAT_ID":22},{"LIB_FEAT_ID":23},{"LIB_FEAT_ID":100001},{"LIB_FEAT_ID":100002}]},{"DATA_SOURCE":"TEST","RECORD_ID":"444","ENTITY_TYPE":"TEST","INTERNAL_ID":1,"ENTITY_KEY":"C6063D4396612FBA7324DB0739273BA1FE815C43","ENTITY_DESC":"JOHNSON","MATCH_KEY":"+NAME+ADDRESS+PHONE+SSN+LOGIN_ID+ACCT_NUM","MATCH_LEVEL":1,"MATCH_LEVEL_CODE":"RESOLVED","ERRULE_CODE":"SF1_PNAME_CFF_CSTAB","LAST_SEEN_DT":"2022-12-06 16:13:27.405","FEATURES":[{"LIB_FEAT_ID":1},{"LIB_FEAT_ID":2},{"LIB_FEAT_ID":3},{"LIB_FEAT_ID":4},{"LIB_FEAT_ID":5},{"LIB_FEAT_ID":6},{"LIB_FEAT_ID":7},{"LIB_FEAT_ID":8,"USAGE_TYPE":"CC"},{"LIB_FEAT_ID":9},{"LIB_FEAT_ID":10},{"LIB_FEAT_ID":11},{"LIB_FEAT_ID":12},{"LIB_FEAT_ID":13},{"LIB_FEAT_ID":14},{"LIB_FEAT_ID":15},{"LIB_FEAT_ID":16},{"LIB_FEAT_ID":17},{"LIB_FEAT_ID":18},{"LIB_FEAT_ID":19},{"LIB_FEAT_ID":20},{"LIB_FEAT_ID":21},{"LIB_FEAT_ID":22},{"LIB_FEAT_ID":23}]},{"DATA_SOURCE":"TEST","RECORD_ID":"555","ENTITY_TYPE":"TEST","INTERNAL_ID":1,"ENTITY_KEY":"C6063D4396612FBA7324DB0739273BA1FE815C43","ENTITY_DESC":"JOHNSON","MATCH_KEY":"+NAME+ADDRESS+PHONE+SSN+LOGIN_ID+ACCT_NUM","MATCH_LEVEL":1,"MATCH_LEVEL_CODE":"RESOLVED","ERRULE_CODE":"SF1_PNAME_CFF_CSTAB","LAST_SEEN_DT":"2022-12-06 16:13:27.408","FEATURES":[{"LIB_FEAT_ID":1},{"LIB_FEAT_ID":2},{"LIB_FEAT_ID":3},{"LIB_FEAT_ID":4},{"LIB_FEAT_ID":5},{"LIB_FEAT_ID":6},{"LIB_FEAT_ID":7},{"LIB_FEAT_ID":8,"USAGE_TYPE":"CC"},{"LIB_FEAT_ID":9},{"LIB_FEAT_ID":10},{"LIB_FEAT_ID":11},{"LIB_FEAT_ID":12},{"LIB_FEAT_ID":13},{"LIB_FEAT_ID":14},{"LIB_FEAT_ID":15},{"LIB_FEAT_ID":16},{"LIB_FEAT_ID":17},{"LIB_FEAT_ID":18},{"LIB_FEAT_ID":19},{"LIB_FEAT_ID":20},{"LIB_FEAT_ID":21},{"LIB_FEAT_ID":22},{"LIB_FEAT_ID":23}]},{"DATA_SOURCE":"TEST","RECORD_ID":"666","ENTITY_TYPE":"TEST","INTERNAL_ID":1,"ENTITY_KEY":"C6063D4396612FBA7324DB0739273BA1FE815C43","ENTITY_DESC":"JOHNSON","MATCH_KEY":"+NAME+ADDRESS+PHONE+SSN+LOGIN_ID+ACCT_NUM","MATCH_LEVEL":1,"MATCH_LEVEL_CODE":"RESOLVED","ERRULE_CODE":"SF1_PNAME_CFF_CSTAB","LAST_SEEN_DT":"2022-12-06 16:13:27.411","FEATURES":[{"LIB_FEAT_ID":1},{"LIB_FEAT_ID":2},{"LIB_FEAT_ID":3},{"LIB_FEAT_ID":4},{"LIB_FEAT_ID":5},{"LIB_FEAT_ID":6},{"LIB_FEAT_ID":7},{"LIB_FEAT_ID":8,"USAGE_TYPE":"CC"},{"LIB_FEAT_ID":9},{"LIB_FEAT_ID":10},{"LIB_FEAT_ID":11},{"LIB_FEAT_ID":12},{"LIB_FEAT_ID":13},{"LIB_FEAT_ID":14},{"LIB_FEAT_ID":15},{"LIB_FEAT_ID":16},{"LIB_FEAT_ID":17},{"LIB_FEAT_ID":18},{"LIB_FEAT_ID":19},{"LIB_FEAT_ID":20},{"LIB_FEAT_ID":21},{"LIB_FEAT_ID":22},{"LIB_FEAT_ID":23}]},{"DATA_SOURCE":"TEST","RECORD_ID":"777","ENTITY_TYPE":"TEST","INTERNAL_ID":1,"ENTITY_KEY":"C6063D4396612FBA7324DB0739273BA1FE815C43","ENTITY_DESC":"JOHNSON","MATCH_KEY":"+NAME+ADDRESS+PHONE+SSN+LOGIN_ID+ACCT_NUM","MATCH_LEVEL":1,"MATCH_LEVEL_CODE":"RESOLVED","ERRULE_CODE":"SF1_PNAME_CFF_CSTAB","LAST_SEEN_DT":"2022-12-06 16:13:27.418","FEATURES":[{"LIB_FEAT_ID":1},{"LIB_FEAT_ID":2},{"LIB_FEAT_ID":3},{"LIB_FEAT_ID":4},{"LIB_FEAT_ID":5},{"LIB_FEAT_ID":6},{"LIB_FEAT_ID":7},{"LIB_FEAT_ID":8,"USAGE_TYPE":"CC"},{"LIB_FEAT_ID":9},{"LIB_FEAT_ID":10},{"LIB_FEAT_ID":11},{"LIB_FEAT_ID":12},{"LIB_FEAT_ID":13},{"LIB_FEAT_ID":14},{"LIB_FEAT_ID":15},{"LIB_FEAT_ID":16},{"LIB_FEAT_ID":17},{"LIB_FEAT_ID":18},{"LIB_FEAT_ID":19},{"LIB_FEAT_ID":20},{"LIB_FEAT_ID":21},{"LIB_FEAT_ID":22},{"LIB_FEAT_ID":23}]},{"DATA_SOURCE":"TEST","RECORD_ID":"FCCE9793DAAD23159DBCCEB97FF2745B92CE7919","ENTITY_TYPE":"TEST","INTERNAL_ID":1,"ENTITY_KEY":"C6063D4396612FBA7324DB0739273BA1FE815C43","ENTITY_DESC":"JOHNSON","MATCH_KEY":"+NAME+ADDRESS+PHONE+SSN+LOGIN_ID+ACCT_NUM","MATCH_LEVEL":1,"MATCH_LEVEL_CODE":"RESOLVED","ERRULE_CODE":"SF1_PNAME_CFF_CSTAB","LAST_SEEN_DT":"2022-12-06 16:13:27.265","FEATURES":[{"LIB_FEAT_ID":1},{"LIB_FEAT_ID":2},{"LIB_FEAT_ID":3},{"LIB_FEAT_ID":4},{"LIB_FEAT_ID":5},{"LIB_FEAT_ID":6},{"LIB_FEAT_ID":7},{"LIB_FEAT_ID":8,"USAGE_TYPE":"CC"},{"LIB_FEAT_ID":9},{"LIB_FEAT_ID":10},{"LIB_FEAT_ID":11},{"LIB_FEAT_ID":12},{"LIB_FEAT_ID":13},{"LIB_FEAT_ID":14},{"LIB_FEAT_ID":15},{"LIB_FEAT_ID":16},{"LIB_FEAT_ID":17},{"LIB_FEAT_ID":18},{"LIB_FEAT_ID":19},{"LIB_FEAT_ID":20},{"LIB_FEAT_ID":21},{"LIB_FEAT_ID":22},{"LIB_FEAT_ID":23}]}]},"RELATED_ENTITIES":[{"ENTITY_ID":2,"MATCH_LEVEL":3,"MATCH_LEVEL_CODE":"POSSIBLY_RELATED","MATCH_KEY":"+PHONE+ACCT_NUM-SSN","ERRULE_CODE":"SF1","IS_DISCLOSED":0,"IS_AMBIGUOUS":0,"ENTITY_NAME":"OCEANGUY","RECORD_SUMMARY":[{"DATA_SOURCE":"TEST","RECORD_COUNT":1,"FIRST_SEEN_DT":"2022-12-06 16:13:27.208","LAST_SEEN_DT":"2022-12-06 16:13:27.208"}],"LAST_SEEN_DT":"2022-12-06 16:13:27.208"},{"ENTITY_ID":3,"MATCH_LEVEL":3,"MATCH_LEVEL_CODE":"POSSIBLY_RELATED","MATCH_KEY":"+PHONE+ACCT_NUM-DOB-SSN","ERRULE_CODE":"SF1","IS_DISCLOSED":0,"IS_AMBIGUOUS":0,"ENTITY_NAME":"Smith","RECORD_SUMMARY":[{"DATA_SOURCE":"TEST","RECORD_COUNT":1,"FIRST_SEEN_DT":"2022-12-06 16:13:27.272","LAST_SEEN_DT":"2022-12-06 16:13:27.272"}],"LAST_SEEN_DT":"2022-12-06 16:13:27.272"}]},{"RESOLVED_ENTITY":{"ENTITY_ID":2,"ENTITY_NAME":"OCEANGUY","FEATURES":{"ACCT_NUM":[{"FEAT_DESC":"5534202208773608","LIB_FEAT_ID":8,"USAGE_TYPE":"CC","FEAT_DESC_VALUES":[{"FEAT_DESC":"5534202208773608","LIB_FEAT_ID":8,"USED_FOR_CAND":"Y","USED_FOR_SCORING":"Y","ENTITY_COUNT":3,"CANDIDATE_CAP_REACHED":"N","SCORING_CAP_REACHED":"N","SUPPRESSED":"N"}]}],"ADDRESS":[{"FEAT_DESC":"772 Armstrong RD Delhi WI 53543","LIB_FEAT_ID":26,"FEAT_DESC_VALUES":[{"FEAT_DESC":"772 Armstrong RD Delhi WI 53543","LIB_FEAT_ID":26,"USED_FOR_CAND":"N","USED_FOR_SCORING":"Y","ENTITY_COUNT":1,"CANDIDATE_CAP_REACHED":"N","SCORING_CAP_REACHED":"N","SUPPRESSED":"N"}]}],"ADDR_KEY":[{"FEAT_DESC":"772|ARMSTRNK||53543","LIB_FEAT_ID":37,"FEAT_DESC_VALUES":[{"FEAT_DESC":"772|ARMSTRNK||53543","LIB_FEAT_ID":37,"USED_FOR_CAND":"Y","USED_FOR_SCORING":"N","ENTITY_COUNT":1,"CANDIDATE_CAP_REACHED":"N","SCORING_CAP_REACHED":"N","SUPPRESSED":"N"}]},{"FEAT_DESC":"772|ARMSTRNK||TL","LIB_FEAT_ID":17,"FEAT_DESC_VALUES":[{"FEAT_DESC":"772|ARMSTRNK||TL","LIB_FEAT_ID":17,"USED_FOR_CAND":"Y","USED_FOR_SCORING":"N","ENTITY_COUNT":3,"CANDIDATE_CAP_REACHED":"N","SCORING_CAP_REACHED":"N","SUPPRESSED":"N"}]}],"DOB":[{"FEAT_DESC":"6/9/1983","LIB_FEAT_ID":25,"FEAT_DESC_VALUES":[{"FEAT_DESC":"6/9/1983","LIB_FEAT_ID":25,"USED_FOR_CAND":"Y","USED_FOR_SCORING":"Y","ENTITY_COUNT":1,"CANDIDATE_CAP_REACHED":"N","SCORING_CAP_REACHED":"N","SUPPRESSED":"N"}]}],"GENDER":[{"FEAT_DESC":"F","LIB_FEAT_ID":3,"FEAT_DESC_VALUES":[{"FEAT_DESC":"F","LIB_FEAT_ID":3,"USED_FOR_CAND":"N","USED_FOR_SCORING":"Y","ENTITY_COUNT":3,"CANDIDATE_CAP_REACHED":"N","SCORING_CAP_REACHED":"N","SUPPRESSED":"N"}]}],"ID_KEY":[{"FEAT_DESC":"ACCT_NUM=5534202208773608","LIB_FEAT_ID":19,"FEAT_DESC_VALUES":[{"FEAT_DESC":"ACCT_NUM=5534202208773608","LIB_FEAT_ID":19,"USED_FOR_CAND":"Y","USED_FOR_SCORING":"N","ENTITY_COUNT":3,"CANDIDATE_CAP_REACHED":"N","SCORING_CAP_REACHED":"N","SUPPRESSED":"N"}]},{"FEAT_DESC":"SSN=153-33-5185","LIB_FEAT_ID":38,"FEAT_DESC_VALUES":[{"FEAT_DESC":"SSN=153-33-5185","LIB_FEAT_ID":38,"USED_FOR_CAND":"Y","USED_FOR_SCORING":"N","ENTITY_COUNT":1,"CANDIDATE_CAP_REACHED":"N","SCORING_CAP_REACHED":"N","SUPPRESSED":"N"}]}],"LOGIN_ID":[{"FEAT_DESC":"flavorh2","LIB_FEAT_ID":28,"FEAT_DESC_VALUES":[{"FEAT_DESC":"flavorh2","LIB_FEAT_ID":28,"USED_FOR_CAND":"Y","USED_FOR_SCORING":"Y","ENTITY_COUNT":1,"CANDIDATE_CAP_REACHED":"N","SCORING_CAP_REACHED":"N","SUPPRESSED":"N"}]}],"NAME":[{"FEAT_DESC":"OCEANGUY","LIB_FEAT_ID":24,"FEAT_DESC_VALUES":[{"FEAT_DESC":"OCEANGUY","LIB_FEAT_ID":24,"USED_FOR_CAND":"N","USED_FOR_SCORING":"Y","ENTITY_COUNT":1,"CANDIDATE_CAP_REACHED":"N","SCORING_CAP_REACHED":"N","SUPPRESSED":"N"}]}],"NAME_KEY":[{"FEAT_DESC":"ASNK","LIB_FEAT_ID":29,"FEAT_DESC_VALUES":[{"FEAT_DESC":"ASNK","LIB_FEAT_ID":29,"USED_FOR_CAND":"Y","USED_FOR_SCORING":"N","ENTITY_COUNT":1,"CANDIDATE_CAP_REACHED":"N","SCORING_CAP_REACHED":"N","SUPPRESSED":"N"}]},{"FEAT_DESC":"ASNK|ADDRESS.CITY_STD=TL","LIB_FEAT_ID":34,"FEAT_DESC_VALUES":[{"FEAT_DESC":"ASNK|ADDRESS.CITY_STD=TL","LIB_FEAT_ID":34,"USED_FOR_CAND":"Y","USED_FOR_SCORING":"N","ENTITY_COUNT":1,"CANDIDATE_CAP_REACHED":"N","SCORING_CAP_REACHED":"N","SUPPRESSED":"N"}]},{"FEAT_DESC":"ASNK|DOB.MMDD_HASH=0906","LIB_FEAT_ID":32,"FEAT_DESC_VALUES":[{"FEAT_DESC":"ASNK|DOB.MMDD_HASH=0906","LIB_FEAT_ID":32,"USED_FOR_CAND":"Y","USED_FOR_SCORING":"N","ENTITY_COUNT":1,"CANDIDATE_CAP_REACHED":"N","SCORING_CAP_REACHED":"N","SUPPRESSED":"N"}]},{"FEAT_DESC":"ASNK|DOB.MMYY_HASH=0683","LIB_FEAT_ID":30,"FEAT_DESC_VALUES":[{"FEAT_DESC":"ASNK|DOB.MMYY_HASH=0683","LIB_FEAT_ID":30,"USED_FOR_CAND":"Y","USED_FOR_SCORING":"N","ENTITY_COUNT":1,"CANDIDATE_CAP_REACHED":"N","SCORING_CAP_REACHED":"N","SUPPRESSED":"N"}]},{"FEAT_DESC":"ASNK|DOB=80906","LIB_FEAT_ID":31,"FEAT_DESC_VALUES":[{"FEAT_DESC":"ASNK|DOB=80906","LIB_FEAT_ID":31,"USED_FOR_CAND":"Y","USED_FOR_SCORING":"N","ENTITY_COUNT":1,"CANDIDATE_CAP_REACHED":"N","SCORING_CAP_REACHED":"N","SUPPRESSED":"N"}]},{"FEAT_DESC":"ASNK|PHONE.PHONE_LAST_5=10796","LIB_FEAT_ID":33,"FEAT_DESC_VALUES":[{"FEAT_DESC":"ASNK|PHONE.PHONE_LAST_5=10796","LIB_FEAT_ID":33,"USED_FOR_CAND":"Y","USED_FOR_SCORING":"N","ENTITY_COUNT":1,"CANDIDATE_CAP_REACHED":"N","SCORING_CAP_REACHED":"N","SUPPRESSED":"N"}]},{"FEAT_DESC":"ASNK|POST=53543","LIB_FEAT_ID":36,"FEAT_DESC_VALUES":[{"FEAT_DESC":"ASNK|POST=53543","LIB_FEAT_ID":36,"USED_FOR_CAND":"Y","USED_FOR_SCORING":"N","ENTITY_COUNT":1,"CANDIDATE_CAP_REACHED":"N","SCORING_CAP_REACHED":"N","SUPPRESSED":"N"}]},{"FEAT_DESC":"ASNK|SSN=5185","LIB_FEAT_ID":35,"FEAT_DESC_VALUES":[{"FEAT_DESC":"ASNK|SSN=5185","LIB_FEAT_ID":35,"USED_FOR_CAND":"Y","USED_FOR_SCORING":"N","ENTITY_COUNT":1,"CANDIDATE_CAP_REACHED":"N","SCORING_CAP_REACHED":"N","SUPPRESSED":"N"}]}],"PHONE":[{"FEAT_DESC":"225-671-0796","LIB_FEAT_ID":5,"FEAT_DESC_VALUES":[{"FEAT_DESC":"225-671-0796","LIB_FEAT_ID":5,"USED_FOR_CAND":"Y","USED_FOR_SCORING":"Y","ENTITY_COUNT":3,"CANDIDATE_CAP_REACHED":"N","SCORING_CAP_REACHED":"N","SUPPRESSED":"N"}]}],"PHONE_KEY":[{"FEAT_DESC":"2256710796","LIB_FEAT_ID":21,"FEAT_DESC_VALUES":[{"FEAT_DESC":"2256710796","LIB_FEAT_ID":21,"USED_FOR_CAND":"Y","USED_FOR_SCORING":"N","ENTITY_COUNT":3,"CANDIDATE_CAP_REACHED":"N","SCORING_CAP_REACHED":"N","SUPPRESSED":"N"}]}],"SEARCH_KEY":[{"FEAT_DESC":"LOGIN_ID:FLAVORH2|","LIB_FEAT_ID":40,"FEAT_DESC_VALUES":[{"FEAT_DESC":"LOGIN_ID:FLAVORH2|","LIB_FEAT_ID":40,"USED_FOR_CAND":"Y","USED_FOR_SCORING":"N","ENTITY_COUNT":1,"CANDIDATE_CAP_REACHED":"N","SCORING_CAP_REACHED":"N","SUPPRESSED":"N"}]},{"FEAT_DESC":"SSN:5185|80906|","LIB_FEAT_ID":39,"FEAT_DESC_VALUES":[{"FEAT_DESC":"SSN:5185|80906|","LIB_FEAT_ID":39,"USED_FOR_CAND":"Y","USED_FOR_SCORING":"N","ENTITY_COUNT":1,"CANDIDATE_CAP_REACHED":"N","SCORING_CAP_REACHED":"N","SUPPRESSED":"N"}]}],"SSN":[{"FEAT_DESC":"153-33-5185","LIB_FEAT_ID":27,"FEAT_DESC_VALUES":[{"FEAT_DESC":"153-33-5185","LIB_FEAT_ID":27,"USED_FOR_CAND":"Y","USED_FOR_SCORING":"Y","ENTITY_COUNT":1,"CANDIDATE_CAP_REACHED":"N","SCORING_CAP_REACHED":"N","SUPPRESSED":"N"}]}]},"RECORD_SUMMARY":[{"DATA_SOURCE":"TEST","RECORD_COUNT":1,"FIRST_SEEN_DT":"2022-12-06 16:13:27.208","LAST_SEEN_DT":"2022-12-06 16:13:27.208"}],"LAST_SEEN_DT":"2022-12-06 16:13:27.208","RECORDS":[{"DATA_SOURCE":"TEST","RECORD_ID":"222","ENTITY_TYPE":"TEST","INTERNAL_ID":2,"ENTITY_KEY":"740BA22D15CA88462A930AF8A7C904FF5E48226C","ENTITY_DESC":"OCEANGUY","MATCH_KEY":"","MATCH_LEVEL":0,"MATCH_LEVEL_CODE":"","ERRULE_CODE":"","LAST_SEEN_DT":"2022-12-06 16:13:27.208","FEATURES":[{"LIB_FEAT_ID":3},{"LIB_FEAT_ID":5},{"LIB_FEAT_ID":8,"USAGE_TYPE":"CC"},{"LIB_FEAT_ID":17},{"LIB_FEAT_ID":19},{"LIB_FEAT_ID":21},{"LIB_FEAT_ID":24},{"LIB_FEAT_ID":25},{"LIB_FEAT_ID":26},{"LIB_FEAT_ID":27},{"LIB_FEAT_ID":28},{"LIB_FEAT_ID":29},{"LIB_FEAT_ID":30},{"LIB_FEAT_ID":31},{"LIB_FEAT_ID":32},{"LIB_FEAT_ID":33},{"LIB_FEAT_ID":34},{"LIB_FEAT_ID":35},{"LIB_FEAT_ID":36},{"LIB_FEAT_ID":37},{"LIB_FEAT_ID":38},{"LIB_FEAT_ID":39},{"LIB_FEAT_ID":40}]}]},"RELATED_ENTITIES":[{"ENTITY_ID":1,"MATCH_LEVEL":3,"MATCH_LEVEL_CODE":"POSSIBLY_RELATED","MATCH_KEY":"+PHONE+ACCT_NUM-SSN","ERRULE_CODE":"SF1","IS_DISCLOSED":0,"IS_AMBIGUOUS":0,"ENTITY_NAME":"JOHNSON","RECORD_SUMMARY":[{"DATA_SOURCE":"TEST","RECORD_COUNT":6,"FIRST_SEEN_DT":"2022-12-06 16:13:27.135","LAST_SEEN_DT":"2022-12-06 16:13:27.916"}],"LAST_SEEN_DT":"2022-12-06 16:13:27.916"},{"ENTITY_ID":3,"MATCH_LEVEL":3,"MATCH_LEVEL_CODE":"POSSIBLY_RELATED","MATCH_KEY":"+ADDRESS+PHONE+ACCT_NUM-DOB-SSN","ERRULE_CODE":"SF1","IS_DISCLOSED":0,"IS_AMBIGUOUS":0,"ENTITY_NAME":"Smith","RECORD_SUMMARY":[{"DATA_SOURCE":"TEST","RECORD_COUNT":1,"FIRST_SEEN_DT":"2022-12-06 16:13:27.272","LAST_SEEN_DT":"2022-12-06 16:13:27.272"}],"LAST_SEEN_DT":"2022-12-06 16:13:27.272"}]}]}`
 */
 func (client *G2engineClient) WhyRecords(ctx context.Context, dataSourceCode1 string, recordID1 string, dataSourceCode2 string, recordID2 string) (string, error) {
-	request := pb.WhyRecordsRequest{
-		DataSourceCode1: dataSourceCode1,
-		RecordID1:       recordID1,
-		DataSourceCode2: dataSourceCode2,
-		RecordID2:       recordID2,
-	}
-	response, err := client.GrpcClient.WhyRecords(ctx, &request)
-	return response.GetResult(), err
+    if g2engine.isTrace {
+        g2engine.traceEntry(153, dataSourceCode1, recordID1, dataSourceCode2, recordID2)
+    }
+    entryTime := time.Now()
+    request := pb.WhyRecordsRequest{
+        DataSourceCode1: dataSourceCode1,
+        RecordID1:       recordID1,
+        DataSourceCode2: dataSourceCode2,
+        RecordID2:       recordID2,
+    }
+    response, err := client.GrpcClient.WhyRecords(ctx, &request)
+    if g2engine.observers != nil {
+        go func() {
+            details := map[string]string{
+                "dataSourceCode1": dataSourceCode1,
+                "recordID1":       recordID1,
+                "dataSourceCode2": dataSourceCode2,
+                "recordID2":       recordID2,
+            }
+            g2engine.notify(ctx, 8073, err, details)
+        }()
+    }
+    if g2engine.isTrace {
+        defer g2engine.traceExit(154, dataSourceCode1, recordID1, dataSourceCode2, recordID2, C.GoString(result.response), err, time.Since(entryTime))
+    }
+    return response.GetResult(), err
 }
 
 /*
@@ -1716,13 +2886,31 @@ Output
     See the example output.
 */
 func (client *G2engineClient) WhyRecords_V2(ctx context.Context, dataSourceCode1 string, recordID1 string, dataSourceCode2 string, recordID2 string, flags int64) (string, error) {
-	request := pb.WhyRecords_V2Request{
-		DataSourceCode1: dataSourceCode1,
-		RecordID1:       recordID1,
-		DataSourceCode2: dataSourceCode2,
-		RecordID2:       recordID2,
-		Flags:           flags,
-	}
-	response, err := client.GrpcClient.WhyRecords_V2(ctx, &request)
-	return response.GetResult(), err
+    if g2engine.isTrace {
+        g2engine.traceEntry(155, dataSourceCode1, recordID1, dataSourceCode2, recordID2, flags)
+    }
+    entryTime := time.Now()
+    request := pb.WhyRecords_V2Request{
+        DataSourceCode1: dataSourceCode1,
+        RecordID1:       recordID1,
+        DataSourceCode2: dataSourceCode2,
+        RecordID2:       recordID2,
+        Flags:           flags,
+    }
+    response, err := client.GrpcClient.WhyRecords_V2(ctx, &request)
+    if g2engine.observers != nil {
+        go func() {
+            details := map[string]string{
+                "dataSourceCode1": dataSourceCode1,
+                "recordID1":       recordID1,
+                "dataSourceCode2": dataSourceCode2,
+                "recordID2":       recordID2,
+            }
+            g2engine.notify(ctx, 8074, err, details)
+        }()
+    }
+    if g2engine.isTrace {
+        defer g2engine.traceExit(156, dataSourceCode1, recordID1, dataSourceCode2, recordID2, flags, C.GoString(result.response), err, time.Since(entryTime))
+    }
+    return response.GetResult(), err
 }
