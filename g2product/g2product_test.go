@@ -24,9 +24,9 @@ const (
 )
 
 var (
-	g2productClientSingleton g2api.G2productInterface
-	grpcAddress              = "localhost:8258"
-	grpcConnection           *grpc.ClientConn
+	g2productSingleton g2api.G2productInterface
+	grpcAddress        = "localhost:8258"
+	grpcConnection     *grpc.ClientConn
 )
 
 // ----------------------------------------------------------------------------
@@ -46,23 +46,23 @@ func getGrpcConnection() *grpc.ClientConn {
 }
 
 func getTestObject(ctx context.Context, test *testing.T) g2api.G2productInterface {
-	if g2productClientSingleton == nil {
+	if g2productSingleton == nil {
 		grpcConnection := getGrpcConnection()
-		g2productClientSingleton = &G2product{
+		g2productSingleton = &G2product{
 			GrpcClient: g2pb.NewG2ProductClient(grpcConnection),
 		}
 	}
-	return g2productClientSingleton
+	return g2productSingleton
 }
 
 func getG2Product(ctx context.Context) g2api.G2productInterface {
-	if g2productClientSingleton == nil {
+	if g2productSingleton == nil {
 		grpcConnection := getGrpcConnection()
-		g2productClientSingleton = &G2product{
+		g2productSingleton = &G2product{
 			GrpcClient: g2pb.NewG2ProductClient(grpcConnection),
 		}
 	}
-	return g2productClientSingleton
+	return g2productSingleton
 }
 
 func truncate(aString string, length int) string {

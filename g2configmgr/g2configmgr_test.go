@@ -33,12 +33,12 @@ const (
 )
 
 var (
-	g2configClientSingleton    g2api.G2configInterface
-	g2configmgrClientSingleton g2api.G2configmgrInterface
-	g2engineClientSingleton    g2api.G2engineInterface
-	grpcAddress                = "localhost:8258"
-	grpcConnection             *grpc.ClientConn
-	localLogger                messagelogger.MessageLoggerInterface
+	g2configSingleton    g2api.G2configInterface
+	g2configmgrSingleton g2api.G2configmgrInterface
+	g2engineSingleton    g2api.G2engineInterface
+	grpcAddress          = "localhost:8258"
+	grpcConnection       *grpc.ClientConn
+	localLogger          messagelogger.MessageLoggerInterface
 )
 
 // ----------------------------------------------------------------------------
@@ -57,43 +57,43 @@ func getGrpcConnection() *grpc.ClientConn {
 }
 
 func getTestObject(ctx context.Context, test *testing.T) g2api.G2configmgrInterface {
-	if g2configmgrClientSingleton == nil {
+	if g2configmgrSingleton == nil {
 		grpcConnection := getGrpcConnection()
-		g2configmgrClientSingleton = &G2configmgr{
+		g2configmgrSingleton = &G2configmgr{
 			GrpcClient: g2pb.NewG2ConfigMgrClient(grpcConnection),
 		}
 	}
-	return g2configmgrClientSingleton
+	return g2configmgrSingleton
 }
 
 func getG2Config(ctx context.Context) g2api.G2configInterface {
-	if g2configClientSingleton == nil {
+	if g2configSingleton == nil {
 		grpcConnection := getGrpcConnection()
-		g2configClientSingleton = &g2config.G2config{
+		g2configSingleton = &g2config.G2config{
 			GrpcClient: g2configpb.NewG2ConfigClient(grpcConnection),
 		}
 	}
-	return g2configClientSingleton
+	return g2configSingleton
 }
 
 func getG2Configmgr(ctx context.Context) g2api.G2configmgrInterface {
-	if g2configmgrClientSingleton == nil {
+	if g2configmgrSingleton == nil {
 		grpcConnection := getGrpcConnection()
-		g2configmgrClientSingleton = &G2configmgr{
+		g2configmgrSingleton = &G2configmgr{
 			GrpcClient: g2pb.NewG2ConfigMgrClient(grpcConnection),
 		}
 	}
-	return g2configmgrClientSingleton
+	return g2configmgrSingleton
 }
 
 func getG2Engine(ctx context.Context) g2api.G2engineInterface {
-	if g2engineClientSingleton == nil {
+	if g2engineSingleton == nil {
 		grpcConnection := getGrpcConnection()
-		g2engineClientSingleton = &g2engine.G2engine{
+		g2engineSingleton = &g2engine.G2engine{
 			GrpcClient: g2enginepb.NewG2EngineClient(grpcConnection),
 		}
 	}
-	return g2engineClientSingleton
+	return g2engineSingleton
 }
 
 func truncate(aString string, length int) string {
@@ -430,7 +430,6 @@ func ExampleG2configmgr_ReplaceDefaultConfigID() {
 	if err != nil {
 		fmt.Println(err)
 	}
-
 	g2config := getG2Config(ctx)
 	configHandle, err := g2config.Create(ctx)
 	if err != nil {

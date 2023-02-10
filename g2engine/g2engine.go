@@ -539,7 +539,7 @@ lifecycle of a list of entities to export.
 
 Input
   - ctx: A context to control lifecycle.
-  - flags: Flags used to control information returned.“
+  - flags: Flags used to control information returned.
 
 Output
   - A handle that identifies the document to be scrolled through using FetchNext().
