@@ -1,11 +1,6 @@
 /*
-The g2config package is used to modify the in-memory representation of a Senzing configuration.
-It is a wrapper over Senzing's G2Config C binding.
-
-To use g2config,
-the LD_LIBRARY_PATH environment variable must include a path to Senzing's libraries.
-Example:
-
-	export LD_LIBRARY_PATH=/opt/senzing/g2/lib
+The g2config package is used make G2Config requests to a Senzing gRPC server.
+The gRPC definitions are at https://github.com/Senzing/g2-sdk-proto.
+The Senzing gRPC server is at https://github.com/Senzing/servegrpc.
 */
 package g2config

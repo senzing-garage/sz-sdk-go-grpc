@@ -848,6 +848,8 @@ func (client *G2diagnostic) SetLogLevel(ctx context.Context, logLevel logger.Lev
 	}
 	entryTime := time.Now()
 	var err error = nil
+	client.getLogger().SetLogLevel(messagelogger.Level(logLevel))
+	client.isTrace = (client.getLogger().GetLogLevel() == messagelogger.LevelTrace)
 	if client.isTrace {
 		defer client.traceExit(54, logLevel, err, time.Since(entryTime))
 	}

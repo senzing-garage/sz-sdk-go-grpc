@@ -32,7 +32,7 @@ type G2configmgr struct {
 }
 
 // ----------------------------------------------------------------------------
-// Internal methods - names begin with lower case
+// Internal methods
 // ----------------------------------------------------------------------------
 
 // Get the Logger singleton.
@@ -365,6 +365,8 @@ func (client *G2configmgr) SetLogLevel(ctx context.Context, logLevel logger.Leve
 	}
 	entryTime := time.Now()
 	var err error = nil
+	client.getLogger().SetLogLevel(messagelogger.Level(logLevel))
+	client.isTrace = (client.getLogger().GetLogLevel() == messagelogger.LevelTrace)
 	if client.isTrace {
 		defer client.traceExit(24, logLevel, err, time.Since(entryTime))
 	}

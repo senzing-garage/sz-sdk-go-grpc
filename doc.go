@@ -9,7 +9,7 @@ Under the covers, gRPC is used as the protocol to communicate with a Senzing gRP
 More information:
 
 - Senzing gRPC server: https://github.com/Senzing/servegrpc
-- Senzing Go SDK: https://github.com/senzing/g2-sdk-go
+- Senzing Go SDK API definitions: https://github.com/senzing/g2-sdk-go
 - Senzing Protobuf definitions: https://github.com/Senzing/g2-sdk-proto
 
 # Examples

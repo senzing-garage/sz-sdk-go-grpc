@@ -404,6 +404,8 @@ func (client *G2config) SetLogLevel(ctx context.Context, logLevel logger.Level) 
 	}
 	entryTime := time.Now()
 	var err error = nil
+	client.getLogger().SetLogLevel(messagelogger.Level(logLevel))
+	client.isTrace = (client.getLogger().GetLogLevel() == messagelogger.LevelTrace)
 	if client.isTrace {
 		defer client.traceExit(26, logLevel, err, time.Since(entryTime))
 	}
