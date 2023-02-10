@@ -12,12 +12,24 @@ import (
 	"strconv"
 	"time"
 
-	pb "github.com/senzing/g2-sdk-proto/go/g2config"
+	g2configapi "github.com/senzing/g2-sdk-go/g2config"
+	g2pb "github.com/senzing/g2-sdk-proto/go/g2config"
 	"github.com/senzing/go-logging/logger"
 	"github.com/senzing/go-logging/messagelogger"
 	"github.com/senzing/go-observing/observer"
 	"github.com/senzing/go-observing/subject"
 )
+
+// ----------------------------------------------------------------------------
+// Types
+// ----------------------------------------------------------------------------
+
+type G2config struct {
+	GrpcClient g2pb.G2ConfigClient
+	isTrace    bool
+	logger     messagelogger.MessageLoggerInterface
+	observers  subject.Subject
+}
 
 // ----------------------------------------------------------------------------
 // Internal methods
@@ -26,7 +38,7 @@ import (
 // Get the Logger singleton.
 func (client *G2config) getLogger() messagelogger.MessageLoggerInterface {
 	if client.logger == nil {
-		client.logger, _ = messagelogger.NewSenzingApiLogger(ProductId, IdMessages, IdStatuses, messagelogger.LevelInfo)
+		client.logger, _ = messagelogger.NewSenzingApiLogger(ProductId, g2configapi.IdMessages, g2configapi.IdStatuses, messagelogger.LevelInfo)
 	}
 	return client.logger
 }
@@ -79,7 +91,7 @@ func (client *G2config) AddDataSource(ctx context.Context, configHandle uintptr,
 		client.traceEntry(1, configHandle, inputJson)
 	}
 	entryTime := time.Now()
-	request := pb.AddDataSourceRequest{
+	request := g2pb.AddDataSourceRequest{
 		ConfigHandle: int64(configHandle),
 		InputJson:    inputJson,
 	}
@@ -112,7 +124,7 @@ func (client *G2config) Close(ctx context.Context, configHandle uintptr) error {
 		client.traceEntry(5, configHandle)
 	}
 	entryTime := time.Now()
-	request := pb.CloseRequest{
+	request := g2pb.CloseRequest{
 		ConfigHandle: int64(configHandle),
 	}
 	_, err := client.GrpcClient.Close(ctx, &request)
@@ -146,7 +158,7 @@ func (client *G2config) Create(ctx context.Context) (uintptr, error) {
 		client.traceEntry(7)
 	}
 	entryTime := time.Now()
-	request := pb.CreateRequest{}
+	request := g2pb.CreateRequest{}
 	response, err := client.GrpcClient.Create(ctx, &request)
 	if client.observers != nil {
 		go func() {
@@ -174,7 +186,7 @@ func (client *G2config) DeleteDataSource(ctx context.Context, configHandle uintp
 		client.traceEntry(9, configHandle, inputJson)
 	}
 	entryTime := time.Now()
-	request := pb.DeleteDataSourceRequest{
+	request := g2pb.DeleteDataSourceRequest{
 		ConfigHandle: int64(configHandle),
 		InputJson:    inputJson,
 	}
@@ -205,7 +217,7 @@ func (client *G2config) Destroy(ctx context.Context) error {
 		client.traceEntry(11)
 	}
 	entryTime := time.Now()
-	request := pb.DestroyRequest{}
+	request := g2pb.DestroyRequest{}
 	_, err := client.GrpcClient.Destroy(ctx, &request)
 	if client.observers != nil {
 		go func() {
@@ -217,6 +229,18 @@ func (client *G2config) Destroy(ctx context.Context) error {
 		defer client.traceExit(12, err, time.Since(entryTime))
 	}
 	return err
+}
+
+/*
+The GetSdkId method returns the identifier of this particular Software Development Kit (SDK).
+It is handy when working with multiple implementations of the same G2configInterface.
+For this implementation, "base" is returned.
+
+Input
+  - ctx: A context to control lifecycle.
+*/
+func (client *G2config) GetSdkId(ctx context.Context) (string, error) {
+	return "base", nil
 }
 
 /*
@@ -234,7 +258,7 @@ func (client *G2config) Init(ctx context.Context, moduleName string, iniParams s
 		client.traceEntry(17, moduleName, iniParams, verboseLogging)
 	}
 	entryTime := time.Now()
-	request := pb.InitRequest{
+	request := g2pb.InitRequest{
 		ModuleName:     moduleName,
 		IniParams:      iniParams,
 		VerboseLogging: int32(verboseLogging),
@@ -273,7 +297,7 @@ func (client *G2config) ListDataSources(ctx context.Context, configHandle uintpt
 		client.traceEntry(19, configHandle)
 	}
 	entryTime := time.Now()
-	request := pb.ListDataSourcesRequest{
+	request := g2pb.ListDataSourcesRequest{
 		ConfigHandle: int64(configHandle),
 	}
 	response, err := client.GrpcClient.ListDataSources(ctx, &request)
@@ -303,7 +327,7 @@ func (client *G2config) Load(ctx context.Context, configHandle uintptr, jsonConf
 		client.traceEntry(21, configHandle, jsonConfig)
 	}
 	entryTime := time.Now()
-	request := pb.LoadRequest{
+	request := g2pb.LoadRequest{
 		ConfigHandle: int64(configHandle),
 		JsonConfig:   jsonConfig,
 	}
@@ -351,7 +375,7 @@ func (client *G2config) Save(ctx context.Context, configHandle uintptr) (string,
 		client.traceEntry(23, configHandle)
 	}
 	entryTime := time.Now()
-	request := pb.SaveRequest{
+	request := g2pb.SaveRequest{
 		ConfigHandle: int64(configHandle),
 	}
 	response, err := client.GrpcClient.Save(ctx, &request)

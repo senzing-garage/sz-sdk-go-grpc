@@ -12,7 +12,8 @@ import (
 	"strconv"
 	"time"
 
-	pb "github.com/senzing/g2-sdk-proto/go/g2configmgr"
+	g2configmgrapi "github.com/senzing/g2-sdk-go/g2configmgr"
+	g2pb "github.com/senzing/g2-sdk-proto/go/g2configmgr"
 	"github.com/senzing/go-logging/logger"
 	"github.com/senzing/go-logging/messagelogger"
 	"github.com/senzing/go-observing/observer"
@@ -20,18 +21,29 @@ import (
 )
 
 // ----------------------------------------------------------------------------
+// Types
+// ----------------------------------------------------------------------------
+
+type G2configmgr struct {
+	GrpcClient g2pb.G2ConfigMgrClient
+	isTrace    bool
+	logger     messagelogger.MessageLoggerInterface
+	observers  subject.Subject
+}
+
+// ----------------------------------------------------------------------------
 // Internal methods - names begin with lower case
 // ----------------------------------------------------------------------------
 
 // Get the Logger singleton.
-func (client *G2configmgrClient) getLogger() messagelogger.MessageLoggerInterface {
+func (client *G2configmgr) getLogger() messagelogger.MessageLoggerInterface {
 	if client.logger == nil {
-		client.logger, _ = messagelogger.NewSenzingApiLogger(ProductId, IdMessages, IdStatuses, messagelogger.LevelInfo)
+		client.logger, _ = messagelogger.NewSenzingApiLogger(ProductId, g2configmgrapi.IdMessages, g2configmgrapi.IdStatuses, messagelogger.LevelInfo)
 	}
 	return client.logger
 }
 
-func (client *G2configmgrClient) notify(ctx context.Context, messageId int, err error, details map[string]string) {
+func (client *G2configmgr) notify(ctx context.Context, messageId int, err error, details map[string]string) {
 	now := time.Now()
 	details["subjectId"] = strconv.Itoa(ProductId)
 	details["messageId"] = strconv.Itoa(messageId)
@@ -48,12 +60,12 @@ func (client *G2configmgrClient) notify(ctx context.Context, messageId int, err 
 }
 
 // Trace method entry.
-func (client *G2configmgrClient) traceEntry(errorNumber int, details ...interface{}) {
+func (client *G2configmgr) traceEntry(errorNumber int, details ...interface{}) {
 	client.getLogger().Log(errorNumber, details...)
 }
 
 // Trace method exit.
-func (client *G2configmgrClient) traceExit(errorNumber int, details ...interface{}) {
+func (client *G2configmgr) traceExit(errorNumber int, details ...interface{}) {
 	client.getLogger().Log(errorNumber, details...)
 }
 
@@ -72,12 +84,12 @@ Input
 Output
   - A configuration identifier.
 */
-func (client *G2configmgrClient) AddConfig(ctx context.Context, configStr string, configComments string) (int64, error) {
+func (client *G2configmgr) AddConfig(ctx context.Context, configStr string, configComments string) (int64, error) {
 	if client.isTrace {
 		client.traceEntry(1, configStr, configComments)
 	}
 	entryTime := time.Now()
-	request := pb.AddConfigRequest{
+	request := g2pb.AddConfigRequest{
 		ConfigStr:      configStr,
 		ConfigComments: configComments,
 	}
@@ -103,12 +115,12 @@ It should be called after all other calls are complete.
 Input
   - ctx: A context to control lifecycle.
 */
-func (client *G2configmgrClient) Destroy(ctx context.Context) error {
+func (client *G2configmgr) Destroy(ctx context.Context) error {
 	if client.isTrace {
 		client.traceEntry(5)
 	}
 	entryTime := time.Now()
-	request := pb.DestroyRequest{}
+	request := g2pb.DestroyRequest{}
 	_, err := client.GrpcClient.Destroy(ctx, &request)
 	if client.observers != nil {
 		go func() {
@@ -133,12 +145,12 @@ Output
   - A JSON document containing the Senzing configuration.
     See the example output.
 */
-func (client *G2configmgrClient) GetConfig(ctx context.Context, configID int64) (string, error) {
+func (client *G2configmgr) GetConfig(ctx context.Context, configID int64) (string, error) {
 	if client.isTrace {
 		client.traceEntry(7, configID)
 	}
 	entryTime := time.Now()
-	request := pb.GetConfigRequest{
+	request := g2pb.GetConfigRequest{
 		ConfigID: configID,
 	}
 	response, err := client.GrpcClient.GetConfig(ctx, &request)
@@ -164,12 +176,12 @@ Output
   - A JSON document containing Senzing configurations.
     See the example output.
 */
-func (client *G2configmgrClient) GetConfigList(ctx context.Context) (string, error) {
+func (client *G2configmgr) GetConfigList(ctx context.Context) (string, error) {
 	if client.isTrace {
 		client.traceEntry(9)
 	}
 	entryTime := time.Now()
-	request := pb.GetConfigListRequest{}
+	request := g2pb.GetConfigListRequest{}
 	response, err := client.GrpcClient.GetConfigList(ctx, &request)
 	if client.observers != nil {
 		go func() {
@@ -192,12 +204,12 @@ Input
 Output
   - A configuration identifier which identifies the current configuration in use.
 */
-func (client *G2configmgrClient) GetDefaultConfigID(ctx context.Context) (int64, error) {
+func (client *G2configmgr) GetDefaultConfigID(ctx context.Context) (int64, error) {
 	if client.isTrace {
 		client.traceEntry(11)
 	}
 	entryTime := time.Now()
-	request := pb.GetDefaultConfigIDRequest{}
+	request := g2pb.GetDefaultConfigIDRequest{}
 	response, err := client.GrpcClient.GetDefaultConfigID(ctx, &request)
 	if client.observers != nil {
 		go func() {
@@ -212,6 +224,18 @@ func (client *G2configmgrClient) GetDefaultConfigID(ctx context.Context) (int64,
 }
 
 /*
+The GetSdkId method returns the identifier of this particular Software Development Kit (SDK).
+It is handy when working with multiple implementations of the same G2configmgrInterface.
+For this implementation, "base" is returned.
+
+Input
+  - ctx: A context to control lifecycle.
+*/
+func (client *G2configmgr) GetSdkId(ctx context.Context) (string, error) {
+	return "base", nil
+}
+
+/*
 The Init method initializes the Senzing G2ConfigMgr object.
 It must be called prior to any other calls.
 
@@ -221,12 +245,12 @@ Input
   - iniParams: A JSON string containing configuration parameters.
   - verboseLogging: A flag to enable deeper logging of the G2 processing. 0 for no Senzing logging; 1 for logging.
 */
-func (client *G2configmgrClient) Init(ctx context.Context, moduleName string, iniParams string, verboseLogging int) error {
+func (client *G2configmgr) Init(ctx context.Context, moduleName string, iniParams string, verboseLogging int) error {
 	if client.isTrace {
 		client.traceEntry(17, moduleName, iniParams, verboseLogging)
 	}
 	entryTime := time.Now()
-	request := pb.InitRequest{
+	request := g2pb.InitRequest{
 		ModuleName:     moduleName,
 		IniParams:      iniParams,
 		VerboseLogging: int32(verboseLogging),
@@ -255,7 +279,7 @@ Input
   - ctx: A context to control lifecycle.
   - observer: The observer to be added.
 */
-func (client *G2configmgrClient) RegisterObserver(ctx context.Context, observer observer.Observer) error {
+func (client *G2configmgr) RegisterObserver(ctx context.Context, observer observer.Observer) error {
 	if client.observers == nil {
 		client.observers = &subject.SubjectImpl{}
 	}
@@ -273,12 +297,12 @@ Input
   - oldConfigID: The configuration identifier to replace.
   - newConfigID: The configuration identifier to use as the default.
 */
-func (client *G2configmgrClient) ReplaceDefaultConfigID(ctx context.Context, oldConfigID int64, newConfigID int64) error {
+func (client *G2configmgr) ReplaceDefaultConfigID(ctx context.Context, oldConfigID int64, newConfigID int64) error {
 	if client.isTrace {
 		client.traceEntry(19, oldConfigID, newConfigID)
 	}
 	entryTime := time.Now()
-	request := pb.ReplaceDefaultConfigIDRequest{
+	request := g2pb.ReplaceDefaultConfigIDRequest{
 		OldConfigID: oldConfigID,
 		NewConfigID: newConfigID,
 	}
@@ -305,12 +329,12 @@ Input
   - ctx: A context to control lifecycle.
   - configID: The configuration identifier of the Senzing Engine configuration to use as the default.
 */
-func (client *G2configmgrClient) SetDefaultConfigID(ctx context.Context, configID int64) error {
+func (client *G2configmgr) SetDefaultConfigID(ctx context.Context, configID int64) error {
 	if client.isTrace {
 		client.traceEntry(21, configID)
 	}
 	entryTime := time.Now()
-	request := pb.SetDefaultConfigIDRequest{
+	request := g2pb.SetDefaultConfigIDRequest{
 		ConfigID: configID,
 	}
 	_, err := client.GrpcClient.SetDefaultConfigID(ctx, &request)
@@ -335,7 +359,7 @@ Input
   - ctx: A context to control lifecycle.
   - logLevel: The desired log level. TRACE, DEBUG, INFO, WARN, ERROR, FATAL or PANIC.
 */
-func (client *G2configmgrClient) SetLogLevel(ctx context.Context, logLevel logger.Level) error {
+func (client *G2configmgr) SetLogLevel(ctx context.Context, logLevel logger.Level) error {
 	if client.isTrace {
 		client.traceEntry(23, logLevel)
 	}
@@ -354,7 +378,7 @@ Input
   - ctx: A context to control lifecycle.
   - observer: The observer to be added.
 */
-func (client *G2configmgrClient) UnregisterObserver(ctx context.Context, observer observer.Observer) error {
+func (client *G2configmgr) UnregisterObserver(ctx context.Context, observer observer.Observer) error {
 	err := client.observers.UnregisterObserver(ctx, observer)
 	if err != nil {
 		return err

@@ -12,7 +12,8 @@ import (
 	"strconv"
 	"time"
 
-	pb "github.com/senzing/g2-sdk-proto/go/g2product"
+	g2productapi "github.com/senzing/g2-sdk-go/g2product"
+	g2pb "github.com/senzing/g2-sdk-proto/go/g2product"
 	"github.com/senzing/go-logging/logger"
 	"github.com/senzing/go-logging/messagelogger"
 	"github.com/senzing/go-observing/observer"
@@ -20,18 +21,29 @@ import (
 )
 
 // ----------------------------------------------------------------------------
+// Types
+// ----------------------------------------------------------------------------
+
+type G2product struct {
+	GrpcClient g2pb.G2ProductClient
+	isTrace    bool
+	logger     messagelogger.MessageLoggerInterface
+	observers  subject.Subject
+}
+
+// ----------------------------------------------------------------------------
 // Internal methods
 // ----------------------------------------------------------------------------
 
 // Get the Logger singleton.
-func (client *G2productClient) getLogger() messagelogger.MessageLoggerInterface {
+func (client *G2product) getLogger() messagelogger.MessageLoggerInterface {
 	if client.logger == nil {
-		client.logger, _ = messagelogger.NewSenzingApiLogger(ProductId, IdMessages, IdStatuses, messagelogger.LevelInfo)
+		client.logger, _ = messagelogger.NewSenzingApiLogger(ProductId, g2productapi.IdMessages, g2productapi.IdStatuses, messagelogger.LevelInfo)
 	}
 	return client.logger
 }
 
-func (client *G2productClient) notify(ctx context.Context, messageId int, err error, details map[string]string) {
+func (client *G2product) notify(ctx context.Context, messageId int, err error, details map[string]string) {
 	now := time.Now()
 	details["subjectId"] = strconv.Itoa(ProductId)
 	details["messageId"] = strconv.Itoa(messageId)
@@ -48,12 +60,12 @@ func (client *G2productClient) notify(ctx context.Context, messageId int, err er
 }
 
 // Trace method entry.
-func (client *G2productClient) traceEntry(errorNumber int, details ...interface{}) {
+func (client *G2product) traceEntry(errorNumber int, details ...interface{}) {
 	client.getLogger().Log(errorNumber, details...)
 }
 
 // Trace method exit.
-func (client *G2productClient) traceExit(errorNumber int, details ...interface{}) {
+func (client *G2product) traceExit(errorNumber int, details ...interface{}) {
 	client.getLogger().Log(errorNumber, details...)
 }
 
@@ -68,12 +80,12 @@ It should be called after all other calls are complete.
 Input
   - ctx: A context to control lifecycle.
 */
-func (client *G2productClient) Destroy(ctx context.Context) error {
+func (client *G2product) Destroy(ctx context.Context) error {
 	if client.isTrace {
 		client.traceEntry(3)
 	}
 	entryTime := time.Now()
-	request := pb.DestroyRequest{}
+	request := g2pb.DestroyRequest{}
 	_, err := client.GrpcClient.Destroy(ctx, &request)
 	if client.observers != nil {
 		go func() {
@@ -88,6 +100,18 @@ func (client *G2productClient) Destroy(ctx context.Context) error {
 }
 
 /*
+The GetSdkId method returns the identifier of this particular Software Development Kit (SDK).
+It is handy when working with multiple implementations of the same G2productInterface.
+For this implementation, "base" is returned.
+
+Input
+  - ctx: A context to control lifecycle.
+*/
+func (client *G2product) GetSdkId(ctx context.Context) (string, error) {
+	return "base", nil
+}
+
+/*
 The Init method initializes the Senzing G2Product object.
 It must be called prior to any other calls.
 
@@ -97,12 +121,12 @@ Input
   - iniParams: A JSON string containing configuration parameters.
   - verboseLogging: A flag to enable deeper logging of the G2 processing. 0 for no Senzing logging; 1 for logging.
 */
-func (client *G2productClient) Init(ctx context.Context, moduleName string, iniParams string, verboseLogging int) error {
+func (client *G2product) Init(ctx context.Context, moduleName string, iniParams string, verboseLogging int) error {
 	if client.isTrace {
 		client.traceEntry(9, moduleName, iniParams, verboseLogging)
 	}
 	entryTime := time.Now()
-	request := pb.InitRequest{
+	request := g2pb.InitRequest{
 		ModuleName:     moduleName,
 		IniParams:      iniParams,
 		VerboseLogging: int32(verboseLogging),
@@ -134,12 +158,12 @@ Output
   - A JSON document containing Senzing license metadata.
     See the example output.
 */
-func (client *G2productClient) License(ctx context.Context) (string, error) {
+func (client *G2product) License(ctx context.Context) (string, error) {
 	if client.isTrace {
 		client.traceEntry(11)
 	}
 	entryTime := time.Now()
-	request := pb.LicenseRequest{}
+	request := g2pb.LicenseRequest{}
 	response, err := client.GrpcClient.License(ctx, &request)
 	if client.observers != nil {
 		go func() {
@@ -160,7 +184,7 @@ Input
   - ctx: A context to control lifecycle.
   - observer: The observer to be added.
 */
-func (client *G2productClient) RegisterObserver(ctx context.Context, observer observer.Observer) error {
+func (client *G2product) RegisterObserver(ctx context.Context, observer observer.Observer) error {
 	if client.observers == nil {
 		client.observers = &subject.SubjectImpl{}
 	}
@@ -174,7 +198,7 @@ Input
   - ctx: A context to control lifecycle.
   - logLevel: The desired log level. TRACE, DEBUG, INFO, WARN, ERROR, FATAL or PANIC.
 */
-func (client *G2productClient) SetLogLevel(ctx context.Context, logLevel logger.Level) error {
+func (client *G2product) SetLogLevel(ctx context.Context, logLevel logger.Level) error {
 	if client.isTrace {
 		client.traceEntry(13, logLevel)
 	}
@@ -193,7 +217,7 @@ Input
   - ctx: A context to control lifecycle.
   - observer: The observer to be added.
 */
-func (client *G2productClient) UnregisterObserver(ctx context.Context, observer observer.Observer) error {
+func (client *G2product) UnregisterObserver(ctx context.Context, observer observer.Observer) error {
 	err := client.observers.UnregisterObserver(ctx, observer)
 	if err != nil {
 		return err
@@ -216,12 +240,12 @@ Output
   - If error not nil, license is not valid.
   - The returned string has additional information.
 */
-func (client *G2productClient) ValidateLicenseFile(ctx context.Context, licenseFilePath string) (string, error) {
+func (client *G2product) ValidateLicenseFile(ctx context.Context, licenseFilePath string) (string, error) {
 	if client.isTrace {
 		client.traceEntry(15, licenseFilePath)
 	}
 	entryTime := time.Now()
-	request := pb.ValidateLicenseFileRequest{
+	request := g2pb.ValidateLicenseFileRequest{
 		LicenseFilePath: licenseFilePath,
 	}
 	response, err := client.GrpcClient.ValidateLicenseFile(ctx, &request)
@@ -250,12 +274,12 @@ Output
   - The returned string has additional information.
     See the example output.
 */
-func (client *G2productClient) ValidateLicenseStringBase64(ctx context.Context, licenseString string) (string, error) {
+func (client *G2product) ValidateLicenseStringBase64(ctx context.Context, licenseString string) (string, error) {
 	if client.isTrace {
 		client.traceEntry(17, licenseString)
 	}
 	entryTime := time.Now()
-	request := pb.ValidateLicenseStringBase64Request{
+	request := g2pb.ValidateLicenseStringBase64Request{
 		LicenseString: licenseString,
 	}
 	response, err := client.GrpcClient.ValidateLicenseStringBase64(ctx, &request)
@@ -281,12 +305,12 @@ Output
   - A JSON document containing metadata about the Senzing Engine version being used.
     See the example output.
 */
-func (client *G2productClient) Version(ctx context.Context) (string, error) {
+func (client *G2product) Version(ctx context.Context) (string, error) {
 	if client.isTrace {
 		client.traceEntry(19)
 	}
 	entryTime := time.Now()
-	request := pb.VersionRequest{}
+	request := g2pb.VersionRequest{}
 	response, err := client.GrpcClient.Version(ctx, &request)
 	if client.observers != nil {
 		go func() {

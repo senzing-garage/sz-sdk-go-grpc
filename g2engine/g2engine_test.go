@@ -11,11 +11,13 @@ import (
 	"time"
 
 	truncator "github.com/aquilax/truncate"
-	"github.com/senzing/g2-sdk-go-grpc/g2configclient"
-	"github.com/senzing/g2-sdk-go-grpc/g2configmgrclient"
-	pbg2config "github.com/senzing/g2-sdk-proto/go/g2config"
-	pbg2configmgr "github.com/senzing/g2-sdk-proto/go/g2configmgr"
-	pb "github.com/senzing/g2-sdk-proto/go/g2engine"
+	"github.com/senzing/g2-sdk-go-grpc/g2config"
+	"github.com/senzing/g2-sdk-go-grpc/g2configmgr"
+	"github.com/senzing/g2-sdk-go/g2api"
+	g2engineapi "github.com/senzing/g2-sdk-go/g2engine"
+	g2configpb "github.com/senzing/g2-sdk-proto/go/g2config"
+	g2configmgrpb "github.com/senzing/g2-sdk-proto/go/g2configmgr"
+	g2pb "github.com/senzing/g2-sdk-proto/go/g2engine"
 	"github.com/senzing/go-common/g2engineconfigurationjson"
 	"github.com/senzing/go-common/record"
 	"github.com/senzing/go-common/truthset"
@@ -39,9 +41,9 @@ type GetEntityByRecordIDResponse struct {
 }
 
 var (
-	g2configClientSingleton    *g2configclient.G2configClient
-	g2configmgrClientSingleton *g2configmgrclient.G2configmgrClient
-	g2engineClientSingleton    *G2engineClient
+	g2configClientSingleton    g2api.G2configInterface
+	g2configmgrClientSingleton g2api.G2configmgrInterface
+	g2engineClientSingleton    g2api.G2engineInterface
 	grpcAddress                = "localhost:8258"
 	grpcConnection             *grpc.ClientConn
 	localLogger                messagelogger.MessageLoggerInterface
@@ -63,44 +65,44 @@ func getGrpcConnection() *grpc.ClientConn {
 	return grpcConnection
 }
 
-func getTestObject(ctx context.Context, test *testing.T) G2engineClient {
+func getTestObject(ctx context.Context, test *testing.T) g2api.G2engineInterface {
 	if g2engineClientSingleton == nil {
 		grpcConnection := getGrpcConnection()
-		g2engineClientSingleton = &G2engineClient{
-			GrpcClient: pb.NewG2EngineClient(grpcConnection),
+		g2engineClientSingleton = &G2engine{
+			GrpcClient: g2pb.NewG2EngineClient(grpcConnection),
 		}
 	}
-	return *g2engineClientSingleton
+	return g2engineClientSingleton
 }
 
-func getG2Config(ctx context.Context) g2configclient.G2configClient {
+func getG2Config(ctx context.Context) g2api.G2configInterface {
 	if g2configClientSingleton == nil {
 		grpcConnection := getGrpcConnection()
-		g2configClientSingleton = &g2configclient.G2configClient{
-			GrpcClient: pbg2config.NewG2ConfigClient(grpcConnection),
+		g2configClientSingleton = &g2config.G2config{
+			GrpcClient: g2configpb.NewG2ConfigClient(grpcConnection),
 		}
 	}
-	return *g2configClientSingleton
+	return g2configClientSingleton
 }
 
-func getG2Configmgr(ctx context.Context) g2configmgrclient.G2configmgrClient {
+func getG2Configmgr(ctx context.Context) g2api.G2configmgrInterface {
 	if g2configmgrClientSingleton == nil {
 		grpcConnection := getGrpcConnection()
-		g2configmgrClientSingleton = &g2configmgrclient.G2configmgrClient{
-			GrpcClient: pbg2configmgr.NewG2ConfigMgrClient(grpcConnection),
+		g2configmgrClientSingleton = &g2configmgr.G2configmgr{
+			GrpcClient: g2configmgrpb.NewG2ConfigMgrClient(grpcConnection),
 		}
 	}
-	return *g2configmgrClientSingleton
+	return g2configmgrClientSingleton
 }
 
-func getG2Engine(ctx context.Context) G2engineClient {
+func getG2Engine(ctx context.Context) g2api.G2engineInterface {
 	if g2engineClientSingleton == nil {
 		grpcConnection := getGrpcConnection()
-		g2engineClientSingleton = &G2engineClient{
-			GrpcClient: pb.NewG2EngineClient(grpcConnection),
+		g2engineClientSingleton = &G2engine{
+			GrpcClient: g2pb.NewG2EngineClient(grpcConnection),
 		}
 	}
-	return *g2engineClientSingleton
+	return g2engineClientSingleton
 }
 
 func getEntityIdForRecord(datasource string, id string) int64 {
@@ -147,14 +149,14 @@ func printActual(test *testing.T, actual interface{}) {
 	printResult(test, "Actual", actual)
 }
 
-func testError(test *testing.T, ctx context.Context, g2engine G2engineClient, err error) {
+func testError(test *testing.T, ctx context.Context, g2engine g2api.G2engineInterface, err error) {
 	if err != nil {
 		test.Log("Error:", err.Error())
 		assert.FailNow(test, err.Error())
 	}
 }
 
-func expectError(test *testing.T, ctx context.Context, g2engine G2engineClient, err error, messageId string) {
+func expectError(test *testing.T, ctx context.Context, g2engine g2api.G2engineInterface, err error, messageId string) {
 	if err != nil {
 		errorMessage := err.Error()[strings.Index(err.Error(), "{"):]
 		var dictionary map[string]interface{}
@@ -168,7 +170,7 @@ func expectError(test *testing.T, ctx context.Context, g2engine G2engineClient, 
 	}
 }
 
-func testErrorNoFail(test *testing.T, ctx context.Context, g2engine G2engineClient, err error) {
+func testErrorNoFail(test *testing.T, ctx context.Context, g2engine g2api.G2engineInterface, err error) {
 	if err != nil {
 		test.Log("Error:", err.Error())
 	}
@@ -244,7 +246,7 @@ func setup() error {
 	ctx := context.TODO()
 	var err error = nil
 
-	localLogger, err = messagelogger.NewSenzingApiLogger(ProductId, IdMessages, IdStatuses, messagelogger.LevelInfo)
+	localLogger, err = messagelogger.NewSenzingApiLogger(ProductId, g2engineapi.IdMessages, g2engineapi.IdStatuses, messagelogger.LevelInfo)
 	if err != nil {
 		return localLogger.Error(5901, err)
 	}
@@ -284,7 +286,7 @@ func TestBuildSimpleSystemConfigurationJson(test *testing.T) {
 // Test interface functions
 // ----------------------------------------------------------------------------
 
-func TestG2engineClient_AddRecord(test *testing.T) {
+func TestG2engine_AddRecord(test *testing.T) {
 	ctx := context.TODO()
 	g2engine := getTestObject(ctx, test)
 	record1 := truthset.CustomerRecords["1001"]
@@ -295,7 +297,7 @@ func TestG2engineClient_AddRecord(test *testing.T) {
 	testError(test, ctx, g2engine, err)
 }
 
-func TestG2engineClient_AddRecordWithInfo(test *testing.T) {
+func TestG2engine_AddRecordWithInfo(test *testing.T) {
 	ctx := context.TODO()
 	g2engine := getTestObject(ctx, test)
 	record := truthset.CustomerRecords["1003"]
@@ -305,7 +307,7 @@ func TestG2engineClient_AddRecordWithInfo(test *testing.T) {
 	printActual(test, actual)
 }
 
-func TestG2engineClient_AddRecordWithInfoWithReturnedRecordID(test *testing.T) {
+func TestG2engine_AddRecordWithInfoWithReturnedRecordID(test *testing.T) {
 	ctx := context.TODO()
 	g2engine := getTestObject(ctx, test)
 	record := truthset.TestRecordsWithoutRecordId[0]
@@ -316,7 +318,7 @@ func TestG2engineClient_AddRecordWithInfoWithReturnedRecordID(test *testing.T) {
 	printActual(test, actual)
 }
 
-func TestG2engineClient_AddRecordWithReturnedRecordID(test *testing.T) {
+func TestG2engine_AddRecordWithReturnedRecordID(test *testing.T) {
 	ctx := context.TODO()
 	g2engine := getTestObject(ctx, test)
 	record := truthset.TestRecordsWithoutRecordId[1]
@@ -325,7 +327,7 @@ func TestG2engineClient_AddRecordWithReturnedRecordID(test *testing.T) {
 	printActual(test, actual)
 }
 
-func TestG2engineClient_CheckRecord(test *testing.T) {
+func TestG2engine_CheckRecord(test *testing.T) {
 	ctx := context.TODO()
 	g2engine := getTestObject(ctx, test)
 	record := truthset.CustomerRecords["1001"]
@@ -335,7 +337,7 @@ func TestG2engineClient_CheckRecord(test *testing.T) {
 	printActual(test, actual)
 }
 
-func TestG2engineClient_CountRedoRecords(test *testing.T) {
+func TestG2engine_CountRedoRecords(test *testing.T) {
 	ctx := context.TODO()
 	g2engine := getTestObject(ctx, test)
 	actual, err := g2engine.CountRedoRecords(ctx)
@@ -344,7 +346,7 @@ func TestG2engineClient_CountRedoRecords(test *testing.T) {
 }
 
 // FAIL:
-// func TestG2engineClient_ExportJSONEntityReport(test *testing.T) {
+// func TestG2engine_ExportJSONEntityReport(test *testing.T) {
 // 	ctx := context.TODO()
 // 	g2engine := getTestObject(ctx, test)
 // 	flags := int64(0)
@@ -357,7 +359,7 @@ func TestG2engineClient_CountRedoRecords(test *testing.T) {
 // 	testError(test, ctx, g2engine, err)
 // }
 
-func TestG2engineClient_ExportConfigAndConfigID(test *testing.T) {
+func TestG2engine_ExportConfigAndConfigID(test *testing.T) {
 	ctx := context.TODO()
 	g2engine := getTestObject(ctx, test)
 	actualConfig, actualConfigId, err := g2engine.ExportConfigAndConfigID(ctx)
@@ -366,7 +368,7 @@ func TestG2engineClient_ExportConfigAndConfigID(test *testing.T) {
 	printResult(test, "Actual Config ID", actualConfigId)
 }
 
-func TestG2engineClient_ExportConfig(test *testing.T) {
+func TestG2engine_ExportConfig(test *testing.T) {
 	ctx := context.TODO()
 	g2engine := getTestObject(ctx, test)
 	actual, err := g2engine.ExportConfig(ctx)
@@ -374,7 +376,7 @@ func TestG2engineClient_ExportConfig(test *testing.T) {
 	printActual(test, actual)
 }
 
-//func TestG2engineClient_ExportCSVEntityReport(test *testing.T) {
+//func TestG2engine_ExportCSVEntityReport(test *testing.T) {
 //	ctx := context.TODO()
 //	g2engine := getTestObject(ctx, test)
 //	csvColumnList := ""
@@ -384,7 +386,7 @@ func TestG2engineClient_ExportConfig(test *testing.T) {
 //	test.Log("Actual:", actual)
 //}
 
-func TestG2engineClient_FindInterestingEntitiesByEntityID(test *testing.T) {
+func TestG2engine_FindInterestingEntitiesByEntityID(test *testing.T) {
 	ctx := context.TODO()
 	g2engine := getTestObject(ctx, test)
 	entityID := getEntityId(truthset.CustomerRecords["1001"])
@@ -394,7 +396,7 @@ func TestG2engineClient_FindInterestingEntitiesByEntityID(test *testing.T) {
 	printActual(test, actual)
 }
 
-func TestG2engineClient_FindInterestingEntitiesByRecordID(test *testing.T) {
+func TestG2engine_FindInterestingEntitiesByRecordID(test *testing.T) {
 	ctx := context.TODO()
 	g2engine := getTestObject(ctx, test)
 	record := truthset.CustomerRecords["1001"]
@@ -404,7 +406,7 @@ func TestG2engineClient_FindInterestingEntitiesByRecordID(test *testing.T) {
 	printActual(test, actual)
 }
 
-func TestG2engineClient_FindNetworkByEntityID(test *testing.T) {
+func TestG2engine_FindNetworkByEntityID(test *testing.T) {
 	ctx := context.TODO()
 	g2engine := getTestObject(ctx, test)
 	record1 := truthset.CustomerRecords["1001"]
@@ -418,7 +420,7 @@ func TestG2engineClient_FindNetworkByEntityID(test *testing.T) {
 	printActual(test, actual)
 }
 
-func TestG2engineClient_FindNetworkByEntityID_V2(test *testing.T) {
+func TestG2engine_FindNetworkByEntityID_V2(test *testing.T) {
 	ctx := context.TODO()
 	g2engine := getTestObject(ctx, test)
 	record1 := truthset.CustomerRecords["1001"]
@@ -433,7 +435,7 @@ func TestG2engineClient_FindNetworkByEntityID_V2(test *testing.T) {
 	printActual(test, actual)
 }
 
-func TestG2engineClient_FindNetworkByRecordID(test *testing.T) {
+func TestG2engine_FindNetworkByRecordID(test *testing.T) {
 	ctx := context.TODO()
 	g2engine := getTestObject(ctx, test)
 	record1 := truthset.CustomerRecords["1001"]
@@ -448,7 +450,7 @@ func TestG2engineClient_FindNetworkByRecordID(test *testing.T) {
 	printActual(test, actual)
 }
 
-func TestG2engineClient_FindNetworkByRecordID_V2(test *testing.T) {
+func TestG2engine_FindNetworkByRecordID_V2(test *testing.T) {
 	ctx := context.TODO()
 	g2engine := getTestObject(ctx, test)
 	record1 := truthset.CustomerRecords["1001"]
@@ -464,7 +466,7 @@ func TestG2engineClient_FindNetworkByRecordID_V2(test *testing.T) {
 	printActual(test, actual)
 }
 
-func TestG2engineClient_FindPathByEntityID(test *testing.T) {
+func TestG2engine_FindPathByEntityID(test *testing.T) {
 	ctx := context.TODO()
 	g2engine := getTestObject(ctx, test)
 	entityID1 := getEntityId(truthset.CustomerRecords["1001"])
@@ -475,7 +477,7 @@ func TestG2engineClient_FindPathByEntityID(test *testing.T) {
 	printActual(test, actual)
 }
 
-func TestG2engineClient_FindPathByEntityID_V2(test *testing.T) {
+func TestG2engine_FindPathByEntityID_V2(test *testing.T) {
 	ctx := context.TODO()
 	g2engine := getTestObject(ctx, test)
 	entityID1 := getEntityId(truthset.CustomerRecords["1001"])
@@ -487,7 +489,7 @@ func TestG2engineClient_FindPathByEntityID_V2(test *testing.T) {
 	printActual(test, actual)
 }
 
-func TestG2engineClient_FindPathByRecordID(test *testing.T) {
+func TestG2engine_FindPathByRecordID(test *testing.T) {
 	ctx := context.TODO()
 	g2engine := getTestObject(ctx, test)
 	record1 := truthset.CustomerRecords["1001"]
@@ -498,7 +500,7 @@ func TestG2engineClient_FindPathByRecordID(test *testing.T) {
 	printActual(test, actual)
 }
 
-func TestG2engineClient_FindPathByRecordID_V2(test *testing.T) {
+func TestG2engine_FindPathByRecordID_V2(test *testing.T) {
 	ctx := context.TODO()
 	g2engine := getTestObject(ctx, test)
 	record1 := truthset.CustomerRecords["1001"]
@@ -510,7 +512,7 @@ func TestG2engineClient_FindPathByRecordID_V2(test *testing.T) {
 	printActual(test, actual)
 }
 
-func TestG2engineClient_FindPathExcludingByEntityID(test *testing.T) {
+func TestG2engine_FindPathExcludingByEntityID(test *testing.T) {
 	ctx := context.TODO()
 	g2engine := getTestObject(ctx, test)
 	record1 := truthset.CustomerRecords["1001"]
@@ -523,7 +525,7 @@ func TestG2engineClient_FindPathExcludingByEntityID(test *testing.T) {
 	printActual(test, actual)
 }
 
-func TestG2engineClient_FindPathExcludingByEntityID_V2(test *testing.T) {
+func TestG2engine_FindPathExcludingByEntityID_V2(test *testing.T) {
 	ctx := context.TODO()
 	g2engine := getTestObject(ctx, test)
 	record1 := truthset.CustomerRecords["1001"]
@@ -537,7 +539,7 @@ func TestG2engineClient_FindPathExcludingByEntityID_V2(test *testing.T) {
 	printActual(test, actual)
 }
 
-func TestG2engineClient_FindPathExcludingByRecordID(test *testing.T) {
+func TestG2engine_FindPathExcludingByRecordID(test *testing.T) {
 	ctx := context.TODO()
 	g2engine := getTestObject(ctx, test)
 	record1 := truthset.CustomerRecords["1001"]
@@ -549,7 +551,7 @@ func TestG2engineClient_FindPathExcludingByRecordID(test *testing.T) {
 	printActual(test, actual)
 }
 
-func TestG2engineClient_FindPathExcludingByRecordID_V2(test *testing.T) {
+func TestG2engine_FindPathExcludingByRecordID_V2(test *testing.T) {
 	ctx := context.TODO()
 	g2engine := getTestObject(ctx, test)
 	record1 := truthset.CustomerRecords["1001"]
@@ -562,7 +564,7 @@ func TestG2engineClient_FindPathExcludingByRecordID_V2(test *testing.T) {
 	printActual(test, actual)
 }
 
-func TestG2engineClient_FindPathIncludingSourceByEntityID(test *testing.T) {
+func TestG2engine_FindPathIncludingSourceByEntityID(test *testing.T) {
 	ctx := context.TODO()
 	g2engine := getTestObject(ctx, test)
 	record1 := truthset.CustomerRecords["1001"]
@@ -576,7 +578,7 @@ func TestG2engineClient_FindPathIncludingSourceByEntityID(test *testing.T) {
 	printActual(test, actual)
 }
 
-func TestG2engineClient_FindPathIncludingSourceByEntityID_V2(test *testing.T) {
+func TestG2engine_FindPathIncludingSourceByEntityID_V2(test *testing.T) {
 	ctx := context.TODO()
 	g2engine := getTestObject(ctx, test)
 	record1 := truthset.CustomerRecords["1001"]
@@ -591,7 +593,7 @@ func TestG2engineClient_FindPathIncludingSourceByEntityID_V2(test *testing.T) {
 	printActual(test, actual)
 }
 
-func TestG2engineClient_FindPathIncludingSourceByRecordID(test *testing.T) {
+func TestG2engine_FindPathIncludingSourceByRecordID(test *testing.T) {
 	ctx := context.TODO()
 	g2engine := getTestObject(ctx, test)
 	record1 := truthset.CustomerRecords["1001"]
@@ -604,7 +606,7 @@ func TestG2engineClient_FindPathIncludingSourceByRecordID(test *testing.T) {
 	printActual(test, actual)
 }
 
-func TestG2engineClient_FindPathIncludingSourceByRecordID_V2(test *testing.T) {
+func TestG2engine_FindPathIncludingSourceByRecordID_V2(test *testing.T) {
 	ctx := context.TODO()
 	g2engine := getTestObject(ctx, test)
 	record1 := truthset.CustomerRecords["1001"]
@@ -618,7 +620,7 @@ func TestG2engineClient_FindPathIncludingSourceByRecordID_V2(test *testing.T) {
 	printActual(test, actual)
 }
 
-func TestG2engineClient_GetActiveConfigID(test *testing.T) {
+func TestG2engine_GetActiveConfigID(test *testing.T) {
 	ctx := context.TODO()
 	g2engine := getTestObject(ctx, test)
 	actual, err := g2engine.GetActiveConfigID(ctx)
@@ -626,7 +628,7 @@ func TestG2engineClient_GetActiveConfigID(test *testing.T) {
 	printActual(test, actual)
 }
 
-func TestG2engineClient_GetEntityByEntityID(test *testing.T) {
+func TestG2engine_GetEntityByEntityID(test *testing.T) {
 	ctx := context.TODO()
 	g2engine := getTestObject(ctx, test)
 	entityID := getEntityId(truthset.CustomerRecords["1001"])
@@ -635,7 +637,7 @@ func TestG2engineClient_GetEntityByEntityID(test *testing.T) {
 	printActual(test, actual)
 }
 
-func TestG2engineClient_GetEntityByEntityID_V2(test *testing.T) {
+func TestG2engine_GetEntityByEntityID_V2(test *testing.T) {
 	ctx := context.TODO()
 	g2engine := getTestObject(ctx, test)
 	entityID := getEntityId(truthset.CustomerRecords["1001"])
@@ -645,7 +647,7 @@ func TestG2engineClient_GetEntityByEntityID_V2(test *testing.T) {
 	printActual(test, actual)
 }
 
-func TestG2engineClient_GetEntityByRecordID(test *testing.T) {
+func TestG2engine_GetEntityByRecordID(test *testing.T) {
 	ctx := context.TODO()
 	g2engine := getTestObject(ctx, test)
 	record := truthset.CustomerRecords["1001"]
@@ -654,7 +656,7 @@ func TestG2engineClient_GetEntityByRecordID(test *testing.T) {
 	printActual(test, actual)
 }
 
-func TestG2engineClient_GetEntityByRecordID_V2(test *testing.T) {
+func TestG2engine_GetEntityByRecordID_V2(test *testing.T) {
 	ctx := context.TODO()
 	g2engine := getTestObject(ctx, test)
 	record := truthset.CustomerRecords["1001"]
@@ -664,7 +666,7 @@ func TestG2engineClient_GetEntityByRecordID_V2(test *testing.T) {
 	printActual(test, actual)
 }
 
-func TestG2engineClient_GetRecord(test *testing.T) {
+func TestG2engine_GetRecord(test *testing.T) {
 	ctx := context.TODO()
 	g2engine := getTestObject(ctx, test)
 	record := truthset.CustomerRecords["1001"]
@@ -673,7 +675,7 @@ func TestG2engineClient_GetRecord(test *testing.T) {
 	printActual(test, actual)
 }
 
-func TestG2engineClient_GetRecord_V2(test *testing.T) {
+func TestG2engine_GetRecord_V2(test *testing.T) {
 	ctx := context.TODO()
 	g2engine := getTestObject(ctx, test)
 	record := truthset.CustomerRecords["1001"]
@@ -683,7 +685,7 @@ func TestG2engineClient_GetRecord_V2(test *testing.T) {
 	printActual(test, actual)
 }
 
-func TestG2engineClient_GetRedoRecord(test *testing.T) {
+func TestG2engine_GetRedoRecord(test *testing.T) {
 	ctx := context.TODO()
 	g2engine := getTestObject(ctx, test)
 	actual, err := g2engine.GetRedoRecord(ctx)
@@ -691,7 +693,7 @@ func TestG2engineClient_GetRedoRecord(test *testing.T) {
 	printActual(test, actual)
 }
 
-func TestG2engineClient_GetRepositoryLastModifiedTime(test *testing.T) {
+func TestG2engine_GetRepositoryLastModifiedTime(test *testing.T) {
 	ctx := context.TODO()
 	g2engine := getTestObject(ctx, test)
 	actual, err := g2engine.GetRepositoryLastModifiedTime(ctx)
@@ -699,7 +701,7 @@ func TestG2engineClient_GetRepositoryLastModifiedTime(test *testing.T) {
 	printActual(test, actual)
 }
 
-func TestG2engineClient_GetVirtualEntityByRecordID(test *testing.T) {
+func TestG2engine_GetVirtualEntityByRecordID(test *testing.T) {
 	ctx := context.TODO()
 	g2engine := getTestObject(ctx, test)
 	record1 := truthset.CustomerRecords["1001"]
@@ -710,7 +712,7 @@ func TestG2engineClient_GetVirtualEntityByRecordID(test *testing.T) {
 	printActual(test, actual)
 }
 
-func TestG2engineClient_GetVirtualEntityByRecordID_V2(test *testing.T) {
+func TestG2engine_GetVirtualEntityByRecordID_V2(test *testing.T) {
 	ctx := context.TODO()
 	g2engine := getTestObject(ctx, test)
 	record1 := truthset.CustomerRecords["1001"]
@@ -722,7 +724,7 @@ func TestG2engineClient_GetVirtualEntityByRecordID_V2(test *testing.T) {
 	printActual(test, actual)
 }
 
-func TestG2engineClient_HowEntityByEntityID(test *testing.T) {
+func TestG2engine_HowEntityByEntityID(test *testing.T) {
 	ctx := context.TODO()
 	g2engine := getTestObject(ctx, test)
 	entityID := getEntityId(truthset.CustomerRecords["1001"])
@@ -731,7 +733,7 @@ func TestG2engineClient_HowEntityByEntityID(test *testing.T) {
 	printActual(test, actual)
 }
 
-func TestG2engineClient_HowEntityByEntityID_V2(test *testing.T) {
+func TestG2engine_HowEntityByEntityID_V2(test *testing.T) {
 	ctx := context.TODO()
 	g2engine := getTestObject(ctx, test)
 	entityID := getEntityId(truthset.CustomerRecords["1001"])
@@ -741,14 +743,14 @@ func TestG2engineClient_HowEntityByEntityID_V2(test *testing.T) {
 	printActual(test, actual)
 }
 
-func TestG2engineClient_PrimeEngine(test *testing.T) {
+func TestG2engine_PrimeEngine(test *testing.T) {
 	ctx := context.TODO()
 	g2engine := getTestObject(ctx, test)
 	err := g2engine.PrimeEngine(ctx)
 	testError(test, ctx, g2engine, err)
 }
 
-func TestG2engineClient_Process(test *testing.T) {
+func TestG2engine_Process(test *testing.T) {
 	ctx := context.TODO()
 	g2engine := getTestObject(ctx, test)
 	record := truthset.CustomerRecords["1001"]
@@ -756,7 +758,7 @@ func TestG2engineClient_Process(test *testing.T) {
 	testError(test, ctx, g2engine, err)
 }
 
-func TestG2engineClient_ProcessRedoRecord(test *testing.T) {
+func TestG2engine_ProcessRedoRecord(test *testing.T) {
 	ctx := context.TODO()
 	g2engine := getTestObject(ctx, test)
 	actual, err := g2engine.ProcessRedoRecord(ctx)
@@ -764,7 +766,7 @@ func TestG2engineClient_ProcessRedoRecord(test *testing.T) {
 	printActual(test, actual)
 }
 
-func TestG2engineClient_ProcessRedoRecordWithInfo(test *testing.T) {
+func TestG2engine_ProcessRedoRecordWithInfo(test *testing.T) {
 	ctx := context.TODO()
 	g2engine := getTestObject(ctx, test)
 	var flags int64 = 0
@@ -774,7 +776,7 @@ func TestG2engineClient_ProcessRedoRecordWithInfo(test *testing.T) {
 	printResult(test, "Actual Info", actualInfo)
 }
 
-func TestG2engineClient_ProcessWithInfo(test *testing.T) {
+func TestG2engine_ProcessWithInfo(test *testing.T) {
 	ctx := context.TODO()
 	g2engine := getTestObject(ctx, test)
 	record := truthset.CustomerRecords["1001"]
@@ -784,7 +786,7 @@ func TestG2engineClient_ProcessWithInfo(test *testing.T) {
 	printActual(test, actual)
 }
 
-func TestG2engineClient_ProcessWithResponse(test *testing.T) {
+func TestG2engine_ProcessWithResponse(test *testing.T) {
 	ctx := context.TODO()
 	g2engine := getTestObject(ctx, test)
 	record := truthset.CustomerRecords["1001"]
@@ -793,7 +795,7 @@ func TestG2engineClient_ProcessWithResponse(test *testing.T) {
 	printActual(test, actual)
 }
 
-func TestG2engineClient_ProcessWithResponseResize(test *testing.T) {
+func TestG2engine_ProcessWithResponseResize(test *testing.T) {
 	ctx := context.TODO()
 	g2engine := getTestObject(ctx, test)
 	record := truthset.CustomerRecords["1001"]
@@ -802,7 +804,7 @@ func TestG2engineClient_ProcessWithResponseResize(test *testing.T) {
 	printActual(test, actual)
 }
 
-func TestG2engineClient_ReevaluateEntity(test *testing.T) {
+func TestG2engine_ReevaluateEntity(test *testing.T) {
 	ctx := context.TODO()
 	g2engine := getTestObject(ctx, test)
 	entityID := getEntityId(truthset.CustomerRecords["1001"])
@@ -811,7 +813,7 @@ func TestG2engineClient_ReevaluateEntity(test *testing.T) {
 	testError(test, ctx, g2engine, err)
 }
 
-func TestG2engineClient_ReevaluateEntityWithInfo(test *testing.T) {
+func TestG2engine_ReevaluateEntityWithInfo(test *testing.T) {
 	ctx := context.TODO()
 	g2engine := getTestObject(ctx, test)
 	entityID := getEntityId(truthset.CustomerRecords["1001"])
@@ -821,7 +823,7 @@ func TestG2engineClient_ReevaluateEntityWithInfo(test *testing.T) {
 	printActual(test, actual)
 }
 
-func TestG2engineClient_ReevaluateRecord(test *testing.T) {
+func TestG2engine_ReevaluateRecord(test *testing.T) {
 	ctx := context.TODO()
 	g2engine := getTestObject(ctx, test)
 	record := truthset.CustomerRecords["1001"]
@@ -830,7 +832,7 @@ func TestG2engineClient_ReevaluateRecord(test *testing.T) {
 	testError(test, ctx, g2engine, err)
 }
 
-func TestG2engineClient_ReevaluateRecordWithInfo(test *testing.T) {
+func TestG2engine_ReevaluateRecordWithInfo(test *testing.T) {
 	ctx := context.TODO()
 	g2engine := getTestObject(ctx, test)
 	record := truthset.CustomerRecords["1001"]
@@ -841,7 +843,7 @@ func TestG2engineClient_ReevaluateRecordWithInfo(test *testing.T) {
 }
 
 // FIXME: Remove after GDEV-3576 is fixed
-// func TestG2engineClient_ReplaceRecord(test *testing.T) {
+// func TestG2engine_ReplaceRecord(test *testing.T) {
 // 	ctx := context.TODO()
 // 	g2engine := getTestObject(ctx, test)
 // 	dataSourceCode := "CUSTOMERS"
@@ -853,7 +855,7 @@ func TestG2engineClient_ReevaluateRecordWithInfo(test *testing.T) {
 // }
 
 // FIXME: Remove after GDEV-3576 is fixed
-// func TestG2engineClient_ReplaceRecordWithInfo(test *testing.T) {
+// func TestG2engine_ReplaceRecordWithInfo(test *testing.T) {
 // 	ctx := context.TODO()
 // 	g2engine := getTestObject(ctx, test)
 // 	dataSourceCode := "CUSTOMERS"
@@ -866,7 +868,7 @@ func TestG2engineClient_ReevaluateRecordWithInfo(test *testing.T) {
 // 	printActual(test, actual)
 // }
 
-func TestG2engineClient_SearchByAttributes(test *testing.T) {
+func TestG2engine_SearchByAttributes(test *testing.T) {
 	ctx := context.TODO()
 	g2engine := getTestObject(ctx, test)
 	jsonData := `{"NAMES": [{"NAME_TYPE": "PRIMARY", "NAME_LAST": "JOHNSON"}], "SSN_NUMBER": "053-39-3251"}`
@@ -875,7 +877,7 @@ func TestG2engineClient_SearchByAttributes(test *testing.T) {
 	printActual(test, actual)
 }
 
-func TestG2engineClient_SearchByAttributes_V2(test *testing.T) {
+func TestG2engine_SearchByAttributes_V2(test *testing.T) {
 	ctx := context.TODO()
 	g2engine := getTestObject(ctx, test)
 	jsonData := `{"NAMES": [{"NAME_TYPE": "PRIMARY", "NAME_LAST": "JOHNSON"}], "SSN_NUMBER": "053-39-3251"}`
@@ -885,7 +887,7 @@ func TestG2engineClient_SearchByAttributes_V2(test *testing.T) {
 	printActual(test, actual)
 }
 
-func TestG2engineClient_Stats(test *testing.T) {
+func TestG2engine_Stats(test *testing.T) {
 	ctx := context.TODO()
 	g2engine := getTestObject(ctx, test)
 	actual, err := g2engine.Stats(ctx)
@@ -893,7 +895,7 @@ func TestG2engineClient_Stats(test *testing.T) {
 	printActual(test, actual)
 }
 
-func TestG2engineClient_WhyEntities(test *testing.T) {
+func TestG2engine_WhyEntities(test *testing.T) {
 	ctx := context.TODO()
 	g2engine := getTestObject(ctx, test)
 	entityID1 := getEntityId(truthset.CustomerRecords["1001"])
@@ -903,7 +905,7 @@ func TestG2engineClient_WhyEntities(test *testing.T) {
 	printActual(test, actual)
 }
 
-func TestG2engineClient_WhyEntities_V2(test *testing.T) {
+func TestG2engine_WhyEntities_V2(test *testing.T) {
 	ctx := context.TODO()
 	g2engine := getTestObject(ctx, test)
 	entityID1 := getEntityId(truthset.CustomerRecords["1001"])
@@ -914,7 +916,7 @@ func TestG2engineClient_WhyEntities_V2(test *testing.T) {
 	printActual(test, actual)
 }
 
-func TestG2engineClient_WhyEntityByEntityID(test *testing.T) {
+func TestG2engine_WhyEntityByEntityID(test *testing.T) {
 	ctx := context.TODO()
 	g2engine := getTestObject(ctx, test)
 	entityID := getEntityId(truthset.CustomerRecords["1001"])
@@ -923,7 +925,7 @@ func TestG2engineClient_WhyEntityByEntityID(test *testing.T) {
 	printActual(test, actual)
 }
 
-func TestG2engineClient_WhyEntityByEntityID_V2(test *testing.T) {
+func TestG2engine_WhyEntityByEntityID_V2(test *testing.T) {
 	ctx := context.TODO()
 	g2engine := getTestObject(ctx, test)
 	entityID := getEntityId(truthset.CustomerRecords["1001"])
@@ -933,7 +935,7 @@ func TestG2engineClient_WhyEntityByEntityID_V2(test *testing.T) {
 	printActual(test, actual)
 }
 
-func TestG2engineClient_WhyEntityByRecordID(test *testing.T) {
+func TestG2engine_WhyEntityByRecordID(test *testing.T) {
 	ctx := context.TODO()
 	g2engine := getTestObject(ctx, test)
 	record := truthset.CustomerRecords["1001"]
@@ -942,7 +944,7 @@ func TestG2engineClient_WhyEntityByRecordID(test *testing.T) {
 	printActual(test, actual)
 }
 
-func TestG2engineClient_WhyEntityByRecordID_V2(test *testing.T) {
+func TestG2engine_WhyEntityByRecordID_V2(test *testing.T) {
 	ctx := context.TODO()
 	g2engine := getTestObject(ctx, test)
 	record := truthset.CustomerRecords["1001"]
@@ -952,7 +954,7 @@ func TestG2engineClient_WhyEntityByRecordID_V2(test *testing.T) {
 	printActual(test, actual)
 }
 
-func TestG2engineClient_WhyRecords(test *testing.T) {
+func TestG2engine_WhyRecords(test *testing.T) {
 	ctx := context.TODO()
 	g2engine := getTestObject(ctx, test)
 	record1 := truthset.CustomerRecords["1001"]
@@ -962,7 +964,7 @@ func TestG2engineClient_WhyRecords(test *testing.T) {
 	printActual(test, actual)
 }
 
-func TestG2engineClient_WhyRecords_V2(test *testing.T) {
+func TestG2engine_WhyRecords_V2(test *testing.T) {
 	ctx := context.TODO()
 	g2engine := getTestObject(ctx, test)
 	record1 := truthset.CustomerRecords["1001"]
@@ -973,7 +975,7 @@ func TestG2engineClient_WhyRecords_V2(test *testing.T) {
 	printActual(test, actual)
 }
 
-func TestG2engineClient_Init(test *testing.T) {
+func TestG2engine_Init(test *testing.T) {
 	ctx := context.TODO()
 	g2engine := getTestObject(ctx, test)
 	moduleName := "Test module name"
@@ -984,7 +986,7 @@ func TestG2engineClient_Init(test *testing.T) {
 	expectError(test, ctx, g2engine, err, "senzing-60144002")
 }
 
-func TestG2engineClient_InitWithConfigID(test *testing.T) {
+func TestG2engine_InitWithConfigID(test *testing.T) {
 	ctx := context.TODO()
 	g2engine := getTestObject(ctx, test)
 	moduleName := "Test module name"
@@ -996,7 +998,7 @@ func TestG2engineClient_InitWithConfigID(test *testing.T) {
 	expectError(test, ctx, g2engine, err, "senzing-60144003")
 }
 
-func TestG2engineClient_Reinit(test *testing.T) {
+func TestG2engine_Reinit(test *testing.T) {
 	ctx := context.TODO()
 	g2engine := getTestObject(ctx, test)
 	initConfigID, err := g2engine.GetActiveConfigID(ctx)
@@ -1006,7 +1008,7 @@ func TestG2engineClient_Reinit(test *testing.T) {
 	printActual(test, initConfigID)
 }
 
-func TestG2engineClient_DeleteRecord(test *testing.T) {
+func TestG2engine_DeleteRecord(test *testing.T) {
 	ctx := context.TODO()
 	g2engine := getTestObject(ctx, test)
 	record := truthset.CustomerRecords["1003"]
@@ -1014,7 +1016,7 @@ func TestG2engineClient_DeleteRecord(test *testing.T) {
 	testError(test, ctx, g2engine, err)
 }
 
-func TestG2engineClient_DeleteRecordWithInfo(test *testing.T) {
+func TestG2engine_DeleteRecordWithInfo(test *testing.T) {
 	ctx := context.TODO()
 	g2engine := getTestObject(ctx, test)
 	record := truthset.CustomerRecords["1003"]
@@ -1024,7 +1026,7 @@ func TestG2engineClient_DeleteRecordWithInfo(test *testing.T) {
 	printActual(test, actual)
 }
 
-func TestG2engineClient_Destroy(test *testing.T) {
+func TestG2engine_Destroy(test *testing.T) {
 	ctx := context.TODO()
 	g2engine := getTestObject(ctx, test)
 	err := g2engine.Destroy(ctx)
@@ -1036,7 +1038,7 @@ func TestG2engineClient_Destroy(test *testing.T) {
 // Examples for godoc documentation
 // ----------------------------------------------------------------------------
 
-func ExampleG2engineClient_AddRecord() {
+func ExampleG2engine_AddRecord() {
 	// For more information, visit https://github.com/Senzing/g2-sdk-go/blob/main/g2engine/g2engine_test.go
 	ctx := context.TODO()
 	g2engine := getG2Engine(ctx)
@@ -1051,7 +1053,7 @@ func ExampleG2engineClient_AddRecord() {
 	// Output:
 }
 
-func ExampleG2engineClient_AddRecord_secondRecord() {
+func ExampleG2engine_AddRecord_secondRecord() {
 	// For more information, visit https://github.com/Senzing/g2-sdk-go/blob/main/g2engine/g2engine_test.go
 	ctx := context.TODO()
 	g2engine := getG2Engine(ctx)
@@ -1066,7 +1068,7 @@ func ExampleG2engineClient_AddRecord_secondRecord() {
 	// Output:
 }
 
-func ExampleG2engineClient_AddRecordWithInfo() {
+func ExampleG2engine_AddRecordWithInfo() {
 	// For more information, visit https://github.com/Senzing/g2-sdk-go/blob/main/g2engine/g2engine_test.go
 	ctx := context.TODO()
 	g2engine := getG2Engine(ctx)
@@ -1083,7 +1085,7 @@ func ExampleG2engineClient_AddRecordWithInfo() {
 	// Output: {"DATA_SOURCE":"CUSTOMERS","RECORD_ID":"1003","AFFECTED_ENTITIES":[{"ENTITY_ID":1}],"INTERESTING_ENTITIES":{"ENTITIES":[]}}
 }
 
-func ExampleG2engineClient_AddRecordWithInfoWithReturnedRecordID() {
+func ExampleG2engine_AddRecordWithInfoWithReturnedRecordID() {
 	// For more information, visit https://github.com/Senzing/g2-sdk-go/blob/main/g2engine/g2engine_test.go
 	ctx := context.TODO()
 	g2engine := getG2Engine(ctx)
@@ -1099,7 +1101,7 @@ func ExampleG2engineClient_AddRecordWithInfoWithReturnedRecordID() {
 	// Output: {"DATA_SOURCE":"CUSTOMERS","RECORD_ID":...
 }
 
-func ExampleG2engineClient_AddRecordWithReturnedRecordID() {
+func ExampleG2engine_AddRecordWithReturnedRecordID() {
 	// For more information, visit https://github.com/Senzing/g2-sdk-go/blob/main/g2engine/g2engine_test.go
 	ctx := context.TODO()
 	g2engine := getG2Engine(ctx)
@@ -1114,7 +1116,7 @@ func ExampleG2engineClient_AddRecordWithReturnedRecordID() {
 	// Output: Length of record identifier is 40 hexadecimal characters.
 }
 
-func ExampleG2engineClient_CheckRecord() {
+func ExampleG2engine_CheckRecord() {
 	// For more information, visit https://github.com/Senzing/g2-sdk-go/blob/main/g2engine/g2engine_test.go
 	ctx := context.TODO()
 	g2engine := getG2Engine(ctx)
@@ -1128,7 +1130,7 @@ func ExampleG2engineClient_CheckRecord() {
 	// Output: {"CHECK_RECORD_RESPONSE":[{"DSRC_CODE":"CUSTOMERS","RECORD_ID":"1001","MATCH_LEVEL":0,"MATCH_LEVEL_CODE":"","MATCH_KEY":"","ERRULE_CODE":"","ERRULE_ID":0,"CANDIDATE_MATCH":"N","NON_GENERIC_CANDIDATE_MATCH":"N"}]}
 }
 
-func ExampleG2engineClient_CloseExport() {
+func ExampleG2engine_CloseExport() {
 	// For more information, visit https://github.com/Senzing/g2-sdk-go/blob/main/g2engine/g2engine_test.go
 	ctx := context.TODO()
 	g2engine := getG2Engine(ctx)
@@ -1141,7 +1143,7 @@ func ExampleG2engineClient_CloseExport() {
 	// Output:
 }
 
-func ExampleG2engineClient_CountRedoRecords() {
+func ExampleG2engine_CountRedoRecords() {
 	// For more information, visit https://github.com/Senzing/g2-sdk-go/blob/main/g2engine/g2engine_test.go
 	ctx := context.TODO()
 	g2engine := getG2Engine(ctx)
@@ -1153,7 +1155,7 @@ func ExampleG2engineClient_CountRedoRecords() {
 	// Output: 1
 }
 
-func ExampleG2engineClient_ExportCSVEntityReport() {
+func ExampleG2engine_ExportCSVEntityReport() {
 	// For more information, visit https://github.com/Senzing/g2-sdk-go/blob/main/g2engine/g2engine_test.go
 	ctx := context.TODO()
 	g2engine := getG2Engine(ctx)
@@ -1167,7 +1169,7 @@ func ExampleG2engineClient_ExportCSVEntityReport() {
 	// Output: true
 }
 
-func ExampleG2engineClient_ExportConfig() {
+func ExampleG2engine_ExportConfig() {
 	// For more information, visit https://github.com/Senzing/g2-sdk-go/blob/main/g2engine/g2engine_test.go
 	ctx := context.TODO()
 	g2engine := getG2Engine(ctx)
@@ -1179,7 +1181,7 @@ func ExampleG2engineClient_ExportConfig() {
 	// Output: {"G2_CONFIG":{"CFG_ETYPE":[{"ETYPE_ID":...
 }
 
-func ExampleG2engineClient_ExportConfigAndConfigID() {
+func ExampleG2engine_ExportConfigAndConfigID() {
 	// For more information, visit https://github.com/Senzing/g2-sdk-go/blob/main/g2engine/g2engine_test.go
 	ctx := context.TODO()
 	g2engine := getG2Engine(ctx)
@@ -1191,7 +1193,7 @@ func ExampleG2engineClient_ExportConfigAndConfigID() {
 	// Output: true
 }
 
-func ExampleG2engineClient_ExportJSONEntityReport() {
+func ExampleG2engine_ExportJSONEntityReport() {
 	// For more information, visit https://github.com/Senzing/g2-sdk-go/blob/main/g2engine/g2engine_test.go
 	ctx := context.TODO()
 	g2engine := getG2Engine(ctx)
@@ -1204,7 +1206,7 @@ func ExampleG2engineClient_ExportJSONEntityReport() {
 	// Output: true
 }
 
-func ExampleG2engineClient_FetchNext() {
+func ExampleG2engine_FetchNext() {
 	// For more information, visit https://github.com/Senzing/g2-sdk-go/blob/main/g2engine/g2engine_test.go
 	ctx := context.TODO()
 	g2engine := getG2Engine(ctx)
@@ -1218,7 +1220,7 @@ func ExampleG2engineClient_FetchNext() {
 	// Output: true
 }
 
-func ExampleG2engineClient_FindInterestingEntitiesByEntityID() {
+func ExampleG2engine_FindInterestingEntitiesByEntityID() {
 	// For more information, visit https://github.com/Senzing/g2-sdk-go/blob/main/g2engine/g2engine_test.go
 	ctx := context.TODO()
 	g2engine := getG2Engine(ctx)
@@ -1232,7 +1234,7 @@ func ExampleG2engineClient_FindInterestingEntitiesByEntityID() {
 	// Output: {"INTERESTING_ENTITIES":{"ENTITIES":[]}}
 }
 
-func ExampleG2engineClient_FindInterestingEntitiesByRecordID() {
+func ExampleG2engine_FindInterestingEntitiesByRecordID() {
 	// For more information, visit https://github.com/Senzing/g2-sdk-go/blob/main/g2engine/g2engine_test.go
 	ctx := context.TODO()
 	g2engine := getG2Engine(ctx)
@@ -1247,7 +1249,7 @@ func ExampleG2engineClient_FindInterestingEntitiesByRecordID() {
 	// Output: {"INTERESTING_ENTITIES":{"ENTITIES":[]}}
 }
 
-func ExampleG2engineClient_FindNetworkByEntityID() {
+func ExampleG2engine_FindNetworkByEntityID() {
 	// For more information, visit https://github.com/Senzing/g2-sdk-go/blob/main/g2engine/g2engine_test.go
 	ctx := context.TODO()
 	g2engine := getG2Engine(ctx)
@@ -1263,7 +1265,7 @@ func ExampleG2engineClient_FindNetworkByEntityID() {
 	// Output: {"ENTITY_PATHS":[],"ENTITIES":[{"RESOLVED_ENTITY":{"ENTITY_ID":1,"ENTITY_NAME":"Robert Smith","RECORD_SUMMARY":[{"DATA_SOURCE":"CUSTOMERS","RECORD_COUNT":3,"FIRST_SEEN_DT":...
 }
 
-func ExampleG2engineClient_FindNetworkByEntityID_V2() {
+func ExampleG2engine_FindNetworkByEntityID_V2() {
 	// For more information, visit https://github.com/Senzing/g2-sdk-go/blob/main/g2engine/g2engine_test.go
 	ctx := context.TODO()
 	g2engine := getG2Engine(ctx)
@@ -1280,7 +1282,7 @@ func ExampleG2engineClient_FindNetworkByEntityID_V2() {
 	// Output: {"ENTITY_PATHS":[],"ENTITIES":[{"RESOLVED_ENTITY":{"ENTITY_ID":1}}]}
 }
 
-func ExampleG2engineClient_FindNetworkByRecordID() {
+func ExampleG2engine_FindNetworkByRecordID() {
 	// For more information, visit https://github.com/Senzing/g2-sdk-go/blob/main/g2engine/g2engine_test.go
 	ctx := context.TODO()
 	g2engine := getG2Engine(ctx)
@@ -1296,7 +1298,7 @@ func ExampleG2engineClient_FindNetworkByRecordID() {
 	// Output: {"ENTITY_PATHS":[],"ENTITIES":[{"RESOLVED_ENTITY":{"ENTITY_ID":1,"ENTITY_NAME":"Robert Smith","RECORD_SUMMARY":[{"DATA_SOURCE":"CUSTOMERS","RECORD_COUNT":3,"FIRST_SEEN_DT":...
 }
 
-func ExampleG2engineClient_FindNetworkByRecordID_V2() {
+func ExampleG2engine_FindNetworkByRecordID_V2() {
 	// For more information, visit https://github.com/Senzing/g2-sdk-go/blob/main/g2engine/g2engine_test.go
 	ctx := context.TODO()
 	g2engine := getG2Engine(ctx)
@@ -1313,7 +1315,7 @@ func ExampleG2engineClient_FindNetworkByRecordID_V2() {
 	// Output: {"ENTITY_PATHS":[],"ENTITIES":[{"RESOLVED_ENTITY":{"ENTITY_ID":1}}]}
 }
 
-func ExampleG2engineClient_FindPathByEntityID() {
+func ExampleG2engine_FindPathByEntityID() {
 	// For more information, visit https://github.com/Senzing/g2-sdk-go/blob/main/g2engine/g2engine_test.go
 	ctx := context.TODO()
 	g2engine := getG2Engine(ctx)
@@ -1328,7 +1330,7 @@ func ExampleG2engineClient_FindPathByEntityID() {
 	// Output: {"ENTITY_PATHS":[{"START_ENTITY_ID":1,"END_ENTITY_ID":1,"ENTITIES":[1]}],"ENTITIES":[{"RESOLVED_ENTITY":...
 }
 
-func ExampleG2engineClient_FindPathByEntityID_V2() {
+func ExampleG2engine_FindPathByEntityID_V2() {
 	// For more information, visit https://github.com/Senzing/g2-sdk-go/blob/main/g2engine/g2engine_test.go
 	ctx := context.TODO()
 	g2engine := getG2Engine(ctx)
@@ -1344,7 +1346,7 @@ func ExampleG2engineClient_FindPathByEntityID_V2() {
 	// Output: {"ENTITY_PATHS":[{"START_ENTITY_ID":1,"END_ENTITY_ID":1,"ENTITIES":[1]}],"ENTITIES":[{"RESOLVED_ENTITY":{"ENTITY_ID":1}}]}
 }
 
-func ExampleG2engineClient_FindPathByRecordID() {
+func ExampleG2engine_FindPathByRecordID() {
 	// For more information, visit https://github.com/Senzing/g2-sdk-go/blob/main/g2engine/g2engine_test.go
 	ctx := context.TODO()
 	g2engine := getG2Engine(ctx)
@@ -1361,7 +1363,7 @@ func ExampleG2engineClient_FindPathByRecordID() {
 	// Output: {"ENTITY_PATHS":[{"START_ENTITY_ID":1,"END_ENTITY_ID":1,"ENTITIES":[1]}],"ENTITIES":...
 }
 
-func ExampleG2engineClient_FindPathByRecordID_V2() {
+func ExampleG2engine_FindPathByRecordID_V2() {
 	// For more information, visit https://github.com/Senzing/g2-sdk-go/blob/main/g2engine/g2engine_test.go
 	ctx := context.TODO()
 	g2engine := getG2Engine(ctx)
@@ -1379,7 +1381,7 @@ func ExampleG2engineClient_FindPathByRecordID_V2() {
 	// Output: {"ENTITY_PATHS":[{"START_ENTITY_ID":1,"END_ENTITY_ID":1,"ENTITIES":[1]}],"ENTITIES":[{"RESOLVED_ENTITY":{"ENTITY_ID":1}}]}
 }
 
-func ExampleG2engineClient_FindPathExcludingByEntityID() {
+func ExampleG2engine_FindPathExcludingByEntityID() {
 	// For more information, visit https://github.com/Senzing/g2-sdk-go/blob/main/g2engine/g2engine_test.go
 	ctx := context.TODO()
 	g2engine := getG2Engine(ctx)
@@ -1395,7 +1397,7 @@ func ExampleG2engineClient_FindPathExcludingByEntityID() {
 	// Output: {"ENTITY_PATHS":[{"START_ENTITY_ID":1,"END_ENTITY_ID":1,"ENTITIES":[1]}],"ENTITIES":[{"RESOLVED_ENTITY":...
 }
 
-func ExampleG2engineClient_FindPathExcludingByEntityID_V2() {
+func ExampleG2engine_FindPathExcludingByEntityID_V2() {
 	// For more information, visit https://github.com/Senzing/g2-sdk-go/blob/main/g2engine/g2engine_test.go
 	ctx := context.TODO()
 	g2engine := getG2Engine(ctx)
@@ -1412,7 +1414,7 @@ func ExampleG2engineClient_FindPathExcludingByEntityID_V2() {
 	// Output: {"ENTITY_PATHS":[{"START_ENTITY_ID":1,"END_ENTITY_ID":1,"ENTITIES":[1]}],"ENTITIES":[{"RESOLVED_ENTITY":{"ENTITY_ID":1}}]}
 }
 
-func ExampleG2engineClient_FindPathExcludingByRecordID() {
+func ExampleG2engine_FindPathExcludingByRecordID() {
 	// For more information, visit https://github.com/Senzing/g2-sdk-go/blob/main/g2engine/g2engine_test.go
 	ctx := context.TODO()
 	g2engine := getG2Engine(ctx)
@@ -1430,7 +1432,7 @@ func ExampleG2engineClient_FindPathExcludingByRecordID() {
 	// Output: {"ENTITY_PATHS":[{"START_ENTITY_ID":1,"END_ENTITY_ID":1,"ENTITIES":[1]}],"ENTITIES":[{"RESOLVED_ENTITY":...
 }
 
-func ExampleG2engineClient_FindPathExcludingByRecordID_V2() {
+func ExampleG2engine_FindPathExcludingByRecordID_V2() {
 	// For more information, visit https://github.com/Senzing/g2-sdk-go/blob/main/g2engine/g2engine_test.go
 	ctx := context.TODO()
 	g2engine := getG2Engine(ctx)
@@ -1449,7 +1451,7 @@ func ExampleG2engineClient_FindPathExcludingByRecordID_V2() {
 	// Output: {"ENTITY_PATHS":[{"START_ENTITY_ID":1,"END_ENTITY_ID":1,"ENTITIES":[1]}],"ENTITIES":[{"RESOLVED_ENTITY":{"ENTITY_ID":1}}]}
 }
 
-func ExampleG2engineClient_FindPathIncludingSourceByEntityID() {
+func ExampleG2engine_FindPathIncludingSourceByEntityID() {
 	// For more information, visit https://github.com/Senzing/g2-sdk-go/blob/main/g2engine/g2engine_test.go
 	ctx := context.TODO()
 	g2engine := getG2Engine(ctx)
@@ -1466,7 +1468,7 @@ func ExampleG2engineClient_FindPathIncludingSourceByEntityID() {
 	// Output: {"ENTITY_PATHS":[{"START_ENTITY_ID":1,"END_ENTITY_ID":1,"ENTITIES":[]}],"ENTITIES":[{"RESOLVED_ENTITY":...
 }
 
-func ExampleG2engineClient_FindPathIncludingSourceByEntityID_V2() {
+func ExampleG2engine_FindPathIncludingSourceByEntityID_V2() {
 	// For more information, visit https://github.com/Senzing/g2-sdk-go/blob/main/g2engine/g2engine_test.go
 	ctx := context.TODO()
 	g2engine := getG2Engine(ctx)
@@ -1484,7 +1486,7 @@ func ExampleG2engineClient_FindPathIncludingSourceByEntityID_V2() {
 	// Output: {"ENTITY_PATHS":[{"START_ENTITY_ID":1,"END_ENTITY_ID":1,"ENTITIES":[]}],"ENTITIES":[{"RESOLVED_ENTITY":{"ENTITY_ID":1}}]}
 }
 
-func ExampleG2engineClient_FindPathIncludingSourceByRecordID() {
+func ExampleG2engine_FindPathIncludingSourceByRecordID() {
 	// For more information, visit https://github.com/Senzing/g2-sdk-go/blob/main/g2engine/g2engine_test.go
 	ctx := context.TODO()
 	g2engine := getG2Engine(ctx)
@@ -1503,7 +1505,7 @@ func ExampleG2engineClient_FindPathIncludingSourceByRecordID() {
 	// Output: {"ENTITY_PATHS":[{"START_ENTITY_ID":1,"END_ENTITY_ID":1,"ENTITIES":[]}],"ENTITIES":[{"RESOLVED_ENTITY":{"ENTITY_ID":...
 }
 
-func ExampleG2engineClient_FindPathIncludingSourceByRecordID_V2() {
+func ExampleG2engine_FindPathIncludingSourceByRecordID_V2() {
 	// For more information, visit https://github.com/Senzing/g2-sdk-go/blob/main/g2engine/g2engine_test.go
 	ctx := context.TODO()
 	g2engine := getG2Engine(ctx)
@@ -1523,7 +1525,7 @@ func ExampleG2engineClient_FindPathIncludingSourceByRecordID_V2() {
 	// Output: {"ENTITY_PATHS":[{"START_ENTITY_ID":1,"END_ENTITY_ID":1,"ENTITIES":[]}],"ENTITIES":[{"RESOLVED_ENTITY":{"ENTITY_ID":1}}]}
 }
 
-func ExampleG2engineClient_GetActiveConfigID() {
+func ExampleG2engine_GetActiveConfigID() {
 	// For more information, visit https://github.com/Senzing/g2-sdk-go/blob/main/g2engine/g2engine_test.go
 	ctx := context.TODO()
 	g2engine := getG2Engine(ctx)
@@ -1535,7 +1537,7 @@ func ExampleG2engineClient_GetActiveConfigID() {
 	// Output: true
 }
 
-func ExampleG2engineClient_GetEntityByEntityID() {
+func ExampleG2engine_GetEntityByEntityID() {
 	// For more information, visit https://github.com/Senzing/g2-sdk-go/blob/main/g2engine/g2engine_test.go
 	ctx := context.TODO()
 	g2engine := getG2Engine(ctx)
@@ -1548,7 +1550,7 @@ func ExampleG2engineClient_GetEntityByEntityID() {
 	// Output: {"RESOLVED_ENTITY":{"ENTITY_ID":1,"ENTITY_NAME":...
 }
 
-func ExampleG2engineClient_GetEntityByEntityID_V2() {
+func ExampleG2engine_GetEntityByEntityID_V2() {
 	// For more information, visit https://github.com/Senzing/g2-sdk-go/blob/main/g2engine/g2engine_test.go
 	ctx := context.TODO()
 	g2engine := getG2Engine(ctx)
@@ -1562,7 +1564,7 @@ func ExampleG2engineClient_GetEntityByEntityID_V2() {
 	// Output: {"RESOLVED_ENTITY":{"ENTITY_ID":1}}
 }
 
-func ExampleG2engineClient_GetEntityByRecordID() {
+func ExampleG2engine_GetEntityByRecordID() {
 	// For more information, visit https://github.com/Senzing/g2-sdk-go/blob/main/g2engine/g2engine_test.go
 	ctx := context.TODO()
 	g2engine := getG2Engine(ctx)
@@ -1576,7 +1578,7 @@ func ExampleG2engineClient_GetEntityByRecordID() {
 	// Output: {"RESOLVED_ENTITY":{"ENTITY_ID":...
 }
 
-func ExampleG2engineClient_GetEntityByRecordID_V2() {
+func ExampleG2engine_GetEntityByRecordID_V2() {
 	// For more information, visit https://github.com/Senzing/g2-sdk-go/blob/main/g2engine/g2engine_test.go
 	ctx := context.TODO()
 	g2engine := getG2Engine(ctx)
@@ -1591,7 +1593,7 @@ func ExampleG2engineClient_GetEntityByRecordID_V2() {
 	// Output: {"RESOLVED_ENTITY":{"ENTITY_ID":1}}
 }
 
-func ExampleG2engineClient_GetRecord() {
+func ExampleG2engine_GetRecord() {
 	// For more information, visit https://github.com/Senzing/g2-sdk-go/blob/main/g2engine/g2engine_test.go
 	ctx := context.TODO()
 	g2engine := getG2Engine(ctx)
@@ -1605,7 +1607,7 @@ func ExampleG2engineClient_GetRecord() {
 	// Output: {"DATA_SOURCE":"CUSTOMERS","RECORD_ID":"1001","JSON_DATA":{"RECORD_TYPE":"PERSON","PRIMARY_NAME_LAST":"Smith","PRIMARY_NAME_FIRST":"Robert","DATE_OF_BIRTH":"12/11/1978","ADDR_TYPE":"MAILING","ADDR_LINE1":"123 Main Street, Las Vegas NV 89132","PHONE_TYPE":"HOME","PHONE_NUMBER":"702-919-1300","EMAIL_ADDRESS":"bsmith@work.com","DATE":"1/2/18","STATUS":"Active","AMOUNT":"100","DATA_SOURCE":"CUSTOMERS","ENTITY_TYPE":"GENERIC","DSRC_ACTION":"A","RECORD_ID":"1001"}}
 }
 
-func ExampleG2engineClient_GetRecord_V2() {
+func ExampleG2engine_GetRecord_V2() {
 	// For more information, visit https://github.com/Senzing/g2-sdk-go/blob/main/g2engine/g2engine_test.go
 	ctx := context.TODO()
 	g2engine := getG2Engine(ctx)
@@ -1620,7 +1622,7 @@ func ExampleG2engineClient_GetRecord_V2() {
 	// Output: {"DATA_SOURCE":"CUSTOMERS","RECORD_ID":"1001"}
 }
 
-func ExampleG2engineClient_GetRedoRecord() {
+func ExampleG2engine_GetRedoRecord() {
 	// For more information, visit https://github.com/Senzing/g2-sdk-go/blob/main/g2engine/g2engine_test.go
 	ctx := context.TODO()
 	g2engine := getG2Engine(ctx)
@@ -1632,7 +1634,7 @@ func ExampleG2engineClient_GetRedoRecord() {
 	// Output: {"REASON":"deferred delete","DATA_SOURCE":"CUSTOMERS","RECORD_ID":"1001","ENTITY_TYPE":"GENERIC","DSRC_ACTION":"X"}
 }
 
-func ExampleG2engineClient_GetRepositoryLastModifiedTime() {
+func ExampleG2engine_GetRepositoryLastModifiedTime() {
 	// For more information, visit https://github.com/Senzing/g2-sdk-go/blob/main/g2engine/g2engine_test.go
 	ctx := context.TODO()
 	g2engine := getG2Engine(ctx)
@@ -1644,7 +1646,7 @@ func ExampleG2engineClient_GetRepositoryLastModifiedTime() {
 	// Output: true
 }
 
-func ExampleG2engineClient_GetVirtualEntityByRecordID() {
+func ExampleG2engine_GetVirtualEntityByRecordID() {
 	// For more information, visit https://github.com/Senzing/g2-sdk-go/blob/main/g2engine/g2engine_test.go
 	ctx := context.TODO()
 	g2engine := getG2Engine(ctx)
@@ -1657,7 +1659,7 @@ func ExampleG2engineClient_GetVirtualEntityByRecordID() {
 	// Output: {"RESOLVED_ENTITY":{"ENTITY_ID":1,"ENTITY_NAME":...
 }
 
-func ExampleG2engineClient_GetVirtualEntityByRecordID_V2() {
+func ExampleG2engine_GetVirtualEntityByRecordID_V2() {
 	// For more information, visit https://github.com/Senzing/g2-sdk-go/blob/main/g2engine/g2engine_test.go
 	ctx := context.TODO()
 	g2engine := getG2Engine(ctx)
@@ -1671,7 +1673,7 @@ func ExampleG2engineClient_GetVirtualEntityByRecordID_V2() {
 	// Output: {"RESOLVED_ENTITY":{"ENTITY_ID":1}}
 }
 
-func ExampleG2engineClient_HowEntityByEntityID() {
+func ExampleG2engine_HowEntityByEntityID() {
 	// For more information, visit https://github.com/Senzing/g2-sdk-go/blob/main/g2engine/g2engine_test.go
 	ctx := context.TODO()
 	g2engine := getG2Engine(ctx)
@@ -1684,7 +1686,7 @@ func ExampleG2engineClient_HowEntityByEntityID() {
 	// Output: {"HOW_RESULTS":{"RESOLUTION_STEPS":[{"STEP":1,"VIRTUAL_ENTITY_1":{"VIRTUAL_ENTITY_ID":"V1","MEMBER_RECORDS":[{"INTERNAL_ID":1,"RECORDS":[{"DATA_SOURCE":"CUSTOMERS","RECORD_ID":"1001"}]}]},"VIRTUAL_ENTITY_2":{"VIRTUAL_ENTITY_ID":"V2","MEMBER_RECORDS":[{"INTERNAL_ID":2,"RECORDS":[{"DATA_SOURCE":"CUSTOMERS","RECORD_ID":"1002"}]}]},"INBOUND_VIRTUAL_ENTITY_ID":"V2","RESULT_VIRTUAL_ENTITY_ID":"V1-S1","MATCH_INFO":{"MATCH_KEY":"+NAME+DOB+PHONE","ERRULE_CODE":"CNAME_CFF_CEXCL","FEATURE_SCORES":{"ADDRESS":[{"INBOUND_FEAT_ID":20,"INBOUND_FEAT":"1515 Adela Lane Las Vegas NV 89111","INBOUND_FEAT_USAGE_TYPE":"HOME","CANDIDATE_FEAT_ID":3,"CANDIDATE_FEAT":"123 Main Street, Las Vegas NV 89132","CANDIDATE_FEAT_USAGE_TYPE":"MAILING","FULL_SCORE":42,"SCORE_BUCKET":"NO_CHANCE","SCORE_BEHAVIOR":"FF"}],"DOB":[{"INBOUND_FEAT_ID":19,"INBOUND_FEAT":"11/12/1978","INBOUND_FEAT_USAGE_TYPE":"","CANDIDATE_FEAT_ID":2,"CANDIDATE_FEAT":"12/11/1978","CANDIDATE_FEAT_USAGE_TYPE":"","FULL_SCORE":95,"SCORE_BUCKET":"CLOSE","SCORE_BEHAVIOR":"FMES"}],"NAME":[{"INBOUND_FEAT_ID":18,"INBOUND_FEAT":"Bob Smith","INBOUND_FEAT_USAGE_TYPE":"PRIMARY","CANDIDATE_FEAT_ID":1,"CANDIDATE_FEAT":"Robert Smith","CANDIDATE_FEAT_USAGE_TYPE":"PRIMARY","GNR_FN":97,"GNR_SN":100,"GNR_GN":95,"GENERATION_MATCH":-1,"GNR_ON":-1,"SCORE_BUCKET":"CLOSE","SCORE_BEHAVIOR":"NAME"}],"PHONE":[{"INBOUND_FEAT_ID":4,"INBOUND_FEAT":"702-919-1300","INBOUND_FEAT_USAGE_TYPE":"MOBILE","CANDIDATE_FEAT_ID":4,"CANDIDATE_FEAT":"702-919-1300","CANDIDATE_FEAT_USAGE_TYPE":"HOME","FULL_SCORE":100,"SCORE_BUCKET":"SAME","SCORE_BEHAVIOR":"FF"}],"RECORD_TYPE":[{"INBOUND_FEAT_ID":16,"INBOUND_FEAT":"PERSON","INBOUND_FEAT_USAGE_TYPE":"","CANDIDATE_FEAT_ID":16,"CANDIDATE_FEAT":"PERSON","CANDIDATE_FEAT_USAGE_TYPE":"","FULL_SCORE":100,"SCORE_BUCKET":"SAME","SCORE_BEHAVIOR":"FVME"}]}}},{"STEP":2,"VIRTUAL_ENTITY_1":{"VIRTUAL_ENTITY_ID":"V1-S1","MEMBER_RECORDS":[{"INTERNAL_ID":1,"RECORDS":[{"DATA_SOURCE":"CUSTOMERS","RECORD_ID":"1001"}]},{"INTERNAL_ID":2,"RECORDS":[{"DATA_SOURCE":"CUSTOMERS","RECORD_ID":"1002"}]}]},"VIRTUAL_ENTITY_2":{"VIRTUAL_ENTITY_ID":"V100001","MEMBER_RECORDS":[{"INTERNAL_ID":100001,"RECORDS":[{"DATA_SOURCE":"CUSTOMERS","RECORD_ID":"1003"}]}]},"INBOUND_VIRTUAL_ENTITY_ID":"V1-S1","RESULT_VIRTUAL_ENTITY_ID":"V1-S2","MATCH_INFO":{"MATCH_KEY":"+NAME+DOB+EMAIL","ERRULE_CODE":"SF1_PNAME_CSTAB","FEATURE_SCORES":{"DOB":[{"INBOUND_FEAT_ID":2,"INBOUND_FEAT":"12/11/1978","INBOUND_FEAT_USAGE_TYPE":"","CANDIDATE_FEAT_ID":2,"CANDIDATE_FEAT":"12/11/1978","CANDIDATE_FEAT_USAGE_TYPE":"","FULL_SCORE":100,"SCORE_BUCKET":"SAME","SCORE_BEHAVIOR":"FMES"}],"EMAIL":[{"INBOUND_FEAT_ID":5,"INBOUND_FEAT":"bsmith@work.com","INBOUND_FEAT_USAGE_TYPE":"","CANDIDATE_FEAT_ID":5,"CANDIDATE_FEAT":"bsmith@work.com","CANDIDATE_FEAT_USAGE_TYPE":"","FULL_SCORE":100,"SCORE_BUCKET":"SAME","SCORE_BEHAVIOR":"F1"}],"NAME":[{"INBOUND_FEAT_ID":18,"INBOUND_FEAT":"Bob Smith","INBOUND_FEAT_USAGE_TYPE":"PRIMARY","CANDIDATE_FEAT_ID":32,"CANDIDATE_FEAT":"Bob J Smith","CANDIDATE_FEAT_USAGE_TYPE":"PRIMARY","GNR_FN":93,"GNR_SN":100,"GNR_GN":93,"GENERATION_MATCH":-1,"GNR_ON":-1,"SCORE_BUCKET":"CLOSE","SCORE_BEHAVIOR":"NAME"},{"INBOUND_FEAT_ID":1,"INBOUND_FEAT":"Robert Smith","INBOUND_FEAT_USAGE_TYPE":"PRIMARY","CANDIDATE_FEAT_ID":32,"CANDIDATE_FEAT":"Bob J Smith","CANDIDATE_FEAT_USAGE_TYPE":"PRIMARY","GNR_FN":90,"GNR_SN":100,"GNR_GN":88,"GENERATION_MATCH":-1,"GNR_ON":-1,"SCORE_BUCKET":"CLOSE","SCORE_BEHAVIOR":"NAME"}],"RECORD_TYPE":[{"INBOUND_FEAT_ID":16,"INBOUND_FEAT":"PERSON","INBOUND_FEAT_USAGE_TYPE":"","CANDIDATE_FEAT_ID":16,"CANDIDATE_FEAT":"PERSON","CANDIDATE_FEAT_USAGE_TYPE":"","FULL_SCORE":100,"SCORE_BUCKET":"SAME","SCORE_BEHAVIOR":"FVME"}]}}}],"FINAL_STATE":{"NEED_REEVALUATION":0,"VIRTUAL_ENTITIES":[{"VIRTUAL_ENTITY_ID":"V1-S2","MEMBER_RECORDS":[{"INTERNAL_ID":1,"RECORDS":[{"DATA_SOURCE":"CUSTOMERS","RECORD_ID":"1001"}]},{"INTERNAL_ID":2,"RECORDS":[{"DATA_SOURCE":"CUSTOMERS","RECORD_ID":"1002"}]},{"INTERNAL_ID":100001,"RECORDS":[{"DATA_SOURCE":"CUSTOMERS","RECORD_ID":"1003"}]}]}]}}}
 }
 
-func ExampleG2engineClient_HowEntityByEntityID_V2() {
+func ExampleG2engine_HowEntityByEntityID_V2() {
 	// For more information, visit https://github.com/Senzing/g2-sdk-go/blob/main/g2engine/g2engine_test.go
 	ctx := context.TODO()
 	g2engine := getG2Engine(ctx)
@@ -1698,7 +1700,7 @@ func ExampleG2engineClient_HowEntityByEntityID_V2() {
 	// Output: {"HOW_RESULTS":{"RESOLUTION_STEPS":[{"STEP":1,"VIRTUAL_ENTITY_1":{"VIRTUAL_ENTITY_ID":"V1","MEMBER_RECORDS":[{"INTERNAL_ID":1,"RECORDS":[{"DATA_SOURCE":"CUSTOMERS","RECORD_ID":"1001"}]}]},"VIRTUAL_ENTITY_2":{"VIRTUAL_ENTITY_ID":"V2","MEMBER_RECORDS":[{"INTERNAL_ID":2,"RECORDS":[{"DATA_SOURCE":"CUSTOMERS","RECORD_ID":"1002"}]}]},"INBOUND_VIRTUAL_ENTITY_ID":"V2","RESULT_VIRTUAL_ENTITY_ID":"V1-S1","MATCH_INFO":{"MATCH_KEY":"+NAME+DOB+PHONE","ERRULE_CODE":"CNAME_CFF_CEXCL"}},{"STEP":2,"VIRTUAL_ENTITY_1":{"VIRTUAL_ENTITY_ID":"V1-S1","MEMBER_RECORDS":[{"INTERNAL_ID":1,"RECORDS":[{"DATA_SOURCE":"CUSTOMERS","RECORD_ID":"1001"}]},{"INTERNAL_ID":2,"RECORDS":[{"DATA_SOURCE":"CUSTOMERS","RECORD_ID":"1002"}]}]},"VIRTUAL_ENTITY_2":{"VIRTUAL_ENTITY_ID":"V100001","MEMBER_RECORDS":[{"INTERNAL_ID":100001,"RECORDS":[{"DATA_SOURCE":"CUSTOMERS","RECORD_ID":"1003"}]}]},"INBOUND_VIRTUAL_ENTITY_ID":"V1-S1","RESULT_VIRTUAL_ENTITY_ID":"V1-S2","MATCH_INFO":{"MATCH_KEY":"+NAME+DOB+EMAIL","ERRULE_CODE":"SF1_PNAME_CSTAB"}}],"FINAL_STATE":{"NEED_REEVALUATION":0,"VIRTUAL_ENTITIES":[{"VIRTUAL_ENTITY_ID":"V1-S2","MEMBER_RECORDS":[{"INTERNAL_ID":1,"RECORDS":[{"DATA_SOURCE":"CUSTOMERS","RECORD_ID":"1001"}]},{"INTERNAL_ID":2,"RECORDS":[{"DATA_SOURCE":"CUSTOMERS","RECORD_ID":"1002"}]},{"INTERNAL_ID":100001,"RECORDS":[{"DATA_SOURCE":"CUSTOMERS","RECORD_ID":"1003"}]}]}]}}}
 }
 
-func ExampleG2engineClient_PrimeEngine() {
+func ExampleG2engine_PrimeEngine() {
 	// For more information, visit https://github.com/Senzing/g2-sdk-go/blob/main/g2engine/g2engine_test.go
 	ctx := context.TODO()
 	g2engine := getG2Engine(ctx)
@@ -1709,7 +1711,7 @@ func ExampleG2engineClient_PrimeEngine() {
 	// Output:
 }
 
-func ExampleG2engineClient_SearchByAttributes() {
+func ExampleG2engine_SearchByAttributes() {
 	// For more information, visit https://github.com/Senzing/g2-sdk-go/blob/main/g2engine/g2engine_test.go
 	ctx := context.TODO()
 	g2engine := getG2Engine(ctx)
@@ -1722,7 +1724,7 @@ func ExampleG2engineClient_SearchByAttributes() {
 	// Output: {"RESOLVED_ENTITIES":[{"MATCH_INFO":{"MATCH_LEVEL":3,"MATCH_LEVEL_CODE":"POSSIBLY_RELATED","MATCH_KEY":"+PNAME+EMAIL","ERRULE_CODE":"SF1","FEATURE_SCORES":{"EMAIL":[{"INBOUND_FEAT":"bsmith@work.com","CANDIDATE_FEAT":"bsmith@work.com","FULL_SCORE":100}],"NAME":[{"INBOUND_FEAT":"Smith","CANDIDATE_FEAT":"Bob J Smith","GNR_FN":83,"GNR_SN":100,"GNR_GN":40,"GENERATION_MATCH":-1,"GNR_ON":-1},{"INBOUND_FEAT":"Smith","CANDIDATE_FEAT":"Robert Smith","GNR_FN":88,"GNR_SN":100,"GNR_GN":40,"GENERATION_MATCH":-1,"GNR_ON":-1}]}},"ENTITY":{"RESOLVED_ENTITY":{"ENTITY_ID":1,"ENTITY_NAME":"Robert Smith","FEATURES":{"ADDRESS":[{"FEAT_DESC":"1515 Adela Lane Las Vegas NV 89111","LIB_FEAT_ID":20,"USAGE_TYPE":"HOME","FEAT_DESC_VALUES":[{"FEAT_DESC":"1515 Adela Lane Las Vegas NV 89111","LIB_FEAT_ID":20}]},{"FEAT_DESC":"123 Main Street, Las Vegas NV 89132","LIB_FEAT_ID":3,"USAGE_TYPE":"MAILING","FEAT_DESC_VALUES":[{"FEAT_DESC":"123 Main Street, Las Vegas NV 89132","LIB_FEAT_ID":3}]}],"DOB":[{"FEAT_DESC":"12/11/1978","LIB_FEAT_ID":2,"FEAT_DESC_VALUES":[{"FEAT_DESC":"12/11/1978","LIB_FEAT_ID":2},{"FEAT_DESC":"11/12/1978","LIB_FEAT_ID":19}]}],"EMAIL":[{"FEAT_DESC":"bsmith@work.com","LIB_FEAT_ID":5,"FEAT_DESC_VALUES":[{"FEAT_DESC":"bsmith@work.com","LIB_FEAT_ID":5}]}],"NAME":[{"FEAT_DESC":"Robert Smith","LIB_FEAT_ID":1,"USAGE_TYPE":"PRIMARY","FEAT_DESC_VALUES":[{"FEAT_DESC":"Robert Smith","LIB_FEAT_ID":1},{"FEAT_DESC":"Bob J Smith","LIB_FEAT_ID":32},{"FEAT_DESC":"Bob Smith","LIB_FEAT_ID":18}]}],"PHONE":[{"FEAT_DESC":"702-919-1300","LIB_FEAT_ID":4,"USAGE_TYPE":"HOME","FEAT_DESC_VALUES":[{"FEAT_DESC":"702-919-1300","LIB_FEAT_ID":4}]},{"FEAT_DESC":"702-919-1300","LIB_FEAT_ID":4,"USAGE_TYPE":"MOBILE","FEAT_DESC_VALUES":[{"FEAT_DESC":"702-919-1300","LIB_FEAT_ID":4}]}],"RECORD_TYPE":[{"FEAT_DESC":"PERSON","LIB_FEAT_ID":16,"FEAT_DESC_VALUES":[{"FEAT_DESC":"PERSON","LIB_FEAT_ID":16}]}]},"RECORD_SUMMARY":[{"DATA_SOURCE":"CUSTOMERS","RECORD_COUNT":3,"FIRST_SEEN_DT":...
 }
 
-func ExampleG2engineClient_SearchByAttributes_V2() {
+func ExampleG2engine_SearchByAttributes_V2() {
 	// For more information, visit https://github.com/Senzing/g2-sdk-go/blob/main/g2engine/g2engine_test.go
 	ctx := context.TODO()
 	g2engine := getG2Engine(ctx)
@@ -1736,7 +1738,7 @@ func ExampleG2engineClient_SearchByAttributes_V2() {
 	// Output: {"RESOLVED_ENTITIES":[{"MATCH_INFO":{"MATCH_LEVEL":3,"MATCH_LEVEL_CODE":"POSSIBLY_RELATED","MATCH_KEY":"+PNAME+EMAIL","ERRULE_CODE":"SF1"},"ENTITY":{"RESOLVED_ENTITY":{"ENTITY_ID":1}}}]}
 }
 
-func ExampleG2engineClient_SetLogLevel() {
+func ExampleG2engine_SetLogLevel() {
 	// For more information, visit https://github.com/Senzing/g2-sdk-go/blob/main/g2config/g2config_test.go
 	ctx := context.TODO()
 	g2engine := getG2Engine(ctx)
@@ -1747,7 +1749,7 @@ func ExampleG2engineClient_SetLogLevel() {
 	// Output:
 }
 
-func ExampleG2engineClient_Stats() {
+func ExampleG2engine_Stats() {
 	// For more information, visit https://github.com/Senzing/g2-sdk-go/blob/main/g2engine/g2engine_test.go
 	ctx := context.TODO()
 	g2engine := getG2Engine(ctx)
@@ -1760,7 +1762,7 @@ func ExampleG2engineClient_Stats() {
 }
 
 // FIXME: Remove after GDEV-3576 is fixed
-func ExampleG2engineClient_WhyEntities() {
+func ExampleG2engine_WhyEntities() {
 	// For more information, visit https://github.com/Senzing/g2-sdk-go/blob/main/g2engine/g2engine_test.go
 	ctx := context.TODO()
 	g2engine := getG2Engine(ctx)
@@ -1775,7 +1777,7 @@ func ExampleG2engineClient_WhyEntities() {
 }
 
 // FIXME: Remove after GDEV-3576 is fixed
-func ExampleG2engineClient_WhyEntities_V2() {
+func ExampleG2engine_WhyEntities_V2() {
 	// For more information, visit https://github.com/Senzing/g2-sdk-go/blob/main/g2engine/g2engine_test.go
 	ctx := context.TODO()
 	g2engine := getG2Engine(ctx)
@@ -1790,7 +1792,7 @@ func ExampleG2engineClient_WhyEntities_V2() {
 	// Output: {"WHY_RESULTS":[{"ENTITY_ID":1,"ENTITY_ID_2":1,"MATCH_INFO":{"WHY_KEY":"+NAME+DOB+ADDRESS+PHONE+EMAIL","WHY_ERRULE_CODE":"SF1_SNAME_CFF_CSTAB","MATCH_LEVEL_CODE":"RESOLVED"}}],"ENTITIES":[{"RESOLVED_ENTITY":{"ENTITY_ID":1}}]}
 }
 
-func ExampleG2engineClient_WhyEntityByEntityID() {
+func ExampleG2engine_WhyEntityByEntityID() {
 	// For more information, visit https://github.com/Senzing/g2-sdk-go/blob/main/g2engine/g2engine_test.go
 	ctx := context.TODO()
 	g2engine := getG2Engine(ctx)
@@ -1803,7 +1805,7 @@ func ExampleG2engineClient_WhyEntityByEntityID() {
 	// Output: {"WHY_RESULTS":[{"INTERNAL_ID":1,"ENTITY_ID":1,"FOCUS_RECORDS":[{"DATA_SOURCE":"CUSTOMERS","RECORD_ID":...
 }
 
-func ExampleG2engineClient_WhyEntityByEntityID_V2() {
+func ExampleG2engine_WhyEntityByEntityID_V2() {
 	// For more information, visit https://github.com/Senzing/g2-sdk-go/blob/main/g2engine/g2engine_test.go
 	ctx := context.TODO()
 	g2engine := getG2Engine(ctx)
@@ -1817,7 +1819,7 @@ func ExampleG2engineClient_WhyEntityByEntityID_V2() {
 	// Output: {"WHY_RESULTS":[{"INTERNAL_ID":1,"ENTITY_ID":1,"FOCUS_RECORDS":[{"DATA_SOURCE":"CUSTOMERS","RECORD_ID":...
 }
 
-func ExampleG2engineClient_WhyEntityByRecordID() {
+func ExampleG2engine_WhyEntityByRecordID() {
 	// For more information, visit https://github.com/Senzing/g2-sdk-go/blob/main/g2engine/g2engine_test.go
 	ctx := context.TODO()
 	g2engine := getG2Engine(ctx)
@@ -1831,7 +1833,7 @@ func ExampleG2engineClient_WhyEntityByRecordID() {
 	// Output: {"WHY_RESULTS":[{"INTERNAL_ID":1,"ENTITY_ID":1,"FOCUS_RECORDS":[{"DATA_SOURCE":"CUSTOMERS","RECORD_ID":...
 }
 
-func ExampleG2engineClient_WhyEntityByRecordID_V2() {
+func ExampleG2engine_WhyEntityByRecordID_V2() {
 	// For more information, visit https://github.com/Senzing/g2-sdk-go/blob/main/g2engine/g2engine_test.go
 	ctx := context.TODO()
 	g2engine := getG2Engine(ctx)
@@ -1846,7 +1848,7 @@ func ExampleG2engineClient_WhyEntityByRecordID_V2() {
 	// Output: {"WHY_RESULTS":[{"INTERNAL_ID":1,"ENTITY_ID":1,"FOCUS_RECORDS":[{"DATA_SOURCE":"CUSTOMERS","RECORD_ID":...
 }
 
-func ExampleG2engineClient_WhyRecords() {
+func ExampleG2engine_WhyRecords() {
 	// For more information, visit https://github.com/Senzing/g2-sdk-go/blob/main/g2engine/g2engine_test.go
 	ctx := context.TODO()
 	g2engine := getG2Engine(ctx)
@@ -1862,7 +1864,7 @@ func ExampleG2engineClient_WhyRecords() {
 	// Output: {"WHY_RESULTS":[{"INTERNAL_ID":1,"ENTITY_ID":1,"FOCUS_RECORDS":[{"DATA_SOURCE":"CUSTOMERS","RECORD_ID":"1001"}],...
 }
 
-func ExampleG2engineClient_WhyRecords_V2() {
+func ExampleG2engine_WhyRecords_V2() {
 	// For more information, visit https://github.com/Senzing/g2-sdk-go/blob/main/g2engine/g2engine_test.go
 	ctx := context.TODO()
 	g2engine := getG2Engine(ctx)
@@ -1879,7 +1881,7 @@ func ExampleG2engineClient_WhyRecords_V2() {
 	// Output: {"WHY_RESULTS":[{"INTERNAL_ID":1,"ENTITY_ID":1,"FOCUS_RECORDS":[{"DATA_SOURCE":"CUSTOMERS","RECORD_ID":"1001"}],"INTERNAL_ID_2":2,"ENTITY_ID_2":1,"FOCUS_RECORDS_2":[{"DATA_SOURCE":"CUSTOMERS","RECORD_ID":"1002"}],"MATCH_INFO":{"WHY_KEY":"+NAME+DOB+PHONE","WHY_ERRULE_CODE":"CNAME_CFF_CEXCL","MATCH_LEVEL_CODE":"RESOLVED"}}],"ENTITIES":[{"RESOLVED_ENTITY":{"ENTITY_ID":1}}]}
 }
 
-func ExampleG2engineClient_Process() {
+func ExampleG2engine_Process() {
 	// For more information, visit https://github.com/Senzing/g2-sdk-go/blob/main/g2engine/g2engine_test.go
 	ctx := context.TODO()
 	g2engine := getG2Engine(ctx)
@@ -1891,7 +1893,7 @@ func ExampleG2engineClient_Process() {
 	// Output:
 }
 
-func ExampleG2engineClient_ProcessRedoRecord() {
+func ExampleG2engine_ProcessRedoRecord() {
 	// For more information, visit https://github.com/Senzing/g2-sdk-go/blob/main/g2engine/g2engine_test.go
 	ctx := context.TODO()
 	g2engine := getG2Engine(ctx)
@@ -1903,7 +1905,7 @@ func ExampleG2engineClient_ProcessRedoRecord() {
 	// Output:
 }
 
-func ExampleG2engineClient_ProcessRedoRecordWithInfo() {
+func ExampleG2engine_ProcessRedoRecordWithInfo() {
 	// For more information, visit https://github.com/Senzing/g2-sdk-go/blob/main/g2engine/g2engine_test.go
 	ctx := context.TODO()
 	g2engine := getG2Engine(ctx)
@@ -1916,7 +1918,7 @@ func ExampleG2engineClient_ProcessRedoRecordWithInfo() {
 	// Output:
 }
 
-func ExampleG2engineClient_ProcessWithInfo() {
+func ExampleG2engine_ProcessWithInfo() {
 	// For more information, visit https://github.com/Senzing/g2-sdk-go/blob/main/g2engine/g2engine_test.go
 	ctx := context.TODO()
 	g2engine := getG2Engine(ctx)
@@ -1930,7 +1932,7 @@ func ExampleG2engineClient_ProcessWithInfo() {
 	// Output: {"DATA_SOURCE":"CUSTOMERS","RECORD_ID":"1001","AFFECTED_ENTITIES":[],"INTERESTING_ENTITIES":{"ENTITIES":[]}}
 }
 
-func ExampleG2engineClient_ProcessWithResponse() {
+func ExampleG2engine_ProcessWithResponse() {
 	// For more information, visit https://github.com/Senzing/g2-sdk-go/blob/main/g2engine/g2engine_test.go
 	ctx := context.TODO()
 	g2engine := getG2Engine(ctx)
@@ -1943,7 +1945,7 @@ func ExampleG2engineClient_ProcessWithResponse() {
 	// Output: {"MESSAGE": "ER SKIPPED - DUPLICATE RECORD IN G2"}
 }
 
-func ExampleG2engineClient_ProcessWithResponseResize() {
+func ExampleG2engine_ProcessWithResponseResize() {
 	// For more information, visit https://github.com/Senzing/g2-sdk-go/blob/main/g2engine/g2engine_test.go
 	ctx := context.TODO()
 	g2engine := getG2Engine(ctx)
@@ -1956,7 +1958,7 @@ func ExampleG2engineClient_ProcessWithResponseResize() {
 	// Output: {"MESSAGE": "ER SKIPPED - DUPLICATE RECORD IN G2"}
 }
 
-func ExampleG2engineClient_ReevaluateEntity() {
+func ExampleG2engine_ReevaluateEntity() {
 	// For more information, visit https://github.com/Senzing/g2-sdk-go/blob/main/g2engine/g2engine_test.go
 	ctx := context.TODO()
 	g2engine := getG2Engine(ctx)
@@ -1968,7 +1970,7 @@ func ExampleG2engineClient_ReevaluateEntity() {
 	}
 	// Output:
 }
-func ExampleG2engineClient_ReevaluateEntityWithInfo() {
+func ExampleG2engine_ReevaluateEntityWithInfo() {
 	// For more information, visit https://github.com/Senzing/g2-sdk-go/blob/main/g2engine/g2engine_test.go
 	ctx := context.TODO()
 	g2engine := getG2Engine(ctx)
@@ -1982,7 +1984,7 @@ func ExampleG2engineClient_ReevaluateEntityWithInfo() {
 	// Output: {"DATA_SOURCE":"CUSTOMERS","RECORD_ID":"1001","AFFECTED_ENTITIES":[{"ENTITY_ID":1}],"INTERESTING_ENTITIES":{"ENTITIES":[]}}
 }
 
-func ExampleG2engineClient_ReevaluateRecord() {
+func ExampleG2engine_ReevaluateRecord() {
 	// For more information, visit https://github.com/Senzing/g2-sdk-go/blob/main/g2engine/g2engine_test.go
 	ctx := context.TODO()
 	g2engine := getG2Engine(ctx)
@@ -1996,7 +1998,7 @@ func ExampleG2engineClient_ReevaluateRecord() {
 	// Output:
 }
 
-func ExampleG2engineClient_ReevaluateRecordWithInfo() {
+func ExampleG2engine_ReevaluateRecordWithInfo() {
 	// For more information, visit https://github.com/Senzing/g2-sdk-go/blob/main/g2engine/g2engine_test.go
 	ctx := context.TODO()
 	g2engine := getG2Engine(ctx)
@@ -2011,7 +2013,7 @@ func ExampleG2engineClient_ReevaluateRecordWithInfo() {
 	// Output: {"DATA_SOURCE":"CUSTOMERS","RECORD_ID":"1001","AFFECTED_ENTITIES":[{"ENTITY_ID":1}],"INTERESTING_ENTITIES":{"ENTITIES":[]}}
 }
 
-func ExampleG2engineClient_ReplaceRecord() {
+func ExampleG2engine_ReplaceRecord() {
 	// For more information, visit https://github.com/Senzing/g2-sdk-go/blob/main/g2engine/g2engine_test.go
 	ctx := context.TODO()
 	g2engine := getG2Engine(ctx)
@@ -2026,7 +2028,7 @@ func ExampleG2engineClient_ReplaceRecord() {
 	// Output:
 }
 
-func ExampleG2engineClient_ReplaceRecordWithInfo() {
+func ExampleG2engine_ReplaceRecordWithInfo() {
 	// For more information, visit https://github.com/Senzing/g2-sdk-go/blob/main/g2engine/g2engine_test.go
 	ctx := context.TODO()
 	g2engine := getG2Engine(ctx)
@@ -2043,7 +2045,7 @@ func ExampleG2engineClient_ReplaceRecordWithInfo() {
 	// Output: {"DATA_SOURCE":"CUSTOMERS","RECORD_ID":"1001","AFFECTED_ENTITIES":[],"INTERESTING_ENTITIES":{"ENTITIES":[]}}
 }
 
-func ExampleG2engineClient_DeleteRecord() {
+func ExampleG2engine_DeleteRecord() {
 	// For more information, visit https://github.com/Senzing/g2-sdk-go/blob/main/g2engine/g2engine_test.go
 	ctx := context.TODO()
 	g2engine := getG2Engine(ctx)
@@ -2057,7 +2059,7 @@ func ExampleG2engineClient_DeleteRecord() {
 	// Output:
 }
 
-func ExampleG2engineClient_DeleteRecordWithInfo() {
+func ExampleG2engine_DeleteRecordWithInfo() {
 	// For more information, visit https://github.com/Senzing/g2-sdk-go/blob/main/g2engine/g2engine_test.go
 	ctx := context.TODO()
 	g2engine := getG2Engine(ctx)
@@ -2073,7 +2075,7 @@ func ExampleG2engineClient_DeleteRecordWithInfo() {
 	// Output: {"DATA_SOURCE":"CUSTOMERS","RECORD_ID":"1003","AFFECTED_ENTITIES":[],"INTERESTING_ENTITIES":{"ENTITIES":[]}}
 }
 
-func ExampleG2engineClient_Init() {
+func ExampleG2engine_Init() {
 	// For more information, visit https://github.com/Senzing/g2-sdk-go/blob/main/g2engine/g2engine_test.go
 	ctx := context.TODO()
 	g2engine := getG2Engine(ctx)
@@ -2090,7 +2092,7 @@ func ExampleG2engineClient_Init() {
 	// Output:
 }
 
-func ExampleG2engineClient_InitWithConfigID() {
+func ExampleG2engine_InitWithConfigID() {
 	// For more information, visit https://github.com/Senzing/g2-sdk-go/blob/main/g2engine/g2engine_test.go
 	ctx := context.TODO()
 	g2engine := getG2Engine(ctx)
@@ -2108,7 +2110,7 @@ func ExampleG2engineClient_InitWithConfigID() {
 	// Output:
 }
 
-func ExampleG2engineClient_Reinit() {
+func ExampleG2engine_Reinit() {
 	// For more information, visit https://github.com/Senzing/g2-sdk-go/blob/main/g2engine/g2engine_test.go
 	ctx := context.TODO()
 	g2engine := getG2Engine(ctx)
@@ -2120,7 +2122,7 @@ func ExampleG2engineClient_Reinit() {
 	// Output:
 }
 
-func ExampleG2engineClient_PurgeRepository() {
+func ExampleG2engine_PurgeRepository() {
 	// For more information, visit https://github.com/Senzing/g2-sdk-go/blob/main/g2engine/g2engine_test.go
 	ctx := context.TODO()
 	g2engine := getG2Engine(ctx)
@@ -2131,7 +2133,7 @@ func ExampleG2engineClient_PurgeRepository() {
 	// Output:
 }
 
-func ExampleG2engineClient_Destroy() {
+func ExampleG2engine_Destroy() {
 	// For more information, visit https://github.com/Senzing/g2-sdk-go/blob/main/g2engine/g2engine_test.go
 	ctx := context.TODO()
 	g2engine := getG2Engine(ctx)
