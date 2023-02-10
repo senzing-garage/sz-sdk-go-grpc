@@ -1,4 +1,4 @@
-package g2engineclient
+package g2engine
 
 import (
 	pb "github.com/senzing/g2-sdk-proto/go/g2engine"

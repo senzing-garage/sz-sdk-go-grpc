@@ -1,4 +1,4 @@
-package g2configmgrclient
+package g2configmgr
 
 import (
 	pb "github.com/senzing/g2-sdk-proto/go/g2configmgr"

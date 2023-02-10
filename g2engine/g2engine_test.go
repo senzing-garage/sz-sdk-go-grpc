@@ -1,4 +1,4 @@
-package g2engineclient
+package g2engine
 
 import (
 	"context"

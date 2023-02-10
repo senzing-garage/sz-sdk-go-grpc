@@ -1,4 +1,4 @@
-package g2diagnosticclient
+package g2diagnostic
 
 import (
 	pb "github.com/senzing/g2-sdk-proto/go/g2diagnostic"

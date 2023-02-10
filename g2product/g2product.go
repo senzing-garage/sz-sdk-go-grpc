@@ -2,8 +2,8 @@
  *
  */
 
-// Package g2productclient implements a client for the service.
-package g2productclient
+// Package g2product implements a client for the service.
+package g2product
 
 import (
 	"context"

@@ -1,7 +1,7 @@
-package g2configclient
+package g2config
 
 import (
-	pb "github.com/senzing/g2-sdk-proto/go/g2config"
+	g2pb "github.com/senzing/g2-sdk-proto/go/g2config"
 	"github.com/senzing/go-logging/messagelogger"
 	"github.com/senzing/go-observing/subject"
 )
@@ -10,8 +10,8 @@ import (
 // Types
 // ----------------------------------------------------------------------------
 
-type G2configClient struct {
-	GrpcClient pb.G2ConfigClient
+type G2config struct {
+	GrpcClient g2pb.G2ConfigClient
 	isTrace    bool
 	logger     messagelogger.MessageLoggerInterface
 	observers  subject.Subject

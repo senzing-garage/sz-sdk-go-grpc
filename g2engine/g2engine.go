@@ -2,8 +2,8 @@
  *
  */
 
-// Package g2configclient implements a client for the service.
-package g2engineclient
+// Package g2engine implements a client for the service.
+package g2engine
 
 import (
 	"context"

@@ -3,7 +3,7 @@
  */
 
 // Package main implements a client for the service.
-package g2diagnosticclient
+package g2diagnostic
 
 import (
 	"context"

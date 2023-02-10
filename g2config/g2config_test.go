@@ -1,4 +1,4 @@
-package g2configclient
+package g2config
 
 import (
 	"context"
@@ -9,6 +9,7 @@ import (
 	"testing"
 
 	truncator "github.com/aquilax/truncate"
+	"github.com/senzing/g2-sdk-go/g2api"
 	pb "github.com/senzing/g2-sdk-proto/go/g2config"
 	"github.com/senzing/go-common/g2engineconfigurationjson"
 	"github.com/senzing/go-logging/logger"
@@ -25,7 +26,7 @@ const (
 var (
 	grpcAddress             = "localhost:8258"
 	grpcConnection          *grpc.ClientConn
-	g2configClientSingleton *G2configClient
+	g2configClientSingleton g2api.G2configInterface
 )
 
 // ----------------------------------------------------------------------------
@@ -44,20 +45,20 @@ func getGrpcConnection() *grpc.ClientConn {
 	return grpcConnection
 }
 
-func getTestObject(ctx context.Context, test *testing.T) G2configClient {
+func getTestObject(ctx context.Context, test *testing.T) g2api.G2configInterface {
 	if g2configClientSingleton == nil {
 		grpcConnection := getGrpcConnection()
-		g2configClientSingleton = &G2configClient{
+		g2configClientSingleton = &G2config{
 			GrpcClient: pb.NewG2ConfigClient(grpcConnection),
 		}
 	}
 	return *g2configClientSingleton
 }
 
-func getG2Config(ctx context.Context) G2configClient {
+func getG2Config(ctx context.Context) g2api.G2configInterface {
 	if g2configClientSingleton == nil {
 		grpcConnection := getGrpcConnection()
-		g2configClientSingleton = &G2configClient{
+		g2configClientSingleton = &G2config{
 			GrpcClient: pb.NewG2ConfigClient(grpcConnection),
 		}
 	}
@@ -78,14 +79,14 @@ func printActual(test *testing.T, actual interface{}) {
 	printResult(test, "Actual", actual)
 }
 
-func testError(test *testing.T, ctx context.Context, g2config G2configClient, err error) {
+func testError(test *testing.T, ctx context.Context, g2config g2api.G2configInterface, err error) {
 	if err != nil {
 		test.Log("Error:", err.Error())
 		assert.FailNow(test, err.Error())
 	}
 }
 
-func expectError(test *testing.T, ctx context.Context, g2config G2configClient, err error, messageId string) {
+func expectError(test *testing.T, ctx context.Context, g2config g2api.G2configInterface, err error, messageId string) {
 	if err != nil {
 		errorMessage := err.Error()[strings.Index(err.Error(), "{"):]
 		var dictionary map[string]interface{}
@@ -99,7 +100,7 @@ func expectError(test *testing.T, ctx context.Context, g2config G2configClient, 
 	}
 }
 
-func testErrorNoFail(test *testing.T, ctx context.Context, g2config G2configClient, err error) {
+func testErrorNoFail(test *testing.T, ctx context.Context, g2config g2api.G2configInterface, err error) {
 	if err != nil {
 		test.Log("Error:", err.Error())
 	}

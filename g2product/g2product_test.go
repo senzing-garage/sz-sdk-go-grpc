@@ -1,4 +1,4 @@
-package g2productclient
+package g2product
 
 import (
 	"context"

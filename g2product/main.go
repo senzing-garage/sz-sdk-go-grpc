@@ -1,4 +1,4 @@
-package g2productclient
+package g2product
 
 import (
 	pb "github.com/senzing/g2-sdk-proto/go/g2product"

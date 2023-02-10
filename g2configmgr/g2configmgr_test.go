@@ -1,4 +1,4 @@
-package g2configmgrclient
+package g2configmgr
 
 import (
 	"context"
@@ -13,6 +13,7 @@ import (
 	truncator "github.com/aquilax/truncate"
 	"github.com/senzing/g2-sdk-go-grpc/g2configclient"
 	"github.com/senzing/g2-sdk-go-grpc/g2engineclient"
+	"github.com/senzing/g2-sdk-go/g2api"
 	pbg2config "github.com/senzing/g2-sdk-proto/go/g2config"
 	pb "github.com/senzing/g2-sdk-proto/go/g2configmgr"
 	pbg2engine "github.com/senzing/g2-sdk-proto/go/g2engine"
@@ -31,9 +32,9 @@ const (
 )
 
 var (
-	g2configClientSingleton    *g2configclient.G2configClient
-	g2configmgrClientSingleton *G2configmgrClient
-	g2engineClientSingleton    *g2engineclient.G2engineClient
+	g2configClientSingleton    g2api.G2configInterface
+	g2configmgrClientSingleton g2api.G2configmgrInterface
+	g2engineClientSingleton    g2api.G2engineInterface
 	grpcAddress                = "localhost:8258"
 	grpcConnection             *grpc.ClientConn
 	localLogger                messagelogger.MessageLoggerInterface
