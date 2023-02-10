@@ -8,21 +8,17 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/senzing/g2-sdk-go-grpc/g2configclient"
-	"github.com/senzing/g2-sdk-go-grpc/g2configmgrclient"
-	"github.com/senzing/g2-sdk-go-grpc/g2diagnosticclient"
-	"github.com/senzing/g2-sdk-go-grpc/g2engineclient"
-	"github.com/senzing/g2-sdk-go-grpc/g2productclient"
-	"github.com/senzing/g2-sdk-go/g2config"
-	"github.com/senzing/g2-sdk-go/g2configmgr"
-	"github.com/senzing/g2-sdk-go/g2diagnostic"
-	"github.com/senzing/g2-sdk-go/g2engine"
-	"github.com/senzing/g2-sdk-go/g2product"
-	pbg2config "github.com/senzing/g2-sdk-proto/go/g2config"
-	pbg2configmgr "github.com/senzing/g2-sdk-proto/go/g2configmgr"
-	pbg2diagnostic "github.com/senzing/g2-sdk-proto/go/g2diagnostic"
-	pbg2engine "github.com/senzing/g2-sdk-proto/go/g2engine"
-	pbg2product "github.com/senzing/g2-sdk-proto/go/g2product"
+	"github.com/senzing/g2-sdk-go-grpc/g2config"
+	"github.com/senzing/g2-sdk-go-grpc/g2configmgr"
+	"github.com/senzing/g2-sdk-go-grpc/g2diagnostic"
+	"github.com/senzing/g2-sdk-go-grpc/g2engine"
+	"github.com/senzing/g2-sdk-go-grpc/g2product"
+	"github.com/senzing/g2-sdk-go/g2api"
+	g2configpb "github.com/senzing/g2-sdk-proto/go/g2config"
+	g2configmgrpb "github.com/senzing/g2-sdk-proto/go/g2configmgr"
+	g2diagnosticpb "github.com/senzing/g2-sdk-proto/go/g2diagnostic"
+	g2enginepb "github.com/senzing/g2-sdk-proto/go/g2engine"
+	g2productpb "github.com/senzing/g2-sdk-proto/go/g2product"
 	"github.com/senzing/go-common/truthset"
 	"github.com/senzing/go-logging/messageformat"
 	"github.com/senzing/go-logging/messageid"
@@ -60,11 +56,11 @@ var Messages = map[int]string{
 var programName string = "unknown"
 var buildVersion string = "0.0.0"
 var buildIteration string = "0"
-var logger messagelogger.MessageLoggerInterface = nil
 
 var (
 	grpcAddress    = "localhost:8258"
 	grpcConnection *grpc.ClientConn
+	logger         messagelogger.MessageLoggerInterface
 )
 
 // ----------------------------------------------------------------------------
@@ -83,47 +79,47 @@ func getGrpcConnection() *grpc.ClientConn {
 	return grpcConnection
 }
 
-func getG2config(ctx context.Context) (g2config.G2config, error) {
+func getG2config(ctx context.Context) (g2api.G2configInterface, error) {
 	var err error = nil
 	grpcConnection := getGrpcConnection()
-	result := &g2configclient.G2configClient{
-		GrpcClient: pbg2config.NewG2ConfigClient(grpcConnection),
+	result := &g2config.G2config{
+		GrpcClient: g2configpb.NewG2ConfigClient(grpcConnection),
 	}
 	return result, err
 }
 
-func getG2configmgr(ctx context.Context) (g2configmgr.G2configmgr, error) {
+func getG2configmgr(ctx context.Context) (g2api.G2configmgrInterface, error) {
 	var err error = nil
 	grpcConnection := getGrpcConnection()
-	result := &g2configmgrclient.G2configmgrClient{
-		GrpcClient: pbg2configmgr.NewG2ConfigMgrClient(grpcConnection),
+	result := &g2configmgr.G2configmgr{
+		GrpcClient: g2configmgrpb.NewG2ConfigMgrClient(grpcConnection),
 	}
 	return result, err
 }
 
-func getG2diagnostic(ctx context.Context) (g2diagnostic.G2diagnostic, error) {
+func getG2diagnostic(ctx context.Context) (g2api.G2diagnosticInterface, error) {
 	var err error = nil
 	grpcConnection := getGrpcConnection()
-	result := &g2diagnosticclient.G2diagnosticClient{
-		GrpcClient: pbg2diagnostic.NewG2DiagnosticClient(grpcConnection),
+	result := &g2diagnostic.G2diagnostic{
+		GrpcClient: g2diagnosticpb.NewG2DiagnosticClient(grpcConnection),
 	}
 	return result, err
 }
 
-func getG2engine(ctx context.Context) (g2engine.G2engine, error) {
+func getG2engine(ctx context.Context) (g2api.G2engineInterface, error) {
 	var err error = nil
 	grpcConnection := getGrpcConnection()
-	result := &g2engineclient.G2engineClient{
-		GrpcClient: pbg2engine.NewG2EngineClient(grpcConnection),
+	result := &g2engine.G2engine{
+		GrpcClient: g2enginepb.NewG2EngineClient(grpcConnection),
 	}
 	return result, err
 }
 
-func getG2product(ctx context.Context) (g2product.G2product, error) {
+func getG2product(ctx context.Context) (g2api.G2productInterface, error) {
 	var err error = nil
 	grpcConnection := getGrpcConnection()
-	result := &g2productclient.G2productClient{
-		GrpcClient: pbg2product.NewG2ProductClient(grpcConnection),
+	result := &g2product.G2product{
+		GrpcClient: g2productpb.NewG2ProductClient(grpcConnection),
 	}
 	return result, err
 }
@@ -145,7 +141,7 @@ func getLogger(ctx context.Context) (messagelogger.MessageLoggerInterface, error
 	return messagelogger.New(messageFormat, messageIdTemplate, messageLevel, messageStatus, messageText, messagelogger.LevelInfo)
 }
 
-func demonstrateConfigFunctions(ctx context.Context, g2Config g2config.G2config, g2Configmgr g2configmgr.G2configmgr) error {
+func demonstrateConfigFunctions(ctx context.Context, g2Config g2api.G2configInterface, g2Configmgr g2api.G2configmgrInterface) error {
 	now := time.Now()
 
 	// Using G2Config: Create a default configuration in memory
@@ -189,7 +185,7 @@ func demonstrateConfigFunctions(ctx context.Context, g2Config g2config.G2config,
 	return err
 }
 
-func demonstrateAddRecord(ctx context.Context, g2Engine g2engine.G2engine) (string, error) {
+func demonstrateAddRecord(ctx context.Context, g2Engine g2api.G2engineInterface) (string, error) {
 	dataSourceCode := "TEST"
 	recordID := strconv.Itoa(rand.Intn(1000000000))
 	jsonData := fmt.Sprintf(
@@ -205,7 +201,7 @@ func demonstrateAddRecord(ctx context.Context, g2Engine g2engine.G2engine) (stri
 	return g2Engine.AddRecordWithInfo(ctx, dataSourceCode, recordID, jsonData, loadID, flags)
 }
 
-func demonstrateAdditionalFunctions(ctx context.Context, g2Diagnostic g2diagnostic.G2diagnostic, g2Engine g2engine.G2engine, g2Product g2product.G2product) error {
+func demonstrateAdditionalFunctions(ctx context.Context, g2Diagnostic g2api.G2diagnosticInterface, g2Engine g2api.G2engineInterface, g2Product g2api.G2productInterface) error {
 	// Using G2Diagnostic: Check physical cores.
 
 	actual, err := g2Diagnostic.GetPhysicalCores(ctx)
@@ -240,10 +236,6 @@ func demonstrateAdditionalFunctions(ctx context.Context, g2Diagnostic g2diagnost
 func main() {
 	var err error = nil
 	ctx := context.TODO()
-
-	// Randomize random number generator.
-
-	rand.Seed(time.Now().UnixNano())
 
 	// Configure the "log" standard library.
 
