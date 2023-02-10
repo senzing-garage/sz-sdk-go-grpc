@@ -16,8 +16,8 @@ import (
 	pbg2config "github.com/senzing/g2-sdk-proto/go/g2config"
 	pb "github.com/senzing/g2-sdk-proto/go/g2configmgr"
 	pbg2engine "github.com/senzing/g2-sdk-proto/go/g2engine"
+	"github.com/senzing/go-common/g2engineconfigurationjson"
 	"github.com/senzing/go-common/truthset"
-	"github.com/senzing/go-helpers/g2engineconfigurationjson"
 	"github.com/senzing/go-logging/logger"
 	"github.com/senzing/go-logging/messagelogger"
 	"github.com/stretchr/testify/assert"
@@ -484,7 +484,7 @@ func ExampleG2configmgrClient_Init() {
 		GrpcClient: pb.NewG2ConfigMgrClient(grpcConnection),
 	}
 	moduleName := "Test module name"
-	iniParams, err := g2engineconfigurationjson.BuildSimpleSystemConfigurationJson("") // See https://pkg.go.dev/github.com/senzing/go-helpers
+	iniParams, err := g2engineconfigurationjson.BuildSimpleSystemConfigurationJson("") // See https://pkg.go.dev/github.com/senzing/go-common
 	if err != nil {
 		fmt.Println(err)
 	}
