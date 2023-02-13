@@ -18,7 +18,6 @@ import (
 	g2configpb "github.com/senzing/g2-sdk-proto/go/g2config"
 	g2pb "github.com/senzing/g2-sdk-proto/go/g2configmgr"
 	g2enginepb "github.com/senzing/g2-sdk-proto/go/g2engine"
-	"github.com/senzing/go-common/g2engineconfigurationjson"
 	"github.com/senzing/go-common/truthset"
 	"github.com/senzing/go-logging/logger"
 	"github.com/senzing/go-logging/messagelogger"
@@ -234,15 +233,6 @@ func teardown() error {
 	return err
 }
 
-func TestBuildSimpleSystemConfigurationJson(test *testing.T) {
-	actual, err := g2engineconfigurationjson.BuildSimpleSystemConfigurationJson("")
-	if err != nil {
-		test.Log("Error:", err.Error())
-		assert.FailNow(test, actual)
-	}
-	printActual(test, actual)
-}
-
 // ----------------------------------------------------------------------------
 // Test interface functions
 // ----------------------------------------------------------------------------
@@ -341,11 +331,8 @@ func TestG2configmgr_Init(test *testing.T) {
 	g2configmgr := getTestObject(ctx, test)
 	moduleName := "Test module name"
 	verboseLogging := 0
-	iniParams, err := g2engineconfigurationjson.BuildSimpleSystemConfigurationJson("")
-	if err != nil {
-		test.Fatalf("Cannot construct system configuration: %v", err)
-	}
-	err = g2configmgr.Init(ctx, moduleName, iniParams, verboseLogging)
+	iniParams := "{}"
+	err := g2configmgr.Init(ctx, moduleName, iniParams, verboseLogging)
 	expectError(test, ctx, g2configmgr, err, "senzing-60124002")
 }
 
@@ -485,12 +472,9 @@ func ExampleG2configmgr_Init() {
 		GrpcClient: g2pb.NewG2ConfigMgrClient(grpcConnection),
 	}
 	moduleName := "Test module name"
-	iniParams, err := g2engineconfigurationjson.BuildSimpleSystemConfigurationJson("") // See https://pkg.go.dev/github.com/senzing/go-common
-	if err != nil {
-		fmt.Println(err)
-	}
+	iniParams := "{}"
 	verboseLogging := 0
-	err = g2configmgr.Init(ctx, moduleName, iniParams, verboseLogging)
+	err := g2configmgr.Init(ctx, moduleName, iniParams, verboseLogging)
 	if err != nil {
 		// This should produce a "senzing-60124002" error.
 	}

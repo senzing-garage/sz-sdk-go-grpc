@@ -24,10 +24,6 @@ CC = gcc
 
 SENZING_G2_DIR ?= /opt/senzing/g2
 
-# Exports
-
-export SENZING_TOOLS_DATABASE_URL=sqlite3://na:na@/tmp/sqlite/G2C.db
-
 # The first "make" target runs as default.
 
 .PHONY: default

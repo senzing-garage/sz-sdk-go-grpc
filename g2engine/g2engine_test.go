@@ -18,7 +18,6 @@ import (
 	g2configpb "github.com/senzing/g2-sdk-proto/go/g2config"
 	g2configmgrpb "github.com/senzing/g2-sdk-proto/go/g2configmgr"
 	g2pb "github.com/senzing/g2-sdk-proto/go/g2engine"
-	"github.com/senzing/go-common/g2engineconfigurationjson"
 	"github.com/senzing/go-common/record"
 	"github.com/senzing/go-common/truthset"
 	"github.com/senzing/go-logging/logger"
@@ -270,15 +269,6 @@ func setup() error {
 func teardown() error {
 	var err error = nil
 	return err
-}
-
-func TestBuildSimpleSystemConfigurationJson(test *testing.T) {
-	actual, err := g2engineconfigurationjson.BuildSimpleSystemConfigurationJson("")
-	if err != nil {
-		test.Log("Error:", err.Error())
-		assert.FailNow(test, actual)
-	}
-	printActual(test, actual)
 }
 
 // ----------------------------------------------------------------------------
@@ -978,10 +968,9 @@ func TestG2engine_Init(test *testing.T) {
 	ctx := context.TODO()
 	g2engine := getTestObject(ctx, test)
 	moduleName := "Test module name"
+	iniParams := "{}"
 	verboseLogging := 0 // 0 for no Senzing logging; 1 for logging
-	iniParams, err := g2engineconfigurationjson.BuildSimpleSystemConfigurationJson("")
-	testError(test, ctx, g2engine, err)
-	err = g2engine.Init(ctx, moduleName, iniParams, verboseLogging)
+	err := g2engine.Init(ctx, moduleName, iniParams, verboseLogging)
 	expectError(test, ctx, g2engine, err, "senzing-60144002")
 }
 
@@ -989,11 +978,10 @@ func TestG2engine_InitWithConfigID(test *testing.T) {
 	ctx := context.TODO()
 	g2engine := getTestObject(ctx, test)
 	moduleName := "Test module name"
+	iniParams := "{}"
 	var initConfigID int64 = 1
 	verboseLogging := 0 // 0 for no Senzing logging; 1 for logging
-	iniParams, err := g2engineconfigurationjson.BuildSimpleSystemConfigurationJson("")
-	testError(test, ctx, g2engine, err)
-	err = g2engine.InitWithConfigID(ctx, moduleName, iniParams, initConfigID, verboseLogging)
+	err := g2engine.InitWithConfigID(ctx, moduleName, iniParams, initConfigID, verboseLogging)
 	expectError(test, ctx, g2engine, err, "senzing-60144003")
 }
 
@@ -2079,12 +2067,9 @@ func ExampleG2engine_Init() {
 	ctx := context.TODO()
 	g2engine := getG2Engine(ctx)
 	moduleName := "Test module name"
-	iniParams, err := g2engineconfigurationjson.BuildSimpleSystemConfigurationJson("")
-	if err != nil {
-		fmt.Println(err)
-	}
+	iniParams := "{}"
 	verboseLogging := 0
-	err = g2engine.Init(ctx, moduleName, iniParams, verboseLogging)
+	err := g2engine.Init(ctx, moduleName, iniParams, verboseLogging)
 	if err != nil {
 		// This should produce a "senzing-60144002" error.
 	}
@@ -2096,13 +2081,10 @@ func ExampleG2engine_InitWithConfigID() {
 	ctx := context.TODO()
 	g2engine := getG2Engine(ctx)
 	moduleName := "Test module name"
-	iniParams, err := g2engineconfigurationjson.BuildSimpleSystemConfigurationJson("")
-	if err != nil {
-		fmt.Println(err)
-	}
+	iniParams := "{}"
 	initConfigID := int64(1)
 	verboseLogging := 0
-	err = g2engine.InitWithConfigID(ctx, moduleName, iniParams, initConfigID, verboseLogging)
+	err := g2engine.InitWithConfigID(ctx, moduleName, iniParams, initConfigID, verboseLogging)
 	if err != nil {
 		// This should produce a "senzing-60144003" error.
 	}

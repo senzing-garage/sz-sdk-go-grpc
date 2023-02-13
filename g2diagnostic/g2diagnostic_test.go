@@ -19,7 +19,6 @@ import (
 	g2configmgrpb "github.com/senzing/g2-sdk-proto/go/g2configmgr"
 	g2pb "github.com/senzing/g2-sdk-proto/go/g2diagnostic"
 	g2enginepb "github.com/senzing/g2-sdk-proto/go/g2engine"
-	"github.com/senzing/go-common/g2engineconfigurationjson"
 	"github.com/senzing/go-common/truthset"
 	"github.com/senzing/go-logging/messagelogger"
 	"github.com/stretchr/testify/assert"
@@ -267,15 +266,6 @@ func teardown() error {
 	return err
 }
 
-func TestBuildSimpleSystemConfigurationJson(test *testing.T) {
-	actual, err := g2engineconfigurationjson.BuildSimpleSystemConfigurationJson("")
-	if err != nil {
-		test.Log("Error:", err.Error())
-		assert.FailNow(test, actual)
-	}
-	printActual(test, actual)
-}
-
 // ----------------------------------------------------------------------------
 // Test interface functions
 // ----------------------------------------------------------------------------
@@ -445,10 +435,9 @@ func TestG2diagnostic_Init(test *testing.T) {
 		GrpcClient: g2pb.NewG2DiagnosticClient(grpcConnection),
 	}
 	moduleName := "Test module name"
+	iniParams := "{}"
 	verboseLogging := 0
-	iniParams, err := g2engineconfigurationjson.BuildSimpleSystemConfigurationJson("")
-	testError(test, ctx, g2diagnostic, err)
-	err = g2diagnostic.Init(ctx, moduleName, iniParams, verboseLogging)
+	err := g2diagnostic.Init(ctx, moduleName, iniParams, verboseLogging)
 	expectError(test, ctx, g2diagnostic, err, "senzing-60134002")
 }
 
@@ -460,10 +449,9 @@ func TestG2diagnostic_InitWithConfigID(test *testing.T) {
 	}
 	moduleName := "Test module name"
 	initConfigID := int64(1)
+	iniParams := "{}"
 	verboseLogging := 0
-	iniParams, err := g2engineconfigurationjson.BuildSimpleSystemConfigurationJson("")
-	testError(test, ctx, g2diagnostic, err)
-	err = g2diagnostic.InitWithConfigID(ctx, moduleName, iniParams, initConfigID, verboseLogging)
+	err := g2diagnostic.InitWithConfigID(ctx, moduleName, iniParams, initConfigID, verboseLogging)
 	expectError(test, ctx, g2diagnostic, err, "senzing-60134003")
 }
 
@@ -757,12 +745,9 @@ func ExampleG2diagnostic_Init() {
 		GrpcClient: g2pb.NewG2DiagnosticClient(grpcConnection),
 	}
 	moduleName := "Test module name"
-	iniParams, err := g2engineconfigurationjson.BuildSimpleSystemConfigurationJson("") // See https://pkg.go.dev/github.com/senzing/go-common
-	if err != nil {
-		fmt.Println(err)
-	}
+	iniParams := "{}"
 	verboseLogging := 0
-	err = g2diagnostic.Init(ctx, moduleName, iniParams, verboseLogging)
+	err := g2diagnostic.Init(ctx, moduleName, iniParams, verboseLogging)
 	if err != nil {
 		// This should produce a "senzing-60134002" error.
 	}
@@ -777,13 +762,10 @@ func ExampleG2diagnostic_InitWithConfigID() {
 		GrpcClient: g2pb.NewG2DiagnosticClient(grpcConnection),
 	}
 	moduleName := "Test module name"
-	iniParams, err := g2engineconfigurationjson.BuildSimpleSystemConfigurationJson("")
-	if err != nil {
-		fmt.Println(err)
-	}
+	iniParams := "{}"
 	initConfigID := int64(1)
 	verboseLogging := 0
-	err = g2diagnostic.InitWithConfigID(ctx, moduleName, iniParams, initConfigID, verboseLogging)
+	err := g2diagnostic.InitWithConfigID(ctx, moduleName, iniParams, initConfigID, verboseLogging)
 	if err != nil {
 		// This should produce a "senzing-60134003" error.
 	}

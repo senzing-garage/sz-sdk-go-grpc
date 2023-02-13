@@ -11,7 +11,6 @@ import (
 	truncator "github.com/aquilax/truncate"
 	"github.com/senzing/g2-sdk-go/g2api"
 	g2pb "github.com/senzing/g2-sdk-proto/go/g2config"
-	"github.com/senzing/go-common/g2engineconfigurationjson"
 	"github.com/senzing/go-logging/logger"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc"
@@ -128,15 +127,6 @@ func teardown() error {
 	return err
 }
 
-func TestBuildSimpleSystemConfigurationJson(test *testing.T) {
-	actual, err := g2engineconfigurationjson.BuildSimpleSystemConfigurationJson("")
-	if err != nil {
-		test.Log("Error:", err.Error())
-		assert.FailNow(test, actual)
-	}
-	printActual(test, actual)
-}
-
 // ----------------------------------------------------------------------------
 // Test interface functions
 // ----------------------------------------------------------------------------
@@ -232,9 +222,8 @@ func TestG2config_Init(test *testing.T) {
 	g2config := getTestObject(ctx, test)
 	moduleName := "Test module name"
 	verboseLogging := 0
-	iniParams, err := g2engineconfigurationjson.BuildSimpleSystemConfigurationJson("")
-	testError(test, ctx, g2config, err)
-	err = g2config.Init(ctx, moduleName, iniParams, verboseLogging)
+	iniParams := "{}"
+	err := g2config.Init(ctx, moduleName, iniParams, verboseLogging)
 	expectError(test, ctx, g2config, err, "senzing-60114002")
 }
 
@@ -376,12 +365,9 @@ func ExampleG2config_Init() {
 	ctx := context.TODO()
 	g2config := getG2Config(ctx)
 	moduleName := "Test module name"
-	iniParams, err := g2engineconfigurationjson.BuildSimpleSystemConfigurationJson("")
-	if err != nil {
-		fmt.Println(err)
-	}
+	iniParams := "{}"
 	verboseLogging := 0
-	err = g2config.Init(ctx, moduleName, iniParams, verboseLogging)
+	err := g2config.Init(ctx, moduleName, iniParams, verboseLogging)
 	if err != nil {
 		// This should produce a "senzing-60114002" error.
 	}

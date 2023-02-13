@@ -11,7 +11,6 @@ import (
 	truncator "github.com/aquilax/truncate"
 	"github.com/senzing/g2-sdk-go/g2api"
 	g2pb "github.com/senzing/g2-sdk-proto/go/g2product"
-	"github.com/senzing/go-common/g2engineconfigurationjson"
 	"github.com/senzing/go-logging/logger"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc"
@@ -134,15 +133,6 @@ func teardown() error {
 	return err
 }
 
-func TestBuildSimpleSystemConfigurationJson(test *testing.T) {
-	actual, err := g2engineconfigurationjson.BuildSimpleSystemConfigurationJson("")
-	if err != nil {
-		test.Log("Error:", err.Error())
-		assert.FailNow(test, actual)
-	}
-	printActual(test, actual)
-}
-
 // ----------------------------------------------------------------------------
 // Test interface functions
 // ----------------------------------------------------------------------------
@@ -151,10 +141,9 @@ func TestG2product_Init(test *testing.T) {
 	ctx := context.TODO()
 	g2product := getG2Product(ctx)
 	moduleName := "Test module name"
+	iniParams := "{}"
 	verboseLogging := 0
-	iniParams, err := g2engineconfigurationjson.BuildSimpleSystemConfigurationJson("")
-	testError(test, ctx, g2product, err)
-	err = g2product.Init(ctx, moduleName, iniParams, verboseLogging)
+	err := g2product.Init(ctx, moduleName, iniParams, verboseLogging)
 	expectError(test, ctx, g2product, err, "senzing-60164002")
 }
 
@@ -208,12 +197,9 @@ func ExampleG2product_Init() {
 	ctx := context.TODO()
 	g2product := getG2Product(ctx)
 	moduleName := "Test module name"
-	iniParams, err := g2engineconfigurationjson.BuildSimpleSystemConfigurationJson("")
-	if err != nil {
-		fmt.Println(err)
-	}
+	iniParams := "{}"
 	verboseLogging := 0
-	err = g2product.Init(ctx, moduleName, iniParams, verboseLogging)
+	err := g2product.Init(ctx, moduleName, iniParams, verboseLogging)
 	if err != nil {
 		// This should produce a "senzing-60164002" error.
 	}
