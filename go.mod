@@ -1,6 +1,6 @@
 module github.com/senzing/g2-sdk-go-grpc
 
-go 1.19
+go 1.20
 
 require (
 	github.com/aquilax/truncate v1.0.0
@@ -8,7 +8,7 @@ require (
 	github.com/senzing/g2-sdk-proto/go v0.0.0-20230126140313-273e96bc7dbd
 	github.com/senzing/go-common v0.1.1
 	github.com/senzing/go-logging v1.1.3
-	github.com/senzing/go-observing v0.1.0
+	github.com/senzing/go-observing v0.1.1
 	github.com/stretchr/testify v1.8.1
 	google.golang.org/grpc v1.53.0
 )
