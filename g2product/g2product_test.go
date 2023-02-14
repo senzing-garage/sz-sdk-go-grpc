@@ -23,7 +23,7 @@ const (
 )
 
 var (
-	g2productSingleton g2api.G2productInterface
+	g2productSingleton g2api.G2product
 	grpcAddress        = "localhost:8258"
 	grpcConnection     *grpc.ClientConn
 )
@@ -44,7 +44,7 @@ func getGrpcConnection() *grpc.ClientConn {
 	return grpcConnection
 }
 
-func getTestObject(ctx context.Context, test *testing.T) g2api.G2productInterface {
+func getTestObject(ctx context.Context, test *testing.T) g2api.G2product {
 	if g2productSingleton == nil {
 		grpcConnection := getGrpcConnection()
 		g2productSingleton = &G2product{
@@ -54,7 +54,7 @@ func getTestObject(ctx context.Context, test *testing.T) g2api.G2productInterfac
 	return g2productSingleton
 }
 
-func getG2Product(ctx context.Context) g2api.G2productInterface {
+func getG2Product(ctx context.Context) g2api.G2product {
 	if g2productSingleton == nil {
 		grpcConnection := getGrpcConnection()
 		g2productSingleton = &G2product{
@@ -78,14 +78,14 @@ func printActual(test *testing.T, actual interface{}) {
 	printResult(test, "Actual", actual)
 }
 
-func testError(test *testing.T, ctx context.Context, g2product g2api.G2productInterface, err error) {
+func testError(test *testing.T, ctx context.Context, g2product g2api.G2product, err error) {
 	if err != nil {
 		test.Log("Error:", err.Error())
 		assert.FailNow(test, err.Error())
 	}
 }
 
-func expectError(test *testing.T, ctx context.Context, g2product g2api.G2productInterface, err error, messageId string) {
+func expectError(test *testing.T, ctx context.Context, g2product g2api.G2product, err error, messageId string) {
 	if err != nil {
 		errorMessage := err.Error()[strings.Index(err.Error(), "{"):]
 		var dictionary map[string]interface{}
@@ -99,7 +99,7 @@ func expectError(test *testing.T, ctx context.Context, g2product g2api.G2product
 	}
 }
 
-func testErrorNoFail(test *testing.T, ctx context.Context, g2product g2api.G2productInterface, err error) {
+func testErrorNoFail(test *testing.T, ctx context.Context, g2product g2api.G2product, err error) {
 	if err != nil {
 		test.Log("Error:", err.Error())
 	}

@@ -23,7 +23,7 @@ const (
 )
 
 var (
-	g2configSingleton g2api.G2configInterface
+	g2configSingleton g2api.G2config
 	grpcAddress       = "localhost:8258"
 	grpcConnection    *grpc.ClientConn
 )
@@ -44,7 +44,7 @@ func getGrpcConnection() *grpc.ClientConn {
 	return grpcConnection
 }
 
-func getTestObject(ctx context.Context, test *testing.T) g2api.G2configInterface {
+func getTestObject(ctx context.Context, test *testing.T) g2api.G2config {
 	if g2configSingleton == nil {
 		grpcConnection := getGrpcConnection()
 		g2configSingleton = &G2config{
@@ -54,7 +54,7 @@ func getTestObject(ctx context.Context, test *testing.T) g2api.G2configInterface
 	return g2configSingleton
 }
 
-func getG2Config(ctx context.Context) g2api.G2configInterface {
+func getG2Config(ctx context.Context) g2api.G2config {
 	if g2configSingleton == nil {
 		grpcConnection := getGrpcConnection()
 		g2configSingleton = &G2config{
@@ -78,14 +78,14 @@ func printActual(test *testing.T, actual interface{}) {
 	printResult(test, "Actual", actual)
 }
 
-func testError(test *testing.T, ctx context.Context, g2config g2api.G2configInterface, err error) {
+func testError(test *testing.T, ctx context.Context, g2config g2api.G2config, err error) {
 	if err != nil {
 		test.Log("Error:", err.Error())
 		assert.FailNow(test, err.Error())
 	}
 }
 
-func expectError(test *testing.T, ctx context.Context, g2config g2api.G2configInterface, err error, messageId string) {
+func expectError(test *testing.T, ctx context.Context, g2config g2api.G2config, err error, messageId string) {
 	if err != nil {
 		errorMessage := err.Error()[strings.Index(err.Error(), "{"):]
 		var dictionary map[string]interface{}

@@ -40,9 +40,9 @@ type GetEntityByRecordIDResponse struct {
 }
 
 var (
-	g2configSingleton    g2api.G2configInterface
-	g2configmgrSingleton g2api.G2configmgrInterface
-	g2engineSingleton    g2api.G2engineInterface
+	g2configSingleton    g2api.G2config
+	g2configmgrSingleton g2api.G2configmgr
+	g2engineSingleton    g2api.G2engine
 	grpcAddress          = "localhost:8258"
 	grpcConnection       *grpc.ClientConn
 	localLogger          messagelogger.MessageLoggerInterface
@@ -64,7 +64,7 @@ func getGrpcConnection() *grpc.ClientConn {
 	return grpcConnection
 }
 
-func getTestObject(ctx context.Context, test *testing.T) g2api.G2engineInterface {
+func getTestObject(ctx context.Context, test *testing.T) g2api.G2engine {
 	if g2engineSingleton == nil {
 		grpcConnection := getGrpcConnection()
 		g2engineSingleton = &G2engine{
@@ -74,7 +74,7 @@ func getTestObject(ctx context.Context, test *testing.T) g2api.G2engineInterface
 	return g2engineSingleton
 }
 
-func getG2Config(ctx context.Context) g2api.G2configInterface {
+func getG2Config(ctx context.Context) g2api.G2config {
 	if g2configSingleton == nil {
 		grpcConnection := getGrpcConnection()
 		g2configSingleton = &g2config.G2config{
@@ -84,7 +84,7 @@ func getG2Config(ctx context.Context) g2api.G2configInterface {
 	return g2configSingleton
 }
 
-func getG2Configmgr(ctx context.Context) g2api.G2configmgrInterface {
+func getG2Configmgr(ctx context.Context) g2api.G2configmgr {
 	if g2configmgrSingleton == nil {
 		grpcConnection := getGrpcConnection()
 		g2configmgrSingleton = &g2configmgr.G2configmgr{
@@ -94,7 +94,7 @@ func getG2Configmgr(ctx context.Context) g2api.G2configmgrInterface {
 	return g2configmgrSingleton
 }
 
-func getG2Engine(ctx context.Context) g2api.G2engineInterface {
+func getG2Engine(ctx context.Context) g2api.G2engine {
 	if g2engineSingleton == nil {
 		grpcConnection := getGrpcConnection()
 		g2engineSingleton = &G2engine{
@@ -148,14 +148,14 @@ func printActual(test *testing.T, actual interface{}) {
 	printResult(test, "Actual", actual)
 }
 
-func testError(test *testing.T, ctx context.Context, g2engine g2api.G2engineInterface, err error) {
+func testError(test *testing.T, ctx context.Context, g2engine g2api.G2engine, err error) {
 	if err != nil {
 		test.Log("Error:", err.Error())
 		assert.FailNow(test, err.Error())
 	}
 }
 
-func expectError(test *testing.T, ctx context.Context, g2engine g2api.G2engineInterface, err error, messageId string) {
+func expectError(test *testing.T, ctx context.Context, g2engine g2api.G2engine, err error, messageId string) {
 	if err != nil {
 		errorMessage := err.Error()[strings.Index(err.Error(), "{"):]
 		var dictionary map[string]interface{}
@@ -169,7 +169,7 @@ func expectError(test *testing.T, ctx context.Context, g2engine g2api.G2engineIn
 	}
 }
 
-func testErrorNoFail(test *testing.T, ctx context.Context, g2engine g2api.G2engineInterface, err error) {
+func testErrorNoFail(test *testing.T, ctx context.Context, g2engine g2api.G2engine, err error) {
 	if err != nil {
 		test.Log("Error:", err.Error())
 	}
