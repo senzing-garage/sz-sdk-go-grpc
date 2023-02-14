@@ -1,4 +1,4 @@
-# Makefile that builds the G2 SDK for Go over gRPC, a "go" program.
+# Makefile for g2-sdk-go-grpc.
 
 # "Simple expanded" variables (':=')
 
@@ -21,25 +21,20 @@ GO_PACKAGE_NAME := $(shell echo $(GIT_REMOTE_URL) | sed -e 's|^git@github.com:|g
 CC = gcc
 
 # Conditional assignment. ('?=')
+# Can be overridden with "export"
+# Example: "export LD_LIBRARY_PATH=/path/to/my/senzing/g2/lib"
 
+LD_LIBRARY_PATH ?= ${SENZING_G2_DIR}/lib
 SENZING_G2_DIR ?= /opt/senzing/g2
+
+# Export environment variables.
+
+.EXPORT_ALL_VARIABLES:
 
 # The first "make" target runs as default.
 
 .PHONY: default
 default: help
-
-# -----------------------------------------------------------------------------
-# Export environment variables.
-# -----------------------------------------------------------------------------
-
-.EXPORT_ALL_VARIABLES:
-
-# Flags for the C compiler.
-# Can be overridden with "export"
-# Example: "export LD_LIBRARY_PATH=/path/to/my/senzing/g2/lib"
-
-LD_LIBRARY_PATH ?= ${SENZING_G2_DIR}/lib
 
 # -----------------------------------------------------------------------------
 # Build
