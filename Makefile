@@ -61,12 +61,12 @@ build-linux:
 	@GOOS=linux \
 	GOARCH=amd64 \
 	go build \
-	  -ldflags \
-	    "-X 'main.buildIteration=${BUILD_ITERATION}' \
-	     -X 'main.buildVersion=${BUILD_VERSION}' \
-	     -X 'main.programName=${PROGRAM_NAME}' \
-	    " \
-	  -o $(GO_PACKAGE_NAME)
+		-ldflags \
+			"-X 'main.buildIteration=${BUILD_ITERATION}' \
+			-X 'main.buildVersion=${BUILD_VERSION}' \
+			-X 'main.programName=${PROGRAM_NAME}' \
+			" \
+		-o $(GO_PACKAGE_NAME)
 	@mkdir -p $(TARGET_DIRECTORY)/linux || true
 	@mv $(GO_PACKAGE_NAME) $(TARGET_DIRECTORY)/linux
 
@@ -99,7 +99,7 @@ run:
 .PHONY: update-pkg-cache
 update-pkg-cache:
 	@GOPROXY=https://proxy.golang.org GO111MODULE=on \
-	go get $(GO_PACKAGE_NAME)@$(BUILD_TAG)
+		go get $(GO_PACKAGE_NAME)@$(BUILD_TAG)
 
 
 .PHONY: clean
