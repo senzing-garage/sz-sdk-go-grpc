@@ -14,9 +14,6 @@ adhering to the
 communicates with a
 [Senzing gRPC server](https://github.com/Senzing/servegrpc).
 
-`g2-sdk-go-grpc` is one of the implementations returned by the
-[Senzing/go-sdk-abstract-factory](https://github.com/Senzing/go-sdk-abstract-factory)
-
 [![Go Reference](https://pkg.go.dev/badge/github.com/senzing/g2-sdk-go-grpc.svg)](https://pkg.go.dev/github.com/senzing/g2-sdk-go-grpc)
 [![Go Report Card](https://goreportcard.com/badge/github.com/senzing/g2-sdk-go-grpc)](https://goreportcard.com/report/github.com/senzing/g2-sdk-go-grpc)
 [![go-test.yaml](https://github.com/Senzing/g2-sdk-go-grpc/actions/workflows/go-test.yaml/badge.svg)](https://github.com/Senzing/g2-sdk-go-grpc/actions/workflows/go-test.yaml)
@@ -36,6 +33,18 @@ interfaces:
 1. [G2diagnostic](https://pkg.go.dev/github.com/senzing/g2-sdk-go/g2api#G2diagnostic)
 1. [G2engine](https://pkg.go.dev/github.com/senzing/g2-sdk-go/g2api#G2engine)
 1. [G2product](https://pkg.go.dev/github.com/senzing/g2-sdk-go/g2api#G2product)
+
+Other implementations of the
+[g2-sdk-go](https://github.com/Senzing/g2-sdk-go)
+interface include:
+
+- [g2-sdk-go-base](https://github.com/Senzing/g2-sdk-go-base) - for
+  calling Senzing SDK APIs natively
+- [g2-sdk-go-mock](https://github.com/Senzing/g2-sdk-go-mock) - for
+  unit testing calls to the Senzing Go SDK
+- [go-sdk-abstract-factory](https://github.com/Senzing/go-sdk-abstract-factory) - An
+  [abstract factory pattern](https://en.wikipedia.org/wiki/Abstract_factory_pattern)
+  for switching among implementations
 
 ## Use
 
