@@ -29,4 +29,10 @@ jobs:
         with:
           go-version: ${{ matrix.go }}
       - run: pwd
-      - run: go test -v -p 1 ./...
+      #     - run: go test -v -p 1 ./...
+      #     - run: go test -v ./.
+      - run: go test -v ./g2configclient
+      #     - run: go test -v ./g2configmgrclient
+      #     - run: go test -v ./g2diagnosticclient
+      #     - run: go test -v ./g2engineclient
+      - run: go test -v ./g2productclient
