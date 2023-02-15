@@ -39,5 +39,6 @@ jobs:
       - run: sudo cp testdata/senzing-license/g2.lic                         /etc/opt/senzing
       - run: mkdir /tmp/sqlite
       - run: cp testdata/sqlite/G2C.db /tmp/sqlite/G2C.db
+      - run: docker pull senzing/servegrpc
       - run: docker run --env SENZING_TOOLS_DATABASE_URL --detach --publish 8258:8258 senzing/servegrpc
       - run: go test -v -p 1 ./...
