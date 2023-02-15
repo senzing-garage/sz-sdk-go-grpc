@@ -31,8 +31,8 @@ jobs:
       - run: pwd
       #     - run: go test -v -p 1 ./...
       #     - run: go test -v ./.
-      - run: go test -v ./g2configclient
-      #     - run: go test -v ./g2configmgrclient
-      #     - run: go test -v ./g2diagnosticclient
-      #     - run: go test -v ./g2engineclient
-      - run: go test -v ./g2productclient
+      - run: go test -v ./g2config
+      #     - run: go test -v ./g2configmgr
+      #     - run: go test -v ./g2diagnostic
+      #     - run: go test -v ./g2engine
+      - run: go test -v ./g2product
