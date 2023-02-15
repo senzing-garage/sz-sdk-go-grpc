@@ -8,11 +8,12 @@ the recommendation is not to use it yet.
 
 ## Synopsis
 
-The Senzing g2-sdk-go-grpc packages provide a Software Development Kit that
+The Senzing `g2-sdk-go-grpc` packages provide a Go Software Development Kit
+adhering to the
+[g2-sdk-go](https://github.com/Senzing/g2-sdk-go) interfaces that
 communicates with a
-[Senzing gRPC server](https://github.com/Senzing/servegrpc)
-that supports the
-[]()
+[Senzing gRPC server](https://github.com/Senzing/servegrpc).
+
 `g2-sdk-go-grpc` is one of the implementations returned by the
 [Senzing/go-sdk-abstract-factory](https://github.com/Senzing/go-sdk-abstract-factory)
 
