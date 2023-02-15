@@ -1,4 +1,4 @@
-# Makefile that builds the G2 SDK for Go over gRPC, a "go" program.
+# Makefile for g2-sdk-go-grpc.
 
 # "Simple expanded" variables (':=')
 
@@ -14,36 +14,26 @@ BUILD_VERSION := $(shell git describe --always --tags --abbrev=0 --dirty)
 BUILD_TAG := $(shell git describe --always --tags --abbrev=0)
 BUILD_ITERATION := $(shell git log $(BUILD_TAG)..HEAD --oneline | wc -l | sed 's/^ *//')
 GIT_REMOTE_URL := $(shell git config --get remote.origin.url)
-GO_PACKAGE_NAME := $(shell echo $(GIT_REMOTE_URL) | sed -e 's|^git@github.com:|github.com/|' -e 's|\.git$$||')
+GO_PACKAGE_NAME := $(shell echo $(GIT_REMOTE_URL) | sed -e 's|^git@github.com:|github.com/|' -e 's|\.git$$||' -e 's|Senzing|senzing|')
 
 # Recursive assignment ('=')
 
 CC = gcc
 
 # Conditional assignment. ('?=')
+# Can be overridden with "export"
+# Example: "export LD_LIBRARY_PATH=/path/to/my/senzing/g2/lib"
 
-SENZING_G2_DIR ?= /opt/senzing/g2
+LD_LIBRARY_PATH ?= /opt/senzing/g2/lib
 
-# Exports
+# Export environment variables.
 
-export SENZING_TOOLS_DATABASE_URL=sqlite3://na:na@/tmp/sqlite/G2C.db
+.EXPORT_ALL_VARIABLES:
 
 # The first "make" target runs as default.
 
 .PHONY: default
 default: help
-
-# -----------------------------------------------------------------------------
-# Export environment variables.
-# -----------------------------------------------------------------------------
-
-.EXPORT_ALL_VARIABLES:
-
-# Flags for the C compiler.
-# Can be overridden with "export"
-# Example: "export LD_LIBRARY_PATH=/path/to/my/senzing/g2/lib"
-
-LD_LIBRARY_PATH ?= ${SENZING_G2_DIR}/lib
 
 # -----------------------------------------------------------------------------
 # Build
@@ -54,6 +44,25 @@ dependencies:
 	@go get -u ./...
 	@go get -t -u ./...
 	@go mod tidy
+
+
+.PHONY: build
+build: dependencies build-linux
+
+
+.PHONY: build-linux
+build-linux:
+	@GOOS=linux \
+	GOARCH=amd64 \
+	go build \
+		-ldflags \
+			"-X 'main.buildIteration=${BUILD_ITERATION}' \
+			-X 'main.buildVersion=${BUILD_VERSION}' \
+			-X 'main.programName=${PROGRAM_NAME}' \
+			" \
+		-o $(GO_PACKAGE_NAME)
+	@mkdir -p $(TARGET_DIRECTORY)/linux || true
+	@mv $(GO_PACKAGE_NAME) $(TARGET_DIRECTORY)/linux
 
 # -----------------------------------------------------------------------------
 # Test
@@ -84,7 +93,8 @@ run:
 .PHONY: update-pkg-cache
 update-pkg-cache:
 	@GOPROXY=https://proxy.golang.org GO111MODULE=on \
-	go get $(GO_PACKAGE_NAME)@$(BUILD_TAG)
+		go get $(GO_PACKAGE_NAME)@$(BUILD_TAG)
+
 
 .PHONY: clean
 clean:
