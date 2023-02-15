@@ -17,6 +17,11 @@ jobs:
       matrix:
         go: ["1.20"]
     name: Go ${{ matrix.go }} sample
+    services:
+      servegrpc:
+        image: senzing/servegrpc
+        ports:
+          - 8258:8258
     steps:
       - uses: actions/checkout@v3
       - name: Setup go
@@ -24,21 +29,4 @@ jobs:
         with:
           go-version: ${{ matrix.go }}
       - run: pwd
-      - run: wget -qO /tmp/senzingrepo_1.0.1-1_amd64.deb https://senzing-production-apt.s3.amazonaws.com/senzingrepo_1.0.1-1_amd64.deb
-      - run: sudo apt-get -y install /tmp/senzingrepo_1.0.1-1_amd64.deb
-      - run: sudo apt-get update
-      - run: sudo --preserve-env apt-get -y install senzingapi
-      - run: sudo mv /opt/senzing/data/3.0.0/* /opt/senzing/data/
-      - run: sudo mkdir /etc/opt/senzing
-      - run: sudo cp /opt/senzing/g2/resources/templates/cfgVariant.json     /etc/opt/senzing
-      - run: sudo cp /opt/senzing/g2/resources/templates/customGn.txt        /etc/opt/senzing
-      - run: sudo cp /opt/senzing/g2/resources/templates/customOn.txt        /etc/opt/senzing
-      - run: sudo cp /opt/senzing/g2/resources/templates/customSn.txt        /etc/opt/senzing
-      - run: sudo cp /opt/senzing/g2/resources/templates/defaultGNRCP.config /etc/opt/senzing
-      - run: sudo cp /opt/senzing/g2/resources/templates/stb.config          /etc/opt/senzing
-      - run: sudo cp testdata/senzing-license/g2.lic                         /etc/opt/senzing
-      - run: mkdir /tmp/sqlite
-      - run: cp testdata/sqlite/G2C.db /tmp/sqlite/G2C.db
-      - run: docker pull senzing/servegrpc
-      - run: docker run --env SENZING_TOOLS_DATABASE_URL --detach --publish 8258:8258 senzing/servegrpc
       - run: go test -v -p 1 ./...
