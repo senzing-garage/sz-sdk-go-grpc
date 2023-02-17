@@ -144,7 +144,7 @@ func getLogger(ctx context.Context) (messagelogger.MessageLoggerInterface, error
 func demonstrateConfigFunctions(ctx context.Context, g2Config g2api.G2config, g2Configmgr g2api.G2configmgr) error {
 	now := time.Now()
 
-	// Using G2Config: Create a default configuration in memory
+	// Using G2Config: Create a default configuration in memory.
 
 	configHandle, err := g2Config.Create(ctx)
 	if err != nil {
@@ -206,15 +206,22 @@ func demonstrateAdditionalFunctions(ctx context.Context, g2Diagnostic g2api.G2di
 
 	actual, err := g2Diagnostic.GetPhysicalCores(ctx)
 	if err != nil {
-		logger.Log(5300, err)
+		failOnError(5300, err)
 	}
 	logger.Log(2002, actual)
+
+	// Using G2Engine: Purge repository.
+
+	err = g2Engine.PurgeRepository(ctx)
+	if err != nil {
+		failOnError(5301, err)
+	}
 
 	// Using G2Engine: Add records with information returned.
 
 	withInfo, err := demonstrateAddRecord(ctx, g2Engine)
 	if err != nil {
-		logger.Log(5302, err)
+		failOnError(5302, err)
 	}
 	logger.Log(2003, withInfo)
 
@@ -222,11 +229,22 @@ func demonstrateAdditionalFunctions(ctx context.Context, g2Diagnostic g2api.G2di
 
 	license, err := g2Product.License(ctx)
 	if err != nil {
-		logger.Log(5303, err)
+		failOnError(5303, err)
 	}
 	logger.Log(2004, license)
 
+	// Using G2Engine: Purge repository again.
+
+	err = g2Engine.PurgeRepository(ctx)
+	if err != nil {
+		failOnError(5304, err)
+	}
 	return err
+}
+
+func failOnError(msgId int, err error) {
+	logger.Log(msgId, err)
+	panic(err.Error())
 }
 
 // ----------------------------------------------------------------------------
@@ -242,7 +260,7 @@ func main() {
 	log.SetFlags(0)
 	logger, err = getLogger(ctx)
 	if err != nil {
-		logger.Log(5000, err)
+		failOnError(5000, err)
 	}
 
 	// Test logger.
@@ -269,14 +287,14 @@ func main() {
 
 	g2Config, err := getG2config(ctx)
 	if err != nil {
-		logger.Log(5001, err)
+		failOnError(5001, err)
 	}
 	g2Config.RegisterObserver(ctx, observer1)
 	g2Config.RegisterObserver(ctx, observer2)
 
 	g2Configmgr, err := getG2configmgr(ctx)
 	if err != nil {
-		logger.Log(5002, err)
+		failOnError(5005, err)
 	}
 	g2Configmgr.RegisterObserver(ctx, observer1)
 
@@ -284,26 +302,26 @@ func main() {
 
 	err = demonstrateConfigFunctions(ctx, g2Config, g2Configmgr)
 	if err != nil {
-		logger.Log(5003, err)
+		failOnError(5008, err)
 	}
 
 	// Now that a Senzing configuration is installed, get the remainder of the Senzing objects.
 
 	g2Diagnostic, err := getG2diagnostic(ctx)
 	if err != nil {
-		logger.Log(5004, err)
+		failOnError(5009, err)
 	}
 	g2Diagnostic.RegisterObserver(ctx, observer1)
 
 	g2Engine, err := getG2engine(ctx)
 	if err != nil {
-		logger.Log(5005, err)
+		failOnError(5010, err)
 	}
 	g2Engine.RegisterObserver(ctx, observer1)
 
 	g2Product, err := getG2product(ctx)
 	if err != nil {
-		logger.Log(5006, err)
+		failOnError(5011, err)
 	}
 	g2Product.RegisterObserver(ctx, observer1)
 
@@ -311,7 +329,7 @@ func main() {
 
 	err = demonstrateAdditionalFunctions(ctx, g2Diagnostic, g2Engine, g2Product)
 	if err != nil {
-		logger.Log(5007, err)
+		failOnError(5015, err)
 	}
 
 	fmt.Printf("\n-------------------------------------------------------------------------------\n\n")
