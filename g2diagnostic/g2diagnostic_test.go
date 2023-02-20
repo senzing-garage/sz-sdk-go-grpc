@@ -478,7 +478,7 @@ func TestG2diagnostic_Destroy(test *testing.T) {
 // ----------------------------------------------------------------------------
 
 func ExampleG2diagnostic_CheckDBPerf() {
-	// For more information, visit https://github.com/Senzing/g2-sdk-go-grpc/blob/main/g2diagnosticclient/g2diagnosticclient_test.go
+	// For more information, visit https://github.com/Senzing/g2-sdk-go-grpc/blob/main/g2diagnostic/g2diagnostic_test.go
 	ctx := context.TODO()
 	g2diagnostic := getG2Diagnostic(ctx)
 	secondsToRun := 1
@@ -491,7 +491,7 @@ func ExampleG2diagnostic_CheckDBPerf() {
 }
 
 func ExampleG2diagnostic_CloseEntityListBySize() {
-	// For more information, visit https://github.com/Senzing/g2-sdk-go-grpc/blob/main/g2diagnosticclient/g2diagnosticclient_test.go
+	// For more information, visit https://github.com/Senzing/g2-sdk-go-grpc/blob/main/g2diagnostic/g2diagnostic_test.go
 	ctx := context.TODO()
 	g2diagnostic := getG2Diagnostic(ctx)
 	aSize := 1000
@@ -507,7 +507,7 @@ func ExampleG2diagnostic_CloseEntityListBySize() {
 }
 
 // func ExampleG2diagnostic_FetchNextEntityBySize() {
-// 	// For more information, visit https://github.com/Senzing/g2-sdk-go-grpc/blob/main/g2diagnosticclient/g2diagnosticclient_test.go
+// 	// For more information, visit https://github.com/Senzing/g2-sdk-go-grpc/blob/main/g2diagnostic/g2diagnostic_test.go
 // 	ctx := context.TODO()
 // 	g2diagnostic := getG2Diagnostic(ctx)
 // 	aSize := 1
@@ -522,7 +522,7 @@ func ExampleG2diagnostic_CloseEntityListBySize() {
 // }
 
 func ExampleG2diagnostic_FindEntitiesByFeatureIDs() {
-	// For more information, visit https://github.com/Senzing/g2-sdk-go-grpc/blob/main/g2diagnosticclient/g2diagnosticclient_test.go
+	// For more information, visit https://github.com/Senzing/g2-sdk-go-grpc/blob/main/g2diagnostic/g2diagnostic_test.go
 	ctx := context.TODO()
 	g2diagnostic := getG2Diagnostic(ctx)
 	features := `{"ENTITY_ID":1,"LIB_FEAT_IDS":[1,3,4]}`
@@ -535,7 +535,7 @@ func ExampleG2diagnostic_FindEntitiesByFeatureIDs() {
 }
 
 func ExampleG2diagnostic_GetAvailableMemory() {
-	// For more information, visit https://github.com/Senzing/g2-sdk-go-grpc/blob/main/g2diagnosticclient/g2diagnosticclient_test.go
+	// For more information, visit https://github.com/Senzing/g2-sdk-go-grpc/blob/main/g2diagnostic/g2diagnostic_test.go
 	ctx := context.TODO()
 	g2diagnostic := getG2Diagnostic(ctx)
 	result, err := g2diagnostic.GetAvailableMemory(ctx)
@@ -547,7 +547,7 @@ func ExampleG2diagnostic_GetAvailableMemory() {
 }
 
 func ExampleG2diagnostic_GetDataSourceCounts() {
-	// For more information, visit https://github.com/Senzing/g2-sdk-go-grpc/blob/main/g2diagnosticclient/g2diagnosticclient_test.go
+	// For more information, visit https://github.com/Senzing/g2-sdk-go-grpc/blob/main/g2diagnostic/g2diagnostic_test.go
 	ctx := context.TODO()
 	g2diagnostic := getG2Diagnostic(ctx)
 	result, err := g2diagnostic.GetDataSourceCounts(ctx)
@@ -559,7 +559,7 @@ func ExampleG2diagnostic_GetDataSourceCounts() {
 }
 
 func ExampleG2diagnostic_GetDBInfo() {
-	// For more information, visit https://github.com/Senzing/g2-sdk-go-grpc/blob/main/g2diagnosticclient/g2diagnosticclient_test.go
+	// For more information, visit https://github.com/Senzing/g2-sdk-go-grpc/blob/main/g2diagnostic/g2diagnostic_test.go
 	ctx := context.TODO()
 	g2diagnostic := getG2Diagnostic(ctx)
 	result, err := g2diagnostic.GetDBInfo(ctx)
@@ -571,7 +571,7 @@ func ExampleG2diagnostic_GetDBInfo() {
 }
 
 func ExampleG2diagnostic_GetEntityDetails() {
-	// For more information, visit https://github.com/Senzing/g2-sdk-go-grpc/blob/main/g2diagnosticclient/g2diagnosticclient_test.go
+	// For more information, visit https://github.com/Senzing/g2-sdk-go-grpc/blob/main/g2diagnostic/g2diagnostic_test.go
 	ctx := context.TODO()
 	g2diagnostic := getG2Diagnostic(ctx)
 	entityID := int64(1)
@@ -585,7 +585,7 @@ func ExampleG2diagnostic_GetEntityDetails() {
 }
 
 func ExampleG2diagnostic_GetEntityListBySize() {
-	// For more information, visit https://github.com/Senzing/g2-sdk-go-grpc/blob/main/g2diagnosticclient/g2diagnosticclient_test.go
+	// For more information, visit https://github.com/Senzing/g2-sdk-go-grpc/blob/main/g2diagnostic/g2diagnostic_test.go
 	ctx := context.TODO()
 	g2diagnostic := getG2Diagnostic(ctx)
 	entitySize := 1000
@@ -598,7 +598,7 @@ func ExampleG2diagnostic_GetEntityListBySize() {
 }
 
 func ExampleG2diagnostic_GetEntityResume() {
-	// For more information, visit https://github.com/Senzing/g2-sdk-go-grpc/blob/main/g2diagnosticclient/g2diagnosticclient_test.go
+	// For more information, visit https://github.com/Senzing/g2-sdk-go-grpc/blob/main/g2diagnostic/g2diagnostic_test.go
 	ctx := context.TODO()
 	g2diagnostic := getG2Diagnostic(ctx)
 	entityID := int64(1)
@@ -611,7 +611,7 @@ func ExampleG2diagnostic_GetEntityResume() {
 }
 
 func ExampleG2diagnostic_GetEntitySizeBreakdown() {
-	// For more information, visit https://github.com/Senzing/g2-sdk-go-grpc/blob/main/g2diagnosticclient/g2diagnosticclient_test.go
+	// For more information, visit https://github.com/Senzing/g2-sdk-go-grpc/blob/main/g2diagnostic/g2diagnostic_test.go
 	ctx := context.TODO()
 	g2diagnostic := getG2Diagnostic(ctx)
 	minimumEntitySize := 1
@@ -625,7 +625,7 @@ func ExampleG2diagnostic_GetEntitySizeBreakdown() {
 }
 
 func ExampleG2diagnostic_GetFeature() {
-	// For more information, visit https://github.com/Senzing/g2-sdk-go-grpc/blob/main/g2diagnosticclient/g2diagnosticclient_test.go
+	// For more information, visit https://github.com/Senzing/g2-sdk-go-grpc/blob/main/g2diagnostic/g2diagnostic_test.go
 	ctx := context.TODO()
 	g2diagnostic := getG2Diagnostic(ctx)
 	libFeatID := int64(1)
@@ -638,7 +638,7 @@ func ExampleG2diagnostic_GetFeature() {
 }
 
 func ExampleG2diagnostic_GetGenericFeatures() {
-	// For more information, visit https://github.com/Senzing/g2-sdk-go-grpc/blob/main/g2diagnosticclient/g2diagnosticclient_test.go
+	// For more information, visit https://github.com/Senzing/g2-sdk-go-grpc/blob/main/g2diagnostic/g2diagnostic_test.go
 	ctx := context.TODO()
 	g2diagnostic := getG2Diagnostic(ctx)
 	featureType := "PHONE"
@@ -652,7 +652,7 @@ func ExampleG2diagnostic_GetGenericFeatures() {
 }
 
 func ExampleG2diagnostic_GetLogicalCores() {
-	// For more information, visit https://github.com/Senzing/g2-sdk-go-grpc/blob/main/g2diagnosticclient/g2diagnosticclient_test.go
+	// For more information, visit https://github.com/Senzing/g2-sdk-go-grpc/blob/main/g2diagnostic/g2diagnostic_test.go
 	ctx := context.TODO()
 	g2diagnostic := getG2Diagnostic(ctx)
 	result, err := g2diagnostic.GetLogicalCores(ctx)
@@ -664,7 +664,7 @@ func ExampleG2diagnostic_GetLogicalCores() {
 }
 
 func ExampleG2diagnostic_GetMappingStatistics() {
-	// For more information, visit https://github.com/Senzing/g2-sdk-go-grpc/blob/main/g2diagnosticclient/g2diagnosticclient_test.go
+	// For more information, visit https://github.com/Senzing/g2-sdk-go-grpc/blob/main/g2diagnostic/g2diagnostic_test.go
 	ctx := context.TODO()
 	g2diagnostic := getG2Diagnostic(ctx)
 	includeInternalFeatures := 1
@@ -677,7 +677,7 @@ func ExampleG2diagnostic_GetMappingStatistics() {
 }
 
 func ExampleG2diagnostic_GetPhysicalCores() {
-	// For more information, visit https://github.com/Senzing/g2-sdk-go-grpc/blob/main/g2diagnosticclient/g2diagnosticclient_test.go
+	// For more information, visit https://github.com/Senzing/g2-sdk-go-grpc/blob/main/g2diagnostic/g2diagnostic_test.go
 	ctx := context.TODO()
 	g2diagnostic := getG2Diagnostic(ctx)
 	result, err := g2diagnostic.GetPhysicalCores(ctx)
@@ -689,7 +689,7 @@ func ExampleG2diagnostic_GetPhysicalCores() {
 }
 
 func ExampleG2diagnostic_GetRelationshipDetails() {
-	// For more information, visit https://github.com/Senzing/g2-sdk-go-grpc/blob/main/g2diagnosticclient/g2diagnosticclient_test.go
+	// For more information, visit https://github.com/Senzing/g2-sdk-go-grpc/blob/main/g2diagnostic/g2diagnostic_test.go
 	ctx := context.TODO()
 	g2diagnostic := getG2Diagnostic(ctx)
 	relationshipID := int64(1)
@@ -703,7 +703,7 @@ func ExampleG2diagnostic_GetRelationshipDetails() {
 }
 
 func ExampleG2diagnostic_GetResolutionStatistics() {
-	// For more information, visit https://github.com/Senzing/g2-sdk-go-grpc/blob/main/g2diagnosticclient/g2diagnosticclient_test.go
+	// For more information, visit https://github.com/Senzing/g2-sdk-go-grpc/blob/main/g2diagnostic/g2diagnostic_test.go
 	ctx := context.TODO()
 	g2diagnostic := getG2Diagnostic(ctx)
 	result, err := g2diagnostic.GetResolutionStatistics(ctx)
@@ -715,7 +715,7 @@ func ExampleG2diagnostic_GetResolutionStatistics() {
 }
 
 func ExampleG2diagnostic_GetTotalSystemMemory() {
-	// For more information, visit https://github.com/Senzing/g2-sdk-go-grpc/blob/main/g2diagnosticclient/g2diagnosticclient_test.go
+	// For more information, visit https://github.com/Senzing/g2-sdk-go-grpc/blob/main/g2diagnostic/g2diagnostic_test.go
 	ctx := context.TODO()
 	g2diagnostic := getG2Diagnostic(ctx)
 	result, err := g2diagnostic.GetTotalSystemMemory(ctx)
@@ -727,7 +727,7 @@ func ExampleG2diagnostic_GetTotalSystemMemory() {
 }
 
 // func ExampleG2diagnostic_SetLogLevel() {
-// 	// For more information, visit https://github.com/Senzing/g2-sdk-go-grpc/blob/main/g2diagnosticclient/g2diagnosticclient_test.go
+// 	// For more information, visit https://github.com/Senzing/g2-sdk-go-grpc/blob/main/g2diagnostic/g2diagnostic_test.go
 // 	g2diagnostic := &G2diagnosticClient{}
 // 	ctx := context.TODO()
 // 	err := g2diagnostic.SetLogLevel(ctx, logger.LevelInfo)
@@ -738,7 +738,7 @@ func ExampleG2diagnostic_GetTotalSystemMemory() {
 // }
 
 func ExampleG2diagnostic_Init() {
-	// For more information, visit https://github.com/Senzing/g2-sdk-go-grpc/blob/main/g2diagnosticclient/g2diagnosticclient_test.go
+	// For more information, visit https://github.com/Senzing/g2-sdk-go-grpc/blob/main/g2diagnostic/g2diagnostic_test.go
 	ctx := context.TODO()
 	grpcConnection := getGrpcConnection()
 	g2diagnostic := &G2diagnostic{
@@ -755,7 +755,7 @@ func ExampleG2diagnostic_Init() {
 }
 
 func ExampleG2diagnostic_InitWithConfigID() {
-	// For more information, visit https://github.com/Senzing/g2-sdk-go-grpc/blob/main/g2diagnosticclient/g2diagnosticclient_test.go
+	// For more information, visit https://github.com/Senzing/g2-sdk-go-grpc/blob/main/g2diagnostic/g2diagnostic_test.go
 	ctx := context.TODO()
 	grpcConnection := getGrpcConnection()
 	g2diagnostic := &G2diagnostic{
@@ -773,7 +773,7 @@ func ExampleG2diagnostic_InitWithConfigID() {
 }
 
 func ExampleG2diagnostic_Reinit() {
-	// For more information, visit https://github.com/Senzing/g2-sdk-go-grpc/blob/main/g2diagnosticclient/g2diagnosticclient_test.go
+	// For more information, visit https://github.com/Senzing/g2-sdk-go-grpc/blob/main/g2diagnostic/g2diagnostic_test.go
 	ctx := context.TODO()
 	g2diagnostic := getG2Diagnostic(ctx)
 	g2Configmgr := getG2Configmgr(ctx)
@@ -786,7 +786,7 @@ func ExampleG2diagnostic_Reinit() {
 }
 
 func ExampleG2diagnostic_Destroy() {
-	// For more information, visit https://github.com/Senzing/g2-sdk-go-grpc/blob/main/g2diagnosticclient/g2diagnosticclient_test.go
+	// For more information, visit https://github.com/Senzing/g2-sdk-go-grpc/blob/main/g2diagnostic/g2diagnostic_test.go
 	ctx := context.TODO()
 	g2diagnostic := getG2Diagnostic(ctx)
 	err := g2diagnostic.Destroy(ctx)
