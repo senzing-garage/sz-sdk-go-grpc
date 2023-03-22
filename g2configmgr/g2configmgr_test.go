@@ -15,6 +15,7 @@ import (
 	"github.com/senzing/g2-sdk-go-grpc/g2engine"
 	"github.com/senzing/g2-sdk-go/g2api"
 	g2configmgrapi "github.com/senzing/g2-sdk-go/g2configmgr"
+	"github.com/senzing/g2-sdk-go/g2error"
 	g2configpb "github.com/senzing/g2-sdk-proto/go/g2config"
 	g2pb "github.com/senzing/g2-sdk-proto/go/g2configmgr"
 	g2enginepb "github.com/senzing/g2-sdk-proto/go/g2engine"
