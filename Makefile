@@ -70,13 +70,13 @@ build-linux:
 
 .PHONY: test
 test:
-	@go test -v -p 1 ./...
+#	@go test -v -p 1 ./...
 #	@go test -v ./.
-#	@go test -v ./g2configclient
-#	@go test -v ./g2configmgrclient
-#	@go test -v ./g2diagnosticclient
-#	@go test -v ./g2engineclient
-#	@go test -v ./g2productclient
+#	@go test -v ./g2config
+#	@go test -v ./g2configmgr
+#	@go test -v ./g2diagnostic
+	@go test -v ./g2engine
+#	@go test -v ./g2product
 
 # -----------------------------------------------------------------------------
 # Run

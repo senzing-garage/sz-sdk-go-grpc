@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"reflect"
 	"strconv"
 	"strings"
 	"testing"
@@ -288,6 +289,35 @@ func teardown() error {
 // ----------------------------------------------------------------------------
 // Test interface functions
 // ----------------------------------------------------------------------------
+
+func TestG2engine_AddRecord_FIXME(test *testing.T) {
+	ctx := context.TODO()
+	g2engine := getTestObject(ctx, test)
+	record1 := truthset.CustomerRecords["1001"]
+	record2 := truthset.CustomerRecords["1002"]
+	record2Json := `{"DATA_SOURCE": "BOB", "RECORD_ID": "1002", "RECORD_TYPE": "PERSON", "PRIMARY_NAME_LAST": "Smith", "PRIMARY_NAME_FIRST": "Bob", "DATE_OF_BIRTH": "11/12/1978", "ADDR_TYPE": "HOME", "ADDR_LINE1": "1515 Adela Lane", "ADDR_CITY": "Las Vegas", "ADDR_STATE": "NV", "ADDR_POSTAL_CODE": "89111", "PHONE_TYPE": "MOBILE", "PHONE_NUMBER": "702-919-1300", "DATE": "3/10/17", "STATUS": "Inactive", "AMOUNT": "200"}`
+	err := g2engine.AddRecord(ctx, record1.DataSource, record1.Id, record1.Json, loadId)
+	testError(test, ctx, g2engine, err)
+	err = g2engine.AddRecord(ctx, record2.DataSource, record2.Id, record2Json, loadId)
+
+	if err != nil {
+
+		fmt.Printf(">>>>> Type: %s\n", reflect.TypeOf(err))
+
+		if g2error.Is(err, g2error.G2Unrecoverable) {
+			fmt.Printf("\nUnrecoverable error detected. EXPECTED.\n\n")
+		}
+		if g2error.Is(err, g2error.G2Retryable) {
+			fmt.Printf("\nRetryable error detected. \n\n")
+		}
+		if g2error.Is(err, g2error.G2BadUserInput) {
+			fmt.Printf("\nBad user input error detected. \n\n")
+		}
+
+	}
+
+	testError(test, ctx, g2engine, err)
+}
 
 func TestG2engine_AddRecord(test *testing.T) {
 	ctx := context.TODO()
