@@ -12,6 +12,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/senzing/g2-sdk-go-grpc/helper"
 	g2diagnosticapi "github.com/senzing/g2-sdk-go/g2diagnostic"
 	g2pb "github.com/senzing/g2-sdk-proto/go/g2diagnostic"
 	"github.com/senzing/go-logging/logger"
@@ -95,6 +96,7 @@ func (client *G2diagnostic) CheckDBPerf(ctx context.Context, secondsToRun int) (
 		SecondsToRun: int32(secondsToRun),
 	}
 	response, err := client.GrpcClient.CheckDBPerf(ctx, &request)
+	err = helper.ConvertGrpcError(err)
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{}
@@ -126,6 +128,7 @@ func (client *G2diagnostic) CloseEntityListBySize(ctx context.Context, entityLis
 		EntityListBySizeHandle: fmt.Sprintf("%v", entityListBySizeHandle),
 	}
 	_, err := client.GrpcClient.CloseEntityListBySize(ctx, &request)
+	err = helper.ConvertGrpcError(err)
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{}
@@ -152,6 +155,7 @@ func (client *G2diagnostic) Destroy(ctx context.Context) error {
 	entryTime := time.Now()
 	request := g2pb.DestroyRequest{}
 	_, err := client.GrpcClient.Destroy(ctx, &request)
+	err = helper.ConvertGrpcError(err)
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{}
@@ -187,6 +191,7 @@ func (client *G2diagnostic) FetchNextEntityBySize(ctx context.Context, entityLis
 		EntityListBySizeHandle: fmt.Sprintf("%v", entityListBySizeHandle),
 	}
 	response, err := client.GrpcClient.FetchNextEntityBySize(ctx, &request)
+	err = helper.ConvertGrpcError(err)
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{}
@@ -221,6 +226,7 @@ func (client *G2diagnostic) FindEntitiesByFeatureIDs(ctx context.Context, featur
 		Features: features,
 	}
 	response, err := client.GrpcClient.FindEntitiesByFeatureIDs(ctx, &request)
+	err = helper.ConvertGrpcError(err)
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{}
@@ -249,6 +255,7 @@ func (client *G2diagnostic) GetAvailableMemory(ctx context.Context) (int64, erro
 	entryTime := time.Now()
 	request := g2pb.GetAvailableMemoryRequest{}
 	response, err := client.GrpcClient.GetAvailableMemory(ctx, &request)
+	err = helper.ConvertGrpcError(err)
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{}
@@ -278,6 +285,7 @@ func (client *G2diagnostic) GetDataSourceCounts(ctx context.Context) (string, er
 	entryTime := time.Now()
 	request := g2pb.GetDataSourceCountsRequest{}
 	response, err := client.GrpcClient.GetDataSourceCounts(ctx, &request)
+	err = helper.ConvertGrpcError(err)
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{}
@@ -307,6 +315,7 @@ func (client *G2diagnostic) GetDBInfo(ctx context.Context) (string, error) {
 	entryTime := time.Now()
 	request := g2pb.GetDBInfoRequest{}
 	response, err := client.GrpcClient.GetDBInfo(ctx, &request)
+	err = helper.ConvertGrpcError(err)
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{}
@@ -341,6 +350,7 @@ func (client *G2diagnostic) GetEntityDetails(ctx context.Context, entityID int64
 		IncludeInternalFeatures: int32(includeInternalFeatures),
 	}
 	response, err := client.GrpcClient.GetEntityDetails(ctx, &request)
+	err = helper.ConvertGrpcError(err)
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{}
@@ -375,6 +385,7 @@ func (client *G2diagnostic) GetEntityListBySize(ctx context.Context, entitySize 
 		EntitySize: int32(entitySize),
 	}
 	response, err := client.GrpcClient.GetEntityListBySize(ctx, &request)
+	err = helper.ConvertGrpcError(err)
 	if err != nil {
 		return 0, err
 	}
@@ -412,6 +423,7 @@ func (client *G2diagnostic) GetEntityResume(ctx context.Context, entityID int64)
 		EntityID: entityID,
 	}
 	response, err := client.GrpcClient.GetEntityResume(ctx, &request)
+	err = helper.ConvertGrpcError(err)
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{}
@@ -446,6 +458,7 @@ func (client *G2diagnostic) GetEntitySizeBreakdown(ctx context.Context, minimumE
 		IncludeInternalFeatures: int32(includeInternalFeatures),
 	}
 	response, err := client.GrpcClient.GetEntitySizeBreakdown(ctx, &request)
+	err = helper.ConvertGrpcError(err)
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{}
@@ -478,6 +491,7 @@ func (client *G2diagnostic) GetFeature(ctx context.Context, libFeatID int64) (st
 		LibFeatID: libFeatID,
 	}
 	response, err := client.GrpcClient.GetFeature(ctx, &request)
+	err = helper.ConvertGrpcError(err)
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{}
@@ -512,6 +526,7 @@ func (client *G2diagnostic) GetGenericFeatures(ctx context.Context, featureType 
 		MaximumEstimatedCount: int32(maximumEstimatedCount),
 	}
 	response, err := client.GrpcClient.GetGenericFeatures(ctx, &request)
+	err = helper.ConvertGrpcError(err)
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{}
@@ -540,6 +555,7 @@ func (client *G2diagnostic) GetLogicalCores(ctx context.Context) (int, error) {
 	entryTime := time.Now()
 	request := g2pb.GetLogicalCoresRequest{}
 	response, err := client.GrpcClient.GetLogicalCores(ctx, &request)
+	err = helper.ConvertGrpcError(err)
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{}
@@ -572,6 +588,7 @@ func (client *G2diagnostic) GetMappingStatistics(ctx context.Context, includeInt
 		IncludeInternalFeatures: int32(includeInternalFeatures),
 	}
 	response, err := client.GrpcClient.GetMappingStatistics(ctx, &request)
+	err = helper.ConvertGrpcError(err)
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{}
@@ -600,6 +617,7 @@ func (client *G2diagnostic) GetPhysicalCores(ctx context.Context) (int, error) {
 	entryTime := time.Now()
 	request := g2pb.GetPhysicalCoresRequest{}
 	response, err := client.GrpcClient.GetPhysicalCores(ctx, &request)
+	err = helper.ConvertGrpcError(err)
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{}
@@ -634,6 +652,7 @@ func (client *G2diagnostic) GetRelationshipDetails(ctx context.Context, relation
 		IncludeInternalFeatures: int32(includeInternalFeatures),
 	}
 	response, err := client.GrpcClient.GetRelationshipDetails(ctx, &request)
+	err = helper.ConvertGrpcError(err)
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{}
@@ -663,6 +682,7 @@ func (client *G2diagnostic) GetResolutionStatistics(ctx context.Context) (string
 	entryTime := time.Now()
 	request := g2pb.GetResolutionStatisticsRequest{}
 	response, err := client.GrpcClient.GetResolutionStatistics(ctx, &request)
+	err = helper.ConvertGrpcError(err)
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{}
