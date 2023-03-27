@@ -12,6 +12,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/senzing/g2-sdk-go-grpc/helper"
 	g2configapi "github.com/senzing/g2-sdk-go/g2config"
 	g2pb "github.com/senzing/g2-sdk-proto/go/g2config"
 	"github.com/senzing/go-logging/logger"
@@ -97,6 +98,7 @@ func (client *G2config) AddDataSource(ctx context.Context, configHandle uintptr,
 		InputJson:    inputJson,
 	}
 	response, err := client.GrpcClient.AddDataSource(ctx, &request)
+	err = helper.ConvertGrpcError(err)
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{
@@ -129,6 +131,7 @@ func (client *G2config) Close(ctx context.Context, configHandle uintptr) error {
 		ConfigHandle: int64(configHandle),
 	}
 	_, err := client.GrpcClient.Close(ctx, &request)
+	err = helper.ConvertGrpcError(err)
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{}
@@ -161,6 +164,7 @@ func (client *G2config) Create(ctx context.Context) (uintptr, error) {
 	entryTime := time.Now()
 	request := g2pb.CreateRequest{}
 	response, err := client.GrpcClient.Create(ctx, &request)
+	err = helper.ConvertGrpcError(err)
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{}
@@ -192,6 +196,7 @@ func (client *G2config) DeleteDataSource(ctx context.Context, configHandle uintp
 		InputJson:    inputJson,
 	}
 	_, err := client.GrpcClient.DeleteDataSource(ctx, &request)
+	err = helper.ConvertGrpcError(err)
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{
@@ -220,6 +225,7 @@ func (client *G2config) Destroy(ctx context.Context) error {
 	entryTime := time.Now()
 	request := g2pb.DestroyRequest{}
 	_, err := client.GrpcClient.Destroy(ctx, &request)
+	err = helper.ConvertGrpcError(err)
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{}
@@ -279,6 +285,7 @@ func (client *G2config) Init(ctx context.Context, moduleName string, iniParams s
 		VerboseLogging: int32(verboseLogging),
 	}
 	_, err := client.GrpcClient.Init(ctx, &request)
+	err = helper.ConvertGrpcError(err)
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{
@@ -316,6 +323,7 @@ func (client *G2config) ListDataSources(ctx context.Context, configHandle uintpt
 		ConfigHandle: int64(configHandle),
 	}
 	response, err := client.GrpcClient.ListDataSources(ctx, &request)
+	err = helper.ConvertGrpcError(err)
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{}
@@ -347,6 +355,7 @@ func (client *G2config) Load(ctx context.Context, configHandle uintptr, jsonConf
 		JsonConfig:   jsonConfig,
 	}
 	_, err := client.GrpcClient.Load(ctx, &request)
+	err = helper.ConvertGrpcError(err)
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{}
@@ -410,6 +419,7 @@ func (client *G2config) Save(ctx context.Context, configHandle uintptr) (string,
 		ConfigHandle: int64(configHandle),
 	}
 	response, err := client.GrpcClient.Save(ctx, &request)
+	err = helper.ConvertGrpcError(err)
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{}
