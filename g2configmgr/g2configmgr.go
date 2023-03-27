@@ -12,6 +12,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/senzing/g2-sdk-go-grpc/helper"
 	g2configmgrapi "github.com/senzing/g2-sdk-go/g2configmgr"
 	g2pb "github.com/senzing/g2-sdk-proto/go/g2configmgr"
 	"github.com/senzing/go-logging/logger"
@@ -95,6 +96,7 @@ func (client *G2configmgr) AddConfig(ctx context.Context, configStr string, conf
 		ConfigComments: configComments,
 	}
 	response, err := client.GrpcClient.AddConfig(ctx, &request)
+	err = helper.ConvertGrpcError(err)
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{
@@ -123,6 +125,7 @@ func (client *G2configmgr) Destroy(ctx context.Context) error {
 	entryTime := time.Now()
 	request := g2pb.DestroyRequest{}
 	_, err := client.GrpcClient.Destroy(ctx, &request)
+	err = helper.ConvertGrpcError(err)
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{}
@@ -155,6 +158,7 @@ func (client *G2configmgr) GetConfig(ctx context.Context, configID int64) (strin
 		ConfigID: configID,
 	}
 	response, err := client.GrpcClient.GetConfig(ctx, &request)
+	err = helper.ConvertGrpcError(err)
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{}
@@ -184,6 +188,7 @@ func (client *G2configmgr) GetConfigList(ctx context.Context) (string, error) {
 	entryTime := time.Now()
 	request := g2pb.GetConfigListRequest{}
 	response, err := client.GrpcClient.GetConfigList(ctx, &request)
+	err = helper.ConvertGrpcError(err)
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{}
@@ -212,6 +217,7 @@ func (client *G2configmgr) GetDefaultConfigID(ctx context.Context) (int64, error
 	entryTime := time.Now()
 	request := g2pb.GetDefaultConfigIDRequest{}
 	response, err := client.GrpcClient.GetDefaultConfigID(ctx, &request)
+	err = helper.ConvertGrpcError(err)
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{}
@@ -271,6 +277,7 @@ func (client *G2configmgr) Init(ctx context.Context, moduleName string, iniParam
 		VerboseLogging: int32(verboseLogging),
 	}
 	_, err := client.GrpcClient.Init(ctx, &request)
+	err = helper.ConvertGrpcError(err)
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{
@@ -338,6 +345,7 @@ func (client *G2configmgr) ReplaceDefaultConfigID(ctx context.Context, oldConfig
 		NewConfigID: newConfigID,
 	}
 	_, err := client.GrpcClient.ReplaceDefaultConfigID(ctx, &request)
+	err = helper.ConvertGrpcError(err)
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{
@@ -369,6 +377,7 @@ func (client *G2configmgr) SetDefaultConfigID(ctx context.Context, configID int6
 		ConfigID: configID,
 	}
 	_, err := client.GrpcClient.SetDefaultConfigID(ctx, &request)
+	err = helper.ConvertGrpcError(err)
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{
@@ -398,6 +407,7 @@ func (client *G2configmgr) SetLogLevel(ctx context.Context, logLevel logger.Leve
 	var err error = nil
 	client.getLogger().SetLogLevel(messagelogger.Level(logLevel))
 	client.isTrace = (client.getLogger().GetLogLevel() == messagelogger.LevelTrace)
+	err = helper.ConvertGrpcError(err)
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{
