@@ -142,6 +142,7 @@ func (client *G2engine) AddRecordWithInfo(ctx context.Context, dataSourceCode st
 		Flags:          flags,
 	}
 	response, err := client.GrpcClient.AddRecordWithInfo(ctx, &request)
+	err = helper.ConvertGrpcError(err)
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{
@@ -186,6 +187,7 @@ func (client *G2engine) AddRecordWithInfoWithReturnedRecordID(ctx context.Contex
 		Flags:          flags,
 	}
 	response, err := client.GrpcClient.AddRecordWithInfoWithReturnedRecordID(ctx, &request)
+	err = helper.ConvertGrpcError(err)
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{
@@ -226,6 +228,7 @@ func (client *G2engine) AddRecordWithReturnedRecordID(ctx context.Context, dataS
 		LoadID:         loadID,
 	}
 	response, err := client.GrpcClient.AddRecordWithReturnedRecordID(ctx, &request)
+	err = helper.ConvertGrpcError(err)
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{
@@ -265,6 +268,7 @@ func (client *G2engine) CheckRecord(ctx context.Context, record string, recordQu
 		RecordQueryList: recordQueryList,
 	}
 	response, err := client.GrpcClient.CheckRecord(ctx, &request)
+	err = helper.ConvertGrpcError(err)
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{}
@@ -295,6 +299,7 @@ func (client *G2engine) CloseExport(ctx context.Context, responseHandle uintptr)
 		ResponseHandle: int64(responseHandle),
 	}
 	_, err := client.GrpcClient.CloseExport(ctx, &request)
+	err = helper.ConvertGrpcError(err)
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{}
@@ -323,6 +328,7 @@ func (client *G2engine) CountRedoRecords(ctx context.Context) (int64, error) {
 	entryTime := time.Now()
 	request := g2pb.CountRedoRecordsRequest{}
 	response, err := client.GrpcClient.CountRedoRecords(ctx, &request)
+	err = helper.ConvertGrpcError(err)
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{}
@@ -356,6 +362,7 @@ func (client *G2engine) DeleteRecord(ctx context.Context, dataSourceCode string,
 		LoadID:         loadID,
 	}
 	_, err := client.GrpcClient.DeleteRecord(ctx, &request)
+	err = helper.ConvertGrpcError(err)
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{
@@ -399,6 +406,7 @@ func (client *G2engine) DeleteRecordWithInfo(ctx context.Context, dataSourceCode
 		Flags:          flags,
 	}
 	response, err := client.GrpcClient.DeleteRecordWithInfo(ctx, &request)
+	err = helper.ConvertGrpcError(err)
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{
@@ -429,6 +437,7 @@ func (client *G2engine) Destroy(ctx context.Context) error {
 	entryTime := time.Now()
 	request := g2pb.DestroyRequest{}
 	_, err := client.GrpcClient.Destroy(ctx, &request)
+	err = helper.ConvertGrpcError(err)
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{}
@@ -457,6 +466,7 @@ func (client *G2engine) ExportConfig(ctx context.Context) (string, error) {
 	entryTime := time.Now()
 	request := g2pb.ExportConfigRequest{}
 	response, err := client.GrpcClient.ExportConfig(ctx, &request)
+	err = helper.ConvertGrpcError(err)
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{}
@@ -486,6 +496,7 @@ func (client *G2engine) ExportConfigAndConfigID(ctx context.Context) (string, in
 	entryTime := time.Now()
 	request := g2pb.ExportConfigAndConfigIDRequest{}
 	response, err := client.GrpcClient.ExportConfigAndConfigID(ctx, &request)
+	err = helper.ConvertGrpcError(err)
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{
@@ -523,6 +534,7 @@ func (client *G2engine) ExportCSVEntityReport(ctx context.Context, csvColumnList
 		Flags:         flags,
 	}
 	response, err := client.GrpcClient.ExportCSVEntityReport(ctx, &request)
+	err = helper.ConvertGrpcError(err)
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{}
@@ -556,6 +568,7 @@ func (client *G2engine) ExportJSONEntityReport(ctx context.Context, flags int64)
 		Flags: flags,
 	}
 	response, err := client.GrpcClient.ExportJSONEntityReport(ctx, &request)
+	err = helper.ConvertGrpcError(err)
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{}
@@ -589,6 +602,7 @@ func (client *G2engine) FetchNext(ctx context.Context, responseHandle uintptr) (
 		ResponseHandle: int64(responseHandle),
 	}
 	response, err := client.GrpcClient.FetchNext(ctx, &request)
+	err = helper.ConvertGrpcError(err)
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{}
@@ -623,6 +637,7 @@ func (client *G2engine) FindInterestingEntitiesByEntityID(ctx context.Context, e
 		Flags:    flags,
 	}
 	response, err := client.GrpcClient.FindInterestingEntitiesByEntityID(ctx, &request)
+	err = helper.ConvertGrpcError(err)
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{
@@ -661,6 +676,7 @@ func (client *G2engine) FindInterestingEntitiesByRecordID(ctx context.Context, d
 		Flags:          flags,
 	}
 	response, err := client.GrpcClient.FindInterestingEntitiesByRecordID(ctx, &request)
+	err = helper.ConvertGrpcError(err)
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{
@@ -705,6 +721,7 @@ func (client *G2engine) FindNetworkByEntityID(ctx context.Context, entityList st
 		MaxEntities:    int32(maxEntities),
 	}
 	response, err := client.GrpcClient.FindNetworkByEntityID(ctx, &request)
+	err = helper.ConvertGrpcError(err)
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{
@@ -750,6 +767,7 @@ func (client *G2engine) FindNetworkByEntityID_V2(ctx context.Context, entityList
 		Flags:          flags,
 	}
 	response, err := client.GrpcClient.FindNetworkByEntityID_V2(ctx, &request)
+	err = helper.ConvertGrpcError(err)
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{
@@ -793,6 +811,7 @@ func (client *G2engine) FindNetworkByRecordID(ctx context.Context, recordList st
 		MaxEntities:    int32(maxEntities),
 	}
 	response, err := client.GrpcClient.FindNetworkByRecordID(ctx, &request)
+	err = helper.ConvertGrpcError(err)
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{
@@ -838,6 +857,7 @@ func (client *G2engine) FindNetworkByRecordID_V2(ctx context.Context, recordList
 		Flags:          flags,
 	}
 	response, err := client.GrpcClient.FindNetworkByRecordID_V2(ctx, &request)
+	err = helper.ConvertGrpcError(err)
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{
@@ -878,6 +898,7 @@ func (client *G2engine) FindPathByEntityID(ctx context.Context, entityID1 int64,
 		MaxDegree: int32(maxDegree),
 	}
 	response, err := client.GrpcClient.FindPathByEntityID(ctx, &request)
+	err = helper.ConvertGrpcError(err)
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{
@@ -921,6 +942,7 @@ func (client *G2engine) FindPathByEntityID_V2(ctx context.Context, entityID1 int
 		Flags:     flags,
 	}
 	response, err := client.GrpcClient.FindPathByEntityID_V2(ctx, &request)
+	err = helper.ConvertGrpcError(err)
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{
@@ -968,6 +990,7 @@ func (client *G2engine) FindPathByRecordID(ctx context.Context, dataSourceCode1 
 		MaxDegree:       int32(maxDegree),
 	}
 	response, err := client.GrpcClient.FindPathByRecordID(ctx, &request)
+	err = helper.ConvertGrpcError(err)
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{
@@ -1018,6 +1041,7 @@ func (client *G2engine) FindPathByRecordID_V2(ctx context.Context, dataSourceCod
 		Flags:           flags,
 	}
 	response, err := client.GrpcClient.FindPathByRecordID_V2(ctx, &request)
+	err = helper.ConvertGrpcError(err)
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{
@@ -1064,6 +1088,7 @@ func (client *G2engine) FindPathExcludingByEntityID(ctx context.Context, entityI
 		ExcludedEntities: excludedEntities,
 	}
 	response, err := client.GrpcClient.FindPathExcludingByEntityID(ctx, &request)
+	err = helper.ConvertGrpcError(err)
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{
@@ -1115,6 +1140,7 @@ func (client *G2engine) FindPathExcludingByEntityID_V2(ctx context.Context, enti
 		Flags:            flags,
 	}
 	response, err := client.GrpcClient.FindPathExcludingByEntityID_V2(ctx, &request)
+	err = helper.ConvertGrpcError(err)
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{
@@ -1162,6 +1188,7 @@ func (client *G2engine) FindPathExcludingByRecordID(ctx context.Context, dataSou
 		MaxDegree:       int32(maxDegree),
 	}
 	response, err := client.GrpcClient.FindPathExcludingByRecordID(ctx, &request)
+	err = helper.ConvertGrpcError(err)
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{
@@ -1218,6 +1245,7 @@ func (client *G2engine) FindPathExcludingByRecordID_V2(ctx context.Context, data
 		Flags:           flags,
 	}
 	response, err := client.GrpcClient.FindPathExcludingByRecordID_V2(ctx, &request)
+	err = helper.ConvertGrpcError(err)
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{
@@ -1267,6 +1295,7 @@ func (client *G2engine) FindPathIncludingSourceByEntityID(ctx context.Context, e
 		RequiredDsrcs:    requiredDsrcs,
 	}
 	response, err := client.GrpcClient.FindPathIncludingSourceByEntityID(ctx, &request)
+	err = helper.ConvertGrpcError(err)
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{
@@ -1316,6 +1345,7 @@ func (client *G2engine) FindPathIncludingSourceByEntityID_V2(ctx context.Context
 		Flags:            flags,
 	}
 	response, err := client.GrpcClient.FindPathIncludingSourceByEntityID_V2(ctx, &request)
+	err = helper.ConvertGrpcError(err)
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{
@@ -1367,6 +1397,7 @@ func (client *G2engine) FindPathIncludingSourceByRecordID(ctx context.Context, d
 		RequiredDsrcs:   requiredDsrcs,
 	}
 	response, err := client.GrpcClient.FindPathIncludingSourceByRecordID(ctx, &request)
+	err = helper.ConvertGrpcError(err)
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{
@@ -1422,6 +1453,7 @@ func (client *G2engine) FindPathIncludingSourceByRecordID_V2(ctx context.Context
 		Flags:           flags,
 	}
 	response, err := client.GrpcClient.FindPathIncludingSourceByRecordID_V2(ctx, &request)
+	err = helper.ConvertGrpcError(err)
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{
@@ -1455,6 +1487,7 @@ func (client *G2engine) GetActiveConfigID(ctx context.Context) (int64, error) {
 	entryTime := time.Now()
 	request := g2pb.GetActiveConfigIDRequest{}
 	response, err := client.GrpcClient.GetActiveConfigID(ctx, &request)
+	err = helper.ConvertGrpcError(err)
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{}
@@ -1489,6 +1522,7 @@ func (client *G2engine) GetEntityByEntityID(ctx context.Context, entityID int64)
 		EntityID: entityID,
 	}
 	response, err := client.GrpcClient.GetEntityByEntityID(ctx, &request)
+	err = helper.ConvertGrpcError(err)
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{
@@ -1526,6 +1560,7 @@ func (client *G2engine) GetEntityByEntityID_V2(ctx context.Context, entityID int
 		Flags:    flags,
 	}
 	response, err := client.GrpcClient.GetEntityByEntityID_V2(ctx, &request)
+	err = helper.ConvertGrpcError(err)
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{
@@ -1563,6 +1598,7 @@ func (client *G2engine) GetEntityByRecordID(ctx context.Context, dataSourceCode 
 		RecordID:       recordID,
 	}
 	response, err := client.GrpcClient.GetEntityByRecordID(ctx, &request)
+	err = helper.ConvertGrpcError(err)
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{
@@ -1603,6 +1639,7 @@ func (client *G2engine) GetEntityByRecordID_V2(ctx context.Context, dataSourceCo
 		Flags:          flags,
 	}
 	response, err := client.GrpcClient.GetEntityByRecordID_V2(ctx, &request)
+	err = helper.ConvertGrpcError(err)
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{
@@ -1641,6 +1678,7 @@ func (client *G2engine) GetRecord(ctx context.Context, dataSourceCode string, re
 		RecordID:       recordID,
 	}
 	response, err := client.GrpcClient.GetRecord(ctx, &request)
+	err = helper.ConvertGrpcError(err)
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{
@@ -1681,6 +1719,7 @@ func (client *G2engine) GetRecord_V2(ctx context.Context, dataSourceCode string,
 		Flags:          flags,
 	}
 	response, err := client.GrpcClient.GetRecord_V2(ctx, &request)
+	err = helper.ConvertGrpcError(err)
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{
@@ -1714,6 +1753,7 @@ func (client *G2engine) GetRedoRecord(ctx context.Context) (string, error) {
 	entryTime := time.Now()
 	request := g2pb.GetRedoRecordRequest{}
 	response, err := client.GrpcClient.GetRedoRecord(ctx, &request)
+	err = helper.ConvertGrpcError(err)
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{}
@@ -1743,6 +1783,7 @@ func (client *G2engine) GetRepositoryLastModifiedTime(ctx context.Context) (int6
 	entryTime := time.Now()
 	request := g2pb.GetRepositoryLastModifiedTimeRequest{}
 	response, err := client.GrpcClient.GetRepositoryLastModifiedTime(ctx, &request)
+	err = helper.ConvertGrpcError(err)
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{}
@@ -1802,6 +1843,7 @@ func (client *G2engine) GetVirtualEntityByRecordID(ctx context.Context, recordLi
 		RecordList: recordList,
 	}
 	response, err := client.GrpcClient.GetVirtualEntityByRecordID(ctx, &request)
+	err = helper.ConvertGrpcError(err)
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{
@@ -1840,6 +1882,7 @@ func (client *G2engine) GetVirtualEntityByRecordID_V2(ctx context.Context, recor
 		Flags:      flags,
 	}
 	response, err := client.GrpcClient.GetVirtualEntityByRecordID_V2(ctx, &request)
+	err = helper.ConvertGrpcError(err)
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{
@@ -1875,6 +1918,7 @@ func (client *G2engine) HowEntityByEntityID(ctx context.Context, entityID int64)
 		EntityID: entityID,
 	}
 	response, err := client.GrpcClient.HowEntityByEntityID(ctx, &request)
+	err = helper.ConvertGrpcError(err)
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{
@@ -1912,6 +1956,7 @@ func (client *G2engine) HowEntityByEntityID_V2(ctx context.Context, entityID int
 		Flags:    flags,
 	}
 	response, err := client.GrpcClient.HowEntityByEntityID_V2(ctx, &request)
+	err = helper.ConvertGrpcError(err)
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{
@@ -1947,6 +1992,7 @@ func (client *G2engine) Init(ctx context.Context, moduleName string, iniParams s
 		VerboseLogging: int32(verboseLogging),
 	}
 	_, err := client.GrpcClient.Init(ctx, &request)
+	err = helper.ConvertGrpcError(err)
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{
@@ -1986,6 +2032,7 @@ func (client *G2engine) InitWithConfigID(ctx context.Context, moduleName string,
 		VerboseLogging: int32(verboseLogging),
 	}
 	_, err := client.GrpcClient.InitWithConfigID(ctx, &request)
+	err = helper.ConvertGrpcError(err)
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{
@@ -2018,6 +2065,7 @@ func (client *G2engine) PrimeEngine(ctx context.Context) error {
 	entryTime := time.Now()
 	request := g2pb.PrimeEngineRequest{}
 	_, err := client.GrpcClient.PrimeEngine(ctx, &request)
+	err = helper.ConvertGrpcError(err)
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{}
@@ -2046,6 +2094,7 @@ func (client *G2engine) Process(ctx context.Context, record string) error {
 		Record: record,
 	}
 	_, err := client.GrpcClient.Process(ctx, &request)
+	err = helper.ConvertGrpcError(err)
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{}
@@ -2075,6 +2124,7 @@ func (client *G2engine) ProcessRedoRecord(ctx context.Context) (string, error) {
 	entryTime := time.Now()
 	request := g2pb.ProcessRedoRecordRequest{}
 	response, err := client.GrpcClient.ProcessRedoRecord(ctx, &request)
+	err = helper.ConvertGrpcError(err)
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{}
@@ -2108,6 +2158,7 @@ func (client *G2engine) ProcessRedoRecordWithInfo(ctx context.Context, flags int
 		Flags: flags,
 	}
 	response, err := client.GrpcClient.ProcessRedoRecordWithInfo(ctx, &request)
+	err = helper.ConvertGrpcError(err)
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{}
@@ -2142,6 +2193,7 @@ func (client *G2engine) ProcessWithInfo(ctx context.Context, record string, flag
 		Flags:  flags,
 	}
 	response, err := client.GrpcClient.ProcessWithInfo(ctx, &request)
+	err = helper.ConvertGrpcError(err)
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{}
@@ -2174,6 +2226,7 @@ func (client *G2engine) ProcessWithResponse(ctx context.Context, record string) 
 		Record: record,
 	}
 	response, err := client.GrpcClient.ProcessWithResponse(ctx, &request)
+	err = helper.ConvertGrpcError(err)
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{}
@@ -2206,6 +2259,7 @@ func (client *G2engine) ProcessWithResponseResize(ctx context.Context, record st
 		Record: record,
 	}
 	response, err := client.GrpcClient.ProcessWithResponseResize(ctx, &request)
+	err = helper.ConvertGrpcError(err)
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{}
@@ -2235,6 +2289,7 @@ func (client *G2engine) PurgeRepository(ctx context.Context) error {
 	entryTime := time.Now()
 	request := g2pb.PurgeRepositoryRequest{}
 	_, err := client.GrpcClient.PurgeRepository(ctx, &request)
+	err = helper.ConvertGrpcError(err)
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{}
@@ -2265,6 +2320,7 @@ func (client *G2engine) ReevaluateEntity(ctx context.Context, entityID int64, fl
 		Flags:    flags,
 	}
 	_, err := client.GrpcClient.ReevaluateEntity(ctx, &request)
+	err = helper.ConvertGrpcError(err)
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{
@@ -2302,6 +2358,7 @@ func (client *G2engine) ReevaluateEntityWithInfo(ctx context.Context, entityID i
 		Flags:    flags,
 	}
 	response, err := client.GrpcClient.ReevaluateEntityWithInfo(ctx, &request)
+	err = helper.ConvertGrpcError(err)
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{
@@ -2336,6 +2393,7 @@ func (client *G2engine) ReevaluateRecord(ctx context.Context, dataSourceCode str
 		Flags:          flags,
 	}
 	_, err := client.GrpcClient.ReevaluateRecord(ctx, &request)
+	err = helper.ConvertGrpcError(err)
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{
@@ -2376,6 +2434,7 @@ func (client *G2engine) ReevaluateRecordWithInfo(ctx context.Context, dataSource
 		Flags:          flags,
 	}
 	response, err := client.GrpcClient.ReevaluateRecordWithInfo(ctx, &request)
+	err = helper.ConvertGrpcError(err)
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{
@@ -2437,6 +2496,7 @@ func (client *G2engine) Reinit(ctx context.Context, initConfigID int64) error {
 		InitConfigID: initConfigID,
 	}
 	_, err := client.GrpcClient.Reinit(ctx, &request)
+	err = helper.ConvertGrpcError(err)
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{
@@ -2474,6 +2534,7 @@ func (client *G2engine) ReplaceRecord(ctx context.Context, dataSourceCode string
 		LoadID:         loadID,
 	}
 	_, err := client.GrpcClient.ReplaceRecord(ctx, &request)
+	err = helper.ConvertGrpcError(err)
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{
@@ -2519,6 +2580,7 @@ func (client *G2engine) ReplaceRecordWithInfo(ctx context.Context, dataSourceCod
 		Flags:          flags,
 	}
 	response, err := client.GrpcClient.ReplaceRecordWithInfo(ctx, &request)
+	err = helper.ConvertGrpcError(err)
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{
@@ -2556,6 +2618,7 @@ func (client *G2engine) SearchByAttributes(ctx context.Context, jsonData string)
 		JsonData: jsonData,
 	}
 	response, err := client.GrpcClient.SearchByAttributes(ctx, &request)
+	err = helper.ConvertGrpcError(err)
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{}
@@ -2591,6 +2654,7 @@ func (client *G2engine) SearchByAttributes_V2(ctx context.Context, jsonData stri
 		Flags:    flags,
 	}
 	response, err := client.GrpcClient.SearchByAttributes_V2(ctx, &request)
+	err = helper.ConvertGrpcError(err)
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{}
@@ -2650,6 +2714,7 @@ func (client *G2engine) Stats(ctx context.Context) (string, error) {
 	entryTime := time.Now()
 	request := g2pb.StatsRequest{}
 	response, err := client.GrpcClient.Stats(ctx, &request)
+	err = helper.ConvertGrpcError(err)
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{}
@@ -2721,6 +2786,7 @@ func (client *G2engine) WhyEntities(ctx context.Context, entityID1 int64, entity
 		EntityID2: entityID2,
 	}
 	response, err := client.GrpcClient.WhyEntities(ctx, &request)
+	err = helper.ConvertGrpcError(err)
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{
@@ -2764,6 +2830,7 @@ func (client *G2engine) WhyEntities_V2(ctx context.Context, entityID1 int64, ent
 		Flags:     flags,
 	}
 	response, err := client.GrpcClient.WhyEntities_V2(ctx, &request)
+	err = helper.ConvertGrpcError(err)
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{
@@ -2801,6 +2868,7 @@ func (client *G2engine) WhyEntityByEntityID(ctx context.Context, entityID int64)
 		EntityID: entityID,
 	}
 	response, err := client.GrpcClient.WhyEntityByEntityID(ctx, &request)
+	err = helper.ConvertGrpcError(err)
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{
@@ -2838,6 +2906,7 @@ func (client *G2engine) WhyEntityByEntityID_V2(ctx context.Context, entityID int
 		Flags:    flags,
 	}
 	response, err := client.GrpcClient.WhyEntityByEntityID_V2(ctx, &request)
+	err = helper.ConvertGrpcError(err)
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{
@@ -2875,6 +2944,7 @@ func (client *G2engine) WhyEntityByRecordID(ctx context.Context, dataSourceCode 
 		RecordID:       recordID,
 	}
 	response, err := client.GrpcClient.WhyEntityByRecordID(ctx, &request)
+	err = helper.ConvertGrpcError(err)
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{
@@ -2915,6 +2985,7 @@ func (client *G2engine) WhyEntityByRecordID_V2(ctx context.Context, dataSourceCo
 		Flags:          flags,
 	}
 	response, err := client.GrpcClient.WhyEntityByRecordID_V2(ctx, &request)
+	err = helper.ConvertGrpcError(err)
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{
@@ -2958,6 +3029,7 @@ func (client *G2engine) WhyRecords(ctx context.Context, dataSourceCode1 string, 
 		RecordID2:       recordID2,
 	}
 	response, err := client.GrpcClient.WhyRecords(ctx, &request)
+	err = helper.ConvertGrpcError(err)
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{
@@ -3004,6 +3076,7 @@ func (client *G2engine) WhyRecords_V2(ctx context.Context, dataSourceCode1 strin
 		Flags:           flags,
 	}
 	response, err := client.GrpcClient.WhyRecords_V2(ctx, &request)
+	err = helper.ConvertGrpcError(err)
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{
