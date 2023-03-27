@@ -12,6 +12,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/senzing/g2-sdk-go-grpc/helper"
 	g2engineapi "github.com/senzing/g2-sdk-go/g2engine"
 	g2pb "github.com/senzing/g2-sdk-proto/go/g2engine"
 	"github.com/senzing/go-logging/logger"
@@ -96,6 +97,7 @@ func (client *G2engine) AddRecord(ctx context.Context, dataSourceCode string, re
 		LoadID:         loadID,
 	}
 	_, err := client.GrpcClient.AddRecord(ctx, &request)
+	err = helper.ConvertGrpcError(err)
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{

@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
-	"reflect"
 	"strconv"
 	"strings"
 	"testing"
@@ -301,9 +300,6 @@ func TestG2engine_AddRecord_FIXME(test *testing.T) {
 	err = g2engine.AddRecord(ctx, record2.DataSource, record2.Id, record2Json, loadId)
 
 	if err != nil {
-
-		fmt.Printf(">>>>> Type: %s\n", reflect.TypeOf(err))
-
 		if g2error.Is(err, g2error.G2Unrecoverable) {
 			fmt.Printf("\nUnrecoverable error detected. EXPECTED.\n\n")
 		}
@@ -313,7 +309,6 @@ func TestG2engine_AddRecord_FIXME(test *testing.T) {
 		if g2error.Is(err, g2error.G2BadUserInput) {
 			fmt.Printf("\nBad user input error detected. \n\n")
 		}
-
 	}
 
 	testError(test, ctx, g2engine, err)
