@@ -737,6 +737,7 @@ func (client *G2diagnostic) GetTotalSystemMemory(ctx context.Context) (int64, er
 	entryTime := time.Now()
 	request := g2pb.GetTotalSystemMemoryRequest{}
 	response, err := client.GrpcClient.GetTotalSystemMemory(ctx, &request)
+	err = helper.ConvertGrpcError(err)
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{}
@@ -770,6 +771,7 @@ func (client *G2diagnostic) Init(ctx context.Context, moduleName string, iniPara
 		VerboseLogging: int32(verboseLogging),
 	}
 	_, err := client.GrpcClient.Init(ctx, &request)
+	err = helper.ConvertGrpcError(err)
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{
@@ -809,6 +811,7 @@ func (client *G2diagnostic) InitWithConfigID(ctx context.Context, moduleName str
 		VerboseLogging: int32(verboseLogging),
 	}
 	_, err := client.GrpcClient.InitWithConfigID(ctx, &request)
+	err = helper.ConvertGrpcError(err)
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{
@@ -872,6 +875,7 @@ func (client *G2diagnostic) Reinit(ctx context.Context, initConfigID int64) erro
 		InitConfigID: initConfigID,
 	}
 	_, err := client.GrpcClient.Reinit(ctx, &request)
+	err = helper.ConvertGrpcError(err)
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{
