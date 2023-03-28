@@ -24,5 +24,3 @@ require (
 	google.golang.org/protobuf v1.30.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
-
-replace github.com/senzing/g2-sdk-go v0.5.1 => /home/senzing/senzing.git/g2-sdk-go
