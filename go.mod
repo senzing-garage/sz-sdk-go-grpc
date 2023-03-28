@@ -20,11 +20,9 @@ require (
 	golang.org/x/net v0.8.0 // indirect
 	golang.org/x/sys v0.6.0 // indirect
 	golang.org/x/text v0.8.0 // indirect
-	google.golang.org/genproto v0.0.0-20230327152035-dc694ad2151e // indirect
+	google.golang.org/genproto v0.0.0-20230327215041-6ac7f18bb9d5 // indirect
 	google.golang.org/protobuf v1.30.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
 
-replace (
-	github.com/senzing/g2-sdk-go v0.5.1 => /home/senzing/senzing.git/g2-sdk-go
-)
+replace github.com/senzing/g2-sdk-go v0.5.1 => /home/senzing/senzing.git/g2-sdk-go
