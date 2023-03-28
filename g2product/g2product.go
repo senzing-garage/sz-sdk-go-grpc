@@ -12,6 +12,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/senzing/g2-sdk-go-grpc/helper"
 	g2productapi "github.com/senzing/g2-sdk-go/g2product"
 	g2pb "github.com/senzing/g2-sdk-proto/go/g2product"
 	"github.com/senzing/go-logging/logger"
@@ -88,6 +89,7 @@ func (client *G2product) Destroy(ctx context.Context) error {
 	entryTime := time.Now()
 	request := g2pb.DestroyRequest{}
 	_, err := client.GrpcClient.Destroy(ctx, &request)
+	err = helper.ConvertGrpcError(err)
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{}
@@ -147,6 +149,7 @@ func (client *G2product) Init(ctx context.Context, moduleName string, iniParams 
 		VerboseLogging: int32(verboseLogging),
 	}
 	_, err := client.GrpcClient.Init(ctx, &request)
+	err = helper.ConvertGrpcError(err)
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{
@@ -180,6 +183,7 @@ func (client *G2product) License(ctx context.Context) (string, error) {
 	entryTime := time.Now()
 	request := g2pb.LicenseRequest{}
 	response, err := client.GrpcClient.License(ctx, &request)
+	err = helper.ConvertGrpcError(err)
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{}
@@ -305,6 +309,7 @@ func (client *G2product) ValidateLicenseFile(ctx context.Context, licenseFilePat
 		LicenseFilePath: licenseFilePath,
 	}
 	response, err := client.GrpcClient.ValidateLicenseFile(ctx, &request)
+	err = helper.ConvertGrpcError(err)
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{}
@@ -339,6 +344,7 @@ func (client *G2product) ValidateLicenseStringBase64(ctx context.Context, licens
 		LicenseString: licenseString,
 	}
 	response, err := client.GrpcClient.ValidateLicenseStringBase64(ctx, &request)
+	err = helper.ConvertGrpcError(err)
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{}
@@ -368,6 +374,7 @@ func (client *G2product) Version(ctx context.Context) (string, error) {
 	entryTime := time.Now()
 	request := g2pb.VersionRequest{}
 	response, err := client.GrpcClient.Version(ctx, &request)
+	err = helper.ConvertGrpcError(err)
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{}

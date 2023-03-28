@@ -10,6 +10,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 -
 
+## [0.2.2] - 2023-03-29
+
+### Changed in 0.2.2
+
+- Added `helper.ConvertGrpcError()`
+- Refactored documentation
+- Updated dependencies
+
 ## [0.2.1] - 2023-02-21
 
 ### Changed in 0.2.1

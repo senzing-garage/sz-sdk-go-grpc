@@ -15,6 +15,7 @@ import (
 	"github.com/senzing/g2-sdk-go-grpc/g2configmgr"
 	"github.com/senzing/g2-sdk-go/g2api"
 	g2engineapi "github.com/senzing/g2-sdk-go/g2engine"
+	"github.com/senzing/g2-sdk-go/g2error"
 	g2configpb "github.com/senzing/g2-sdk-proto/go/g2config"
 	g2configmgrpb "github.com/senzing/g2-sdk-proto/go/g2configmgr"
 	g2pb "github.com/senzing/g2-sdk-proto/go/g2engine"
@@ -51,6 +52,10 @@ var (
 // ----------------------------------------------------------------------------
 // Internal functions
 // ----------------------------------------------------------------------------
+
+func createError(errorId int, err error) error {
+	return g2error.Cast(localLogger.Error(errorId, err), err)
+}
 
 func getGrpcConnection() *grpc.ClientConn {
 	var err error
@@ -182,6 +187,15 @@ func testErrorNoFail(test *testing.T, ctx context.Context, g2engine g2api.G2engi
 func TestMain(m *testing.M) {
 	err := setup()
 	if err != nil {
+		if g2error.Is(err, g2error.G2Unrecoverable) {
+			fmt.Printf("\nUnrecoverable error detected. \n\n")
+		}
+		if g2error.Is(err, g2error.G2Retryable) {
+			fmt.Printf("\nRetryable error detected. \n\n")
+		}
+		if g2error.Is(err, g2error.G2BadUserInput) {
+			fmt.Printf("\nBad user input error detected. \n\n")
+		}
 		fmt.Print(err)
 		os.Exit(1)
 	}
@@ -201,7 +215,7 @@ func setupSenzingConfig(ctx context.Context) error {
 	g2config := getG2Config(ctx)
 	configHandle, err := g2config.Create(ctx)
 	if err != nil {
-		return localLogger.Error(5907, err)
+		return createError(5907, err)
 	}
 
 	datasourceNames := []string{"CUSTOMERS", "REFERENCE", "WATCHLIST"}
@@ -209,13 +223,13 @@ func setupSenzingConfig(ctx context.Context) error {
 		datasource := truthset.TruthsetDataSources[datasourceName]
 		_, err := g2config.AddDataSource(ctx, configHandle, datasource.Json)
 		if err != nil {
-			return localLogger.Error(5908, err)
+			return createError(5908, err)
 		}
 	}
 
 	configStr, err := g2config.Save(ctx, configHandle)
 	if err != nil {
-		return localLogger.Error(5909, err)
+		return createError(5909, err)
 	}
 
 	// Persist the Senzing configuration to the Senzing repository.
@@ -224,12 +238,12 @@ func setupSenzingConfig(ctx context.Context) error {
 	configComments := fmt.Sprintf("Created by g2diagnostic_test at %s", now.UTC())
 	configID, err := g2configmgr.AddConfig(ctx, configStr, configComments)
 	if err != nil {
-		return localLogger.Error(5913, err)
+		return createError(5913, err)
 	}
 
 	err = g2configmgr.SetDefaultConfigID(ctx, configID)
 	if err != nil {
-		return localLogger.Error(5914, err)
+		return createError(5914, err)
 	}
 
 	return err
@@ -247,21 +261,21 @@ func setup() error {
 
 	localLogger, err = messagelogger.NewSenzingApiLogger(ProductId, g2engineapi.IdMessages, g2engineapi.IdStatuses, messagelogger.LevelInfo)
 	if err != nil {
-		return localLogger.Error(5901, err)
+		return createError(5901, err)
 	}
 
 	// Add Data Sources to Senzing configuration.
 
 	err = setupSenzingConfig(ctx)
 	if err != nil {
-		return localLogger.Error(5920, err)
+		return createError(5920, err)
 	}
 
 	// Purge repository.
 
 	err = setupPurgeRepository(ctx)
 	if err != nil {
-		return localLogger.Error(5921, err)
+		return createError(5921, err)
 	}
 	return err
 }
@@ -274,6 +288,18 @@ func teardown() error {
 // ----------------------------------------------------------------------------
 // Test interface functions
 // ----------------------------------------------------------------------------
+
+func TestG2engine_AddRecord_G2Unrecoverable(test *testing.T) {
+	ctx := context.TODO()
+	g2engine := getTestObject(ctx, test)
+	record1 := truthset.CustomerRecords["1001"]
+	record2 := truthset.CustomerRecords["1002"]
+	record2Json := `{"DATA_SOURCE": "BOB", "RECORD_ID": "1002", "RECORD_TYPE": "PERSON", "PRIMARY_NAME_LAST": "Smith", "PRIMARY_NAME_FIRST": "Bob", "DATE_OF_BIRTH": "11/12/1978", "ADDR_TYPE": "HOME", "ADDR_LINE1": "1515 Adela Lane", "ADDR_CITY": "Las Vegas", "ADDR_STATE": "NV", "ADDR_POSTAL_CODE": "89111", "PHONE_TYPE": "MOBILE", "PHONE_NUMBER": "702-919-1300", "DATE": "3/10/17", "STATUS": "Inactive", "AMOUNT": "200"}`
+	err := g2engine.AddRecord(ctx, record1.DataSource, record1.Id, record1.Json, loadId)
+	testError(test, ctx, g2engine, err)
+	err = g2engine.AddRecord(ctx, record2.DataSource, record2.Id, record2Json, loadId)
+	assert.True(test, g2error.Is(err, g2error.G2Unrecoverable))
+}
 
 func TestG2engine_AddRecord(test *testing.T) {
 	ctx := context.TODO()
