@@ -54,7 +54,7 @@ func ConvertGrpcError(originalError error) error {
 			// TODO: Improve the fragile method of pulling out the Senzing JSON error.
 
 			indexOfDesc := strings.Index(errorMessage, " desc = ")
-			senzingErrorMessage := errorMessage[indexOfDesc+8:]
+			senzingErrorMessage := errorMessage[indexOfDesc+8:] // Implicitly safe from "0+8" because of "rpc error:" prefix.
 
 			if isJson(senzingErrorMessage) {
 
