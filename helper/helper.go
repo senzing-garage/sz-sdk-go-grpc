@@ -3,6 +3,7 @@ package helper
 import (
 	"encoding/json"
 	"errors"
+	"reflect"
 	"strconv"
 	"strings"
 
@@ -26,7 +27,6 @@ func isJson(unknownString string) bool {
 // Public functions
 // ----------------------------------------------------------------------------
 
-// If appropriate, convert error to Senzing nested error.
 /*
 The ConvertGrpcError method transforms an error produced by google.golang.org/grpc/status
 into a Senzing nested error.
@@ -44,28 +44,28 @@ func ConvertGrpcError(originalError error) error {
 	}
 
 	result := originalError
-	errorMessage := originalError.Error()
 
 	// Determine if error is an RPC error.
-	// TODO: This is an error prone method of determining if the error is a gRPC error.
-	// Need to determine if error is of type *status.Error.
 
-	if strings.HasPrefix(errorMessage, "rpc error:") {
+	if reflect.TypeOf(originalError).String() == "*status.Error" {
+		errorMessage := originalError.Error()
+		if strings.HasPrefix(errorMessage, "rpc error:") {
 
-		// TODO: Improve the fragile method of pulling out the Senzing JSON error.
+			// TODO: Improve the fragile method of pulling out the Senzing JSON error.
 
-		indexOfDesc := strings.Index(errorMessage, " desc = ")
-		senzingErrorMessage := errorMessage[indexOfDesc+8:]
+			indexOfDesc := strings.Index(errorMessage, " desc = ")
+			senzingErrorMessage := errorMessage[indexOfDesc+8:]
 
-		if isJson(senzingErrorMessage) {
+			if isJson(senzingErrorMessage) {
 
-			// TODO: Add information about any gRPC error.
-			// Status: https://pkg.go.dev/google.golang.org/grpc/status
-			// Codes: https://pkg.go.dev/google.golang.org/grpc/codes
+				// TODO: Add information about any gRPC error.
+				// Status: https://pkg.go.dev/google.golang.org/grpc/status
+				// Codes: https://pkg.go.dev/google.golang.org/grpc/codes
 
-			// Create a new Senzing nested error.
+				// Create a new Senzing nested error.
 
-			result = errors.New(senzingErrorMessage)
+				result = errors.New(senzingErrorMessage)
+			}
 		}
 	}
 	return g2error.Convert(result)
