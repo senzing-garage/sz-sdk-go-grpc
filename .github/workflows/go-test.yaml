@@ -19,7 +19,7 @@ jobs:
     name: Go ${{ matrix.go }} sample
     services:
       servegrpc:
-        image: senzing/servegrpc
+        image: senzing/serve-grpc
         ports:
           - 8258:8258
     steps:
