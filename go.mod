@@ -17,6 +17,8 @@ require (
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/golang/protobuf v1.5.3 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
+	github.com/senzing/go-messaging v0.1.1 // indirect
+	golang.org/x/exp v0.0.0-20230419192730-864b3d6c5c2c // indirect
 	golang.org/x/net v0.8.0 // indirect
 	golang.org/x/sys v0.6.0 // indirect
 	golang.org/x/text v0.8.0 // indirect

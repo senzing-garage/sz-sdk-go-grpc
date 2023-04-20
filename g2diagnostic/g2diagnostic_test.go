@@ -21,7 +21,7 @@ import (
 	g2pb "github.com/senzing/g2-sdk-proto/go/g2diagnostic"
 	g2enginepb "github.com/senzing/g2-sdk-proto/go/g2engine"
 	"github.com/senzing/go-common/truthset"
-	"github.com/senzing/go-logging/messagelogger"
+	"github.com/senzing/go-logging/logging"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
@@ -39,7 +39,7 @@ var (
 	g2engineSingleton     g2api.G2engine
 	grpcAddress           = "localhost:8258"
 	grpcConnection        *grpc.ClientConn
-	localLogger           messagelogger.MessageLoggerInterface
+	localLogger           logging.LoggingInterface
 )
 
 // ----------------------------------------------------------------------------
@@ -246,7 +246,10 @@ func setup() error {
 	ctx := context.TODO()
 	var err error = nil
 
-	localLogger, err = messagelogger.NewSenzingApiLogger(ProductId, g2diagnosticapi.IdMessages, g2diagnosticapi.IdStatuses, messagelogger.LevelInfo)
+	options := []interface{}{
+		&logging.OptionCallerSkip{Value: 4},
+	}
+	localLogger, err = logging.NewSenzingSdkLogger(ProductId, g2diagnosticapi.IdMessages, options...)
 	if err != nil {
 		return createError(5901, err)
 	}
