@@ -78,15 +78,19 @@ Output
   - A configuration identifier.
 */
 func (client *G2configmgr) AddConfig(ctx context.Context, configStr string, configComments string) (int64, error) {
+	var err error = nil
+	var result int64 = 0
 	if client.isTrace {
+		entryTime := time.Now()
 		client.traceEntry(1, configStr, configComments)
+		defer func() { client.traceExit(2, configStr, configComments, result, err, time.Since(entryTime)) }()
 	}
-	entryTime := time.Now()
 	request := g2pb.AddConfigRequest{
 		ConfigStr:      configStr,
 		ConfigComments: configComments,
 	}
 	response, err := client.GrpcClient.AddConfig(ctx, &request)
+	result = response.GetResult()
 	err = helper.ConvertGrpcError(err)
 	if client.observers != nil {
 		go func() {
@@ -96,10 +100,7 @@ func (client *G2configmgr) AddConfig(ctx context.Context, configStr string, conf
 			notifier.Notify(ctx, client.observers, ProductId, 8001, err, details)
 		}()
 	}
-	if client.isTrace {
-		defer client.traceExit(2, configStr, configComments, response.GetResult(), err, time.Since(entryTime))
-	}
-	return response.GetResult(), err
+	return result, err
 }
 
 /*
@@ -110,21 +111,20 @@ Input
   - ctx: A context to control lifecycle.
 */
 func (client *G2configmgr) Destroy(ctx context.Context) error {
+	var err error = nil
 	if client.isTrace {
+		entryTime := time.Now()
 		client.traceEntry(5)
+		defer func() { client.traceExit(6, err, time.Since(entryTime)) }()
 	}
-	entryTime := time.Now()
 	request := g2pb.DestroyRequest{}
-	_, err := client.GrpcClient.Destroy(ctx, &request)
+	_, err = client.GrpcClient.Destroy(ctx, &request)
 	err = helper.ConvertGrpcError(err)
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{}
 			notifier.Notify(ctx, client.observers, ProductId, 8002, err, details)
 		}()
-	}
-	if client.isTrace {
-		defer client.traceExit(6, err, time.Since(entryTime))
 	}
 	return err
 }
@@ -141,14 +141,18 @@ Output
     See the example output.
 */
 func (client *G2configmgr) GetConfig(ctx context.Context, configID int64) (string, error) {
+	var err error = nil
+	var result string = ""
 	if client.isTrace {
+		entryTime := time.Now()
 		client.traceEntry(7, configID)
+		defer func() { client.traceExit(8, configID, result, err, time.Since(entryTime)) }()
 	}
-	entryTime := time.Now()
 	request := g2pb.GetConfigRequest{
 		ConfigID: configID,
 	}
 	response, err := client.GrpcClient.GetConfig(ctx, &request)
+	result = response.GetResult()
 	err = helper.ConvertGrpcError(err)
 	if client.observers != nil {
 		go func() {
@@ -156,10 +160,7 @@ func (client *G2configmgr) GetConfig(ctx context.Context, configID int64) (strin
 			notifier.Notify(ctx, client.observers, ProductId, 8003, err, details)
 		}()
 	}
-	if client.isTrace {
-		defer client.traceExit(8, configID, response.GetResult(), err, time.Since(entryTime))
-	}
-	return response.GetResult(), err
+	return result, err
 }
 
 /*
@@ -173,12 +174,16 @@ Output
     See the example output.
 */
 func (client *G2configmgr) GetConfigList(ctx context.Context) (string, error) {
+	var err error = nil
+	var result string = ""
 	if client.isTrace {
+		entryTime := time.Now()
 		client.traceEntry(9)
+		defer func() { client.traceExit(10, result, err, time.Since(entryTime)) }()
 	}
-	entryTime := time.Now()
 	request := g2pb.GetConfigListRequest{}
 	response, err := client.GrpcClient.GetConfigList(ctx, &request)
+	result = response.GetResult()
 	err = helper.ConvertGrpcError(err)
 	if client.observers != nil {
 		go func() {
@@ -186,10 +191,7 @@ func (client *G2configmgr) GetConfigList(ctx context.Context) (string, error) {
 			notifier.Notify(ctx, client.observers, ProductId, 8004, err, details)
 		}()
 	}
-	if client.isTrace {
-		defer client.traceExit(10, response.GetResult(), err, time.Since(entryTime))
-	}
-	return response.GetResult(), err
+	return result, err
 }
 
 /*
@@ -202,12 +204,16 @@ Output
   - A configuration identifier which identifies the current configuration in use.
 */
 func (client *G2configmgr) GetDefaultConfigID(ctx context.Context) (int64, error) {
+	var err error = nil
+	var result int64 = 0
 	if client.isTrace {
+		entryTime := time.Now()
 		client.traceEntry(11)
+		defer func() { client.traceExit(12, result, err, time.Since(entryTime)) }()
 	}
-	entryTime := time.Now()
 	request := g2pb.GetDefaultConfigIDRequest{}
 	response, err := client.GrpcClient.GetDefaultConfigID(ctx, &request)
+	result = response.GetConfigID()
 	err = helper.ConvertGrpcError(err)
 	if client.observers != nil {
 		go func() {
@@ -215,10 +221,7 @@ func (client *G2configmgr) GetDefaultConfigID(ctx context.Context) (int64, error
 			notifier.Notify(ctx, client.observers, ProductId, 8005, err, details)
 		}()
 	}
-	if client.isTrace {
-		defer client.traceExit(12, response.GetConfigID(), err, time.Since(entryTime))
-	}
-	return response.GetConfigID(), err
+	return result, err
 }
 
 /*
@@ -230,19 +233,17 @@ Input
   - ctx: A context to control lifecycle.
 */
 func (client *G2configmgr) GetSdkId(ctx context.Context) string {
-	if client.isTrace {
-		client.traceEntry(29)
-	}
-	entryTime := time.Now()
 	var err error = nil
+	if client.isTrace {
+		entryTime := time.Now()
+		client.traceEntry(29)
+		defer func() { client.traceExit(30, err, time.Since(entryTime)) }()
+	}
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{}
 			notifier.Notify(ctx, client.observers, ProductId, 8010, err, details)
 		}()
-	}
-	if client.isTrace {
-		defer client.traceExit(30, err, time.Since(entryTime))
 	}
 	return "grpc"
 }
@@ -258,16 +259,18 @@ Input
   - verboseLogging: A flag to enable deeper logging of the G2 processing. 0 for no Senzing logging; 1 for logging.
 */
 func (client *G2configmgr) Init(ctx context.Context, moduleName string, iniParams string, verboseLogging int) error {
+	var err error = nil
 	if client.isTrace {
+		entryTime := time.Now()
 		client.traceEntry(17, moduleName, iniParams, verboseLogging)
+		defer func() { client.traceExit(18, moduleName, iniParams, verboseLogging, err, time.Since(entryTime)) }()
 	}
-	entryTime := time.Now()
 	request := g2pb.InitRequest{
 		ModuleName:     moduleName,
 		IniParams:      iniParams,
 		VerboseLogging: int32(verboseLogging),
 	}
-	_, err := client.GrpcClient.Init(ctx, &request)
+	_, err = client.GrpcClient.Init(ctx, &request)
 	err = helper.ConvertGrpcError(err)
 	if client.observers != nil {
 		go func() {
@@ -278,9 +281,6 @@ func (client *G2configmgr) Init(ctx context.Context, moduleName string, iniParam
 			}
 			notifier.Notify(ctx, client.observers, ProductId, 8006, err, details)
 		}()
-	}
-	if client.isTrace {
-		defer client.traceExit(18, moduleName, iniParams, verboseLogging, err, time.Since(entryTime))
 	}
 	return err
 }
@@ -293,14 +293,16 @@ Input
   - observer: The observer to be added.
 */
 func (client *G2configmgr) RegisterObserver(ctx context.Context, observer observer.Observer) error {
+	var err error = nil
 	if client.isTrace {
+		entryTime := time.Now()
 		client.traceEntry(25, observer.GetObserverId(ctx))
+		defer func() { client.traceExit(26, observer.GetObserverId(ctx), err, time.Since(entryTime)) }()
 	}
-	entryTime := time.Now()
 	if client.observers == nil {
 		client.observers = &subject.SubjectImpl{}
 	}
-	err := client.observers.RegisterObserver(ctx, observer)
+	err = client.observers.RegisterObserver(ctx, observer)
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{
@@ -308,9 +310,6 @@ func (client *G2configmgr) RegisterObserver(ctx context.Context, observer observ
 			}
 			notifier.Notify(ctx, client.observers, ProductId, 8010, err, details)
 		}()
-	}
-	if client.isTrace {
-		defer client.traceExit(26, observer.GetObserverId(ctx), err, time.Since(entryTime))
 	}
 	return err
 }
@@ -327,15 +326,17 @@ Input
   - newConfigID: The configuration identifier to use as the default.
 */
 func (client *G2configmgr) ReplaceDefaultConfigID(ctx context.Context, oldConfigID int64, newConfigID int64) error {
+	var err error = nil
 	if client.isTrace {
+		entryTime := time.Now()
 		client.traceEntry(19, oldConfigID, newConfigID)
+		defer func() { client.traceExit(20, oldConfigID, newConfigID, err, time.Since(entryTime)) }()
 	}
-	entryTime := time.Now()
 	request := g2pb.ReplaceDefaultConfigIDRequest{
 		OldConfigID: oldConfigID,
 		NewConfigID: newConfigID,
 	}
-	_, err := client.GrpcClient.ReplaceDefaultConfigID(ctx, &request)
+	_, err = client.GrpcClient.ReplaceDefaultConfigID(ctx, &request)
 	err = helper.ConvertGrpcError(err)
 	if client.observers != nil {
 		go func() {
@@ -344,9 +345,6 @@ func (client *G2configmgr) ReplaceDefaultConfigID(ctx context.Context, oldConfig
 			}
 			notifier.Notify(ctx, client.observers, ProductId, 8007, err, details)
 		}()
-	}
-	if client.isTrace {
-		defer client.traceExit(20, oldConfigID, newConfigID, err, time.Since(entryTime))
 	}
 	return err
 }
@@ -360,14 +358,16 @@ Input
   - configID: The configuration identifier of the Senzing Engine configuration to use as the default.
 */
 func (client *G2configmgr) SetDefaultConfigID(ctx context.Context, configID int64) error {
+	var err error = nil
 	if client.isTrace {
+		entryTime := time.Now()
 		client.traceEntry(21, configID)
+		defer func() { client.traceExit(22, configID, err, time.Since(entryTime)) }()
 	}
-	entryTime := time.Now()
 	request := g2pb.SetDefaultConfigIDRequest{
 		ConfigID: configID,
 	}
-	_, err := client.GrpcClient.SetDefaultConfigID(ctx, &request)
+	_, err = client.GrpcClient.SetDefaultConfigID(ctx, &request)
 	err = helper.ConvertGrpcError(err)
 	if client.observers != nil {
 		go func() {
@@ -376,9 +376,6 @@ func (client *G2configmgr) SetDefaultConfigID(ctx context.Context, configID int6
 			}
 			notifier.Notify(ctx, client.observers, ProductId, 8008, err, details)
 		}()
-	}
-	if client.isTrace {
-		defer client.traceExit(22, configID, err, time.Since(entryTime))
 	}
 	return err
 }
@@ -421,11 +418,12 @@ Input
   - observer: The observer to be added.
 */
 func (client *G2configmgr) UnregisterObserver(ctx context.Context, observer observer.Observer) error {
-	if client.isTrace {
-		client.traceEntry(27, observer.GetObserverId(ctx))
-	}
-	entryTime := time.Now()
 	var err error = nil
+	if client.isTrace {
+		entryTime := time.Now()
+		client.traceEntry(27, observer.GetObserverId(ctx))
+		defer func() { client.traceExit(28, observer.GetObserverId(ctx), err, time.Since(entryTime)) }()
+	}
 	if client.observers != nil {
 		// Tricky code:
 		// client.notify is called synchronously before client.observers is set to nil.
@@ -439,9 +437,6 @@ func (client *G2configmgr) UnregisterObserver(ctx context.Context, observer obse
 	err = client.observers.UnregisterObserver(ctx, observer)
 	if !client.observers.HasObservers(ctx) {
 		client.observers = nil
-	}
-	if client.isTrace {
-		defer client.traceExit(28, observer.GetObserverId(ctx), err, time.Since(entryTime))
 	}
 	return err
 }

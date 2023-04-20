@@ -81,7 +81,7 @@ Output
 */
 func (client *G2config) AddDataSource(ctx context.Context, configHandle uintptr, inputJson string) (string, error) {
 	var err error = nil
-	var result string
+	var result string = ""
 	if client.isTrace {
 		entryTime := time.Now()
 		client.traceEntry(1, configHandle, inputJson)
@@ -150,7 +150,7 @@ Output
 */
 func (client *G2config) Create(ctx context.Context) (uintptr, error) {
 	var err error = nil
-	var result uintptr
+	var result uintptr = 0
 	if client.isTrace {
 		entryTime := time.Now()
 		client.traceEntry(7)
@@ -303,7 +303,7 @@ Output
 */
 func (client *G2config) ListDataSources(ctx context.Context, configHandle uintptr) (string, error) {
 	var err error = nil
-	var result string
+	var result string = ""
 	if client.isTrace {
 		entryTime := time.Now()
 		client.traceEntry(19, configHandle)
@@ -398,7 +398,7 @@ Output
 */
 func (client *G2config) Save(ctx context.Context, configHandle uintptr) (string, error) {
 	var err error = nil
-	var result string
+	var result string = ""
 	if client.isTrace {
 		entryTime := time.Now()
 		client.traceEntry(23, configHandle)
