@@ -2772,10 +2772,10 @@ Input
 func (client *G2engine) UnregisterObserver(ctx context.Context, observer observer.Observer) error {
 	var err error = nil
 	if client.isTrace {
+		entryTime := time.Now()
 		client.traceEntry(159, observer.GetObserverId(ctx))
+		defer client.traceExit(160, observer.GetObserverId(ctx), err, time.Since(entryTime))
 	}
-	entryTime := time.Now()
-	var err error = nil
 	if client.observers != nil {
 		// Tricky code:
 		// client.notify is called synchronously before client.observers is set to nil.
@@ -2789,9 +2789,6 @@ func (client *G2engine) UnregisterObserver(ctx context.Context, observer observe
 	err = client.observers.UnregisterObserver(ctx, observer)
 	if !client.observers.HasObservers(ctx) {
 		client.observers = nil
-	}
-	if client.isTrace {
-		defer client.traceExit(160, observer.GetObserverId(ctx), err, time.Since(entryTime))
 	}
 	return err
 }
@@ -2816,9 +2813,10 @@ func (client *G2engine) WhyEntities(ctx context.Context, entityID1 int64, entity
 	var err error = nil
 	var result string = ""
 	if client.isTrace {
+		entryTime := time.Now()
 		client.traceEntry(141, entityID1, entityID2)
+		defer client.traceExit(142, entityID1, entityID2, result, err, time.Since(entryTime))
 	}
-	entryTime := time.Now()
 	request := g2pb.WhyEntitiesRequest{
 		EntityID1: entityID1,
 		EntityID2: entityID2,
@@ -2835,10 +2833,7 @@ func (client *G2engine) WhyEntities(ctx context.Context, entityID1 int64, entity
 			notifier.Notify(ctx, client.observers, ProductId, 8067, err, details)
 		}()
 	}
-	if client.isTrace {
-		defer client.traceExit(142, entityID1, entityID2, response.GetResult(), err, time.Since(entryTime))
-	}
-	return response.GetResult(), err
+	return result, err
 }
 
 /*
@@ -2862,9 +2857,10 @@ func (client *G2engine) WhyEntities_V2(ctx context.Context, entityID1 int64, ent
 	var err error = nil
 	var result string = ""
 	if client.isTrace {
+		entryTime := time.Now()
 		client.traceEntry(143, entityID1, entityID2, flags)
+		defer client.traceExit(144, entityID1, entityID2, flags, result, err, time.Since(entryTime))
 	}
-	entryTime := time.Now()
 	request := g2pb.WhyEntities_V2Request{
 		EntityID1: entityID1,
 		EntityID2: entityID2,
@@ -2882,10 +2878,7 @@ func (client *G2engine) WhyEntities_V2(ctx context.Context, entityID1 int64, ent
 			notifier.Notify(ctx, client.observers, ProductId, 8068, err, details)
 		}()
 	}
-	if client.isTrace {
-		defer client.traceExit(144, entityID1, entityID2, flags, response.GetResult(), err, time.Since(entryTime))
-	}
-	return response.GetResult(), err
+	return result, err
 }
 
 /*
@@ -2905,9 +2898,10 @@ func (client *G2engine) WhyEntityByEntityID(ctx context.Context, entityID int64)
 	var err error = nil
 	var result string = ""
 	if client.isTrace {
+		entryTime := time.Now()
 		client.traceEntry(145, entityID)
+		defer client.traceExit(146, entityID, result, err, time.Since(entryTime))
 	}
-	entryTime := time.Now()
 	request := g2pb.WhyEntityByEntityIDRequest{
 		EntityID: entityID,
 	}
@@ -2922,10 +2916,7 @@ func (client *G2engine) WhyEntityByEntityID(ctx context.Context, entityID int64)
 			notifier.Notify(ctx, client.observers, ProductId, 8069, err, details)
 		}()
 	}
-	if client.isTrace {
-		defer client.traceExit(146, entityID, response.GetResult(), err, time.Since(entryTime))
-	}
-	return response.GetResult(), err
+	return result, err
 }
 
 /*
@@ -2945,9 +2936,10 @@ func (client *G2engine) WhyEntityByEntityID_V2(ctx context.Context, entityID int
 	var err error = nil
 	var result string = ""
 	if client.isTrace {
+		entryTime := time.Now()
 		client.traceEntry(147, entityID, flags)
+		defer client.traceExit(148, entityID, flags, result, err, time.Since(entryTime))
 	}
-	entryTime := time.Now()
 	request := g2pb.WhyEntityByEntityID_V2Request{
 		EntityID: entityID,
 		Flags:    flags,
@@ -2963,10 +2955,7 @@ func (client *G2engine) WhyEntityByEntityID_V2(ctx context.Context, entityID int
 			notifier.Notify(ctx, client.observers, ProductId, 8070, err, details)
 		}()
 	}
-	if client.isTrace {
-		defer client.traceExit(148, entityID, flags, response.GetResult(), err, time.Since(entryTime))
-	}
-	return response.GetResult(), err
+	return result, err
 }
 
 /*
@@ -2986,9 +2975,10 @@ func (client *G2engine) WhyEntityByRecordID(ctx context.Context, dataSourceCode 
 	var err error = nil
 	var result string = ""
 	if client.isTrace {
+		entryTime := time.Now()
 		client.traceEntry(149, dataSourceCode, recordID)
+		defer client.traceExit(150, dataSourceCode, recordID, result, err, time.Since(entryTime))
 	}
-	entryTime := time.Now()
 	request := g2pb.WhyEntityByRecordIDRequest{
 		DataSourceCode: dataSourceCode,
 		RecordID:       recordID,
@@ -3005,10 +2995,7 @@ func (client *G2engine) WhyEntityByRecordID(ctx context.Context, dataSourceCode 
 			notifier.Notify(ctx, client.observers, ProductId, 8071, err, details)
 		}()
 	}
-	if client.isTrace {
-		defer client.traceExit(150, dataSourceCode, recordID, response.GetResult(), err, time.Since(entryTime))
-	}
-	return response.GetResult(), err
+	return result, err
 }
 
 /*
@@ -3029,9 +3016,10 @@ func (client *G2engine) WhyEntityByRecordID_V2(ctx context.Context, dataSourceCo
 	var err error = nil
 	var result string = ""
 	if client.isTrace {
+		entryTime := time.Now()
 		client.traceEntry(151, dataSourceCode, recordID, flags)
+		defer client.traceExit(152, dataSourceCode, recordID, flags, result, err, time.Since(entryTime))
 	}
-	entryTime := time.Now()
 	request := g2pb.WhyEntityByRecordID_V2Request{
 		DataSourceCode: dataSourceCode,
 		RecordID:       recordID,
@@ -3049,10 +3037,7 @@ func (client *G2engine) WhyEntityByRecordID_V2(ctx context.Context, dataSourceCo
 			notifier.Notify(ctx, client.observers, ProductId, 8072, err, details)
 		}()
 	}
-	if client.isTrace {
-		defer client.traceExit(152, dataSourceCode, recordID, flags, response.GetResult(), err, time.Since(entryTime))
-	}
-	return response.GetResult(), err
+	return result, err
 }
 
 /*
@@ -3075,9 +3060,10 @@ func (client *G2engine) WhyRecords(ctx context.Context, dataSourceCode1 string, 
 	var err error = nil
 	var result string = ""
 	if client.isTrace {
+		entryTime := time.Now()
 		client.traceEntry(153, dataSourceCode1, recordID1, dataSourceCode2, recordID2)
+		defer client.traceExit(154, dataSourceCode1, recordID1, dataSourceCode2, recordID2, result, err, time.Since(entryTime))
 	}
-	entryTime := time.Now()
 	request := g2pb.WhyRecordsRequest{
 		DataSourceCode1: dataSourceCode1,
 		RecordID1:       recordID1,
@@ -3098,10 +3084,7 @@ func (client *G2engine) WhyRecords(ctx context.Context, dataSourceCode1 string, 
 			notifier.Notify(ctx, client.observers, ProductId, 8073, err, details)
 		}()
 	}
-	if client.isTrace {
-		defer client.traceExit(154, dataSourceCode1, recordID1, dataSourceCode2, recordID2, response.GetResult(), err, time.Since(entryTime))
-	}
-	return response.GetResult(), err
+	return result, err
 }
 
 /*
@@ -3124,9 +3107,10 @@ func (client *G2engine) WhyRecords_V2(ctx context.Context, dataSourceCode1 strin
 	var err error = nil
 	var result string = ""
 	if client.isTrace {
+		entryTime := time.Now()
 		client.traceEntry(155, dataSourceCode1, recordID1, dataSourceCode2, recordID2, flags)
+		defer client.traceExit(156, dataSourceCode1, recordID1, dataSourceCode2, recordID2, flags, result, err, time.Since(entryTime))
 	}
-	entryTime := time.Now()
 	request := g2pb.WhyRecords_V2Request{
 		DataSourceCode1: dataSourceCode1,
 		RecordID1:       recordID1,
@@ -3148,8 +3132,5 @@ func (client *G2engine) WhyRecords_V2(ctx context.Context, dataSourceCode1 strin
 			notifier.Notify(ctx, client.observers, ProductId, 8074, err, details)
 		}()
 	}
-	if client.isTrace {
-		defer client.traceExit(156, dataSourceCode1, recordID1, dataSourceCode2, recordID2, flags, response.GetResult(), err, time.Since(entryTime))
-	}
-	return response.GetResult(), err
+	return result, err
 }
