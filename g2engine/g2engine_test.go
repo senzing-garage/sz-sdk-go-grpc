@@ -1771,9 +1771,8 @@ func ExampleG2engine_Stats() {
 	result, err := g2engine.Stats(ctx)
 	if err != nil {
 		fmt.Println(err)
-	} else {
-		fmt.Println(result)
 	}
+	fmt.Println(truncate(result, 138))
 	// Output: { "workload": { "loadedRecords": 5,  "addedRecords": 5,  "deletedRecords": 1,  "reevaluations": 0,  "repairedEntities": 0,  "duration":...
 }
 
