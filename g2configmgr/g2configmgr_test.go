@@ -20,8 +20,7 @@ import (
 	g2pb "github.com/senzing/g2-sdk-proto/go/g2configmgr"
 	g2enginepb "github.com/senzing/g2-sdk-proto/go/g2engine"
 	"github.com/senzing/go-common/truthset"
-	"github.com/senzing/go-logging/logger"
-	"github.com/senzing/go-logging/messagelogger"
+	"github.com/senzing/go-logging/logging"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
@@ -38,7 +37,7 @@ var (
 	g2engineSingleton    g2api.G2engine
 	grpcAddress          = "localhost:8258"
 	grpcConnection       *grpc.ClientConn
-	localLogger          messagelogger.MessageLoggerInterface
+	localLogger          logging.LoggingInterface
 )
 
 // ----------------------------------------------------------------------------
@@ -135,12 +134,6 @@ func expectError(test *testing.T, ctx context.Context, g2configmgr g2api.G2confi
 	}
 }
 
-func testErrorNoFail(test *testing.T, ctx context.Context, g2configmgr g2api.G2configmgr, err error) {
-	if err != nil {
-		test.Log("Error:", err.Error())
-	}
-}
-
 // ----------------------------------------------------------------------------
 // Test harness
 // ----------------------------------------------------------------------------
@@ -220,7 +213,10 @@ func setup() error {
 	ctx := context.TODO()
 	var err error = nil
 
-	localLogger, err = messagelogger.NewSenzingApiLogger(ProductId, g2configmgrapi.IdMessages, g2configmgrapi.IdStatuses, messagelogger.LevelInfo)
+	options := []interface{}{
+		&logging.OptionCallerSkip{Value: 4},
+	}
+	localLogger, err = logging.NewSenzingSdkLogger(ProductId, g2configmgrapi.IdMessages, options...)
 	if err != nil {
 		return createError(5901, err)
 	}
@@ -471,7 +467,7 @@ func ExampleG2configmgr_SetLogLevel() {
 	// For more information, visit https://github.com/Senzing/g2-sdk-go-grpc/blob/main/g2configmgr/g2configmgr_test.go
 	ctx := context.TODO()
 	g2configmgr := getG2Configmgr(ctx)
-	err := g2configmgr.SetLogLevel(ctx, logger.LevelInfo)
+	err := g2configmgr.SetLogLevel(ctx, logging.LevelInfoName)
 	if err != nil {
 		fmt.Println(err)
 	}

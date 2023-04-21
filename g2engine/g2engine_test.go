@@ -21,8 +21,7 @@ import (
 	g2pb "github.com/senzing/g2-sdk-proto/go/g2engine"
 	"github.com/senzing/go-common/record"
 	"github.com/senzing/go-common/truthset"
-	"github.com/senzing/go-logging/logger"
-	"github.com/senzing/go-logging/messagelogger"
+	"github.com/senzing/go-logging/logging"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
@@ -46,7 +45,7 @@ var (
 	g2engineSingleton    g2api.G2engine
 	grpcAddress          = "localhost:8258"
 	grpcConnection       *grpc.ClientConn
-	localLogger          messagelogger.MessageLoggerInterface
+	localLogger          logging.LoggingInterface
 )
 
 // ----------------------------------------------------------------------------
@@ -259,7 +258,10 @@ func setup() error {
 	ctx := context.TODO()
 	var err error = nil
 
-	localLogger, err = messagelogger.NewSenzingApiLogger(ProductId, g2engineapi.IdMessages, g2engineapi.IdStatuses, messagelogger.LevelInfo)
+	options := []interface{}{
+		&logging.OptionCallerSkip{Value: 4},
+	}
+	localLogger, err = logging.NewSenzingSdkLogger(ProductId, g2engineapi.IdMessages, options...)
 	if err != nil {
 		return createError(5901, err)
 	}
@@ -1755,7 +1757,7 @@ func ExampleG2engine_SetLogLevel() {
 	// For more information, visit https://github.com/Senzing/g2-sdk-go/blob/main/g2config/g2config_test.go
 	ctx := context.TODO()
 	g2engine := getG2Engine(ctx)
-	err := g2engine.SetLogLevel(ctx, logger.LevelInfo)
+	err := g2engine.SetLogLevel(ctx, logging.LevelInfoName)
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -1770,6 +1772,7 @@ func ExampleG2engine_Stats() {
 	if err != nil {
 		fmt.Println(err)
 	}
+	fmt.Println(truncate(result, 138))
 	// Output: { "workload": { "loadedRecords": 5,  "addedRecords": 5,  "deletedRecords": 1,  "reevaluations": 0,  "repairedEntities": 0,  "duration":...
 }
 
