@@ -941,7 +941,7 @@ func (client *G2diagnostic) UnregisterObserver(ctx context.Context, observer obs
 	if client.isTrace {
 		entryTime := time.Now()
 		client.traceEntry(57, observer.GetObserverId(ctx))
-		defer client.traceExit(58, observer.GetObserverId(ctx), err, time.Since(entryTime))
+		defer func() { client.traceExit(58, observer.GetObserverId(ctx), err, time.Since(entryTime)) }()
 	}
 	if client.observers != nil {
 		// Tricky code:
