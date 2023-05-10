@@ -26,6 +26,16 @@ The following instructions build the example `main.go` program.
 To run a Senzing gRPC server, visit
 [Senzing/servegrpc](https://github.com/Senzing/servegrpc).
 
+A simple method.
+
+```console
+export LD_LIBRARY_PATH=/opt/senzing/g2/lib/
+export SENZING_TOOLS_DATABASE_URL=sqlite3://na:na@/tmp/sqlite/G2C.db
+senzing-tools init-database
+senzing-tools serve-grpc
+
+```
+
 ## Test
 
 1. Run tests.
