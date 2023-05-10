@@ -15,6 +15,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed in 0.2.5
 
 - Added GetObserverOrigin() and SetObserverOrigin() to g2* packages
+- Update dependencies
+  - google.golang.org/grpc v1.55.0
 
 ## [0.2.4] - 2023-04-22
 
