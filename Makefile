@@ -70,8 +70,8 @@ build-linux:
 
 .PHONY: test
 test:
-#	@go test -v -p 1 ./...
-	@go test -v ./.
+	@go test -v -p 1 ./...
+#	@go test -v ./.
 #	@go test -v ./g2config
 #	@go test -v ./g2configmgr
 #	@go test -v ./g2diagnostic
