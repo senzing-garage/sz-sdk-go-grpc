@@ -291,6 +291,22 @@ func teardown() error {
 // Test interface functions
 // ----------------------------------------------------------------------------
 
+func TestG2engine_SetObserverOrigin(test *testing.T) {
+	ctx := context.TODO()
+	g2engine := getTestObject(ctx, test)
+	origin := "Machine: nn; Task: UnitTest"
+	g2engine.SetObserverOrigin(ctx, origin)
+}
+
+func TestG2engine_GetObserverOrigin(test *testing.T) {
+	ctx := context.TODO()
+	g2engine := getTestObject(ctx, test)
+	origin := "Machine: nn; Task: UnitTest"
+	g2engine.SetObserverOrigin(ctx, origin)
+	actual := g2engine.GetObserverOrigin(ctx)
+	assert.Equal(test, origin, actual)
+}
+
 func TestG2engine_AddRecord_G2Unrecoverable(test *testing.T) {
 	ctx := context.TODO()
 	g2engine := getTestObject(ctx, test)
@@ -327,9 +343,12 @@ func TestG2engine_AddRecordWithInfo(test *testing.T) {
 func TestG2engine_AddRecordWithInfoWithReturnedRecordID(test *testing.T) {
 	ctx := context.TODO()
 	g2engine := getTestObject(ctx, test)
-	record := truthset.TestRecordsWithoutRecordId[0]
+	//	record := truthset.TestRecordsWithoutRecordId[0]
+	var record_dsrc string = "TEST"
+	var record_json string = "{\"ADDR_LINE1\":\"123 Commerce Street, Las Vegas NV 89101\",\"ADDR_TYPE\":\"MAILING\",\"AMOUNT\":\"100\",\"DATE\":\"1/2/18\",\"DATE_OF_BIRTH\":\"12/11/1978\",\"EMAIL_ADDRESS\":\"bsmith@work.com\",\"PHONE_NUMBER\":\"702-919-1300\",\"PHONE_TYPE\":\"HOME\",\"PRIMARY_NAME_FIRST\":\"Robert\",\"PRIMARY_NAME_LAST\":\"Smith\",\"RECORD_TYPE\":\"PERSON\",\"STATUS\":\"Active\"}"
 	var flags int64 = 0
-	actual, actualRecordID, err := g2engine.AddRecordWithInfoWithReturnedRecordID(ctx, record.DataSource, record.Json, loadId, flags)
+	//	actual, actualRecordID, err := g2engine.AddRecordWithInfoWithReturnedRecordID(ctx, record.DataSource, record.Json, loadId, flags)
+	actual, actualRecordID, err := g2engine.AddRecordWithInfoWithReturnedRecordID(ctx, record_dsrc, record_json, loadId, flags)
 	testError(test, ctx, g2engine, err)
 	printResult(test, "Actual RecordID", actualRecordID)
 	printActual(test, actual)
@@ -1052,6 +1071,26 @@ func TestG2engine_Destroy(test *testing.T) {
 // ----------------------------------------------------------------------------
 // Examples for godoc documentation
 // ----------------------------------------------------------------------------
+
+func ExampleG2engine_SetObserverOrigin() {
+	// For more information, visit https://github.com/Senzing/g2-sdk-go-grpc/blob/main/g2engine/g2engine_test.go
+	ctx := context.TODO()
+	g2engine := getG2Engine(ctx)
+	origin := "Machine: nn; Task: UnitTest"
+	g2engine.SetObserverOrigin(ctx, origin)
+	// Output:
+}
+
+func ExampleG2engine_GetObserverOrigin() {
+	// For more information, visit https://github.com/Senzing/g2-sdk-go-grpc/blob/main/g2config/g2engine_test.go
+	ctx := context.TODO()
+	g2engine := getG2Engine(ctx)
+	origin := "Machine: nn; Task: UnitTest"
+	g2engine.SetObserverOrigin(ctx, origin)
+	result := g2engine.GetObserverOrigin(ctx)
+	fmt.Println(result)
+	// Output: Machine: nn; Task: UnitTest
+}
 
 func ExampleG2engine_AddRecord() {
 	// For more information, visit https://github.com/Senzing/g2-sdk-go-grpc/blob/main/g2engine/g2engine_test.go
