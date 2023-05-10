@@ -17,6 +17,7 @@ communicates with a
 [![Go Reference](https://pkg.go.dev/badge/github.com/senzing/g2-sdk-go-grpc.svg)](https://pkg.go.dev/github.com/senzing/g2-sdk-go-grpc)
 [![Go Report Card](https://goreportcard.com/badge/github.com/senzing/g2-sdk-go-grpc)](https://goreportcard.com/report/github.com/senzing/g2-sdk-go-grpc)
 [![go-test.yaml](https://github.com/Senzing/g2-sdk-go-grpc/actions/workflows/go-test.yaml/badge.svg)](https://github.com/Senzing/g2-sdk-go-grpc/actions/workflows/go-test.yaml)
+[![License](https://img.shields.io/badge/License-Apache2-brightgreen.svg)](https://github.com/Senzing/g2-sdk-go-grpc/blob/main/LICENSE)
 
 ## Overview
 
@@ -52,6 +53,7 @@ interface include:
 
 ## References
 
-- [Development](docs/development.md)
-- [Errors](docs/errors.md)
-- [Examples](docs/examples.md)
+1. [Development](docs/development.md)
+1. [Errors](docs/errors.md)
+1. [Examples](docs/examples.md)
+1. [Package reference](https://pkg.go.dev/github.com/senzing/g2-sdk-go-grpc)

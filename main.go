@@ -27,6 +27,7 @@ import (
 	"github.com/senzing/go-logging/messagestatus"
 	"github.com/senzing/go-logging/messagetext"
 	"github.com/senzing/go-observing/observer"
+	"github.com/senzing/go-observing/observerpb"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 )
@@ -274,13 +275,23 @@ func main() {
 	fmt.Printf("\n-------------------------------------------------------------------------------\n\n")
 	logger.Log(2001, "Just a test of logging", programmMetadataMap)
 
-	// Create 2 observers.
+	// Create observers.
 
 	observer1 := &observer.ObserverNull{
 		Id: "Observer 1",
 	}
 	observer2 := &observer.ObserverNull{
 		Id: "Observer 2",
+	}
+
+	grpcConnection, err := grpc.Dial("localhost:8260", grpc.WithTransportCredentials(insecure.NewCredentials()))
+	if err != nil {
+		fmt.Printf("Did not connect: %v\n", err)
+	}
+
+	observer3 := &observer.ObserverGrpc{
+		Id:         "Observer 3",
+		GrpcClient: observerpb.NewObserverClient(grpcConnection),
 	}
 
 	// Get Senzing objects for installing a Senzing Engine configuration.
@@ -291,6 +302,8 @@ func main() {
 	}
 	g2Config.RegisterObserver(ctx, observer1)
 	g2Config.RegisterObserver(ctx, observer2)
+	g2Config.RegisterObserver(ctx, observer3)
+	g2Config.SetObserverOrigin(ctx, "g2-sdk-go-grpc main.go")
 
 	g2Configmgr, err := getG2configmgr(ctx)
 	if err != nil {

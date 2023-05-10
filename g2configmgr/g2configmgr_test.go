@@ -216,7 +216,7 @@ func setup() error {
 	options := []interface{}{
 		&logging.OptionCallerSkip{Value: 4},
 	}
-	localLogger, err = logging.NewSenzingSdkLogger(ProductId, g2configmgrapi.IdMessages, options...)
+	localLogger, err = logging.NewSenzingSdkLogger(ComponentId, g2configmgrapi.IdMessages, options...)
 	if err != nil {
 		return createError(5901, err)
 	}
@@ -246,6 +246,22 @@ func teardown() error {
 // ----------------------------------------------------------------------------
 // Test interface functions
 // ----------------------------------------------------------------------------
+
+func TestG2configmgr_SetObserverOrigin(test *testing.T) {
+	ctx := context.TODO()
+	g2configmgr := getTestObject(ctx, test)
+	origin := "Machine: nn; Task: UnitTest"
+	g2configmgr.SetObserverOrigin(ctx, origin)
+}
+
+func TestG2configmgr_GetObserverOrigin(test *testing.T) {
+	ctx := context.TODO()
+	g2configmgr := getTestObject(ctx, test)
+	origin := "Machine: nn; Task: UnitTest"
+	g2configmgr.SetObserverOrigin(ctx, origin)
+	actual := g2configmgr.GetObserverOrigin(ctx)
+	assert.Equal(test, origin, actual)
+}
 
 func TestG2configmgr_AddConfig(test *testing.T) {
 	ctx := context.TODO()
@@ -356,6 +372,26 @@ func TestG2configmgr_Destroy(test *testing.T) {
 // ----------------------------------------------------------------------------
 // Examples for godoc documentation
 // ----------------------------------------------------------------------------
+
+func ExampleG2configmgr_SetObserverOrigin() {
+	// For more information, visit https://github.com/Senzing/g2-sdk-go-grpc/blob/main/g2configmgr/g2configmgr_test.go
+	ctx := context.TODO()
+	g2configmgr := getG2Configmgr(ctx)
+	origin := "Machine: nn; Task: UnitTest"
+	g2configmgr.SetObserverOrigin(ctx, origin)
+	// Output:
+}
+
+func ExampleG2configmgr_GetObserverOrigin() {
+	// For more information, visit https://github.com/Senzing/g2-sdk-go-grpc/blob/main/g2config/g2configmgr_test.go
+	ctx := context.TODO()
+	g2configmgr := getG2Configmgr(ctx)
+	origin := "Machine: nn; Task: UnitTest"
+	g2configmgr.SetObserverOrigin(ctx, origin)
+	result := g2configmgr.GetObserverOrigin(ctx)
+	fmt.Println(result)
+	// Output: Machine: nn; Task: UnitTest
+}
 
 func ExampleG2configmgr_AddConfig() {
 	// For more information, visit https://github.com/Senzing/g2-sdk-go-grpc/blob/main/g2configmgr/g2configmgr_test.go

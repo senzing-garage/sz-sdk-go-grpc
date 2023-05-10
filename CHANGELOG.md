@@ -10,7 +10,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 -
 
-## [0.2.4] - 2023-04-2
+## [0.2.5] - 2023-05-10
+
+### Changed in 0.2.5
+
+- Added `GetObserverOrigin()` and `SetObserverOrigin()` to g2* packages
+- Update dependencies
+  - github.com/senzing/g2-sdk-go v0.6.2
+  - github.com/senzing/go-observing v0.2.2
+  - google.golang.org/grpc v1.55.0
+
+## [0.2.4] - 2023-04-22
 
 ### Changed in 0.2.4
 
