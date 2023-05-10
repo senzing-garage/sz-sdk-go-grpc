@@ -249,7 +249,7 @@ func setup() error {
 	options := []interface{}{
 		&logging.OptionCallerSkip{Value: 4},
 	}
-	localLogger, err = logging.NewSenzingSdkLogger(ProductId, g2diagnosticapi.IdMessages, options...)
+	localLogger, err = logging.NewSenzingSdkLogger(ComponentId, g2diagnosticapi.IdMessages, options...)
 	if err != nil {
 		return createError(5901, err)
 	}

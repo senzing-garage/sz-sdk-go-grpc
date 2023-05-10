@@ -25,10 +25,11 @@ import (
 // ----------------------------------------------------------------------------
 
 type G2engine struct {
-	GrpcClient g2pb.G2EngineClient
-	isTrace    bool // Performance optimization
-	logger     logging.LoggingInterface
-	observers  subject.Subject
+	GrpcClient     g2pb.G2EngineClient
+	isTrace        bool // Performance optimization
+	logger         logging.LoggingInterface
+	observerOrigin string
+	observers      subject.Subject
 }
 
 // ----------------------------------------------------------------------------
@@ -44,7 +45,7 @@ func (client *G2engine) getLogger() logging.LoggingInterface {
 		options := []interface{}{
 			&logging.OptionCallerSkip{Value: 4},
 		}
-		client.logger, err = logging.NewSenzingSdkLogger(ProductId, g2engineapi.IdMessages, options...)
+		client.logger, err = logging.NewSenzingSdkLogger(ComponentId, g2engineapi.IdMessages, options...)
 		if err != nil {
 			panic(err)
 		}
@@ -98,7 +99,7 @@ func (client *G2engine) AddRecord(ctx context.Context, dataSourceCode string, re
 				"recordID":       recordID,
 				"loadID":         loadID,
 			}
-			notifier.Notify(ctx, client.observers, ProductId, 8001, err, details)
+			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentId, 8001, err, details)
 		}()
 	}
 	return err
@@ -146,7 +147,7 @@ func (client *G2engine) AddRecordWithInfo(ctx context.Context, dataSourceCode st
 				"recordID":       recordID,
 				"loadID":         loadID,
 			}
-			notifier.Notify(ctx, client.observers, ProductId, 8002, err, details)
+			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentId, 8002, err, details)
 		}()
 	}
 	return result, err
@@ -196,7 +197,7 @@ func (client *G2engine) AddRecordWithInfoWithReturnedRecordID(ctx context.Contex
 				"recordID":       response.GetRecordID(),
 				"loadID":         loadID,
 			}
-			notifier.Notify(ctx, client.observers, ProductId, 8003, err, details)
+			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentId, 8003, err, details)
 		}()
 	}
 	return resultGetWithInfo, resultGetRecordID, err
@@ -238,7 +239,7 @@ func (client *G2engine) AddRecordWithReturnedRecordID(ctx context.Context, dataS
 				"recordID":       response.GetResult(),
 				"loadID":         loadID,
 			}
-			notifier.Notify(ctx, client.observers, ProductId, 8004, err, details)
+			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentId, 8004, err, details)
 		}()
 	}
 	return result, err
@@ -275,7 +276,7 @@ func (client *G2engine) CheckRecord(ctx context.Context, record string, recordQu
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{}
-			notifier.Notify(ctx, client.observers, ProductId, 8005, err, details)
+			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentId, 8005, err, details)
 		}()
 	}
 	return result, err
@@ -305,7 +306,7 @@ func (client *G2engine) CloseExport(ctx context.Context, responseHandle uintptr)
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{}
-			notifier.Notify(ctx, client.observers, ProductId, 8006, err, details)
+			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentId, 8006, err, details)
 		}()
 	}
 	return err
@@ -335,7 +336,7 @@ func (client *G2engine) CountRedoRecords(ctx context.Context) (int64, error) {
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{}
-			notifier.Notify(ctx, client.observers, ProductId, 8007, err, details)
+			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentId, 8007, err, details)
 		}()
 	}
 	return result, err
@@ -372,7 +373,7 @@ func (client *G2engine) DeleteRecord(ctx context.Context, dataSourceCode string,
 				"recordID":       recordID,
 				"loadID":         loadID,
 			}
-			notifier.Notify(ctx, client.observers, ProductId, 8008, err, details)
+			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentId, 8008, err, details)
 		}()
 	}
 	return err
@@ -419,7 +420,7 @@ func (client *G2engine) DeleteRecordWithInfo(ctx context.Context, dataSourceCode
 				"recordID":       recordID,
 				"loadID":         loadID,
 			}
-			notifier.Notify(ctx, client.observers, ProductId, 8009, err, details)
+			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentId, 8009, err, details)
 		}()
 	}
 	return result, err
@@ -445,7 +446,7 @@ func (client *G2engine) Destroy(ctx context.Context) error {
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{}
-			notifier.Notify(ctx, client.observers, ProductId, 8010, err, details)
+			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentId, 8010, err, details)
 		}()
 	}
 	return err
@@ -475,7 +476,7 @@ func (client *G2engine) ExportConfig(ctx context.Context) (string, error) {
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{}
-			notifier.Notify(ctx, client.observers, ProductId, 8011, err, details)
+			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentId, 8011, err, details)
 		}()
 	}
 	return result, err
@@ -510,7 +511,7 @@ func (client *G2engine) ExportConfigAndConfigID(ctx context.Context) (string, in
 			details := map[string]string{
 				"configID": strconv.FormatInt(resultConfigID, 10),
 			}
-			notifier.Notify(ctx, client.observers, ProductId, 8012, err, details)
+			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentId, 8012, err, details)
 		}()
 	}
 	return resultConfig, resultConfigID, err
@@ -547,7 +548,7 @@ func (client *G2engine) ExportCSVEntityReport(ctx context.Context, csvColumnList
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{}
-			notifier.Notify(ctx, client.observers, ProductId, 8013, err, details)
+			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentId, 8013, err, details)
 		}()
 	}
 	return result, err
@@ -582,7 +583,7 @@ func (client *G2engine) ExportJSONEntityReport(ctx context.Context, flags int64)
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{}
-			notifier.Notify(ctx, client.observers, ProductId, 8014, err, details)
+			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentId, 8014, err, details)
 		}()
 	}
 	return result, err
@@ -617,7 +618,7 @@ func (client *G2engine) FetchNext(ctx context.Context, responseHandle uintptr) (
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{}
-			notifier.Notify(ctx, client.observers, ProductId, 8015, err, details)
+			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentId, 8015, err, details)
 		}()
 	}
 	return result, err
@@ -655,7 +656,7 @@ func (client *G2engine) FindInterestingEntitiesByEntityID(ctx context.Context, e
 			details := map[string]string{
 				"entityID": strconv.FormatInt(entityID, 10),
 			}
-			notifier.Notify(ctx, client.observers, ProductId, 8016, err, details)
+			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentId, 8016, err, details)
 		}()
 	}
 	return result, err
@@ -696,7 +697,7 @@ func (client *G2engine) FindInterestingEntitiesByRecordID(ctx context.Context, d
 				"dataSourceCode": dataSourceCode,
 				"recordID":       recordID,
 			}
-			notifier.Notify(ctx, client.observers, ProductId, 8017, err, details)
+			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentId, 8017, err, details)
 		}()
 	}
 	return result, err
@@ -743,7 +744,7 @@ func (client *G2engine) FindNetworkByEntityID(ctx context.Context, entityList st
 			details := map[string]string{
 				"entityList": entityList,
 			}
-			notifier.Notify(ctx, client.observers, ProductId, 8018, err, details)
+			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentId, 8018, err, details)
 		}()
 	}
 	return result, err
@@ -792,7 +793,7 @@ func (client *G2engine) FindNetworkByEntityID_V2(ctx context.Context, entityList
 			details := map[string]string{
 				"entityList": entityList,
 			}
-			notifier.Notify(ctx, client.observers, ProductId, 8019, err, details)
+			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentId, 8019, err, details)
 		}()
 	}
 	return result, err
@@ -839,7 +840,7 @@ func (client *G2engine) FindNetworkByRecordID(ctx context.Context, recordList st
 			details := map[string]string{
 				"recordList": recordList,
 			}
-			notifier.Notify(ctx, client.observers, ProductId, 8020, err, details)
+			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentId, 8020, err, details)
 		}()
 	}
 	return result, err
@@ -888,7 +889,7 @@ func (client *G2engine) FindNetworkByRecordID_V2(ctx context.Context, recordList
 			details := map[string]string{
 				"recordList": recordList,
 			}
-			notifier.Notify(ctx, client.observers, ProductId, 8021, err, details)
+			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentId, 8021, err, details)
 		}()
 	}
 	return result, err
@@ -931,7 +932,7 @@ func (client *G2engine) FindPathByEntityID(ctx context.Context, entityID1 int64,
 				"entityID1": strconv.FormatInt(entityID1, 10),
 				"entityID2": strconv.FormatInt(entityID2, 10),
 			}
-			notifier.Notify(ctx, client.observers, ProductId, 8022, err, details)
+			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentId, 8022, err, details)
 		}()
 	}
 	return result, err
@@ -978,7 +979,7 @@ func (client *G2engine) FindPathByEntityID_V2(ctx context.Context, entityID1 int
 				"entityID1": strconv.FormatInt(entityID1, 10),
 				"entityID2": strconv.FormatInt(entityID2, 10),
 			}
-			notifier.Notify(ctx, client.observers, ProductId, 8023, err, details)
+			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentId, 8023, err, details)
 		}()
 	}
 	return result, err
@@ -1031,7 +1032,7 @@ func (client *G2engine) FindPathByRecordID(ctx context.Context, dataSourceCode1 
 				"dataSourceCode2": dataSourceCode2,
 				"recordID2":       recordID2,
 			}
-			notifier.Notify(ctx, client.observers, ProductId, 8024, err, details)
+			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentId, 8024, err, details)
 		}()
 	}
 	return result, err
@@ -1085,7 +1086,7 @@ func (client *G2engine) FindPathByRecordID_V2(ctx context.Context, dataSourceCod
 				"dataSourceCode2": dataSourceCode2,
 				"recordID2":       recordID2,
 			}
-			notifier.Notify(ctx, client.observers, ProductId, 8025, err, details)
+			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentId, 8025, err, details)
 		}()
 	}
 	return result, err
@@ -1133,7 +1134,7 @@ func (client *G2engine) FindPathExcludingByEntityID(ctx context.Context, entityI
 				"entityID1": strconv.FormatInt(entityID1, 10),
 				"entityID2": strconv.FormatInt(entityID2, 10),
 			}
-			notifier.Notify(ctx, client.observers, ProductId, 8026, err, details)
+			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentId, 8026, err, details)
 		}()
 	}
 	return result, err
@@ -1188,7 +1189,7 @@ func (client *G2engine) FindPathExcludingByEntityID_V2(ctx context.Context, enti
 				"entityID1": strconv.FormatInt(entityID1, 10),
 				"entityID2": strconv.FormatInt(entityID2, 10),
 			}
-			notifier.Notify(ctx, client.observers, ProductId, 8027, err, details)
+			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentId, 8027, err, details)
 		}()
 	}
 	return result, err
@@ -1241,7 +1242,7 @@ func (client *G2engine) FindPathExcludingByRecordID(ctx context.Context, dataSou
 				"dataSourceCode2": dataSourceCode2,
 				"recordID2":       recordID2,
 			}
-			notifier.Notify(ctx, client.observers, ProductId, 8028, err, details)
+			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentId, 8028, err, details)
 		}()
 	}
 	return result, err
@@ -1301,7 +1302,7 @@ func (client *G2engine) FindPathExcludingByRecordID_V2(ctx context.Context, data
 				"dataSourceCode2": dataSourceCode2,
 				"recordID2":       recordID2,
 			}
-			notifier.Notify(ctx, client.observers, ProductId, 8029, err, details)
+			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentId, 8029, err, details)
 		}()
 	}
 	return result, err
@@ -1352,7 +1353,7 @@ func (client *G2engine) FindPathIncludingSourceByEntityID(ctx context.Context, e
 				"entityID1": strconv.FormatInt(entityID1, 10),
 				"entityID2": strconv.FormatInt(entityID2, 10),
 			}
-			notifier.Notify(ctx, client.observers, ProductId, 8030, err, details)
+			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentId, 8030, err, details)
 		}()
 	}
 	return result, err
@@ -1405,7 +1406,7 @@ func (client *G2engine) FindPathIncludingSourceByEntityID_V2(ctx context.Context
 				"entityID1": strconv.FormatInt(entityID1, 10),
 				"entityID2": strconv.FormatInt(entityID2, 10),
 			}
-			notifier.Notify(ctx, client.observers, ProductId, 8031, err, details)
+			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentId, 8031, err, details)
 		}()
 	}
 	return result, err
@@ -1462,7 +1463,7 @@ func (client *G2engine) FindPathIncludingSourceByRecordID(ctx context.Context, d
 				"dataSourceCode2": dataSourceCode2,
 				"recordID2":       recordID2,
 			}
-			notifier.Notify(ctx, client.observers, ProductId, 8032, err, details)
+			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentId, 8032, err, details)
 		}()
 	}
 	return result, err
@@ -1521,7 +1522,7 @@ func (client *G2engine) FindPathIncludingSourceByRecordID_V2(ctx context.Context
 				"dataSourceCode2": dataSourceCode2,
 				"recordID2":       recordID2,
 			}
-			notifier.Notify(ctx, client.observers, ProductId, 8033, err, details)
+			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentId, 8033, err, details)
 		}()
 	}
 	return result, err
@@ -1551,7 +1552,7 @@ func (client *G2engine) GetActiveConfigID(ctx context.Context) (int64, error) {
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{}
-			notifier.Notify(ctx, client.observers, ProductId, 8034, err, details)
+			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentId, 8034, err, details)
 		}()
 	}
 	return result, err
@@ -1589,7 +1590,7 @@ func (client *G2engine) GetEntityByEntityID(ctx context.Context, entityID int64)
 			details := map[string]string{
 				"entityID": strconv.FormatInt(entityID, 10),
 			}
-			notifier.Notify(ctx, client.observers, ProductId, 8035, err, details)
+			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentId, 8035, err, details)
 		}()
 	}
 	return result, err
@@ -1628,7 +1629,7 @@ func (client *G2engine) GetEntityByEntityID_V2(ctx context.Context, entityID int
 			details := map[string]string{
 				"entityID": strconv.FormatInt(entityID, 10),
 			}
-			notifier.Notify(ctx, client.observers, ProductId, 8036, err, details)
+			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentId, 8036, err, details)
 		}()
 	}
 	return result, err
@@ -1668,7 +1669,7 @@ func (client *G2engine) GetEntityByRecordID(ctx context.Context, dataSourceCode 
 				"dataSourceCode": dataSourceCode,
 				"recordID":       recordID,
 			}
-			notifier.Notify(ctx, client.observers, ProductId, 8037, err, details)
+			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentId, 8037, err, details)
 		}()
 	}
 	return result, err
@@ -1710,10 +1711,23 @@ func (client *G2engine) GetEntityByRecordID_V2(ctx context.Context, dataSourceCo
 				"dataSourceCode": dataSourceCode,
 				"recordID":       recordID,
 			}
-			notifier.Notify(ctx, client.observers, ProductId, 8038, err, details)
+			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentId, 8038, err, details)
 		}()
 	}
 	return result, err
+}
+
+/*
+The GetObserverOrigin method returns the "origin" value of past Observer messages.
+
+Input
+  - ctx: A context to control lifecycle.
+
+Output
+  - The value sent in the Observer's "origin" key/value pair.
+*/
+func (client *G2engine) GetObserverOrigin(ctx context.Context) string {
+	return client.observerOrigin
 }
 
 /*
@@ -1750,7 +1764,7 @@ func (client *G2engine) GetRecord(ctx context.Context, dataSourceCode string, re
 				"dataSourceCode": dataSourceCode,
 				"recordID":       recordID,
 			}
-			notifier.Notify(ctx, client.observers, ProductId, 8039, err, details)
+			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentId, 8039, err, details)
 		}()
 	}
 	return result, err
@@ -1792,7 +1806,7 @@ func (client *G2engine) GetRecord_V2(ctx context.Context, dataSourceCode string,
 				"dataSourceCode": dataSourceCode,
 				"recordID":       recordID,
 			}
-			notifier.Notify(ctx, client.observers, ProductId, 8040, err, details)
+			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentId, 8040, err, details)
 		}()
 	}
 	return result, err
@@ -1824,7 +1838,7 @@ func (client *G2engine) GetRedoRecord(ctx context.Context) (string, error) {
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{}
-			notifier.Notify(ctx, client.observers, ProductId, 8041, err, details)
+			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentId, 8041, err, details)
 		}()
 	}
 	return result, err
@@ -1855,7 +1869,7 @@ func (client *G2engine) GetRepositoryLastModifiedTime(ctx context.Context) (int6
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{}
-			notifier.Notify(ctx, client.observers, ProductId, 8042, err, details)
+			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentId, 8042, err, details)
 		}()
 	}
 	return result, err
@@ -1879,7 +1893,7 @@ func (client *G2engine) GetSdkId(ctx context.Context) string {
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{}
-			notifier.Notify(ctx, client.observers, ProductId, 8075, err, details)
+			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentId, 8075, err, details)
 		}()
 	}
 	return "grpc"
@@ -1916,7 +1930,7 @@ func (client *G2engine) GetVirtualEntityByRecordID(ctx context.Context, recordLi
 			details := map[string]string{
 				"recordList": recordList,
 			}
-			notifier.Notify(ctx, client.observers, ProductId, 8043, err, details)
+			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentId, 8043, err, details)
 		}()
 	}
 	return result, err
@@ -1956,7 +1970,7 @@ func (client *G2engine) GetVirtualEntityByRecordID_V2(ctx context.Context, recor
 			details := map[string]string{
 				"recordList": recordList,
 			}
-			notifier.Notify(ctx, client.observers, ProductId, 8044, err, details)
+			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentId, 8044, err, details)
 		}()
 	}
 	return result, err
@@ -1993,7 +2007,7 @@ func (client *G2engine) HowEntityByEntityID(ctx context.Context, entityID int64)
 			details := map[string]string{
 				"entityID": strconv.FormatInt(entityID, 10),
 			}
-			notifier.Notify(ctx, client.observers, ProductId, 8045, err, details)
+			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentId, 8045, err, details)
 		}()
 	}
 	return result, err
@@ -2032,7 +2046,7 @@ func (client *G2engine) HowEntityByEntityID_V2(ctx context.Context, entityID int
 			details := map[string]string{
 				"entityID": strconv.FormatInt(entityID, 10),
 			}
-			notifier.Notify(ctx, client.observers, ProductId, 8046, err, details)
+			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentId, 8046, err, details)
 		}()
 	}
 	return result, err
@@ -2069,7 +2083,7 @@ func (client *G2engine) Init(ctx context.Context, moduleName string, iniParams s
 				"moduleName":     moduleName,
 				"verboseLogging": strconv.Itoa(verboseLogging),
 			}
-			notifier.Notify(ctx, client.observers, ProductId, 8047, err, details)
+			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentId, 8047, err, details)
 		}()
 	}
 	return err
@@ -2111,7 +2125,7 @@ func (client *G2engine) InitWithConfigID(ctx context.Context, moduleName string,
 				"moduleName":     moduleName,
 				"verboseLogging": strconv.Itoa(verboseLogging),
 			}
-			notifier.Notify(ctx, client.observers, ProductId, 8048, err, details)
+			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentId, 8048, err, details)
 		}()
 	}
 	return err
@@ -2138,7 +2152,7 @@ func (client *G2engine) PrimeEngine(ctx context.Context) error {
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{}
-			notifier.Notify(ctx, client.observers, ProductId, 8049, err, details)
+			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentId, 8049, err, details)
 		}()
 	}
 	return err
@@ -2166,7 +2180,7 @@ func (client *G2engine) Process(ctx context.Context, record string) error {
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{}
-			notifier.Notify(ctx, client.observers, ProductId, 8050, err, details)
+			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentId, 8050, err, details)
 		}()
 	}
 	return err
@@ -2197,7 +2211,7 @@ func (client *G2engine) ProcessRedoRecord(ctx context.Context) (string, error) {
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{}
-			notifier.Notify(ctx, client.observers, ProductId, 8051, err, details)
+			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentId, 8051, err, details)
 		}()
 	}
 	return result, err
@@ -2234,7 +2248,7 @@ func (client *G2engine) ProcessRedoRecordWithInfo(ctx context.Context, flags int
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{}
-			notifier.Notify(ctx, client.observers, ProductId, 8052, err, details)
+			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentId, 8052, err, details)
 		}()
 	}
 	return result, resultWithInfo, err
@@ -2270,7 +2284,7 @@ func (client *G2engine) ProcessWithInfo(ctx context.Context, record string, flag
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{}
-			notifier.Notify(ctx, client.observers, ProductId, 8053, err, details)
+			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentId, 8053, err, details)
 		}()
 	}
 	return result, err
@@ -2304,7 +2318,7 @@ func (client *G2engine) ProcessWithResponse(ctx context.Context, record string) 
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{}
-			notifier.Notify(ctx, client.observers, ProductId, 8054, err, details)
+			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentId, 8054, err, details)
 		}()
 	}
 	return result, err
@@ -2338,7 +2352,7 @@ func (client *G2engine) ProcessWithResponseResize(ctx context.Context, record st
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{}
-			notifier.Notify(ctx, client.observers, ProductId, 8055, err, details)
+			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentId, 8055, err, details)
 		}()
 	}
 	return result, err
@@ -2367,7 +2381,7 @@ func (client *G2engine) PurgeRepository(ctx context.Context) error {
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{}
-			notifier.Notify(ctx, client.observers, ProductId, 8056, err, details)
+			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentId, 8056, err, details)
 		}()
 	}
 	return err
@@ -2399,7 +2413,7 @@ func (client *G2engine) ReevaluateEntity(ctx context.Context, entityID int64, fl
 			details := map[string]string{
 				"entityID": strconv.FormatInt(entityID, 10),
 			}
-			notifier.Notify(ctx, client.observers, ProductId, 8057, err, details)
+			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentId, 8057, err, details)
 		}()
 	}
 	return err
@@ -2438,7 +2452,7 @@ func (client *G2engine) ReevaluateEntityWithInfo(ctx context.Context, entityID i
 			details := map[string]string{
 				"entityID": strconv.FormatInt(entityID, 10),
 			}
-			notifier.Notify(ctx, client.observers, ProductId, 8058, err, details)
+			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentId, 8058, err, details)
 		}()
 	}
 	return result, err
@@ -2473,7 +2487,7 @@ func (client *G2engine) ReevaluateRecord(ctx context.Context, dataSourceCode str
 				"dataSourceCode": dataSourceCode,
 				"recordID":       recordID,
 			}
-			notifier.Notify(ctx, client.observers, ProductId, 8059, err, details)
+			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentId, 8059, err, details)
 		}()
 	}
 	return err
@@ -2515,7 +2529,7 @@ func (client *G2engine) ReevaluateRecordWithInfo(ctx context.Context, dataSource
 				"dataSourceCode": dataSourceCode,
 				"recordID":       recordID,
 			}
-			notifier.Notify(ctx, client.observers, ProductId, 8060, err, details)
+			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentId, 8060, err, details)
 		}()
 	}
 	return result, err
@@ -2544,7 +2558,7 @@ func (client *G2engine) RegisterObserver(ctx context.Context, observer observer.
 			details := map[string]string{
 				"observerID": observer.GetObserverId(ctx),
 			}
-			notifier.Notify(ctx, client.observers, ProductId, 8076, err, details)
+			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentId, 8076, err, details)
 		}()
 	}
 	return err
@@ -2574,7 +2588,7 @@ func (client *G2engine) Reinit(ctx context.Context, initConfigID int64) error {
 			details := map[string]string{
 				"initConfigID": strconv.FormatInt(initConfigID, 10),
 			}
-			notifier.Notify(ctx, client.observers, ProductId, 8061, err, details)
+			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentId, 8061, err, details)
 		}()
 	}
 	return err
@@ -2613,7 +2627,7 @@ func (client *G2engine) ReplaceRecord(ctx context.Context, dataSourceCode string
 				"recordID":       recordID,
 				"loadID":         loadID,
 			}
-			notifier.Notify(ctx, client.observers, ProductId, 8062, err, details)
+			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentId, 8062, err, details)
 		}()
 	}
 	return err
@@ -2662,7 +2676,7 @@ func (client *G2engine) ReplaceRecordWithInfo(ctx context.Context, dataSourceCod
 				"recordID":       recordID,
 				"loadID":         loadID,
 			}
-			notifier.Notify(ctx, client.observers, ProductId, 8063, err, details)
+			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentId, 8063, err, details)
 		}()
 	}
 	return result, err
@@ -2697,7 +2711,7 @@ func (client *G2engine) SearchByAttributes(ctx context.Context, jsonData string)
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{}
-			notifier.Notify(ctx, client.observers, ProductId, 8064, err, details)
+			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentId, 8064, err, details)
 		}()
 	}
 	return result, err
@@ -2734,7 +2748,7 @@ func (client *G2engine) SearchByAttributes_V2(ctx context.Context, jsonData stri
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{}
-			notifier.Notify(ctx, client.observers, ProductId, 8065, err, details)
+			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentId, 8065, err, details)
 		}()
 	}
 	return result, err
@@ -2764,10 +2778,21 @@ func (client *G2engine) SetLogLevel(ctx context.Context, logLevelName string) er
 			details := map[string]string{
 				"logLevel": logLevelName,
 			}
-			notifier.Notify(ctx, client.observers, ProductId, 8077, err, details)
+			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentId, 8077, err, details)
 		}()
 	}
 	return err
+}
+
+/*
+The SetObserverOrigin method sets the "origin" value in future Observer messages.
+
+Input
+  - ctx: A context to control lifecycle.
+  - origin: The value sent in the Observer's "origin" key/value pair.
+*/
+func (client *G2engine) SetObserverOrigin(ctx context.Context, origin string) {
+	client.observerOrigin = origin
 }
 
 /*
@@ -2796,7 +2821,7 @@ func (client *G2engine) Stats(ctx context.Context) (string, error) {
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{}
-			notifier.Notify(ctx, client.observers, ProductId, 8066, err, details)
+			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentId, 8066, err, details)
 		}()
 	}
 	return result, err
@@ -2824,7 +2849,7 @@ func (client *G2engine) UnregisterObserver(ctx context.Context, observer observe
 		details := map[string]string{
 			"observerID": observer.GetObserverId(ctx),
 		}
-		notifier.Notify(ctx, client.observers, ProductId, 8078, err, details)
+		notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentId, 8078, err, details)
 	}
 	err = client.observers.UnregisterObserver(ctx, observer)
 	if !client.observers.HasObservers(ctx) {
@@ -2870,7 +2895,7 @@ func (client *G2engine) WhyEntities(ctx context.Context, entityID1 int64, entity
 				"entityID1": strconv.FormatInt(entityID1, 10),
 				"entityID2": strconv.FormatInt(entityID2, 10),
 			}
-			notifier.Notify(ctx, client.observers, ProductId, 8067, err, details)
+			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentId, 8067, err, details)
 		}()
 	}
 	return result, err
@@ -2915,7 +2940,7 @@ func (client *G2engine) WhyEntities_V2(ctx context.Context, entityID1 int64, ent
 				"entityID1": strconv.FormatInt(entityID1, 10),
 				"entityID2": strconv.FormatInt(entityID2, 10),
 			}
-			notifier.Notify(ctx, client.observers, ProductId, 8068, err, details)
+			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentId, 8068, err, details)
 		}()
 	}
 	return result, err
@@ -2953,7 +2978,7 @@ func (client *G2engine) WhyEntityByEntityID(ctx context.Context, entityID int64)
 			details := map[string]string{
 				"entityID": strconv.FormatInt(entityID, 10),
 			}
-			notifier.Notify(ctx, client.observers, ProductId, 8069, err, details)
+			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentId, 8069, err, details)
 		}()
 	}
 	return result, err
@@ -2992,7 +3017,7 @@ func (client *G2engine) WhyEntityByEntityID_V2(ctx context.Context, entityID int
 			details := map[string]string{
 				"entityID": strconv.FormatInt(entityID, 10),
 			}
-			notifier.Notify(ctx, client.observers, ProductId, 8070, err, details)
+			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentId, 8070, err, details)
 		}()
 	}
 	return result, err
@@ -3032,7 +3057,7 @@ func (client *G2engine) WhyEntityByRecordID(ctx context.Context, dataSourceCode 
 				"dataSourceCode": dataSourceCode,
 				"recordID":       recordID,
 			}
-			notifier.Notify(ctx, client.observers, ProductId, 8071, err, details)
+			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentId, 8071, err, details)
 		}()
 	}
 	return result, err
@@ -3074,7 +3099,7 @@ func (client *G2engine) WhyEntityByRecordID_V2(ctx context.Context, dataSourceCo
 				"dataSourceCode": dataSourceCode,
 				"recordID":       recordID,
 			}
-			notifier.Notify(ctx, client.observers, ProductId, 8072, err, details)
+			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentId, 8072, err, details)
 		}()
 	}
 	return result, err
@@ -3123,7 +3148,7 @@ func (client *G2engine) WhyRecords(ctx context.Context, dataSourceCode1 string, 
 				"dataSourceCode2": dataSourceCode2,
 				"recordID2":       recordID2,
 			}
-			notifier.Notify(ctx, client.observers, ProductId, 8073, err, details)
+			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentId, 8073, err, details)
 		}()
 	}
 	return result, err
@@ -3173,7 +3198,7 @@ func (client *G2engine) WhyRecords_V2(ctx context.Context, dataSourceCode1 strin
 				"dataSourceCode2": dataSourceCode2,
 				"recordID2":       recordID2,
 			}
-			notifier.Notify(ctx, client.observers, ProductId, 8074, err, details)
+			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentId, 8074, err, details)
 		}()
 	}
 	return result, err
