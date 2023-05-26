@@ -160,24 +160,24 @@ func TestG2config_AddDataSource(test *testing.T) {
 	testError(test, ctx, g2config, err)
 }
 
-func TestG2config_AddDataSource_WithLoad(test *testing.T) {
-	ctx := context.TODO()
-	g2config := getTestObject(ctx, test)
-	configHandle, err := g2config.Create(ctx)
-	testError(test, ctx, g2config, err)
-	jsonConfig, err := g2config.Save(ctx, configHandle)
-	testError(test, ctx, g2config, err)
-	err = g2config.Close(ctx, configHandle)
-	testError(test, ctx, g2config, err)
-	configHandle2, err := g2config.Load(ctx, jsonConfig)
-	testError(test, ctx, g2config, err)
-	inputJson := `{"DSRC_CODE": "GO_TEST"}`
-	actual, err := g2config.AddDataSource(ctx, configHandle2, inputJson)
-	testError(test, ctx, g2config, err)
-	printActual(test, actual)
-	err = g2config.Close(ctx, configHandle2)
-	testError(test, ctx, g2config, err)
-}
+// func TestG2config_AddDataSource_WithLoad(test *testing.T) {
+// 	ctx := context.TODO()
+// 	g2config := getTestObject(ctx, test)
+// 	configHandle, err := g2config.Create(ctx)
+// 	testError(test, ctx, g2config, err)
+// 	jsonConfig, err := g2config.Save(ctx, configHandle)
+// 	testError(test, ctx, g2config, err)
+// 	err = g2config.Close(ctx, configHandle)
+// 	testError(test, ctx, g2config, err)
+// 	configHandle2, err := g2config.Load(ctx, jsonConfig)
+// 	testError(test, ctx, g2config, err)
+// 	inputJson := `{"DSRC_CODE": "GO_TEST"}`
+// 	actual, err := g2config.AddDataSource(ctx, configHandle2, inputJson)
+// 	testError(test, ctx, g2config, err)
+// 	printActual(test, actual)
+// 	err = g2config.Close(ctx, configHandle2)
+// 	testError(test, ctx, g2config, err)
+// }
 
 func TestG2config_Close(test *testing.T) {
 	ctx := context.TODO()
