@@ -10,6 +10,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 -
 
+## [0.3.0] - 2023-05-26
+
+### Changed in 0.3.0
+
+- Change `g2config.Load()` signature
+- Added `gosec`
+- Update dependencies
+  - github.com/senzing/g2-sdk-go v0.6.4
+  - github.com/senzing/g2-sdk-proto/go v0.0.0-20230526140633-b44eb0f20e1b
+
 ## [0.2.7] - 2023-05-19
 
 ### Changed in 0.2.7
