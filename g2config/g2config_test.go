@@ -219,8 +219,10 @@ func TestG2config_Load(test *testing.T) {
 	testError(test, ctx, g2config, err)
 	jsonConfig, err := g2config.Save(ctx, configHandle)
 	testError(test, ctx, g2config, err)
-	err = g2config.Load(ctx, configHandle, jsonConfig)
+	actual, err := g2config.Load(ctx, jsonConfig)
 	testError(test, ctx, g2config, err)
+	printActual(test, actual)
+
 }
 
 func TestG2config_Save(test *testing.T) {
@@ -354,19 +356,20 @@ func ExampleG2config_Load() {
 	// For more information, visit https://github.com/Senzing/g2-sdk-go-grpc/blob/main/g2config/g2config_test.go
 	ctx := context.TODO()
 	g2config := getG2Config(ctx)
-	configHandle, err := g2config.Create(ctx)
+	mockConfigHandle, err := g2config.Create(ctx)
 	if err != nil {
 		fmt.Println(err)
 	}
-	jsonConfig, err := g2config.Save(ctx, configHandle)
+	jsonConfig, err := g2config.Save(ctx, mockConfigHandle)
 	if err != nil {
 		fmt.Println(err)
 	}
-	err = g2config.Load(ctx, configHandle, jsonConfig)
+	configHandle, err := g2config.Load(ctx, jsonConfig)
 	if err != nil {
 		fmt.Println(err)
 	}
-	// Output:
+	fmt.Println(configHandle > 0) // Dummy output.
+	// Output: true
 }
 
 func ExampleG2config_Save() {

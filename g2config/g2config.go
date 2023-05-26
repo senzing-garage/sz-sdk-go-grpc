@@ -347,18 +347,18 @@ Input
   - configHandle: An identifier of an in-memory configuration.
   - jsonConfig: A JSON document containing the Senzing configuration.
 */
-func (client *G2config) Load(ctx context.Context, configHandle uintptr, jsonConfig string) error {
+func (client *G2config) Load(ctx context.Context, jsonConfig string) (uintptr, error) {
 	var err error = nil
 	if client.isTrace {
 		entryTime := time.Now()
-		client.traceEntry(21, configHandle, jsonConfig)
-		defer func() { client.traceExit(22, configHandle, jsonConfig, err, time.Since(entryTime)) }()
+		client.traceEntry(21, jsonConfig)
+		defer func() { client.traceExit(22, jsonConfig, err, time.Since(entryTime)) }()
 	}
 	request := g2pb.LoadRequest{
-		ConfigHandle: int64(configHandle),
-		JsonConfig:   jsonConfig,
+		JsonConfig: jsonConfig,
 	}
-	_, err = client.GrpcClient.Load(ctx, &request)
+	response, err := client.GrpcClient.Load(ctx, &request)
+	result := (uintptr)(response.GetResult())
 	err = helper.ConvertGrpcError(err)
 	if client.observers != nil {
 		go func() {
@@ -366,7 +366,7 @@ func (client *G2config) Load(ctx context.Context, configHandle uintptr, jsonConf
 			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentId, 8008, err, details)
 		}()
 	}
-	return err
+	return result, err
 }
 
 /*
