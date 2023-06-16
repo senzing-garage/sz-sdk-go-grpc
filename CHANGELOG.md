@@ -10,6 +10,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 -
 
+## [0.3.1] - 2023-05-26
+
+### Changed in 0.3.1
+
+- Update dependencies
+  - github.com/senzing/g2-sdk-go v0.6.5
+  - github.com/senzing/g2-sdk-proto/go v0.0.0-20230608182106-25c8cdc02e3c
+  - github.com/senzing/go-common v0.1.4
+  - github.com/senzing/go-logging v1.2.6
+  - github.com/senzing/go-observing v0.2.6
+  - github.com/stretchr/testify v1.8.4
+  - google.golang.org/grpc v1.56.0
+
 ## [0.3.0] - 2023-05-26
 
 ### Changed in 0.3.0
