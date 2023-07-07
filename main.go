@@ -20,12 +20,7 @@ import (
 	g2enginepb "github.com/senzing/g2-sdk-proto/go/g2engine"
 	g2productpb "github.com/senzing/g2-sdk-proto/go/g2product"
 	"github.com/senzing/go-common/truthset"
-	"github.com/senzing/go-logging/messageformat"
-	"github.com/senzing/go-logging/messageid"
-	"github.com/senzing/go-logging/messagelevel"
-	"github.com/senzing/go-logging/messagelogger"
-	"github.com/senzing/go-logging/messagestatus"
-	"github.com/senzing/go-logging/messagetext"
+	"github.com/senzing/go-logging/logging"
 	"github.com/senzing/go-observing/observer"
 	"github.com/senzing/go-observing/observerpb"
 	"google.golang.org/grpc"
@@ -61,7 +56,7 @@ var buildIteration string = "0"
 var (
 	grpcAddress    = "localhost:8258"
 	grpcConnection *grpc.ClientConn
-	logger         messagelogger.MessageLoggerInterface
+	logger         logging.LoggingInterface
 )
 
 // ----------------------------------------------------------------------------
@@ -125,21 +120,14 @@ func getG2product(ctx context.Context) (g2api.G2product, error) {
 	return result, err
 }
 
-func getLogger(ctx context.Context) (messagelogger.MessageLoggerInterface, error) {
-	messageFormat := &messageformat.MessageFormatJson{}
-	messageIdTemplate := &messageid.MessageIdTemplated{
-		MessageIdTemplate: MessageIdTemplate,
+func getLogger(ctx context.Context) (logging.LoggingInterface, error) {
+
+	logger, err := logging.NewSenzingLogger("my-unique-%04d", Messages)
+	if err != nil {
+		fmt.Println(err)
 	}
-	messageLevel := &messagelevel.MessageLevelByIdRange{
-		IdLevelRanges: messagelevel.IdLevelRanges,
-	}
-	messageStatus := &messagestatus.MessageStatusByIdRange{
-		IdStatusRanges: messagestatus.IdLevelRangesAsString,
-	}
-	messageText := &messagetext.MessageTextTemplated{
-		IdMessages: Messages,
-	}
-	return messagelogger.New(messageFormat, messageIdTemplate, messageLevel, messageStatus, messageText, messagelogger.LevelInfo)
+
+	return logger, err
 }
 
 func demonstrateConfigFunctions(ctx context.Context, g2Config g2api.G2config, g2Configmgr g2api.G2configmgr) error {
@@ -149,7 +137,7 @@ func demonstrateConfigFunctions(ctx context.Context, g2Config g2api.G2config, g2
 
 	configHandle, err := g2Config.Create(ctx)
 	if err != nil {
-		return logger.Error(5100, err)
+		return logger.NewError(5100, err)
 	}
 
 	// Using G2Config: Add data source to in-memory configuration.
@@ -157,7 +145,7 @@ func demonstrateConfigFunctions(ctx context.Context, g2Config g2api.G2config, g2
 	for _, testDataSource := range truthset.TruthsetDataSources {
 		_, err := g2Config.AddDataSource(ctx, configHandle, testDataSource.Json)
 		if err != nil {
-			return logger.Error(5101, err)
+			return logger.NewError(5101, err)
 		}
 	}
 
@@ -165,7 +153,7 @@ func demonstrateConfigFunctions(ctx context.Context, g2Config g2api.G2config, g2
 
 	configStr, err := g2Config.Save(ctx, configHandle)
 	if err != nil {
-		return logger.Error(5102, err)
+		return logger.NewError(5102, err)
 	}
 
 	// Using G2Configmgr: Persist configuration string to database.
@@ -173,14 +161,14 @@ func demonstrateConfigFunctions(ctx context.Context, g2Config g2api.G2config, g2
 	configComments := fmt.Sprintf("Created by g2diagnostic_test at %s", now.UTC())
 	configID, err := g2Configmgr.AddConfig(ctx, configStr, configComments)
 	if err != nil {
-		return logger.Error(5103, err)
+		return logger.NewError(5103, err)
 	}
 
 	// Using G2Configmgr: Set new configuration as the default.
 
 	err = g2Configmgr.SetDefaultConfigID(ctx, configID)
 	if err != nil {
-		return logger.Error(5104, err)
+		return logger.NewError(5104, err)
 	}
 
 	return err
@@ -213,10 +201,7 @@ func demonstrateAdditionalFunctions(ctx context.Context, g2Diagnostic g2api.G2di
 	if err != nil {
 		failOnError(5300, err)
 	}
-	err = logger.Log(2002, actual)
-	if err != nil {
-		failOnError(9999, err)
-	}
+	logger.Log(2002, actual)
 
 	// Using G2Engine: Purge repository.
 
@@ -231,10 +216,7 @@ func demonstrateAdditionalFunctions(ctx context.Context, g2Diagnostic g2api.G2di
 	if err != nil {
 		failOnError(5302, err)
 	}
-	err = logger.Log(2003, withInfo)
-	if err != nil {
-		failOnError(9999, err)
-	}
+	logger.Log(2003, withInfo)
 
 	// Using G2Product: Show license metadata.
 
@@ -242,10 +224,7 @@ func demonstrateAdditionalFunctions(ctx context.Context, g2Diagnostic g2api.G2di
 	if err != nil {
 		failOnError(5303, err)
 	}
-	err = logger.Log(2004, license)
-	if err != nil {
-		failOnError(9999, err)
-	}
+	logger.Log(2004, license)
 
 	// Using G2Engine: Purge repository again.
 
@@ -257,10 +236,7 @@ func demonstrateAdditionalFunctions(ctx context.Context, g2Diagnostic g2api.G2di
 }
 
 func failOnError(msgId int, err error) {
-	err2 := logger.Log(msgId, err)
-	if err2 != nil {
-		panic(err2)
-	}
+	logger.Log(msgId, err)
 	panic(err.Error())
 }
 
@@ -289,10 +265,7 @@ func main() {
 	}
 
 	fmt.Printf("\n-------------------------------------------------------------------------------\n\n")
-	err = logger.Log(2001, "Just a test of logging", programmMetadataMap)
-	if err != nil {
-		failOnError(9999, err)
-	}
+	logger.Log(2001, "Just a test of logging", programmMetadataMap)
 
 	// Create observers.
 
@@ -321,15 +294,15 @@ func main() {
 	}
 	err = g2Config.RegisterObserver(ctx, observer1)
 	if err != nil {
-		failOnError(9999, err)
+		panic(err)
 	}
 	err = g2Config.RegisterObserver(ctx, observer2)
 	if err != nil {
-		failOnError(9999, err)
+		panic(err)
 	}
 	err = g2Config.RegisterObserver(ctx, observer3)
 	if err != nil {
-		failOnError(9999, err)
+		panic(err)
 	}
 	g2Config.SetObserverOrigin(ctx, "g2-sdk-go-grpc main.go")
 
@@ -339,7 +312,7 @@ func main() {
 	}
 	err = g2Configmgr.RegisterObserver(ctx, observer1)
 	if err != nil {
-		failOnError(9999, err)
+		panic(err)
 	}
 
 	// Persist the Senzing configuration to the Senzing repository.
@@ -357,7 +330,7 @@ func main() {
 	}
 	err = g2Diagnostic.RegisterObserver(ctx, observer1)
 	if err != nil {
-		failOnError(9999, err)
+		panic(err)
 	}
 
 	g2Engine, err := getG2engine(ctx)
@@ -366,7 +339,7 @@ func main() {
 	}
 	err = g2Engine.RegisterObserver(ctx, observer1)
 	if err != nil {
-		failOnError(9999, err)
+		panic(err)
 	}
 
 	g2Product, err := getG2product(ctx)
@@ -375,7 +348,7 @@ func main() {
 	}
 	err = g2Product.RegisterObserver(ctx, observer1)
 	if err != nil {
-		failOnError(9999, err)
+		panic(err)
 	}
 
 	// Demonstrate tests.
