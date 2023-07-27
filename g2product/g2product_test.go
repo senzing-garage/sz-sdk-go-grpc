@@ -24,7 +24,7 @@ const (
 
 var (
 	g2productSingleton g2api.G2product
-	grpcAddress        = "localhost:8258"
+	grpcAddress        = "localhost:8261"
 	grpcConnection     *grpc.ClientConn
 )
 

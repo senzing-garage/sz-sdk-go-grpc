@@ -54,7 +54,7 @@ var buildVersion string = "0.0.0"
 var buildIteration string = "0"
 
 var (
-	grpcAddress    = "localhost:8258"
+	grpcAddress    = "localhost:8261"
 	grpcConnection *grpc.ClientConn
 	logger         logging.LoggingInterface
 )
@@ -276,7 +276,7 @@ func main() {
 		Id: "Observer 2",
 	}
 
-	grpcConnection, err := grpc.Dial("localhost:8260", grpc.WithTransportCredentials(insecure.NewCredentials()))
+	grpcConnection, err := grpc.Dial("localhost:8261", grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		fmt.Printf("Did not connect: %v\n", err)
 	}

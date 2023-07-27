@@ -37,7 +37,7 @@ var (
 	g2configmgrSingleton  g2api.G2configmgr
 	g2diagnosticSingleton g2api.G2diagnostic
 	g2engineSingleton     g2api.G2engine
-	grpcAddress           = "localhost:8258"
+	grpcAddress           = "localhost:8261"
 	grpcConnection        *grpc.ClientConn
 	localLogger           logging.LoggingInterface
 )
