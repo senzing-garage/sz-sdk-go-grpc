@@ -6,7 +6,7 @@ require (
 	github.com/aquilax/truncate v1.0.0
 	github.com/senzing/g2-sdk-go v0.6.7
 	github.com/senzing/g2-sdk-proto/go v0.0.0-20230608182106-25c8cdc02e3c
-	github.com/senzing/go-common v0.2.6
+	github.com/senzing/go-common v0.2.7
 	github.com/senzing/go-logging v1.3.1
 	github.com/senzing/go-observing v0.2.6
 	github.com/stretchr/testify v1.8.4
