@@ -28,6 +28,9 @@ jobs:
         uses: actions/setup-go@v4
         with:
           go-version: ${{ matrix.go }}
+      - name: Install Docker
+        uses: docker-practice/actions-setup-docker@master
+        timeout-minutes: 12          
       # - run: go test -v -p 1 ./...
       - run: go test -v ./.
       - run: go test -v ./g2config
