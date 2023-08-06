@@ -4,7 +4,7 @@
 # Makefile targets supported by all platforms.
 # -----------------------------------------------------------------------------
 
-.PHONY: hello-worlds
+.PHONY: hello-world
 hello-world:
 	@echo "Hello World, from linux."
 
