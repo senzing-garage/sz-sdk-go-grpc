@@ -10,6 +10,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 -
 
+## [0.3.2] - 2023-08-05
+
+### Changed in 0.3.2
+
+- Changed default port to 8261
+- Moved to `go-logging`
+- Refactor to `template-go`
+- Update dependencies
+  - github.com/senzing/g2-sdk-go v0.6.8
+  - github.com/senzing/go-common v0.2.11
+  - github.com/senzing/go-logging v1.3.2
+  - github.com/senzing/go-observing v0.2.7
+  - google.golang.org/grpc v1.57.0
+
 ## [0.3.1] - 2023-05-26
 
 ### Changed in 0.3.1

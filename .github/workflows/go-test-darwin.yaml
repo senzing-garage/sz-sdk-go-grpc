@@ -1,0 +1,39 @@
+# Based on
+# - https://github.com/marketplace/actions/setup-go-environment
+
+name: go-test-darwin.yaml
+
+on: [push]
+
+env:
+  SENZING_TOOLS_ENABLE_ALL: true
+  
+jobs:
+  build:
+    runs-on: macos-latest
+    strategy:
+      matrix:
+        go: ["1.20"]
+    name: Go ${{ matrix.go }} - darwin
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: Setup go
+        uses: actions/setup-go@v4
+        with:
+          go-version: ${{ matrix.go }}
+      - name: Install Docker
+        uses: docker-practice/actions-setup-docker@master
+        timeout-minutes: 12         
+      - name: PostgreSQL service
+        run: docker run --detach --env SENZING_TOOLS_ENABLE_ALL --publish 8261:8261 senzing/serve-grpc:latest         
+      # - run: go test -v -p 1 ./...
+      - run: go test -v ./.
+      - run: go test -v ./g2config
+      - run: go test -v ./g2configmgr
+      - run: go test -v ./g2diagnostic
+      # - run: go test -v ./g2engine
+      - run: go test -v ./g2product
+      - run: go test -v ./helper
