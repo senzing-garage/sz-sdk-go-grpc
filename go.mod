@@ -2,8 +2,6 @@ module github.com/senzing/g2-sdk-go-grpc
 
 go 1.21
 
-toolchain go1.21.0
-
 require (
 	github.com/aquilax/truncate v1.0.0
 	github.com/senzing/g2-sdk-go v0.6.8
