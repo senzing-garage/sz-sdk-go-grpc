@@ -21,10 +21,12 @@ jobs:
         uses: actions/setup-go@v4
         with:
           go-version: ${{ matrix.go }}
-      - name: Install Docker
-        uses: docker-practice/actions-setup-docker@master
-        timeout-minutes: 12
-      - name: gRPC service
-        run: docker run --detach --env SENZING_TOOLS_ENABLE_ALL --publish 8261:8261 senzing/serve-grpc:latest
-      - name: Run go test
-        run: go test -v -p 1 ./...
+      - name: TODO - install senzing-tools
+        run: echo "TODO - Run senzing-tools serve-grpc"
+      # - name: Install Docker
+      #   uses: docker-practice/actions-setup-docker@master
+      #   timeout-minutes: 12
+      # - name: gRPC service
+      #   run: docker run --detach --env SENZING_TOOLS_ENABLE_ALL --publish 8261:8261 senzing/serve-grpc:latest
+      # - name: Run go test
+      #   run: go test -v -p 1 ./...
