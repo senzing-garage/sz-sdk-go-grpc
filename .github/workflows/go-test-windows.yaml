@@ -1,0 +1,32 @@
+# Based on
+# - https://github.com/marketplace/actions/setup-go-environment
+
+name: go-test-windows.yaml
+
+on: [push]
+
+jobs:
+  build:
+    runs-on: windows-latest
+    strategy:
+      matrix:
+        go: ["1.21"]
+    name: Go ${{ matrix.go }} - windows
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: Setup go
+        uses: actions/setup-go@v4
+        with:
+          go-version: ${{ matrix.go }}
+      - name: TODO - install senzing-tools
+        run: echo "TODO - Run senzing-tools serve-grpc"
+      # - name: Install Docker
+      #   uses: docker-practice/actions-setup-docker@master
+      #   timeout-minutes: 12
+      # - name: gRPC service
+      #   run: docker run --detach --env SENZING_TOOLS_ENABLE_ALL --publish 8261:8261 senzing/serve-grpc:latest
+      # - name: Run go test
+      #   run: go test -v -p 1 ./...

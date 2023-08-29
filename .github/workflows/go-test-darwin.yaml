@@ -7,13 +7,13 @@ on: [push]
 
 env:
   SENZING_TOOLS_ENABLE_ALL: true
-  
+
 jobs:
   build:
     runs-on: macos-latest
     strategy:
       matrix:
-        go: ["1.20"]
+        go: ["1.21"]
     name: Go ${{ matrix.go }} - darwin
     steps:
       - name: Checkout repository
@@ -26,9 +26,9 @@ jobs:
           go-version: ${{ matrix.go }}
       - name: Install Docker
         uses: docker-practice/actions-setup-docker@master
-        timeout-minutes: 12         
-      - name: PostgreSQL service
-        run: docker run --detach --env SENZING_TOOLS_ENABLE_ALL --publish 8261:8261 senzing/serve-grpc:latest         
+        timeout-minutes: 12
+      - name: gRPC service
+        run: docker run --detach --env SENZING_TOOLS_ENABLE_ALL --publish 8261:8261 senzing/serve-grpc:latest
       # - run: go test -v -p 1 ./...
       - run: go test -v ./.
       - run: go test -v ./g2config
