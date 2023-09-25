@@ -340,36 +340,6 @@ func TestG2engine_AddRecordWithInfo(test *testing.T) {
 	printActual(test, actual)
 }
 
-func TestG2engine_AddRecordWithInfoWithReturnedRecordID(test *testing.T) {
-	ctx := context.TODO()
-	g2engine := getTestObject(ctx, test)
-	record := truthset.TestRecordsWithoutRecordId[0]
-	var flags int64 = 0
-	actual, actualRecordID, err := g2engine.AddRecordWithInfoWithReturnedRecordID(ctx, record.DataSource, record.Json, loadId, flags)
-	testError(test, ctx, g2engine, err)
-	printResult(test, "Actual RecordID", actualRecordID)
-	printActual(test, actual)
-}
-
-func TestG2engine_AddRecordWithReturnedRecordID(test *testing.T) {
-	ctx := context.TODO()
-	g2engine := getTestObject(ctx, test)
-	record := truthset.TestRecordsWithoutRecordId[1]
-	actual, err := g2engine.AddRecordWithReturnedRecordID(ctx, record.DataSource, record.Json, loadId)
-	testError(test, ctx, g2engine, err)
-	printActual(test, actual)
-}
-
-func TestG2engine_CheckRecord(test *testing.T) {
-	ctx := context.TODO()
-	g2engine := getTestObject(ctx, test)
-	record := truthset.CustomerRecords["1001"]
-	recordQueryList := `{"RECORDS": [{"DATA_SOURCE": "` + record.DataSource + `","RECORD_ID": "` + record.Id + `"},{"DATA_SOURCE": "CUSTOMERS","RECORD_ID": "123456789"}]}`
-	actual, err := g2engine.CheckRecord(ctx, record.Json, recordQueryList)
-	testError(test, ctx, g2engine, err)
-	printActual(test, actual)
-}
-
 func TestG2engine_CountRedoRecords(test *testing.T) {
 	ctx := context.TODO()
 	g2engine := getTestObject(ctx, test)
@@ -791,48 +761,12 @@ func TestG2engine_Process(test *testing.T) {
 	testError(test, ctx, g2engine, err)
 }
 
-func TestG2engine_ProcessRedoRecord(test *testing.T) {
-	ctx := context.TODO()
-	g2engine := getTestObject(ctx, test)
-	actual, err := g2engine.ProcessRedoRecord(ctx)
-	testError(test, ctx, g2engine, err)
-	printActual(test, actual)
-}
-
-func TestG2engine_ProcessRedoRecordWithInfo(test *testing.T) {
-	ctx := context.TODO()
-	g2engine := getTestObject(ctx, test)
-	var flags int64 = 0
-	actual, actualInfo, err := g2engine.ProcessRedoRecordWithInfo(ctx, flags)
-	testError(test, ctx, g2engine, err)
-	printActual(test, actual)
-	printResult(test, "Actual Info", actualInfo)
-}
-
 func TestG2engine_ProcessWithInfo(test *testing.T) {
 	ctx := context.TODO()
 	g2engine := getTestObject(ctx, test)
 	record := truthset.CustomerRecords["1001"]
 	var flags int64 = 0
 	actual, err := g2engine.ProcessWithInfo(ctx, record.Json, flags)
-	testError(test, ctx, g2engine, err)
-	printActual(test, actual)
-}
-
-func TestG2engine_ProcessWithResponse(test *testing.T) {
-	ctx := context.TODO()
-	g2engine := getTestObject(ctx, test)
-	record := truthset.CustomerRecords["1001"]
-	actual, err := g2engine.ProcessWithResponse(ctx, record.Json)
-	testError(test, ctx, g2engine, err)
-	printActual(test, actual)
-}
-
-func TestG2engine_ProcessWithResponseResize(test *testing.T) {
-	ctx := context.TODO()
-	g2engine := getTestObject(ctx, test)
-	record := truthset.CustomerRecords["1001"]
-	actual, err := g2engine.ProcessWithResponseResize(ctx, record.Json)
 	testError(test, ctx, g2engine, err)
 	printActual(test, actual)
 }
@@ -1134,51 +1068,6 @@ func ExampleG2engine_AddRecordWithInfo() {
 	}
 	fmt.Println(result)
 	// Output: {"DATA_SOURCE":"CUSTOMERS","RECORD_ID":"1003","AFFECTED_ENTITIES":[{"ENTITY_ID":1}],"INTERESTING_ENTITIES":{"ENTITIES":[]}}
-}
-
-func ExampleG2engine_AddRecordWithInfoWithReturnedRecordID() {
-	// For more information, visit https://github.com/Senzing/g2-sdk-go-grpc/blob/main/g2engine/g2engine_test.go
-	ctx := context.TODO()
-	g2engine := getG2Engine(ctx)
-	dataSourceCode := "CUSTOMERS"
-	jsonData := `{"DATA_SOURCE": "CUSTOMERS", "RECORD_TYPE": "PERSON", "PRIMARY_NAME_LAST": "Kellar", "PRIMARY_NAME_FIRST": "Candace", "ADDR_LINE1": "1824 AspenOak Way", "ADDR_CITY": "Elmwood Park", "ADDR_STATE": "CA", "ADDR_POSTAL_CODE": "95865", "EMAIL_ADDRESS": "info@ca-state.gov"}`
-	loadID := "G2Engine_test"
-	var flags int64 = 0
-	result, _, err := g2engine.AddRecordWithInfoWithReturnedRecordID(ctx, dataSourceCode, jsonData, loadID, flags)
-	if err != nil {
-		fmt.Println(err)
-	}
-	fmt.Println(truncate(result, 42))
-	// Output: {"DATA_SOURCE":"CUSTOMERS","RECORD_ID":...
-}
-
-func ExampleG2engine_AddRecordWithReturnedRecordID() {
-	// For more information, visit https://github.com/Senzing/g2-sdk-go-grpc/blob/main/g2engine/g2engine_test.go
-	ctx := context.TODO()
-	g2engine := getG2Engine(ctx)
-	dataSourceCode := "CUSTOMERS"
-	jsonData := `{"DATA_SOURCE": "CUSTOMERS", "RECORD_TYPE": "PERSON", "PRIMARY_NAME_LAST": "Sanders", "PRIMARY_NAME_FIRST": "Sandy", "ADDR_LINE1": "1376 BlueBell Rd", "ADDR_CITY": "Sacramento", "ADDR_STATE": "CA", "ADDR_POSTAL_CODE": "95823", "EMAIL_ADDRESS": "info@ca-state.gov"}`
-	loadID := "G2Engine_test"
-	result, err := g2engine.AddRecordWithReturnedRecordID(ctx, dataSourceCode, jsonData, loadID)
-	if err != nil {
-		fmt.Println(err)
-	}
-	fmt.Printf("Length of record identifier is %d hexadecimal characters.\n", len(result))
-	// Output: Length of record identifier is 40 hexadecimal characters.
-}
-
-func ExampleG2engine_CheckRecord() {
-	// For more information, visit https://github.com/Senzing/g2-sdk-go-grpc/blob/main/g2engine/g2engine_test.go
-	ctx := context.TODO()
-	g2engine := getG2Engine(ctx)
-	record := `{"DATA_SOURCE": "CUSTOMERS", "RECORD_ID": "1001", "RECORD_TYPE": "PERSON", "PRIMARY_NAME_LAST": "Smith", "PRIMARY_NAME_FIRST": "Robert", "DATE_OF_BIRTH": "12/11/1978", "ADDR_TYPE": "MAILING", "ADDR_LINE1": "123 Main Street, Las Vegas NV 89132", "PHONE_TYPE": "HOME", "PHONE_NUMBER": "702-919-1300", "EMAIL_ADDRESS": "bsmith@work.com", "DATE": "1/2/18", "STATUS": "Active", "AMOUNT": "100"}`
-	recordQueryList := `{"RECORDS": [{"DATA_SOURCE": "CUSTOMERS","RECORD_ID": "1001"},{"DATA_SOURCE": "CUSTOMERS","RECORD_ID": "123456789"}]}`
-	result, err := g2engine.CheckRecord(ctx, record, recordQueryList)
-	if err != nil {
-		fmt.Println(err)
-	}
-	fmt.Println(result)
-	// Output: {"CHECK_RECORD_RESPONSE":[{"DSRC_CODE":"CUSTOMERS","RECORD_ID":"1001","MATCH_LEVEL":0,"MATCH_LEVEL_CODE":"","MATCH_KEY":"","ERRULE_CODE":"","ERRULE_ID":0,"CANDIDATE_MATCH":"N","NON_GENERIC_CANDIDATE_MATCH":"N"}]}
 }
 
 func ExampleG2engine_CloseExport() {
@@ -1944,31 +1833,6 @@ func ExampleG2engine_Process() {
 	// Output:
 }
 
-func ExampleG2engine_ProcessRedoRecord() {
-	// For more information, visit https://github.com/Senzing/g2-sdk-go-grpc/blob/main/g2engine/g2engine_test.go
-	ctx := context.TODO()
-	g2engine := getG2Engine(ctx)
-	result, err := g2engine.ProcessRedoRecord(ctx)
-	if err != nil {
-		fmt.Println(err)
-	}
-	fmt.Println(result)
-	// Output:
-}
-
-func ExampleG2engine_ProcessRedoRecordWithInfo() {
-	// For more information, visit https://github.com/Senzing/g2-sdk-go-grpc/blob/main/g2engine/g2engine_test.go
-	ctx := context.TODO()
-	g2engine := getG2Engine(ctx)
-	var flags int64 = 0
-	_, result, err := g2engine.ProcessRedoRecordWithInfo(ctx, flags)
-	if err != nil {
-		fmt.Println(err)
-	}
-	fmt.Println(result)
-	// Output:
-}
-
 func ExampleG2engine_ProcessWithInfo() {
 	// For more information, visit https://github.com/Senzing/g2-sdk-go-grpc/blob/main/g2engine/g2engine_test.go
 	ctx := context.TODO()
@@ -1981,32 +1845,6 @@ func ExampleG2engine_ProcessWithInfo() {
 	}
 	fmt.Println(result)
 	// Output: {"DATA_SOURCE":"CUSTOMERS","RECORD_ID":"1001","AFFECTED_ENTITIES":[],"INTERESTING_ENTITIES":{"ENTITIES":[]}}
-}
-
-func ExampleG2engine_ProcessWithResponse() {
-	// For more information, visit https://github.com/Senzing/g2-sdk-go-grpc/blob/main/g2engine/g2engine_test.go
-	ctx := context.TODO()
-	g2engine := getG2Engine(ctx)
-	record := `{"DATA_SOURCE": "CUSTOMERS", "RECORD_ID": "1001", "RECORD_TYPE": "PERSON", "PRIMARY_NAME_LAST": "Smith", "PRIMARY_NAME_FIRST": "Robert", "DATE_OF_BIRTH": "12/11/1978", "ADDR_TYPE": "MAILING", "ADDR_LINE1": "123 Main Street, Las Vegas NV 89132", "PHONE_TYPE": "HOME", "PHONE_NUMBER": "702-919-1300", "EMAIL_ADDRESS": "bsmith@work.com", "DATE": "1/2/18", "STATUS": "Active", "AMOUNT": "100"}`
-	result, err := g2engine.ProcessWithResponse(ctx, record)
-	if err != nil {
-		fmt.Println(err)
-	}
-	fmt.Println(result)
-	// Output: {"MESSAGE": "ER SKIPPED - DUPLICATE RECORD IN G2"}
-}
-
-func ExampleG2engine_ProcessWithResponseResize() {
-	// For more information, visit https://github.com/Senzing/g2-sdk-go-grpc/blob/main/g2engine/g2engine_test.go
-	ctx := context.TODO()
-	g2engine := getG2Engine(ctx)
-	record := `{"DATA_SOURCE": "CUSTOMERS", "RECORD_ID": "1001", "RECORD_TYPE": "PERSON", "PRIMARY_NAME_LAST": "Smith", "PRIMARY_NAME_FIRST": "Robert", "DATE_OF_BIRTH": "12/11/1978", "ADDR_TYPE": "MAILING", "ADDR_LINE1": "123 Main Street, Las Vegas NV 89132", "PHONE_TYPE": "HOME", "PHONE_NUMBER": "702-919-1300", "EMAIL_ADDRESS": "bsmith@work.com", "DATE": "1/2/18", "STATUS": "Active", "AMOUNT": "100"}`
-	result, err := g2engine.ProcessWithResponseResize(ctx, record)
-	if err != nil {
-		fmt.Println(err)
-	}
-	fmt.Println(result)
-	// Output: {"MESSAGE": "ER SKIPPED - DUPLICATE RECORD IN G2"}
 }
 
 func ExampleG2engine_ReevaluateEntity() {
