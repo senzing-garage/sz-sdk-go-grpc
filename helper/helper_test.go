@@ -22,7 +22,7 @@ var testCases = []struct {
 	{
 		name:          "helper-g2error-0023",
 		expectedType:  g2error.G2UnrecoverableError{},
-		expectedTypes: []g2error.G2ErrorTypeIds{g2error.G2Unrecoverable},
+		expectedTypes: []g2error.G2ErrorTypeIds{g2error.G2BadInput},
 		falseTypes:    []g2error.G2ErrorTypeIds{g2error.G2Retryable},
 		gRpcCode:      codes.Unknown,
 		senzingErrorMessage: `{
