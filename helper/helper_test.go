@@ -23,7 +23,7 @@ var testCases = []struct {
 		name:          "helper-g2error-0023",
 		expectedType:  g2error.G2UnrecoverableError{},
 		expectedTypes: []g2error.G2ErrorTypeIds{g2error.G2Unrecoverable},
-		falseTypes:    []g2error.G2ErrorTypeIds{g2error.G2ModuleEmptyMessage},
+		falseTypes:    []g2error.G2ErrorTypeIds{g2error.G2Retryable},
 		gRpcCode:      codes.Unknown,
 		senzingErrorMessage: `{
 			"date": "2023-03-27",
@@ -126,17 +126,17 @@ func ExampleConvertGrpcError() {
 	grpcStatusError := status.Error(codes.Unknown, senzingErrorMessage) // Create a gRPC *status.Error
 	err := ConvertGrpcError(grpcStatusError)
 	if err != nil {
-		if g2error.Is(err, g2error.G2BadUserInput) {
-			fmt.Println("Is a G2BadUserInputError")
+		if g2error.Is(err, g2error.G2BadInput) {
+			fmt.Println("Is a G2BadInputError")
 		}
-		if g2error.Is(err, g2error.G2ModuleInvalidXML) {
-			fmt.Println("Is a G2ModuleInvalidXMLError")
+		if g2error.Is(err, g2error.G2UnknownDatasource) {
+			fmt.Println("Is a G2UnknownDatasourceError")
 		}
-		if g2error.Is(err, g2error.G2ModuleEmptyMessage) {
-			fmt.Println("Is a G2ModuleEmptyMessageError.")
+		if g2error.Is(err, g2error.G2Retryable) {
+			fmt.Println("Is a G2RetryableError.")
 		}
 	}
 	// Output:
-	// Is a G2BadUserInputError
-	// Is a G2ModuleInvalidXMLError
+	// Is a G2BadInputError
+	// Is a G2UnknownDatasourceError
 }
