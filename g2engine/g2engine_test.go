@@ -307,7 +307,7 @@ func TestG2engine_GetObserverOrigin(test *testing.T) {
 	assert.Equal(test, origin, actual)
 }
 
-func TestG2engine_AddRecord_G2Unrecoverable(test *testing.T) {
+func TestG2engine_AddRecord_G2BadInput(test *testing.T) {
 	ctx := context.TODO()
 	g2engine := getTestObject(ctx, test)
 	record1 := truthset.CustomerRecords["1001"]
@@ -316,7 +316,7 @@ func TestG2engine_AddRecord_G2Unrecoverable(test *testing.T) {
 	err := g2engine.AddRecord(ctx, record1.DataSource, record1.Id, record1.Json, loadId)
 	testError(test, ctx, g2engine, err)
 	err = g2engine.AddRecord(ctx, record2.DataSource, record2.Id, record2Json, loadId)
-	assert.True(test, g2error.Is(err, g2error.G2Unrecoverable))
+	assert.True(test, g2error.Is(err, g2error.G2BadInput))
 }
 
 func TestG2engine_AddRecord(test *testing.T) {
