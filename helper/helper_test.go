@@ -21,7 +21,7 @@ var testCases = []struct {
 }{
 	{
 		name:          "helper-g2error-0023",
-		expectedType:  g2error.G2UnrecoverableError{},
+		expectedType:  g2error.G2BadInputError{},
 		expectedTypes: []g2error.G2ErrorTypeIds{g2error.G2BadInput},
 		falseTypes:    []g2error.G2ErrorTypeIds{g2error.G2Retryable},
 		gRpcCode:      codes.Unknown,
@@ -122,7 +122,7 @@ func TestConvertGrpcError(test *testing.T) {
 
 func ExampleConvertGrpcError() {
 	// For more information, visit https://github.com/Senzing/g2-sdk-go-grpc/blob/main/helper/helper_test.go
-	senzingErrorMessage := "99904E|Test message"                        // Example message from Senzing G2 engine.
+	senzingErrorMessage := "99912E|Test message"                        // Example message from Senzing G2 engine.
 	grpcStatusError := status.Error(codes.Unknown, senzingErrorMessage) // Create a gRPC *status.Error
 	err := ConvertGrpcError(grpcStatusError)
 	if err != nil {
