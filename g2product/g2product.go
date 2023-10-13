@@ -140,7 +140,7 @@ Input
   - iniParams: A JSON string containing configuration parameters.
   - verboseLogging: A flag to enable deeper logging of the G2 processing. 0 for no Senzing logging; 1 for logging.
 */
-func (client *G2product) Init(ctx context.Context, moduleName string, iniParams string, verboseLogging int) error {
+func (client *G2product) Init(ctx context.Context, moduleName string, iniParams string, verboseLogging int64) error {
 	var err error = nil
 	if client.isTrace {
 		entryTime := time.Now()
@@ -150,7 +150,7 @@ func (client *G2product) Init(ctx context.Context, moduleName string, iniParams 
 	request := g2pb.InitRequest{
 		ModuleName:     moduleName,
 		IniParams:      iniParams,
-		VerboseLogging: int32(verboseLogging),
+		VerboseLogging: verboseLogging,
 	}
 	_, err = client.GrpcClient.Init(ctx, &request)
 	err = helper.ConvertGrpcError(err)
@@ -159,7 +159,7 @@ func (client *G2product) Init(ctx context.Context, moduleName string, iniParams 
 			details := map[string]string{
 				"iniParams":      iniParams,
 				"moduleName":     moduleName,
-				"verboseLogging": strconv.Itoa(verboseLogging),
+				"verboseLogging": strconv.FormatInt(verboseLogging, 10),
 			}
 			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentId, 8002, err, details)
 		}()
@@ -297,77 +297,6 @@ func (client *G2product) UnregisterObserver(ctx context.Context, observer observ
 		client.observers = nil
 	}
 	return err
-}
-
-/*
-The ValidateLicenseFile method validates the licence file has not expired.
-
-Input
-  - ctx: A context to control lifecycle.
-  - licenseFilePath: A fully qualified path to the Senzing license file.
-
-Output
-  - if error is nil, license is valid.
-  - If error not nil, license is not valid.
-  - The returned string has additional information.
-*/
-func (client *G2product) ValidateLicenseFile(ctx context.Context, licenseFilePath string) (string, error) {
-	var err error = nil
-	var result string = ""
-	if client.isTrace {
-		entryTime := time.Now()
-		client.traceEntry(15, licenseFilePath)
-		defer func() { client.traceExit(16, licenseFilePath, result, err, time.Since(entryTime)) }()
-	}
-	request := g2pb.ValidateLicenseFileRequest{
-		LicenseFilePath: licenseFilePath,
-	}
-	response, err := client.GrpcClient.ValidateLicenseFile(ctx, &request)
-	result = response.GetResult()
-	err = helper.ConvertGrpcError(err)
-	if client.observers != nil {
-		go func() {
-			details := map[string]string{}
-			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentId, 8004, err, details)
-		}()
-	}
-	return result, err
-}
-
-/*
-The ValidateLicenseStringBase64 method validates the licence, represented by a Base-64 string, has not expired.
-
-Input
-  - ctx: A context to control lifecycle.
-  - licenseString: A Senzing license represented by a Base-64 encoded string.
-
-Output
-  - if error is nil, license is valid.
-  - If error not nil, license is not valid.
-  - The returned string has additional information.
-    See the example output.
-*/
-func (client *G2product) ValidateLicenseStringBase64(ctx context.Context, licenseString string) (string, error) {
-	var err error = nil
-	var result string = ""
-	if client.isTrace {
-		entryTime := time.Now()
-		client.traceEntry(17, licenseString)
-		defer func() { client.traceExit(18, licenseString, result, err, time.Since(entryTime)) }()
-	}
-	request := g2pb.ValidateLicenseStringBase64Request{
-		LicenseString: licenseString,
-	}
-	response, err := client.GrpcClient.ValidateLicenseStringBase64(ctx, &request)
-	result = response.GetResult()
-	err = helper.ConvertGrpcError(err)
-	if client.observers != nil {
-		go func() {
-			details := map[string]string{}
-			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentId, 8005, err, details)
-		}()
-	}
-	return result, err
 }
 
 /*

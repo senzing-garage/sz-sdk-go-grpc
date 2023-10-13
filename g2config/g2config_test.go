@@ -285,7 +285,7 @@ func TestG2config_Init(test *testing.T) {
 	ctx := context.TODO()
 	g2config := getTestObject(ctx, test)
 	moduleName := "Test module name"
-	verboseLogging := 0
+	verboseLogging := int64(0)
 	iniParams := "{}"
 	err := g2config.Init(ctx, moduleName, iniParams, verboseLogging)
 	expectError(test, ctx, g2config, err, "senzing-60114002")

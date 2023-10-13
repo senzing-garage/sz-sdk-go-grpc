@@ -272,7 +272,7 @@ Input
   - iniParams: A JSON string containing configuration parameters.
   - verboseLogging: A flag to enable deeper logging of the G2 processing. 0 for no Senzing logging; 1 for logging.
 */
-func (client *G2configmgr) Init(ctx context.Context, moduleName string, iniParams string, verboseLogging int) error {
+func (client *G2configmgr) Init(ctx context.Context, moduleName string, iniParams string, verboseLogging int64) error {
 	var err error = nil
 	if client.isTrace {
 		entryTime := time.Now()
@@ -282,7 +282,7 @@ func (client *G2configmgr) Init(ctx context.Context, moduleName string, iniParam
 	request := g2pb.InitRequest{
 		ModuleName:     moduleName,
 		IniParams:      iniParams,
-		VerboseLogging: int32(verboseLogging),
+		VerboseLogging: verboseLogging,
 	}
 	_, err = client.GrpcClient.Init(ctx, &request)
 	err = helper.ConvertGrpcError(err)
@@ -291,7 +291,7 @@ func (client *G2configmgr) Init(ctx context.Context, moduleName string, iniParam
 			details := map[string]string{
 				"iniParams":      iniParams,
 				"moduleName":     moduleName,
-				"verboseLogging": strconv.Itoa(verboseLogging),
+				"verboseLogging": strconv.FormatInt(verboseLogging, 10),
 			}
 			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentId, 8006, err, details)
 		}()

@@ -364,7 +364,7 @@ func TestG2diagnostic_Init(test *testing.T) {
 	}
 	moduleName := "Test module name"
 	iniParams := "{}"
-	verboseLogging := 0
+	verboseLogging := int64(0)
 	err := g2diagnostic.Init(ctx, moduleName, iniParams, verboseLogging)
 	expectError(test, ctx, g2diagnostic, err, "senzing-60134002")
 }
@@ -378,7 +378,7 @@ func TestG2diagnostic_InitWithConfigID(test *testing.T) {
 	moduleName := "Test module name"
 	initConfigID := int64(1)
 	iniParams := "{}"
-	verboseLogging := 0
+	verboseLogging := int64(0)
 	err := g2diagnostic.InitWithConfigID(ctx, moduleName, iniParams, initConfigID, verboseLogging)
 	expectError(test, ctx, g2diagnostic, err, "senzing-60134003")
 }

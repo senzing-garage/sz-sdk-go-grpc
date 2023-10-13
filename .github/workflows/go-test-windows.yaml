@@ -6,12 +6,13 @@ name: go-test-windows.yaml
 on: [push]
 
 jobs:
-  build:
-    runs-on: windows-latest
+  go-test-windows:
+    runs-on: ${{ matrix.os }}
     strategy:
       matrix:
         go: ["1.21"]
-    name: Go ${{ matrix.go }} - windows
+        os: [windows-latest]
+    name: "go test with OS: ${{ matrix.os }}; Go: ${{ matrix.go }}"
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
