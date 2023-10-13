@@ -6,12 +6,13 @@ name: go-test-linux.yaml
 on: [push]
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
+  go-test-linux:
+    runs-on: ${{ matrix.os }}
     strategy:
       matrix:
         go: ["1.21"]
-    name: Go ${{ matrix.go }} - linux
+        os: [ubuntu-latest]
+    name: "go test with OS: ${{ matrix.os }}; Go: ${{ matrix.go }}"
     services:
       servegrpc:
         env:
@@ -28,4 +29,5 @@ jobs:
         uses: actions/setup-go@v4
         with:
           go-version: ${{ matrix.go }}
-      - run: go test -v -p 1 ./...
+      - name: Run go test
+        run: go test -v -p 1 ./...

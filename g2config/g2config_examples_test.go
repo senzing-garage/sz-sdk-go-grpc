@@ -162,7 +162,7 @@ func ExampleG2config_Init() {
 	g2config := getG2Config(ctx)
 	moduleName := "Test module name"
 	iniParams := "{}"
-	verboseLogging := 0
+	verboseLogging := int64(0)
 	err := g2config.Init(ctx, moduleName, iniParams, verboseLogging)
 	if err != nil {
 		// This should produce a "senzing-60114002" error.
