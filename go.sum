@@ -16,8 +16,8 @@ github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZb
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
 github.com/rogpeppe/go-internal v1.10.0 h1:TMyTOH3F/DB16zRVcYyreMH6GnZZrwQVAoYjRBZyWFQ=
 github.com/rogpeppe/go-internal v1.10.0/go.mod h1:UQnix2H7Ngw/k4C5ijL5+65zddjncjaFoBhdsK/akog=
-github.com/senzing/g2-sdk-go v0.7.1 h1:l++HhSSLjkU0YNUn25gJf798+JXsHgh9g2vWnluEc80=
-github.com/senzing/g2-sdk-go v0.7.1/go.mod h1:qxLhA3ED0d1W7m6LkzS0OnTAK9vhI5x5J6/rf+B2gx8=
+github.com/senzing/g2-sdk-go v0.7.3 h1:24ONeVwsbW/UzGshBn7KtazzQNbwV6B+3C4OvNEAotM=
+github.com/senzing/g2-sdk-go v0.7.3/go.mod h1:U5FLOmtceh2pXvxQINGw7pFAnduB8uGuVADxetbNEPc=
 github.com/senzing/g2-sdk-proto/go v0.0.0-20230925212041-8259762ae97e h1:NwstP3Ulj3CC3Ua/Mcmx/bdJEUiHulurkd7t1kTSSCQ=
 github.com/senzing/g2-sdk-proto/go v0.0.0-20230925212041-8259762ae97e/go.mod h1:xfWmP0w1uAzezuXlpZ7CAZfPx/RcG+nh8J+Hlq3Y3cM=
 github.com/senzing/go-common v0.3.0 h1:xigayoS3QKW4OUL57Rfo15E3IWdADvAi4EiSyJDP4q0=
