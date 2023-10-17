@@ -8,7 +8,7 @@ require (
 	github.com/senzing/g2-sdk-proto/go v0.0.0-20231013142630-30a869751ff0
 	github.com/senzing/go-common v0.3.0
 	github.com/senzing/go-logging v1.3.2
-	github.com/senzing/go-observing v0.2.7
+	github.com/senzing/go-observing v0.2.8
 	github.com/stretchr/testify v1.8.4
 	google.golang.org/grpc v1.58.3
 )
