@@ -56,7 +56,7 @@ func ExampleG2product_License() {
 		fmt.Println(err)
 	}
 	fmt.Println(result)
-	// Output: {"customer":"Senzing Public Test License","contract":"EVALUATION - support@senzing.com","issueDate":"2022-11-29","licenseType":"EVAL (Solely for non-productive use)","licenseLevel":"STANDARD","billing":"MONTHLY","expireDate":"2023-11-29","recordLimit":50000}
+	// Output: {"customer":"","contract":"","issueDate":"2023-10-30","licenseType":"EVAL (Solely for non-productive use)","licenseLevel":"","billing":"","expireDate":"2024-10-30","recordLimit":100000}
 }
 
 func ExampleG2product_SetLogLevel() {
