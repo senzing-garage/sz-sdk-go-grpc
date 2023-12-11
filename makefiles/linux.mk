@@ -11,6 +11,7 @@
 
 .PHONY: clean-osarch-specific
 clean-osarch-specific:
+	@docker rm --force senzing-tools-serve-grpc || true
 	@rm -rf $(TARGET_DIRECTORY) || true
 	@rm -f $(GOPATH)/bin/$(PROGRAM_NAME) || true
 
@@ -27,13 +28,19 @@ run-osarch-specific:
 
 .PHONY: setup-osarch-specific
 setup-osarch-specific:
-	@echo "No setup required."
+	@docker run \
+		--detach \
+		--env SENZING_TOOLS_DATABASE_URL=sqlite3://na:na@/tmp/sqlite/G2C.db \
+		--name senzing-tools-serve-grpc \
+		--publish 8261:8261 \
+		--rm \
+		senzing/senzing-tools serve-grpc --enable-all
+	@echo "senzing/senzing-tools server-grpc running in background."
 
 
 .PHONY: test-osarch-specific
 test-osarch-specific:
-	# @go test -v -p 1 ./...
-	@go test -v -p 1 ./g2engine
+	@go test -v -p 1 ./...
 
 # -----------------------------------------------------------------------------
 # Makefile targets supported only by this platform.
