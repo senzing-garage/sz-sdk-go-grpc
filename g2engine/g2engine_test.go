@@ -20,6 +20,7 @@ import (
 	g2configmgrpb "github.com/senzing/g2-sdk-proto/go/g2configmgr"
 	g2pb "github.com/senzing/g2-sdk-proto/go/g2engine"
 	"github.com/senzing/go-common/record"
+	"github.com/senzing/go-common/testfixtures"
 	"github.com/senzing/go-common/truthset"
 	"github.com/senzing/go-logging/logging"
 	"github.com/stretchr/testify/assert"
@@ -388,6 +389,89 @@ func TestG2engine_ExportConfig(test *testing.T) {
 //	testError(test, ctx, g2engine, err)
 //	test.Log("Actual:", actual)
 //}
+
+func TestG2engine_ExportCSVEntityReport(test *testing.T) {
+	ctx := context.TODO()
+	g2engine := getTestObject(ctx, test)
+	expected := []string{
+		`RESOLVED_ENTITY_ID,RELATED_ENTITY_ID,MATCH_LEVEL,MATCH_KEY,DATA_SOURCE,RECORD_ID`,
+		`1,0,0,"","CUSTOMERS","1001"`,
+		`1,0,1,"+NAME+DOB+PHONE","CUSTOMERS","1002"`,
+		`1,0,1,"+NAME+DOB+EMAIL","CUSTOMERS","1003"`,
+	}
+	csvColumnList := ""
+	flags := int64(-1)
+	aHandle, err := g2engine.ExportCSVEntityReport(ctx, csvColumnList, flags)
+	defer func() {
+		err := g2engine.CloseExport(ctx, aHandle)
+		testError(test, ctx, g2engine, err)
+	}()
+	testError(test, ctx, g2engine, err)
+	actualCount := 0
+	for actual := range g2engine.ExportCSVEntityReportIterator(ctx, csvColumnList, flags) {
+		assert.Equal(test, expected[actualCount], strings.TrimSpace(actual))
+		actualCount += 1
+	}
+	assert.Equal(test, len(expected), actualCount)
+}
+
+func TestG2engine_ExportCSVEntityReportIterator(test *testing.T) {
+	ctx := context.TODO()
+	g2engine := getTestObject(ctx, test)
+	expected := []string{
+		`RESOLVED_ENTITY_ID,RELATED_ENTITY_ID,MATCH_LEVEL,MATCH_KEY,DATA_SOURCE,RECORD_ID`,
+		`1,0,0,"","CUSTOMERS","1001"`,
+		`1,0,1,"+NAME+DOB+PHONE","CUSTOMERS","1002"`,
+		`1,0,1,"+NAME+DOB+EMAIL","CUSTOMERS","1003"`,
+	}
+	csvColumnList := ""
+	flags := int64(-1)
+	actualCount := 0
+	for actual := range g2engine.ExportCSVEntityReportIterator(ctx, csvColumnList, flags) {
+		assert.Equal(test, expected[actualCount], strings.TrimSpace(actual))
+		actualCount += 1
+	}
+	assert.Equal(test, len(expected), actualCount)
+}
+
+func TestG2engine_ExportJSONEntityReport(test *testing.T) {
+	ctx := context.TODO()
+	g2engine := getTestObject(ctx, test)
+	aRecord := testfixtures.FixtureRecords["65536-periods"]
+	err := g2engine.AddRecord(ctx, aRecord.DataSource, aRecord.Id, aRecord.Json, loadId)
+	testError(test, ctx, g2engine, err)
+	defer g2engine.DeleteRecord(ctx, aRecord.DataSource, aRecord.Id, loadId)
+	flags := int64(-1)
+	aHandle, err := g2engine.ExportJSONEntityReport(ctx, flags)
+	defer func() {
+		err := g2engine.CloseExport(ctx, aHandle)
+		testError(test, ctx, g2engine, err)
+	}()
+	testError(test, ctx, g2engine, err)
+	jsonEntityReport := ""
+	for {
+		jsonEntityReportFragment, err := g2engine.FetchNext(ctx, aHandle)
+		testError(test, ctx, g2engine, err)
+		if len(jsonEntityReportFragment) == 0 {
+			break
+		}
+		jsonEntityReport += jsonEntityReportFragment
+	}
+	testError(test, ctx, g2engine, err)
+	assert.True(test, len(jsonEntityReport) > 65536)
+}
+
+func TestG2engine_ExportJSONEntityReportIterator(test *testing.T) {
+	ctx := context.TODO()
+	g2engine := getTestObject(ctx, test)
+	flags := int64(-1)
+	actualCount := 0
+	for actual := range g2engine.ExportJSONEntityReportIterator(ctx, flags) {
+		printActual(test, actual)
+		actualCount += 1
+	}
+	assert.Equal(test, 1, actualCount)
+}
 
 func TestG2engine_FindInterestingEntitiesByEntityID(test *testing.T) {
 	ctx := context.TODO()
@@ -809,31 +893,37 @@ func TestG2engine_ReevaluateRecordWithInfo(test *testing.T) {
 	printActual(test, actual)
 }
 
-// FIXME: Remove after GDEV-3576 is fixed
-// func TestG2engine_ReplaceRecord(test *testing.T) {
-// 	ctx := context.TODO()
-// 	g2engine := getTestObject(ctx, test)
-// 	dataSourceCode := "CUSTOMERS"
-// 	recordID := "1001"
-// 	jsonData := `{"SOCIAL_HANDLE": "flavorh", "DATE_OF_BIRTH": "4/8/1984", "ADDR_STATE": "LA", "ADDR_POSTAL_CODE": "71232", "SSN_NUMBER": "053-39-3251", "ENTITY_TYPE": "CUSTOMERS", "GENDER": "F", "srccode": "MDMPER", "CC_ACCOUNT_NUMBER": "5534202208773608", "RECORD_ID": "1001", "DSRC_ACTION": "A", "ADDR_CITY": "Delhi", "DRIVERS_LICENSE_STATE": "DE", "PHONE_NUMBER": "225-671-0796", "NAME_LAST": "JOHNSON", "entityid": "284430058", "ADDR_LINE1": "772 Armstrong RD"}`
-// 	loadID := "CUSTOMERS"
-// 	err := g2engine.ReplaceRecord(ctx, dataSourceCode, recordID, jsonData, loadID)
-// 	testError(test, ctx, g2engine, err)
-// }
+func TestG2engine_ReplaceRecord(test *testing.T) {
+	ctx := context.TODO()
+	g2engine := getTestObject(ctx, test)
+	dataSourceCode := "CUSTOMERS"
+	recordID := "1001"
+	jsonData := `{"SOCIAL_HANDLE": "flavorh", "DATE_OF_BIRTH": "4/8/1984", "ADDR_STATE": "LA", "ADDR_POSTAL_CODE": "71232", "SSN_NUMBER": "053-39-3251", "ENTITY_TYPE": "CUSTOMERS", "GENDER": "F", "srccode": "MDMPER", "CC_ACCOUNT_NUMBER": "5534202208773608", "RECORD_ID": "1001", "DSRC_ACTION": "A", "ADDR_CITY": "Delhi", "DRIVERS_LICENSE_STATE": "DE", "PHONE_NUMBER": "225-671-0796", "NAME_LAST": "JOHNSON", "entityid": "284430058", "ADDR_LINE1": "772 Armstrong RD"}`
+	loadID := "CUSTOMERS"
+	err := g2engine.ReplaceRecord(ctx, dataSourceCode, recordID, jsonData, loadID)
+	testError(test, ctx, g2engine, err)
+
+	record := truthset.CustomerRecords["1001"]
+	err = g2engine.ReplaceRecord(ctx, record.DataSource, record.Id, record.Json, loadID)
+	testError(test, ctx, g2engine, err)
+}
 
 // FIXME: Remove after GDEV-3576 is fixed
-// func TestG2engine_ReplaceRecordWithInfo(test *testing.T) {
-// 	ctx := context.TODO()
-// 	g2engine := getTestObject(ctx, test)
-// 	dataSourceCode := "CUSTOMERS"
-// 	recordID := "1001"
-// 	jsonData := `{"SOCIAL_HANDLE": "flavorh", "DATE_OF_BIRTH": "4/8/1985", "ADDR_STATE": "LA", "ADDR_POSTAL_CODE": "71232", "SSN_NUMBER": "053-39-3251", "ENTITY_TYPE": "CUSTOMERS", "GENDER": "F", "srccode": "MDMPER", "CC_ACCOUNT_NUMBER": "5534202208773608", "RECORD_ID": "1001", "DSRC_ACTION": "A", "ADDR_CITY": "Delhi", "DRIVERS_LICENSE_STATE": "DE", "PHONE_NUMBER": "225-671-0796", "NAME_LAST": "JOHNSON", "entityid": "284430058", "ADDR_LINE1": "772 Armstrong RD"}`
-// 	loadID := "CUSTOMERS"
-// 	flags := int64(0)
-// 	actual, err := g2engine.ReplaceRecordWithInfo(ctx, dataSourceCode, recordID, jsonData, loadID, flags)
-// 	testError(test, ctx, g2engine, err)
-// 	printActual(test, actual)
-// }
+func TestG2engine_ReplaceRecordWithInfo(test *testing.T) {
+	ctx := context.TODO()
+	g2engine := getTestObject(ctx, test)
+	dataSourceCode := "CUSTOMERS"
+	recordID := "1001"
+	jsonData := `{"SOCIAL_HANDLE": "flavorh", "DATE_OF_BIRTH": "4/8/1985", "ADDR_STATE": "LA", "ADDR_POSTAL_CODE": "71232", "SSN_NUMBER": "053-39-3251", "ENTITY_TYPE": "CUSTOMERS", "GENDER": "F", "srccode": "MDMPER", "CC_ACCOUNT_NUMBER": "5534202208773608", "RECORD_ID": "1001", "DSRC_ACTION": "A", "ADDR_CITY": "Delhi", "DRIVERS_LICENSE_STATE": "DE", "PHONE_NUMBER": "225-671-0796", "NAME_LAST": "JOHNSON", "entityid": "284430058", "ADDR_LINE1": "772 Armstrong RD"}`
+	loadID := "CUSTOMERS"
+	flags := int64(0)
+	actual, err := g2engine.ReplaceRecordWithInfo(ctx, dataSourceCode, recordID, jsonData, loadID, flags)
+	testError(test, ctx, g2engine, err)
+	printActual(test, actual)
+	record := truthset.CustomerRecords["1001"]
+	err = g2engine.ReplaceRecord(ctx, record.DataSource, record.Id, record.Json, loadID)
+	testError(test, ctx, g2engine, err)
+}
 
 func TestG2engine_SearchByAttributes(test *testing.T) {
 	ctx := context.TODO()

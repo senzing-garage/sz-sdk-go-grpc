@@ -8,6 +8,7 @@ package g2engine
 import (
 	"context"
 	"fmt"
+	"io"
 	"strconv"
 	"time"
 
@@ -426,6 +427,58 @@ func (client *G2engine) ExportCSVEntityReport(ctx context.Context, csvColumnList
 }
 
 /*
+The ExportCSVEntityReportIterator method creates an Iterator that can be used in a for-loop
+to scroll through a document of exported entities.
+It is a convenience method for the ExportCSVEntityReport(), FetchNext(), CloseExport()
+lifecycle of a list of entities to export.
+
+Input
+  - ctx: A context to control lifecycle.
+  - csvColumnList: A comma-separated list of column names for the CSV export.
+  - flags: Flags used to control information returned.
+
+Output
+  - A channel of strings that can be iterated over.
+*/
+func (client *G2engine) ExportCSVEntityReportIterator(ctx context.Context, csvColumnList string, flags int64) chan string {
+	stringChannel := make(chan string)
+
+	go func() {
+		var err error = nil
+		defer func() {
+			close(stringChannel) // TODO: Not sure if this is best-practice.
+		}()
+		if client.isTrace {
+			entryTime := time.Now()
+			client.traceEntry(163, csvColumnList, flags)
+			defer func() { client.traceExit(164, csvColumnList, flags, err, time.Since(entryTime)) }()
+		}
+		request := g2pb.StreamExportCSVEntityReportRequest{
+			CsvColumnList: csvColumnList,
+			Flags:         flags,
+		}
+		stream, err := client.GrpcClient.StreamExportCSVEntityReport(ctx, &request)
+		if err != nil {
+			panic(err)
+		}
+		for {
+			response, err := stream.Recv()
+			if err == io.EOF {
+				break
+			}
+			stringChannel <- response.Result
+		}
+		if client.observers != nil {
+			go func() {
+				details := map[string]string{}
+				notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentId, 8079, err, details)
+			}()
+		}
+	}()
+	return stringChannel
+}
+
+/*
 The ExportJSONEntityReport method initializes a cursor over a document of exported entities.
 It is part of the ExportJSONEntityReport(), FetchNext(), CloseExport()
 lifecycle of a list of entities to export.
@@ -458,6 +511,55 @@ func (client *G2engine) ExportJSONEntityReport(ctx context.Context, flags int64)
 		}()
 	}
 	return result, err
+}
+
+/*
+The ExportJSONEntityReportIterator method creates an Iterator that can be used in a for-loop
+to scroll through a document of exported entities.
+It is a convenience method for the ExportJSONEntityReport(), FetchNext(), CloseExport()
+lifecycle of a list of entities to export.
+
+Input
+  - ctx: A context to control lifecycle.
+  - flags: Flags used to control information returned.
+
+Output
+  - A channel of strings that can be iterated over.
+*/
+func (client *G2engine) ExportJSONEntityReportIterator(ctx context.Context, flags int64) chan string {
+	stringChannel := make(chan string)
+	go func() {
+		var err error = nil
+		defer func() {
+			close(stringChannel) // TODO: Not sure if this is best-practice.
+		}()
+		if client.isTrace {
+			entryTime := time.Now()
+			client.traceEntry(165, flags)
+			defer func() { client.traceExit(166, flags, err, time.Since(entryTime)) }()
+		}
+		request := g2pb.StreamExportJSONEntityReportRequest{
+			Flags: flags,
+		}
+		stream, err := client.GrpcClient.StreamExportJSONEntityReport(ctx, &request)
+		if err != nil {
+			panic(err)
+		}
+		for {
+			response, err := stream.Recv()
+			if err == io.EOF {
+				break
+			}
+			stringChannel <- response.Result
+		}
+		if client.observers != nil {
+			go func() {
+				details := map[string]string{}
+				notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentId, 8080, err, details)
+			}()
+		}
+	}()
+	return stringChannel
 }
 
 /*

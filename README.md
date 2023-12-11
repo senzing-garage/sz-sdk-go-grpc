@@ -16,8 +16,12 @@ communicates with a
 
 [![Go Reference](https://pkg.go.dev/badge/github.com/senzing/g2-sdk-go-grpc.svg)](https://pkg.go.dev/github.com/senzing/g2-sdk-go-grpc)
 [![Go Report Card](https://goreportcard.com/badge/github.com/senzing/g2-sdk-go-grpc)](https://goreportcard.com/report/github.com/senzing/g2-sdk-go-grpc)
-[![go-test.yaml](https://github.com/Senzing/g2-sdk-go-grpc/actions/workflows/go-test.yaml/badge.svg)](https://github.com/Senzing/g2-sdk-go-grpc/actions/workflows/go-test.yaml)
 [![License](https://img.shields.io/badge/License-Apache2-brightgreen.svg)](https://github.com/Senzing/g2-sdk-go-grpc/blob/main/LICENSE)
+
+[![gosec.yaml](https://github.com/Senzing/g2-sdk-go-grpc/actions/workflows/gosec.yaml/badge.svg)](https://github.com/Senzing/g2-sdk-go-grpc/actions/workflows/gosec.yaml)
+[![go-test-linux.yaml](https://github.com/Senzing/g2-sdk-go-grpc/actions/workflows/go-test-linux.yaml/badge.svg)](https://github.com/Senzing/g2-sdk-go-grpc/actions/workflows/go-test-linux.yaml)
+[![go-test-darwin.yaml](https://github.com/Senzing/g2-sdk-go-grpc/actions/workflows/go-test-darwin.yaml/badge.svg)](https://github.com/Senzing/g2-sdk-go-grpc/actions/workflows/go-test-darwin.yaml)
+[![go-test-windows.yaml](https://github.com/Senzing/g2-sdk-go-grpc/actions/workflows/go-test-windows.yaml/badge.svg)](https://github.com/Senzing/g2-sdk-go-grpc/actions/workflows/go-test-windows.yaml)
 
 ## Overview
 
