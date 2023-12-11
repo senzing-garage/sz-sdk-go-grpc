@@ -29,5 +29,5 @@ jobs:
         uses: docker-practice/actions-setup-docker@master
         timeout-minutes: 12
       - name: gRPC service
-        run: docker run --detach --env SENZING_TOOLS_ENABLE_ALL --publish 8261:8261 senzing/serve-grpc:latest
+        run: docker run --detach --publish 8261:8261 senzing/senzing-tools:latest serve-grpc --enable-all
       - run: go test -v -p 1 ./...
