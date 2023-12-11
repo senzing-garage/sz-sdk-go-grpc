@@ -16,8 +16,9 @@ jobs:
     services:
       servegrpc:
         env:
+          SENZING_TOOLS_COMMAND: serve-grpc
           SENZING_TOOLS_ENABLE_ALL: true
-        image: senzing/serve-grpc
+        image: senzing/senzing-tools
         ports:
           - 8261:8261
     steps:
