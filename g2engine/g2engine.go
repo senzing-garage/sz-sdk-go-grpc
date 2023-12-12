@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"github.com/senzing/g2-sdk-go-grpc/helper"
+	"github.com/senzing/g2-sdk-go/g2api"
 	g2engineapi "github.com/senzing/g2-sdk-go/g2engine"
 	g2pb "github.com/senzing/g2-sdk-proto/go/g2engine"
 	"github.com/senzing/go-logging/logging"
@@ -440,14 +441,11 @@ Input
 Output
   - A channel of strings that can be iterated over.
 */
-func (client *G2engine) ExportCSVEntityReportIterator(ctx context.Context, csvColumnList string, flags int64) chan string {
-	stringChannel := make(chan string)
-
+func (client *G2engine) ExportCSVEntityReportIterator(ctx context.Context, csvColumnList string, flags int64) chan g2api.StringFragment {
+	stringFragmentChannel := make(chan g2api.StringFragment)
 	go func() {
+		defer close(stringFragmentChannel)
 		var err error = nil
-		defer func() {
-			close(stringChannel) // TODO: Not sure if this is best-practice.
-		}()
 		if client.isTrace {
 			entryTime := time.Now()
 			client.traceEntry(163, csvColumnList, flags)
@@ -459,14 +457,35 @@ func (client *G2engine) ExportCSVEntityReportIterator(ctx context.Context, csvCo
 		}
 		stream, err := client.GrpcClient.StreamExportCSVEntityReport(ctx, &request)
 		if err != nil {
-			panic(err)
-		}
-		for {
-			response, err := stream.Recv()
-			if err == io.EOF {
-				break
+			stringFragmentChannel <- g2api.StringFragment{
+				Error: err,
 			}
-			stringChannel <- response.Result
+			return
+		}
+	forLoop:
+		for {
+			select {
+			case <-ctx.Done():
+				stringFragmentChannel <- g2api.StringFragment{
+					Error: ctx.Err(),
+				}
+				break forLoop
+			default:
+				response, err := stream.Recv()
+				if err != nil {
+					if err == io.EOF {
+						break forLoop
+					} else {
+						stringFragmentChannel <- g2api.StringFragment{
+							Error: err,
+						}
+						break forLoop
+					}
+				}
+				stringFragmentChannel <- g2api.StringFragment{
+					Value: response.Result,
+				}
+			}
 		}
 		if client.observers != nil {
 			go func() {
@@ -475,7 +494,7 @@ func (client *G2engine) ExportCSVEntityReportIterator(ctx context.Context, csvCo
 			}()
 		}
 	}()
-	return stringChannel
+	return stringFragmentChannel
 }
 
 /*
@@ -526,13 +545,11 @@ Input
 Output
   - A channel of strings that can be iterated over.
 */
-func (client *G2engine) ExportJSONEntityReportIterator(ctx context.Context, flags int64) chan string {
-	stringChannel := make(chan string)
+func (client *G2engine) ExportJSONEntityReportIterator(ctx context.Context, flags int64) chan g2api.StringFragment {
+	stringFragmentChannel := make(chan g2api.StringFragment)
 	go func() {
+		defer close(stringFragmentChannel)
 		var err error = nil
-		defer func() {
-			close(stringChannel) // TODO: Not sure if this is best-practice.
-		}()
 		if client.isTrace {
 			entryTime := time.Now()
 			client.traceEntry(165, flags)
@@ -543,14 +560,35 @@ func (client *G2engine) ExportJSONEntityReportIterator(ctx context.Context, flag
 		}
 		stream, err := client.GrpcClient.StreamExportJSONEntityReport(ctx, &request)
 		if err != nil {
-			panic(err)
-		}
-		for {
-			response, err := stream.Recv()
-			if err == io.EOF {
-				break
+			stringFragmentChannel <- g2api.StringFragment{
+				Error: err,
 			}
-			stringChannel <- response.Result
+			return
+		}
+	forLoop:
+		for {
+			select {
+			case <-ctx.Done():
+				stringFragmentChannel <- g2api.StringFragment{
+					Error: ctx.Err(),
+				}
+				break forLoop
+			default:
+				response, err := stream.Recv()
+				if err != nil {
+					if err == io.EOF {
+						break forLoop
+					} else {
+						stringFragmentChannel <- g2api.StringFragment{
+							Error: err,
+						}
+						break forLoop
+					}
+				}
+				stringFragmentChannel <- g2api.StringFragment{
+					Value: response.Result,
+				}
+			}
 		}
 		if client.observers != nil {
 			go func() {
@@ -559,7 +597,7 @@ func (client *G2engine) ExportJSONEntityReportIterator(ctx context.Context, flag
 			}()
 		}
 	}()
-	return stringChannel
+	return stringFragmentChannel
 }
 
 /*
