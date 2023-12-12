@@ -1,33 +1,33 @@
-# Makefile extensions for windows.
+# Makefile extensions for darwin.
 
 # -----------------------------------------------------------------------------
 # Variables
 # -----------------------------------------------------------------------------
 
+SENZING_DIR ?= /opt/senzing/g2
+SENZING_TOOLS_SENZING_DIRECTORY ?= $(SENZING_DIR)
+
+LD_LIBRARY_PATH := $(SENZING_TOOLS_SENZING_DIRECTORY)/lib:$(SENZING_TOOLS_SENZING_DIRECTORY)/lib/macos
+DYLD_LIBRARY_PATH := $(LD_LIBRARY_PATH)
 
 # -----------------------------------------------------------------------------
-# OS-ARCH specific targets
+# OS specific targets
 # -----------------------------------------------------------------------------
-
-.PHONY: build-osarch-specific
-build-osarch-specific: windows/amd64
-	@mv $(TARGET_DIRECTORY)/windows-amd64/$(PROGRAM_NAME) $(TARGET_DIRECTORY)/windows-amd64/$(PROGRAM_NAME).exe
-
 
 .PHONY: clean-osarch-specific
 clean-osarch-specific:
-	del /F /S /Q $(TARGET_DIRECTORY)
-	del /F /S /Q $(GOPATH)/bin/$(PROGRAM_NAME)
+	@rm -rf $(TARGET_DIRECTORY) || true
+	@rm -f $(GOPATH)/bin/$(PROGRAM_NAME) || true
 
 
 .PHONY: hello-world-osarch-specific
 hello-world-osarch-specific:
-	@echo "Hello World, from windows."
+	@echo "Hello World, from darwin."
 
 
 .PHONY: run-osarch-specific
 run-osarch-specific:
-	@go run main.go
+	@go run -exec macos_exec_dyld.sh main.go
 
 
 .PHONY: setup-osarch-specific
@@ -37,12 +37,12 @@ setup-osarch-specific:
 
 .PHONY: test-osarch-specific
 test-osarch-specific:
-	@go test -v -p 1 ./...
+	@go test -exec macos_exec_dyld.sh -v -p 1 ./...
 
 # -----------------------------------------------------------------------------
 # Makefile targets supported only by this platform.
 # -----------------------------------------------------------------------------
 
-.PHONY: only-windows
-only-windows:
-	@echo "Only windows has this Makefile target."
+.PHONY: only-darwin
+only-darwin:
+	@echo "Only darwin has this Makefile target."

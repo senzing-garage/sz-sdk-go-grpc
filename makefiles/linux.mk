@@ -6,15 +6,12 @@
 
 
 # -----------------------------------------------------------------------------
-# OS-ARCH specific targets
+# OS specific targets
 # -----------------------------------------------------------------------------
-
-.PHONY: build-osarch-specific
-build-osarch-specific: linux/amd64
-
 
 .PHONY: clean-osarch-specific
 clean-osarch-specific:
+	@docker rm --force senzing-tools-serve-grpc || true
 	@rm -rf $(TARGET_DIRECTORY) || true
 	@rm -f $(GOPATH)/bin/$(PROGRAM_NAME) || true
 
@@ -31,7 +28,16 @@ run-osarch-specific:
 
 .PHONY: setup-osarch-specific
 setup-osarch-specific:
-	@echo "No setup required."
+	@docker run \
+		--detach \
+		--env SENZING_TOOLS_COMMAND=serve-grpc \
+		--env SENZING_TOOLS_DATABASE_URL=sqlite3://na:na@/tmp/sqlite/G2C.db \
+		--env SENZING_TOOLS_ENABLE_ALL=true \
+		--name senzing-tools-serve-grpc \
+		--publish 8261:8261 \
+		--rm \
+		senzing/senzing-tools
+	@echo "senzing/senzing-tools server-grpc running in background."
 
 
 .PHONY: test-osarch-specific

@@ -8,10 +8,12 @@ package g2engine
 import (
 	"context"
 	"fmt"
+	"io"
 	"strconv"
 	"time"
 
 	"github.com/senzing/g2-sdk-go-grpc/helper"
+	"github.com/senzing/g2-sdk-go/g2api"
 	g2engineapi "github.com/senzing/g2-sdk-go/g2engine"
 	g2pb "github.com/senzing/g2-sdk-proto/go/g2engine"
 	"github.com/senzing/go-logging/logging"
@@ -426,6 +428,76 @@ func (client *G2engine) ExportCSVEntityReport(ctx context.Context, csvColumnList
 }
 
 /*
+The ExportCSVEntityReportIterator method creates an Iterator that can be used in a for-loop
+to scroll through a document of exported entities.
+It is a convenience method for the ExportCSVEntityReport(), FetchNext(), CloseExport()
+lifecycle of a list of entities to export.
+
+Input
+  - ctx: A context to control lifecycle.
+  - csvColumnList: A comma-separated list of column names for the CSV export.
+  - flags: Flags used to control information returned.
+
+Output
+  - A channel of strings that can be iterated over.
+*/
+func (client *G2engine) ExportCSVEntityReportIterator(ctx context.Context, csvColumnList string, flags int64) chan g2api.StringFragment {
+	stringFragmentChannel := make(chan g2api.StringFragment)
+	go func() {
+		defer close(stringFragmentChannel)
+		var err error = nil
+		if client.isTrace {
+			entryTime := time.Now()
+			client.traceEntry(163, csvColumnList, flags)
+			defer func() { client.traceExit(164, csvColumnList, flags, err, time.Since(entryTime)) }()
+		}
+		request := g2pb.StreamExportCSVEntityReportRequest{
+			CsvColumnList: csvColumnList,
+			Flags:         flags,
+		}
+		stream, err := client.GrpcClient.StreamExportCSVEntityReport(ctx, &request)
+		if err != nil {
+			stringFragmentChannel <- g2api.StringFragment{
+				Error: err,
+			}
+			return
+		}
+	forLoop:
+		for {
+			select {
+			case <-ctx.Done():
+				stringFragmentChannel <- g2api.StringFragment{
+					Error: ctx.Err(),
+				}
+				break forLoop
+			default:
+				response, err := stream.Recv()
+				if err != nil {
+					if err == io.EOF {
+						break forLoop
+					} else {
+						stringFragmentChannel <- g2api.StringFragment{
+							Error: err,
+						}
+						break forLoop
+					}
+				}
+				stringFragmentChannel <- g2api.StringFragment{
+					Value: response.Result,
+				}
+			}
+		}
+		if client.observers != nil {
+			go func() {
+				details := map[string]string{}
+				notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentId, 8079, err, details)
+			}()
+		}
+	}()
+	return stringFragmentChannel
+}
+
+/*
 The ExportJSONEntityReport method initializes a cursor over a document of exported entities.
 It is part of the ExportJSONEntityReport(), FetchNext(), CloseExport()
 lifecycle of a list of entities to export.
@@ -458,6 +530,74 @@ func (client *G2engine) ExportJSONEntityReport(ctx context.Context, flags int64)
 		}()
 	}
 	return result, err
+}
+
+/*
+The ExportJSONEntityReportIterator method creates an Iterator that can be used in a for-loop
+to scroll through a document of exported entities.
+It is a convenience method for the ExportJSONEntityReport(), FetchNext(), CloseExport()
+lifecycle of a list of entities to export.
+
+Input
+  - ctx: A context to control lifecycle.
+  - flags: Flags used to control information returned.
+
+Output
+  - A channel of strings that can be iterated over.
+*/
+func (client *G2engine) ExportJSONEntityReportIterator(ctx context.Context, flags int64) chan g2api.StringFragment {
+	stringFragmentChannel := make(chan g2api.StringFragment)
+	go func() {
+		defer close(stringFragmentChannel)
+		var err error = nil
+		if client.isTrace {
+			entryTime := time.Now()
+			client.traceEntry(165, flags)
+			defer func() { client.traceExit(166, flags, err, time.Since(entryTime)) }()
+		}
+		request := g2pb.StreamExportJSONEntityReportRequest{
+			Flags: flags,
+		}
+		stream, err := client.GrpcClient.StreamExportJSONEntityReport(ctx, &request)
+		if err != nil {
+			stringFragmentChannel <- g2api.StringFragment{
+				Error: err,
+			}
+			return
+		}
+	forLoop:
+		for {
+			select {
+			case <-ctx.Done():
+				stringFragmentChannel <- g2api.StringFragment{
+					Error: ctx.Err(),
+				}
+				break forLoop
+			default:
+				response, err := stream.Recv()
+				if err != nil {
+					if err == io.EOF {
+						break forLoop
+					} else {
+						stringFragmentChannel <- g2api.StringFragment{
+							Error: err,
+						}
+						break forLoop
+					}
+				}
+				stringFragmentChannel <- g2api.StringFragment{
+					Value: response.Result,
+				}
+			}
+		}
+		if client.observers != nil {
+			go func() {
+				details := map[string]string{}
+				notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentId, 8080, err, details)
+			}()
+		}
+	}()
+	return stringFragmentChannel
 }
 
 /*
