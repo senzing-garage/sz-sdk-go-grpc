@@ -14,10 +14,10 @@ import (
 	"github.com/senzing/g2-sdk-go-grpc/helper"
 	g2diagnosticapi "github.com/senzing/g2-sdk-go/g2diagnostic"
 	g2pb "github.com/senzing/g2-sdk-proto/go/g2diagnostic"
-	"github.com/senzing/go-logging/logging"
-	"github.com/senzing/go-observing/notifier"
-	"github.com/senzing/go-observing/observer"
-	"github.com/senzing/go-observing/subject"
+	"github.com/senzing-garage/go-logging/logging"
+	"github.com/senzing-garage/go-observing/notifier"
+	"github.com/senzing-garage/go-observing/observer"
+	"github.com/senzing-garage/go-observing/subject"
 )
 
 // ----------------------------------------------------------------------------
