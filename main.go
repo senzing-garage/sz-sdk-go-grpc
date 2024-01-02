@@ -8,6 +8,10 @@ import (
 	"math/big"
 	"time"
 
+	"github.com/senzing-garage/go-common/truthset"
+	"github.com/senzing-garage/go-logging/logging"
+	"github.com/senzing-garage/go-observing/observer"
+	"github.com/senzing-garage/go-observing/observerpb"
 	"github.com/senzing/g2-sdk-go-grpc/g2config"
 	"github.com/senzing/g2-sdk-go-grpc/g2configmgr"
 	"github.com/senzing/g2-sdk-go-grpc/g2diagnostic"
@@ -19,10 +23,6 @@ import (
 	g2diagnosticpb "github.com/senzing/g2-sdk-proto/go/g2diagnostic"
 	g2enginepb "github.com/senzing/g2-sdk-proto/go/g2engine"
 	g2productpb "github.com/senzing/g2-sdk-proto/go/g2product"
-	"github.com/senzing-garage/go-common/truthset"
-	"github.com/senzing-garage/go-logging/logging"
-	"github.com/senzing-garage/go-observing/observer"
-	"github.com/senzing-garage/go-observing/observerpb"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 )
