@@ -11,6 +11,8 @@ import (
 	"time"
 
 	truncator "github.com/aquilax/truncate"
+	"github.com/senzing-garage/go-common/truthset"
+	"github.com/senzing-garage/go-logging/logging"
 	"github.com/senzing/g2-sdk-go-grpc/g2config"
 	"github.com/senzing/g2-sdk-go-grpc/g2engine"
 	"github.com/senzing/g2-sdk-go/g2api"
@@ -19,8 +21,6 @@ import (
 	g2configpb "github.com/senzing/g2-sdk-proto/go/g2config"
 	g2pb "github.com/senzing/g2-sdk-proto/go/g2configmgr"
 	g2enginepb "github.com/senzing/g2-sdk-proto/go/g2engine"
-	"github.com/senzing/go-common/truthset"
-	"github.com/senzing/go-logging/logging"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
