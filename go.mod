@@ -10,7 +10,7 @@ require (
 	github.com/senzing/g2-sdk-go v0.8.0
 	github.com/senzing/g2-sdk-proto/go v0.0.0-20231016131354-0d0fba649357
 	github.com/stretchr/testify v1.8.4
-	google.golang.org/grpc v1.60.1
+	google.golang.org/grpc v1.61.0
 )
 
 require (
