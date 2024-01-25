@@ -121,7 +121,7 @@ func TestConvertGrpcError(test *testing.T) {
 // ----------------------------------------------------------------------------
 
 func ExampleConvertGrpcError() {
-	// For more information, visit https://github.com/Senzing/g2-sdk-go-grpc/blob/main/helper/helper_test.go
+	// For more information, visit https://github.com/senzing-garage/g2-sdk-go-grpc/blob/main/helper/helper_test.go
 	senzingErrorMessage := "99912E|Test message"                        // Example message from Senzing G2 engine.
 	grpcStatusError := status.Error(codes.Unknown, senzingErrorMessage) // Create a gRPC *status.Error
 	err := ConvertGrpcError(grpcStatusError)
