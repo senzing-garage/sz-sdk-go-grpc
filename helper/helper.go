@@ -7,7 +7,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/senzing/g2-sdk-go/g2error"
+	"github.com/senzing-garage/g2-sdk-go/g2error"
 )
 
 // ----------------------------------------------------------------------------
