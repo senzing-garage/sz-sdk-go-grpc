@@ -6,8 +6,8 @@ import (
 	"context"
 	"fmt"
 
+	g2pb "github.com/senzing-garage/g2-sdk-proto/go/g2configmgr"
 	"github.com/senzing-garage/go-logging/logging"
-	g2pb "github.com/senzing/g2-sdk-proto/go/g2configmgr"
 )
 
 // ----------------------------------------------------------------------------

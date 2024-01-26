@@ -1,7 +1,4 @@
-# Based on
-# - https://github.com/marketplace/actions/setup-go-environment
-
-name: go-test-windows.yaml
+name: 'go test windows'
 
 on: [push]
 
@@ -21,10 +18,12 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+
       - name: Setup go
         uses: actions/setup-go@v5
         with:
           go-version: ${{ matrix.go }}
+
       - name: TODO - install senzing-tools
         run: echo "TODO - Run senzing-tools serve-grpc"
       # - name: Install Docker

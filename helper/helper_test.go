@@ -5,7 +5,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/senzing/g2-sdk-go/g2error"
+	"github.com/senzing-garage/g2-sdk-go/g2error"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
