@@ -11,13 +11,13 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/senzing-garage/g2-sdk-go-grpc/helper"
+	g2productapi "github.com/senzing-garage/g2-sdk-go/g2product"
+	g2pb "github.com/senzing-garage/g2-sdk-proto/go/g2product"
 	"github.com/senzing-garage/go-logging/logging"
 	"github.com/senzing-garage/go-observing/notifier"
 	"github.com/senzing-garage/go-observing/observer"
 	"github.com/senzing-garage/go-observing/subject"
-	"github.com/senzing/g2-sdk-go-grpc/helper"
-	g2productapi "github.com/senzing/g2-sdk-go/g2product"
-	g2pb "github.com/senzing/g2-sdk-proto/go/g2product"
 )
 
 // ----------------------------------------------------------------------------

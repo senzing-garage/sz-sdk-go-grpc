@@ -26,8 +26,8 @@ adhering to the
 communicates with a
 [Senzing gRPC server](https://github.com/senzing-garage/servegrpc).
 
-[![Go Reference](https://pkg.go.dev/badge/github.com/senzing/g2-sdk-go-grpc.svg)](https://pkg.go.dev/github.com/senzing/g2-sdk-go-grpc)
-[![Go Report Card](https://goreportcard.com/badge/github.com/senzing/g2-sdk-go-grpc)](https://goreportcard.com/report/github.com/senzing/g2-sdk-go-grpc)
+[![Go Reference](https://pkg.go.dev/badge/github.com/senzing-garage/g2-sdk-go-grpc.svg)](https://pkg.go.dev/github.com/senzing-garage/g2-sdk-go-grpc)
+[![Go Report Card](https://goreportcard.com/badge/github.com/senzing-garage/g2-sdk-go-grpc)](https://goreportcard.com/report/github.com/senzing-garage/g2-sdk-go-grpc)
 [![License](https://img.shields.io/badge/License-Apache2-brightgreen.svg)](https://github.com/senzing-garage/g2-sdk-go-grpc/blob/main/LICENSE)
 
 [![gosec.yaml](https://github.com/senzing-garage/g2-sdk-go-grpc/actions/workflows/gosec.yaml/badge.svg)](https://github.com/senzing-garage/g2-sdk-go-grpc/actions/workflows/gosec.yaml)
@@ -45,11 +45,11 @@ across a network to a
 [g2-sdk-go](https://github.com/senzing-garage/g2-sdk-go)
 interfaces:
 
-1. [G2config](https://pkg.go.dev/github.com/senzing/g2-sdk-go/g2api#G2config)
-1. [G2configmgr](https://pkg.go.dev/github.com/senzing/g2-sdk-go/g2api#G2configmgr)
-1. [G2diagnostic](https://pkg.go.dev/github.com/senzing/g2-sdk-go/g2api#G2diagnostic)
-1. [G2engine](https://pkg.go.dev/github.com/senzing/g2-sdk-go/g2api#G2engine)
-1. [G2product](https://pkg.go.dev/github.com/senzing/g2-sdk-go/g2api#G2product)
+1. [G2config](https://pkg.go.dev/github.com/senzing-garage/g2-sdk-go/g2api#G2config)
+1. [G2configmgr](https://pkg.go.dev/github.com/senzing-garage/g2-sdk-go/g2api#G2configmgr)
+1. [G2diagnostic](https://pkg.go.dev/github.com/senzing-garage/g2-sdk-go/g2api#G2diagnostic)
+1. [G2engine](https://pkg.go.dev/github.com/senzing-garage/g2-sdk-go/g2api#G2engine)
+1. [G2product](https://pkg.go.dev/github.com/senzing-garage/g2-sdk-go/g2api#G2product)
 
 Other implementations of the
 [g2-sdk-go](https://github.com/senzing-garage/g2-sdk-go)
@@ -72,4 +72,4 @@ interface include:
 1. [Development](docs/development.md)
 1. [Errors](docs/errors.md)
 1. [Examples](docs/examples.md)
-1. [Package reference](https://pkg.go.dev/github.com/senzing/g2-sdk-go-grpc)
+1. [Package reference](https://pkg.go.dev/github.com/senzing-garage/g2-sdk-go-grpc)

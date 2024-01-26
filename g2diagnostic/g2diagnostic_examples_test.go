@@ -6,7 +6,7 @@ import (
 	"context"
 	"fmt"
 
-	g2pb "github.com/senzing/g2-sdk-proto/go/g2diagnostic"
+	g2pb "github.com/senzing-garage/g2-sdk-proto/go/g2diagnostic"
 )
 
 // ----------------------------------------------------------------------------

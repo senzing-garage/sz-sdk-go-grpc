@@ -1,7 +1,4 @@
-# Based on
-# - https://github.com/marketplace/actions/setup-go-environment
-
-name: go-test-darwin.yaml
+name: 'go test darwin'
 
 on: [push]
 
@@ -21,6 +18,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+
       - name: Setup go
         uses: actions/setup-go@v5
         with:
@@ -28,6 +26,7 @@ jobs:
       - name: Install Docker
         uses: docker-practice/actions-setup-docker@master
         timeout-minutes: 12
+
       - name: gRPC service
         run: docker run --detach --env SENZING_TOOLS_COMMAND=serve-grpc --env SENZING_TOOLS_DATABASE_URL=sqlite3://na:na@/tmp/sqlite/G2C.db --env SENZING_TOOLS_ENABLE_ALL=true --publish 8261:8261 senzing/senzing-tools:latest
       - run: go test -v -p 1 ./...
