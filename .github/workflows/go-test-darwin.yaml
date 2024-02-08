@@ -1,4 +1,4 @@
-name: 'go test darwin'
+name: go test darwin
 
 on: [push]
 
@@ -7,26 +7,29 @@ permissions:
 
 jobs:
   go-test-darwin:
+    name: "go test with OS: ${{ matrix.os }}; Go: ${{ matrix.go }}"
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
         go: ["1.21"]
         os: [macos-latest]
-    name: "go test with OS: ${{ matrix.os }}; Go: ${{ matrix.go }}"
+
     steps:
-      - name: Checkout repository
+      - name: checkout repository
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: Setup go
+      - name: setup go
         uses: actions/setup-go@v5
         with:
           go-version: ${{ matrix.go }}
-      - name: Install Docker
-        uses: docker-practice/actions-setup-docker@master
+
+      - name: install Docker
+        uses: docker-practice/actions-setup-docker@v1
         timeout-minutes: 12
 
       - name: gRPC service
         run: docker run --detach --env SENZING_TOOLS_COMMAND=serve-grpc --env SENZING_TOOLS_DATABASE_URL=sqlite3://na:na@/tmp/sqlite/G2C.db --env SENZING_TOOLS_ENABLE_ALL=true --publish 8261:8261 senzing/senzing-tools:latest
+
       - run: go test -v -p 1 ./...

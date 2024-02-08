@@ -1,4 +1,4 @@
-name: 'go test windows'
+name: go test windows
 
 on: [push]
 
@@ -7,19 +7,20 @@ permissions:
 
 jobs:
   go-test-windows:
+    name: "go test with OS: ${{ matrix.os }}; Go: ${{ matrix.go }}"
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
         go: ["1.21"]
         os: [windows-latest]
-    name: "go test with OS: ${{ matrix.os }}; Go: ${{ matrix.go }}"
+
     steps:
-      - name: Checkout repository
+      - name: checkout repository
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: Setup go
+      - name: setup go
         uses: actions/setup-go@v5
         with:
           go-version: ${{ matrix.go }}
