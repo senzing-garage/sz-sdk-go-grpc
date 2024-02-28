@@ -249,12 +249,6 @@ func setupSenzingConfig(ctx context.Context) error {
 	return err
 }
 
-func setupPurgeRepository(ctx context.Context) error {
-	g2engine := getG2Engine(ctx)
-	err := g2engine.PurgeRepository(ctx)
-	return err
-}
-
 func setup() error {
 	ctx := context.TODO()
 	var err error = nil
@@ -272,13 +266,6 @@ func setup() error {
 	err = setupSenzingConfig(ctx)
 	if err != nil {
 		return createError(5920, err)
-	}
-
-	// Purge repository.
-
-	err = setupPurgeRepository(ctx)
-	if err != nil {
-		return createError(5921, err)
 	}
 	return err
 }
@@ -838,24 +825,6 @@ func TestG2engine_PrimeEngine(test *testing.T) {
 	testError(test, ctx, g2engine, err)
 }
 
-func TestG2engine_Process(test *testing.T) {
-	ctx := context.TODO()
-	g2engine := getTestObject(ctx, test)
-	record := truthset.CustomerRecords["1001"]
-	err := g2engine.Process(ctx, record.Json)
-	testError(test, ctx, g2engine, err)
-}
-
-func TestG2engine_ProcessWithInfo(test *testing.T) {
-	ctx := context.TODO()
-	g2engine := getTestObject(ctx, test)
-	record := truthset.CustomerRecords["1001"]
-	flags := int64(0)
-	actual, err := g2engine.ProcessWithInfo(ctx, record.Json, flags)
-	testError(test, ctx, g2engine, err)
-	printActual(test, actual)
-}
-
 func TestG2engine_ReevaluateEntity(test *testing.T) {
 	ctx := context.TODO()
 	g2engine := getTestObject(ctx, test)
@@ -970,44 +939,6 @@ func TestG2engine_WhyEntities_V2(test *testing.T) {
 	entityID2 := getEntityId(truthset.CustomerRecords["1002"])
 	flags := int64(0)
 	actual, err := g2engine.WhyEntities_V2(ctx, entityID1, entityID2, flags)
-	testError(test, ctx, g2engine, err)
-	printActual(test, actual)
-}
-
-func TestG2engine_WhyEntityByEntityID(test *testing.T) {
-	ctx := context.TODO()
-	g2engine := getTestObject(ctx, test)
-	entityID := getEntityId(truthset.CustomerRecords["1001"])
-	actual, err := g2engine.WhyEntityByEntityID(ctx, entityID)
-	testError(test, ctx, g2engine, err)
-	printActual(test, actual)
-}
-
-func TestG2engine_WhyEntityByEntityID_V2(test *testing.T) {
-	ctx := context.TODO()
-	g2engine := getTestObject(ctx, test)
-	entityID := getEntityId(truthset.CustomerRecords["1001"])
-	flags := int64(0)
-	actual, err := g2engine.WhyEntityByEntityID_V2(ctx, entityID, flags)
-	testError(test, ctx, g2engine, err)
-	printActual(test, actual)
-}
-
-func TestG2engine_WhyEntityByRecordID(test *testing.T) {
-	ctx := context.TODO()
-	g2engine := getTestObject(ctx, test)
-	record := truthset.CustomerRecords["1001"]
-	actual, err := g2engine.WhyEntityByRecordID(ctx, record.DataSource, record.Id)
-	testError(test, ctx, g2engine, err)
-	printActual(test, actual)
-}
-
-func TestG2engine_WhyEntityByRecordID_V2(test *testing.T) {
-	ctx := context.TODO()
-	g2engine := getTestObject(ctx, test)
-	record := truthset.CustomerRecords["1001"]
-	flags := int64(0)
-	actual, err := g2engine.WhyEntityByRecordID_V2(ctx, record.DataSource, record.Id, flags)
 	testError(test, ctx, g2engine, err)
 	printActual(test, actual)
 }

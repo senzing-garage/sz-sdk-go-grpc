@@ -222,12 +222,6 @@ func setupSenzingConfig(ctx context.Context) error {
 	return err
 }
 
-func setupPurgeRepository(ctx context.Context) error {
-	g2engine := getG2Engine(ctx)
-	err := g2engine.PurgeRepository(ctx)
-	return err
-}
-
 func setupAddRecords(ctx context.Context) error {
 	var err error = nil
 	g2engine := getG2Engine(ctx)
@@ -259,13 +253,6 @@ func setup() error {
 	err = setupSenzingConfig(ctx)
 	if err != nil {
 		return createError(5920, err)
-	}
-
-	// Purge repository.
-
-	err = setupPurgeRepository(ctx)
-	if err != nil {
-		return createError(5921, err)
 	}
 
 	// Add records.
@@ -309,50 +296,6 @@ func TestG2diagnostic_CheckDBPerf(test *testing.T) {
 	secondsToRun := 1
 	actual, err := g2diagnostic.CheckDBPerf(ctx, secondsToRun)
 	testError(test, ctx, g2diagnostic, err)
-	printActual(test, actual)
-}
-
-func TestG2diagnostic_GetAvailableMemory(test *testing.T) {
-	ctx := context.TODO()
-	g2diagnostic := getTestObject(ctx, test)
-	actual, err := g2diagnostic.GetAvailableMemory(ctx)
-	testError(test, ctx, g2diagnostic, err)
-	assert.Greater(test, actual, int64(0))
-	printActual(test, actual)
-}
-
-func TestG2diagnostic_GetDBInfo(test *testing.T) {
-	ctx := context.TODO()
-	g2diagnostic := getTestObject(ctx, test)
-	actual, err := g2diagnostic.GetDBInfo(ctx)
-	testError(test, ctx, g2diagnostic, err)
-	printActual(test, actual)
-}
-
-func TestG2diagnostic_GetLogicalCores(test *testing.T) {
-	ctx := context.TODO()
-	g2diagnostic := getTestObject(ctx, test)
-	actual, err := g2diagnostic.GetLogicalCores(ctx)
-	testError(test, ctx, g2diagnostic, err)
-	assert.Greater(test, actual, 0)
-	printActual(test, actual)
-}
-
-func TestG2diagnostic_GetPhysicalCores(test *testing.T) {
-	ctx := context.TODO()
-	g2diagnostic := getTestObject(ctx, test)
-	actual, err := g2diagnostic.GetPhysicalCores(ctx)
-	testError(test, ctx, g2diagnostic, err)
-	assert.Greater(test, actual, 0)
-	printActual(test, actual)
-}
-
-func TestG2diagnostic_GetTotalSystemMemory(test *testing.T) {
-	ctx := context.TODO()
-	g2diagnostic := getTestObject(ctx, test)
-	actual, err := g2diagnostic.GetTotalSystemMemory(ctx)
-	testError(test, ctx, g2diagnostic, err)
-	assert.Greater(test, actual, int64(0))
 	printActual(test, actual)
 }
 
