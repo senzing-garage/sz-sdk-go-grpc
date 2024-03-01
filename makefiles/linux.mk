@@ -30,13 +30,12 @@ run-osarch-specific:
 setup-osarch-specific:
 	@docker run \
 		--detach \
-		--env SENZING_TOOLS_COMMAND=serve-grpc \
 		--env SENZING_TOOLS_DATABASE_URL=sqlite3://na:na@/tmp/sqlite/G2C.db \
 		--env SENZING_TOOLS_ENABLE_ALL=true \
-		--name senzing-tools-serve-grpc \
+		--name senzing-serve-grpc \
 		--publish 8261:8261 \
 		--rm \
-		senzing/senzing-tools
+		senzing/serve-grpc
 	@echo "senzing/senzing-tools server-grpc running in background."
 
 
