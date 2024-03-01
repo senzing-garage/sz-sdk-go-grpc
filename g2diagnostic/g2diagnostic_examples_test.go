@@ -105,6 +105,17 @@ func ExampleG2diagnostic_Reinit() {
 	// Output:
 }
 
+func ExampleG2diagnostic_PurgeRepository() {
+	// For more information, visit https://github.com/Senzing/g2-sdk-go-grpc/blob/main/g2engine/g2engine_examples_test.go
+	ctx := context.TODO()
+	g2diagnostic := getG2Diagnostic(ctx)
+	err := g2diagnostic.PurgeRepository(ctx)
+	if err != nil {
+		fmt.Println(err)
+	}
+	// Output:
+}
+
 func ExampleG2diagnostic_Destroy() {
 	// For more information, visit https://github.com/senzing-garage/g2-sdk-go-grpc/blob/main/g2diagnostic/g2diagnostic_examples_test.go
 	ctx := context.TODO()

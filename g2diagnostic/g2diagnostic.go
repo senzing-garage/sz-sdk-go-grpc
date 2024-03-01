@@ -245,6 +245,35 @@ func (client *G2diagnostic) InitWithConfigID(ctx context.Context, moduleName str
 }
 
 /*
+The PurgeRepository method removes every record in the Senzing repository.
+
+Before calling purgeRepository() all other instances of the Senzing API
+(whether in custom code, REST API, stream-loader, redoer, G2Loader, etc)
+MUST be destroyed or shutdown.
+
+Input
+  - ctx: A context to control lifecycle.
+*/
+func (client *G2diagnostic) PurgeRepository(ctx context.Context) error {
+	var err error = nil
+	if client.isTrace {
+		entryTime := time.Now()
+		client.traceEntry(117)
+		defer func() { client.traceExit(118, err, time.Since(entryTime)) }()
+	}
+	request := g2pb.PurgeRepositoryRequest{}
+	_, err = client.GrpcClient.PurgeRepository(ctx, &request)
+	err = helper.ConvertGrpcError(err)
+	if client.observers != nil {
+		go func() {
+			details := map[string]string{}
+			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentId, 8056, err, details)
+		}()
+	}
+	return err
+}
+
+/*
 The RegisterObserver method adds the observer to the list of observers notified.
 
 Input

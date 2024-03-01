@@ -219,6 +219,15 @@ func setupSenzingConfig(ctx context.Context) error {
 		return createError(5914, err)
 	}
 
+	g2diagnostic := getG2Diagnostic(ctx)
+	err = g2diagnostic.Reinit(ctx, configID)
+
+	return err
+}
+
+func setupPurgeRepository(ctx context.Context) error {
+	g2diagnostic := getG2Diagnostic(ctx)
+	err := g2diagnostic.PurgeRepository(ctx)
 	return err
 }
 
@@ -253,6 +262,13 @@ func setup() error {
 	err = setupSenzingConfig(ctx)
 	if err != nil {
 		return createError(5920, err)
+	}
+
+	// Purge repository.
+
+	err = setupPurgeRepository(ctx)
+	if err != nil {
+		return createError(5921, err)
 	}
 
 	// Add records.

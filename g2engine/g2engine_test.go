@@ -13,11 +13,13 @@ import (
 	truncator "github.com/aquilax/truncate"
 	"github.com/senzing-garage/g2-sdk-go-grpc/g2config"
 	"github.com/senzing-garage/g2-sdk-go-grpc/g2configmgr"
+	"github.com/senzing-garage/g2-sdk-go-grpc/g2diagnostic"
 	"github.com/senzing-garage/g2-sdk-go/g2api"
 	g2engineapi "github.com/senzing-garage/g2-sdk-go/g2engine"
 	"github.com/senzing-garage/g2-sdk-go/g2error"
 	g2configpb "github.com/senzing-garage/g2-sdk-proto/go/g2config"
 	g2configmgrpb "github.com/senzing-garage/g2-sdk-proto/go/g2configmgr"
+	g2diagnosticpb "github.com/senzing-garage/g2-sdk-proto/go/g2diagnostic"
 	g2pb "github.com/senzing-garage/g2-sdk-proto/go/g2engine"
 	"github.com/senzing-garage/go-common/record"
 	"github.com/senzing-garage/go-common/testfixtures"
@@ -41,12 +43,13 @@ type GetEntityByRecordIDResponse struct {
 }
 
 var (
-	g2configSingleton    g2api.G2config
-	g2configmgrSingleton g2api.G2configmgr
-	g2engineSingleton    g2api.G2engine
-	grpcAddress          = "localhost:8261"
-	grpcConnection       *grpc.ClientConn
-	localLogger          logging.LoggingInterface
+	g2configSingleton     g2api.G2config
+	g2configmgrSingleton  g2api.G2configmgr
+	g2diagnosticSingleton g2api.G2diagnostic
+	g2engineSingleton     g2api.G2engine
+	grpcAddress           = "localhost:8261"
+	grpcConnection        *grpc.ClientConn
+	localLogger           logging.LoggingInterface
 )
 
 // ----------------------------------------------------------------------------
@@ -97,6 +100,16 @@ func getG2Configmgr(ctx context.Context) g2api.G2configmgr {
 		}
 	}
 	return g2configmgrSingleton
+}
+
+func getG2Diagnostic(ctx context.Context) g2api.G2diagnostic {
+	if g2diagnosticSingleton == nil {
+		grpcConnection := getGrpcConnection()
+		g2diagnosticSingleton = &g2diagnostic.G2diagnostic{
+			GrpcClient: g2diagnosticpb.NewG2DiagnosticClient(grpcConnection),
+		}
+	}
+	return g2diagnosticSingleton
 }
 
 func getG2Engine(ctx context.Context) g2api.G2engine {
@@ -249,6 +262,12 @@ func setupSenzingConfig(ctx context.Context) error {
 	return err
 }
 
+func setupPurgeRepository(ctx context.Context) error {
+	g2diagnostic := getG2Diagnostic(ctx)
+	err := g2diagnostic.PurgeRepository(ctx)
+	return err
+}
+
 func setup() error {
 	ctx := context.TODO()
 	var err error = nil
@@ -266,6 +285,13 @@ func setup() error {
 	err = setupSenzingConfig(ctx)
 	if err != nil {
 		return createError(5920, err)
+	}
+
+	// Purge repository.
+
+	err = setupPurgeRepository(ctx)
+	if err != nil {
+		return createError(5921, err)
 	}
 	return err
 }
@@ -367,16 +393,6 @@ func TestG2engine_ExportConfig(test *testing.T) {
 	testError(test, ctx, g2engine, err)
 	printActual(test, actual)
 }
-
-//func TestG2engine_ExportCSVEntityReport(test *testing.T) {
-//	ctx := context.TODO()
-//	g2engine := getTestObject(ctx, test)
-//	csvColumnList := ""
-//	flags := int64(0)
-//	actual, err := g2engine.ExportCSVEntityReport(ctx, csvColumnList, flags)
-//	testError(test, ctx, g2engine, err)
-//	test.Log("Actual:", actual)
-//}
 
 func TestG2engine_ExportCSVEntityReport(test *testing.T) {
 	ctx := context.TODO()
