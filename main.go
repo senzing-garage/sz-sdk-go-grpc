@@ -195,20 +195,6 @@ func demonstrateAddRecord(ctx context.Context, g2Engine g2api.G2engine) (string,
 }
 
 func demonstrateAdditionalFunctions(ctx context.Context, g2Diagnostic g2api.G2diagnostic, g2Engine g2api.G2engine, g2Product g2api.G2product) error {
-	// Using G2Diagnostic: Check physical cores.
-
-	actual, err := g2Diagnostic.GetPhysicalCores(ctx)
-	if err != nil {
-		failOnError(5300, err)
-	}
-	logger.Log(2002, actual)
-
-	// Using G2Engine: Purge repository.
-
-	err = g2Engine.PurgeRepository(ctx)
-	if err != nil {
-		failOnError(5301, err)
-	}
 
 	// Using G2Engine: Add records with information returned.
 
@@ -226,12 +212,6 @@ func demonstrateAdditionalFunctions(ctx context.Context, g2Diagnostic g2api.G2di
 	}
 	logger.Log(2004, license)
 
-	// Using G2Engine: Purge repository again.
-
-	err = g2Engine.PurgeRepository(ctx)
-	if err != nil {
-		failOnError(5304, err)
-	}
 	return err
 }
 

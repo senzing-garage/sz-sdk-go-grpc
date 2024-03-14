@@ -129,127 +129,6 @@ func (client *G2diagnostic) Destroy(ctx context.Context) error {
 }
 
 /*
-The GetAvailableMemory method returns the available memory, in bytes, on the host system.
-
-Input
-  - ctx: A context to control lifecycle.
-
-Output
-  - Number of bytes of available memory.
-*/
-func (client *G2diagnostic) GetAvailableMemory(ctx context.Context) (int64, error) {
-	var err error = nil
-	var result int64 = 0
-	if client.isTrace {
-		entryTime := time.Now()
-		client.traceEntry(13)
-		defer func() { client.traceExit(14, result, err, time.Since(entryTime)) }()
-	}
-	request := g2pb.GetAvailableMemoryRequest{}
-	response, err := client.GrpcClient.GetAvailableMemory(ctx, &request)
-	result = response.GetResult()
-	err = helper.ConvertGrpcError(err)
-	if client.observers != nil {
-		go func() {
-			details := map[string]string{}
-			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentId, 8006, err, details)
-		}()
-	}
-	return result, err
-}
-
-/*
-The GetDBInfo method returns information about the database connection.
-
-Input
-  - ctx: A context to control lifecycle.
-
-Output
-  - A JSON document enumerating data sources.
-    Example: `{"Hybrid Mode":false,"Database Details":[{"Name":"0.0.0.0","Type":"postgresql"}]}`
-*/
-func (client *G2diagnostic) GetDBInfo(ctx context.Context) (string, error) {
-	var err error = nil
-	var result string = ""
-	if client.isTrace {
-		entryTime := time.Now()
-		client.traceEntry(17)
-		defer func() { client.traceExit(18, result, err, time.Since(entryTime)) }()
-	}
-	request := g2pb.GetDBInfoRequest{}
-	response, err := client.GrpcClient.GetDBInfo(ctx, &request)
-	result = response.GetResult()
-	err = helper.ConvertGrpcError(err)
-	if client.observers != nil {
-		go func() {
-			details := map[string]string{}
-			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentId, 8008, err, details)
-		}()
-	}
-	return result, err
-}
-
-/*
-The GetLogicalCores method returns the number of logical cores on the host system.
-
-Input
-  - ctx: A context to control lifecycle.
-
-Output
-  - Number of logical cores.
-*/
-func (client *G2diagnostic) GetLogicalCores(ctx context.Context) (int, error) {
-	var err error = nil
-	var result int = 0
-	if client.isTrace {
-		entryTime := time.Now()
-		client.traceEntry(35)
-		defer func() { client.traceExit(36, result, err, time.Since(entryTime)) }()
-	}
-	request := g2pb.GetLogicalCoresRequest{}
-	response, err := client.GrpcClient.GetLogicalCores(ctx, &request)
-	result = int(response.GetResult())
-	err = helper.ConvertGrpcError(err)
-	if client.observers != nil {
-		go func() {
-			details := map[string]string{}
-			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentId, 8015, err, details)
-		}()
-	}
-	return result, err
-}
-
-/*
-The GetPhysicalCores method returns the number of physical cores on the host system.
-
-Input
-  - ctx: A context to control lifecycle.
-
-Output
-  - Number of physical cores.
-*/
-func (client *G2diagnostic) GetPhysicalCores(ctx context.Context) (int, error) {
-	var err error = nil
-	var result int = 0
-	if client.isTrace {
-		entryTime := time.Now()
-		client.traceEntry(39)
-		defer func() { client.traceExit(40, result, err, time.Since(entryTime)) }()
-	}
-	request := g2pb.GetPhysicalCoresRequest{}
-	response, err := client.GrpcClient.GetPhysicalCores(ctx, &request)
-	result = int(response.GetResult())
-	err = helper.ConvertGrpcError(err)
-	if client.observers != nil {
-		go func() {
-			details := map[string]string{}
-			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentId, 8017, err, details)
-		}()
-	}
-	return result, err
-}
-
-/*
 The GetObserverOrigin method returns the "origin" value of past Observer messages.
 
 Input
@@ -284,36 +163,6 @@ func (client *G2diagnostic) GetSdkId(ctx context.Context) string {
 		}()
 	}
 	return "grpc"
-}
-
-/*
-The GetTotalSystemMemory method returns the total memory, in bytes, on the host system.
-
-Input
-  - ctx: A context to control lifecycle.
-
-Output
-  - Number of bytes of memory.
-*/
-func (client *G2diagnostic) GetTotalSystemMemory(ctx context.Context) (int64, error) {
-	var err error = nil
-	var result int64 = 0
-	if client.isTrace {
-		entryTime := time.Now()
-		client.traceEntry(57)
-		defer func() { client.traceExit(46, result, err, time.Since(entryTime)) }()
-	}
-	request := g2pb.GetTotalSystemMemoryRequest{}
-	response, err := client.GrpcClient.GetTotalSystemMemory(ctx, &request)
-	result = response.GetResult()
-	err = helper.ConvertGrpcError(err)
-	if client.observers != nil {
-		go func() {
-			details := map[string]string{}
-			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentId, 8020, err, details)
-		}()
-	}
-	return result, err
 }
 
 /*
@@ -390,6 +239,35 @@ func (client *G2diagnostic) InitWithConfigID(ctx context.Context, moduleName str
 				"verboseLogging": strconv.FormatInt(verboseLogging, 10),
 			}
 			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentId, 8022, err, details)
+		}()
+	}
+	return err
+}
+
+/*
+The PurgeRepository method removes every record in the Senzing repository.
+
+Before calling purgeRepository() all other instances of the Senzing API
+(whether in custom code, REST API, stream-loader, redoer, G2Loader, etc)
+MUST be destroyed or shutdown.
+
+Input
+  - ctx: A context to control lifecycle.
+*/
+func (client *G2diagnostic) PurgeRepository(ctx context.Context) error {
+	var err error = nil
+	if client.isTrace {
+		entryTime := time.Now()
+		client.traceEntry(117)
+		defer func() { client.traceExit(118, err, time.Since(entryTime)) }()
+	}
+	request := g2pb.PurgeRepositoryRequest{}
+	_, err = client.GrpcClient.PurgeRepository(ctx, &request)
+	err = helper.ConvertGrpcError(err)
+	if client.observers != nil {
+		go func() {
+			details := map[string]string{}
+			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentId, 8056, err, details)
 		}()
 	}
 	return err

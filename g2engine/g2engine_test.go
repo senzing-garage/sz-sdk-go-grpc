@@ -13,11 +13,13 @@ import (
 	truncator "github.com/aquilax/truncate"
 	"github.com/senzing-garage/g2-sdk-go-grpc/g2config"
 	"github.com/senzing-garage/g2-sdk-go-grpc/g2configmgr"
+	"github.com/senzing-garage/g2-sdk-go-grpc/g2diagnostic"
 	"github.com/senzing-garage/g2-sdk-go/g2api"
 	g2engineapi "github.com/senzing-garage/g2-sdk-go/g2engine"
 	"github.com/senzing-garage/g2-sdk-go/g2error"
 	g2configpb "github.com/senzing-garage/g2-sdk-proto/go/g2config"
 	g2configmgrpb "github.com/senzing-garage/g2-sdk-proto/go/g2configmgr"
+	g2diagnosticpb "github.com/senzing-garage/g2-sdk-proto/go/g2diagnostic"
 	g2pb "github.com/senzing-garage/g2-sdk-proto/go/g2engine"
 	"github.com/senzing-garage/go-common/record"
 	"github.com/senzing-garage/go-common/testfixtures"
@@ -41,12 +43,13 @@ type GetEntityByRecordIDResponse struct {
 }
 
 var (
-	g2configSingleton    g2api.G2config
-	g2configmgrSingleton g2api.G2configmgr
-	g2engineSingleton    g2api.G2engine
-	grpcAddress          = "localhost:8261"
-	grpcConnection       *grpc.ClientConn
-	localLogger          logging.LoggingInterface
+	g2configSingleton     g2api.G2config
+	g2configmgrSingleton  g2api.G2configmgr
+	g2diagnosticSingleton g2api.G2diagnostic
+	g2engineSingleton     g2api.G2engine
+	grpcAddress           = "localhost:8261"
+	grpcConnection        *grpc.ClientConn
+	localLogger           logging.LoggingInterface
 )
 
 // ----------------------------------------------------------------------------
@@ -97,6 +100,16 @@ func getG2Configmgr(ctx context.Context) g2api.G2configmgr {
 		}
 	}
 	return g2configmgrSingleton
+}
+
+func getG2Diagnostic(ctx context.Context) g2api.G2diagnostic {
+	if g2diagnosticSingleton == nil {
+		grpcConnection := getGrpcConnection()
+		g2diagnosticSingleton = &g2diagnostic.G2diagnostic{
+			GrpcClient: g2diagnosticpb.NewG2DiagnosticClient(grpcConnection),
+		}
+	}
+	return g2diagnosticSingleton
 }
 
 func getG2Engine(ctx context.Context) g2api.G2engine {
@@ -250,8 +263,8 @@ func setupSenzingConfig(ctx context.Context) error {
 }
 
 func setupPurgeRepository(ctx context.Context) error {
-	g2engine := getG2Engine(ctx)
-	err := g2engine.PurgeRepository(ctx)
+	g2diagnostic := getG2Diagnostic(ctx)
+	err := g2diagnostic.PurgeRepository(ctx)
 	return err
 }
 
@@ -380,16 +393,6 @@ func TestG2engine_ExportConfig(test *testing.T) {
 	testError(test, ctx, g2engine, err)
 	printActual(test, actual)
 }
-
-//func TestG2engine_ExportCSVEntityReport(test *testing.T) {
-//	ctx := context.TODO()
-//	g2engine := getTestObject(ctx, test)
-//	csvColumnList := ""
-//	flags := int64(0)
-//	actual, err := g2engine.ExportCSVEntityReport(ctx, csvColumnList, flags)
-//	testError(test, ctx, g2engine, err)
-//	test.Log("Actual:", actual)
-//}
 
 func TestG2engine_ExportCSVEntityReport(test *testing.T) {
 	ctx := context.TODO()
@@ -838,24 +841,6 @@ func TestG2engine_PrimeEngine(test *testing.T) {
 	testError(test, ctx, g2engine, err)
 }
 
-func TestG2engine_Process(test *testing.T) {
-	ctx := context.TODO()
-	g2engine := getTestObject(ctx, test)
-	record := truthset.CustomerRecords["1001"]
-	err := g2engine.Process(ctx, record.Json)
-	testError(test, ctx, g2engine, err)
-}
-
-func TestG2engine_ProcessWithInfo(test *testing.T) {
-	ctx := context.TODO()
-	g2engine := getTestObject(ctx, test)
-	record := truthset.CustomerRecords["1001"]
-	flags := int64(0)
-	actual, err := g2engine.ProcessWithInfo(ctx, record.Json, flags)
-	testError(test, ctx, g2engine, err)
-	printActual(test, actual)
-}
-
 func TestG2engine_ReevaluateEntity(test *testing.T) {
 	ctx := context.TODO()
 	g2engine := getTestObject(ctx, test)
@@ -970,44 +955,6 @@ func TestG2engine_WhyEntities_V2(test *testing.T) {
 	entityID2 := getEntityId(truthset.CustomerRecords["1002"])
 	flags := int64(0)
 	actual, err := g2engine.WhyEntities_V2(ctx, entityID1, entityID2, flags)
-	testError(test, ctx, g2engine, err)
-	printActual(test, actual)
-}
-
-func TestG2engine_WhyEntityByEntityID(test *testing.T) {
-	ctx := context.TODO()
-	g2engine := getTestObject(ctx, test)
-	entityID := getEntityId(truthset.CustomerRecords["1001"])
-	actual, err := g2engine.WhyEntityByEntityID(ctx, entityID)
-	testError(test, ctx, g2engine, err)
-	printActual(test, actual)
-}
-
-func TestG2engine_WhyEntityByEntityID_V2(test *testing.T) {
-	ctx := context.TODO()
-	g2engine := getTestObject(ctx, test)
-	entityID := getEntityId(truthset.CustomerRecords["1001"])
-	flags := int64(0)
-	actual, err := g2engine.WhyEntityByEntityID_V2(ctx, entityID, flags)
-	testError(test, ctx, g2engine, err)
-	printActual(test, actual)
-}
-
-func TestG2engine_WhyEntityByRecordID(test *testing.T) {
-	ctx := context.TODO()
-	g2engine := getTestObject(ctx, test)
-	record := truthset.CustomerRecords["1001"]
-	actual, err := g2engine.WhyEntityByRecordID(ctx, record.DataSource, record.Id)
-	testError(test, ctx, g2engine, err)
-	printActual(test, actual)
-}
-
-func TestG2engine_WhyEntityByRecordID_V2(test *testing.T) {
-	ctx := context.TODO()
-	g2engine := getTestObject(ctx, test)
-	record := truthset.CustomerRecords["1001"]
-	flags := int64(0)
-	actual, err := g2engine.WhyEntityByRecordID_V2(ctx, record.DataSource, record.Id, flags)
 	testError(test, ctx, g2engine, err)
 	printActual(test, actual)
 }
