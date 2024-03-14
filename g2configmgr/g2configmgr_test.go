@@ -203,12 +203,6 @@ func setupSenzingConfig(ctx context.Context) error {
 	return err
 }
 
-func setupPurgeRepository(ctx context.Context) error {
-	g2engine := getG2Engine(ctx)
-	err := g2engine.PurgeRepository(ctx)
-	return err
-}
-
 func setup() error {
 	ctx := context.TODO()
 	var err error = nil
@@ -226,13 +220,6 @@ func setup() error {
 	err = setupSenzingConfig(ctx)
 	if err != nil {
 		return createError(5920, err)
-	}
-
-	// Purge repository.
-
-	err = setupPurgeRepository(ctx)
-	if err != nil {
-		return createError(5921, err)
 	}
 
 	return err
