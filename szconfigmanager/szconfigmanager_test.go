@@ -72,7 +72,7 @@ func getTestObject(ctx context.Context, test *testing.T) g2api.G2configmgr {
 func getG2Config(ctx context.Context) g2api.G2config {
 	if g2configSingleton == nil {
 		grpcConnection := getGrpcConnection()
-		g2configSingleton = &szconfig.G2config{
+		g2configSingleton = &szconfig.SzConfig{
 			GrpcClient: g2configpb.NewG2ConfigClient(grpcConnection),
 		}
 	}

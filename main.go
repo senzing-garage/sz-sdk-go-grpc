@@ -78,7 +78,7 @@ func getGrpcConnection() *grpc.ClientConn {
 func getG2config(ctx context.Context) (g2api.G2config, error) {
 	var err error = nil
 	grpcConnection := getGrpcConnection()
-	result := &szconfig.G2config{
+	result := &szconfig.SzConfig{
 		GrpcClient: g2configpb.NewG2ConfigClient(grpcConnection),
 	}
 	return result, err

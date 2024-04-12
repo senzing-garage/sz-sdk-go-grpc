@@ -1,4 +1,4 @@
-module github.com/senzing-garage/g2-sdk-go-grpc
+module github.com/senzing-garage/sz-sdk-go-grpc
 
 go 1.21
 
@@ -17,6 +17,8 @@ require (
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/senzing-garage/go-messaging v1.4.0 // indirect
+	github.com/senzing-garage/sz-sdk-go v0.11.2-0.20240409184958-6f859778fd2a // indirect
+	github.com/senzing-garage/sz-sdk-proto v0.6.4-0.20240410214036-44dc56eac1ff // indirect
 	golang.org/x/exp v0.0.0-20240409090435-93d18d7e34b8 // indirect
 	golang.org/x/net v0.24.0 // indirect
 	golang.org/x/sys v0.19.0 // indirect
