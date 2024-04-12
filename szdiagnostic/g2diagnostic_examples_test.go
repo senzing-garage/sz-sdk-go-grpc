@@ -1,6 +1,6 @@
 //go:build linux
 
-package g2diagnostic
+package szdiagnostic
 
 import (
 	"context"

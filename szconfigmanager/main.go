@@ -1,4 +1,4 @@
-package g2configmgr
+package szconfigmanager
 
 // ----------------------------------------------------------------------------
 // Constants

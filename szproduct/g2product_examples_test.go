@@ -1,6 +1,6 @@
 //go:build linux
 
-package g2product
+package szproduct
 
 import (
 	"context"

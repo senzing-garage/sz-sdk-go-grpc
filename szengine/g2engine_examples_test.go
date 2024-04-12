@@ -1,6 +1,6 @@
 //go:build linux
 
-package g2engine
+package szengine
 
 import (
 	"context"

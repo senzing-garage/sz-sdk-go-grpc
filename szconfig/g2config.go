@@ -3,7 +3,7 @@
  */
 
 // Package g2config implements a client for the service.
-package g2config
+package szconfig
 
 import (
 	"context"

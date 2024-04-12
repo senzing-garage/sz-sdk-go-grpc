@@ -1,4 +1,4 @@
-package g2config
+package szconfig
 
 import (
 	"context"

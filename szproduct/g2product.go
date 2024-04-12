@@ -3,7 +3,7 @@
  */
 
 // Package g2product implements a client for the service.
-package g2product
+package szproduct
 
 import (
 	"context"

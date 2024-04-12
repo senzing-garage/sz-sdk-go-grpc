@@ -8,11 +8,11 @@ import (
 	"math/big"
 	"time"
 
-	"github.com/senzing-garage/g2-sdk-go-grpc/g2config"
-	"github.com/senzing-garage/g2-sdk-go-grpc/g2configmgr"
-	"github.com/senzing-garage/g2-sdk-go-grpc/g2diagnostic"
-	"github.com/senzing-garage/g2-sdk-go-grpc/g2engine"
-	"github.com/senzing-garage/g2-sdk-go-grpc/g2product"
+	"github.com/senzing-garage/g2-sdk-go-grpc/szconfig"
+	"github.com/senzing-garage/g2-sdk-go-grpc/szconfigmanager"
+	"github.com/senzing-garage/g2-sdk-go-grpc/szdiagnostic"
+	"github.com/senzing-garage/g2-sdk-go-grpc/szengine"
+	"github.com/senzing-garage/g2-sdk-go-grpc/szproduct"
 	"github.com/senzing-garage/g2-sdk-go/g2api"
 	g2configpb "github.com/senzing-garage/g2-sdk-proto/go/g2config"
 	g2configmgrpb "github.com/senzing-garage/g2-sdk-proto/go/g2configmgr"
@@ -78,7 +78,7 @@ func getGrpcConnection() *grpc.ClientConn {
 func getG2config(ctx context.Context) (g2api.G2config, error) {
 	var err error = nil
 	grpcConnection := getGrpcConnection()
-	result := &g2config.G2config{
+	result := &szconfig.G2config{
 		GrpcClient: g2configpb.NewG2ConfigClient(grpcConnection),
 	}
 	return result, err
@@ -87,7 +87,7 @@ func getG2config(ctx context.Context) (g2api.G2config, error) {
 func getG2configmgr(ctx context.Context) (g2api.G2configmgr, error) {
 	var err error = nil
 	grpcConnection := getGrpcConnection()
-	result := &g2configmgr.G2configmgr{
+	result := &szconfigmanager.G2configmgr{
 		GrpcClient: g2configmgrpb.NewG2ConfigMgrClient(grpcConnection),
 	}
 	return result, err
@@ -96,7 +96,7 @@ func getG2configmgr(ctx context.Context) (g2api.G2configmgr, error) {
 func getG2diagnostic(ctx context.Context) (g2api.G2diagnostic, error) {
 	var err error = nil
 	grpcConnection := getGrpcConnection()
-	result := &g2diagnostic.G2diagnostic{
+	result := &szdiagnostic.G2diagnostic{
 		GrpcClient: g2diagnosticpb.NewG2DiagnosticClient(grpcConnection),
 	}
 	return result, err
@@ -105,7 +105,7 @@ func getG2diagnostic(ctx context.Context) (g2api.G2diagnostic, error) {
 func getG2engine(ctx context.Context) (g2api.G2engine, error) {
 	var err error = nil
 	grpcConnection := getGrpcConnection()
-	result := &g2engine.G2engine{
+	result := &szengine.G2engine{
 		GrpcClient: g2enginepb.NewG2EngineClient(grpcConnection),
 	}
 	return result, err
@@ -114,7 +114,7 @@ func getG2engine(ctx context.Context) (g2api.G2engine, error) {
 func getG2product(ctx context.Context) (g2api.G2product, error) {
 	var err error = nil
 	grpcConnection := getGrpcConnection()
-	result := &g2product.G2product{
+	result := &szproduct.G2product{
 		GrpcClient: g2productpb.NewG2ProductClient(grpcConnection),
 	}
 	return result, err

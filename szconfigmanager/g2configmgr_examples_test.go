@@ -1,6 +1,6 @@
 //go:build linux
 
-package g2configmgr
+package szconfigmanager
 
 import (
 	"context"

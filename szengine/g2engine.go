@@ -3,7 +3,7 @@
  */
 
 // Package g2engine implements a client for the service.
-package g2engine
+package szengine
 
 import (
 	"context"

@@ -1,4 +1,4 @@
-package g2engine
+package szengine
 
 import (
 	"context"
@@ -11,9 +11,9 @@ import (
 	"time"
 
 	truncator "github.com/aquilax/truncate"
-	"github.com/senzing-garage/g2-sdk-go-grpc/g2config"
-	"github.com/senzing-garage/g2-sdk-go-grpc/g2configmgr"
-	"github.com/senzing-garage/g2-sdk-go-grpc/g2diagnostic"
+	"github.com/senzing-garage/g2-sdk-go-grpc/szconfig"
+	"github.com/senzing-garage/g2-sdk-go-grpc/szconfigmanager"
+	"github.com/senzing-garage/g2-sdk-go-grpc/szdiagnostic"
 	"github.com/senzing-garage/g2-sdk-go/g2api"
 	g2engineapi "github.com/senzing-garage/g2-sdk-go/g2engine"
 	"github.com/senzing-garage/g2-sdk-go/g2error"
@@ -85,7 +85,7 @@ func getTestObject(ctx context.Context, test *testing.T) g2api.G2engine {
 func getG2Config(ctx context.Context) g2api.G2config {
 	if g2configSingleton == nil {
 		grpcConnection := getGrpcConnection()
-		g2configSingleton = &g2config.G2config{
+		g2configSingleton = &szconfig.G2config{
 			GrpcClient: g2configpb.NewG2ConfigClient(grpcConnection),
 		}
 	}
@@ -95,7 +95,7 @@ func getG2Config(ctx context.Context) g2api.G2config {
 func getG2Configmgr(ctx context.Context) g2api.G2configmgr {
 	if g2configmgrSingleton == nil {
 		grpcConnection := getGrpcConnection()
-		g2configmgrSingleton = &g2configmgr.G2configmgr{
+		g2configmgrSingleton = &szconfigmanager.G2configmgr{
 			GrpcClient: g2configmgrpb.NewG2ConfigMgrClient(grpcConnection),
 		}
 	}
@@ -105,7 +105,7 @@ func getG2Configmgr(ctx context.Context) g2api.G2configmgr {
 func getG2Diagnostic(ctx context.Context) g2api.G2diagnostic {
 	if g2diagnosticSingleton == nil {
 		grpcConnection := getGrpcConnection()
-		g2diagnosticSingleton = &g2diagnostic.G2diagnostic{
+		g2diagnosticSingleton = &szdiagnostic.G2diagnostic{
 			GrpcClient: g2diagnosticpb.NewG2DiagnosticClient(grpcConnection),
 		}
 	}

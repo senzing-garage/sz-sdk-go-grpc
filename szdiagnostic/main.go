@@ -1,8 +1,8 @@
-package g2config
+package szdiagnostic
 
 // ----------------------------------------------------------------------------
 // Constants
 // ----------------------------------------------------------------------------
 
-// Identfier of the g2config package found messages having the format "senzing-6021xxxx".
-const ComponentId = 6021
+// Identfier of the g2diagnostic package found messages having the format "senzing-6023xxxx".
+const ComponentId = 6023
