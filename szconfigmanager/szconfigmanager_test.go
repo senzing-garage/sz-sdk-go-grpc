@@ -11,16 +11,15 @@ import (
 	"time"
 
 	truncator "github.com/aquilax/truncate"
-	"github.com/senzing-garage/g2-sdk-go-grpc/szconfig"
-	"github.com/senzing-garage/g2-sdk-go-grpc/szengine"
-	"github.com/senzing-garage/g2-sdk-go/g2api"
-	g2configmgrapi "github.com/senzing-garage/g2-sdk-go/g2configmgr"
-	"github.com/senzing-garage/g2-sdk-go/g2error"
-	g2configpb "github.com/senzing-garage/g2-sdk-proto/go/g2config"
-	g2pb "github.com/senzing-garage/g2-sdk-proto/go/g2configmgr"
-	g2enginepb "github.com/senzing-garage/g2-sdk-proto/go/g2engine"
-	"github.com/senzing-garage/go-helpers/truthset"
 	"github.com/senzing-garage/go-logging/logging"
+	"github.com/senzing-garage/sz-sdk-go-grpc/szconfig"
+	"github.com/senzing-garage/sz-sdk-go-grpc/szengine"
+	"github.com/senzing-garage/sz-sdk-go/sz"
+	szconfigmanagerapi "github.com/senzing-garage/sz-sdk-go/szconfigmanager"
+	"github.com/senzing-garage/sz-sdk-go/szerror"
+	szconfigpb "github.com/senzing-garage/sz-sdk-proto/go/szconfig"
+	szpb "github.com/senzing-garage/sz-sdk-proto/go/szconfigmanager"
+	szenginepb "github.com/senzing-garage/sz-sdk-proto/go/szengine"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
@@ -32,12 +31,12 @@ const (
 )
 
 var (
-	g2configSingleton    g2api.G2config
-	g2configmgrSingleton g2api.G2configmgr
-	g2engineSingleton    g2api.G2engine
-	grpcAddress          = "localhost:8261"
-	grpcConnection       *grpc.ClientConn
-	localLogger          logging.LoggingInterface
+	grpcAddress              = "localhost:8261"
+	grpcConnection           *grpc.ClientConn
+	localLogger              logging.LoggingInterface
+	szConfigManagerSingleton *SzConfigManager
+	szConfigSingleton        sz.SzConfig
+	szEngineSingleton        sz.SzEngine
 )
 
 // ----------------------------------------------------------------------------
@@ -45,7 +44,7 @@ var (
 // ----------------------------------------------------------------------------
 
 func createError(errorId int, err error) error {
-	return g2error.Cast(localLogger.NewError(errorId, err), err)
+	return szerror.Cast(localLogger.NewError(errorId, err), err)
 }
 
 func getGrpcConnection() *grpc.ClientConn {
@@ -59,44 +58,38 @@ func getGrpcConnection() *grpc.ClientConn {
 	return grpcConnection
 }
 
-func getTestObject(ctx context.Context, test *testing.T) g2api.G2configmgr {
-	if g2configmgrSingleton == nil {
-		grpcConnection := getGrpcConnection()
-		g2configmgrSingleton = &G2configmgr{
-			GrpcClient: g2pb.NewG2ConfigMgrClient(grpcConnection),
-		}
-	}
-	return g2configmgrSingleton
+func getTestObject(ctx context.Context, test *testing.T) *SzConfigManager {
+	return getSzConfigManager(ctx)
 }
 
-func getG2Config(ctx context.Context) g2api.G2config {
-	if g2configSingleton == nil {
+func getSzConfig(ctx context.Context) sz.SzConfig {
+	if szConfigSingleton == nil {
 		grpcConnection := getGrpcConnection()
-		g2configSingleton = &szconfig.SzConfig{
-			GrpcClient: g2configpb.NewG2ConfigClient(grpcConnection),
+		szConfigSingleton = &szconfig.SzConfig{
+			GrpcClient: szconfigpb.NewSzConfigClient(grpcConnection),
 		}
 	}
-	return g2configSingleton
+	return szConfigSingleton
 }
 
-func getG2Configmgr(ctx context.Context) g2api.G2configmgr {
-	if g2configmgrSingleton == nil {
+func getSzConfigManager(ctx context.Context) *SzConfigManager {
+	if szConfigManagerSingleton == nil {
 		grpcConnection := getGrpcConnection()
-		g2configmgrSingleton = &G2configmgr{
-			GrpcClient: g2pb.NewG2ConfigMgrClient(grpcConnection),
+		szConfigManagerSingleton = &SzConfigManager{
+			GrpcClient: szpb.NewSzConfigManagerClient(grpcConnection),
 		}
 	}
-	return g2configmgrSingleton
+	return szConfigManagerSingleton
 }
 
-func getG2Engine(ctx context.Context) g2api.G2engine {
-	if g2engineSingleton == nil {
+func getSzEngine(ctx context.Context) sz.SzEngine {
+	if szEngineSingleton == nil {
 		grpcConnection := getGrpcConnection()
-		g2engineSingleton = &szengine.G2engine{
-			GrpcClient: g2enginepb.NewG2EngineClient(grpcConnection),
+		szEngineSingleton = &szengine.SzEngine{
+			GrpcClient: szenginepb.NewSzEngineClient(grpcConnection),
 		}
 	}
-	return g2engineSingleton
+	return szEngineSingleton
 }
 
 func truncate(aString string, length int) string {
@@ -113,14 +106,14 @@ func printActual(test *testing.T, actual interface{}) {
 	printResult(test, "Actual", actual)
 }
 
-func testError(test *testing.T, ctx context.Context, g2configmgr g2api.G2configmgr, err error) {
+func testError(test *testing.T, ctx context.Context, err error) {
 	if err != nil {
 		test.Log("Error:", err.Error())
 		assert.FailNow(test, err.Error())
 	}
 }
 
-func expectError(test *testing.T, ctx context.Context, g2configmgr g2api.G2configmgr, err error, messageId string) {
+func expectError(test *testing.T, ctx context.Context, err error, messageId string) {
 	if err != nil {
 		errorMessage := err.Error()[strings.Index(err.Error(), "{"):]
 		var dictionary map[string]interface{}
@@ -141,13 +134,13 @@ func expectError(test *testing.T, ctx context.Context, g2configmgr g2api.G2confi
 func TestMain(m *testing.M) {
 	err := setup()
 	if err != nil {
-		if g2error.Is(err, g2error.G2Unrecoverable) {
+		if szerror.Is(err, szerror.SzUnrecoverable) {
 			fmt.Printf("\nUnrecoverable error detected. \n\n")
 		}
-		if g2error.Is(err, g2error.G2Retryable) {
+		if szerror.Is(err, szerror.SzRetryable) {
 			fmt.Printf("\nRetryable error detected. \n\n")
 		}
-		if g2error.Is(err, g2error.G2BadInput) {
+		if szerror.Is(err, szerror.SzBadInput) {
 			fmt.Printf("\nBad user input error detected. \n\n")
 		}
 		fmt.Print(err)
@@ -166,36 +159,35 @@ func setupSenzingConfig(ctx context.Context) error {
 
 	// Create a fresh Senzing configuration.
 
-	g2config := getG2Config(ctx)
-	configHandle, err := g2config.Create(ctx)
+	szConfig := getSzConfig(ctx)
+	configHandle, err := szConfig.CreateConfig(ctx)
 	if err != nil {
 		return createError(5907, err)
 	}
 
 	datasourceNames := []string{"CUSTOMERS", "REFERENCE", "WATCHLIST"}
 	for _, datasourceName := range datasourceNames {
-		datasource := truthset.TruthsetDataSources[datasourceName]
-		_, err := g2config.AddDataSource(ctx, configHandle, datasource.Json)
+		_, err := szConfig.AddDataSource(ctx, configHandle, datasourceName)
 		if err != nil {
 			return createError(5908, err)
 		}
 	}
 
-	configStr, err := g2config.Save(ctx, configHandle)
+	configDefinition, err := szConfig.ExportConfig(ctx, configHandle)
 	if err != nil {
 		return createError(5909, err)
 	}
 
 	// Persist the Senzing configuration to the Senzing repository.
 
-	g2configmgr := getG2Configmgr(ctx)
-	configComments := fmt.Sprintf("Created by g2diagnostic_test at %s", now.UTC())
-	configID, err := g2configmgr.AddConfig(ctx, configStr, configComments)
+	szConfigManager := getSzConfigManager(ctx)
+	configComment := fmt.Sprintf("Created by g2diagnostic_test at %s", now.UTC())
+	configId, err := szConfigManager.AddConfig(ctx, configDefinition, configComment)
 	if err != nil {
 		return createError(5913, err)
 	}
 
-	err = g2configmgr.SetDefaultConfigID(ctx, configID)
+	err = szConfigManager.SetDefaultConfigId(ctx, configId)
 	if err != nil {
 		return createError(5914, err)
 	}
@@ -210,7 +202,7 @@ func setup() error {
 	options := []interface{}{
 		&logging.OptionCallerSkip{Value: 4},
 	}
-	localLogger, err = logging.NewSenzingSdkLogger(ComponentId, g2configmgrapi.IdMessages, options...)
+	localLogger, err = logging.NewSenzingSdkLogger(ComponentId, szconfigmanagerapi.IdMessages, options...)
 	if err != nil {
 		return createError(5901, err)
 	}
@@ -234,124 +226,124 @@ func teardown() error {
 // Test interface functions
 // ----------------------------------------------------------------------------
 
-func TestG2configmgr_SetObserverOrigin(test *testing.T) {
+func TestSzConfigManager_SetObserverOrigin(test *testing.T) {
 	ctx := context.TODO()
-	g2configmgr := getTestObject(ctx, test)
+	szConfigManager := getTestObject(ctx, test)
 	origin := "Machine: nn; Task: UnitTest"
-	g2configmgr.SetObserverOrigin(ctx, origin)
+	szConfigManager.SetObserverOrigin(ctx, origin)
 }
 
-func TestG2configmgr_GetObserverOrigin(test *testing.T) {
+func TestSzConfigManager_GetObserverOrigin(test *testing.T) {
 	ctx := context.TODO()
-	g2configmgr := getTestObject(ctx, test)
+	szConfigManager := getTestObject(ctx, test)
 	origin := "Machine: nn; Task: UnitTest"
-	g2configmgr.SetObserverOrigin(ctx, origin)
-	actual := g2configmgr.GetObserverOrigin(ctx)
+	szConfigManager.SetObserverOrigin(ctx, origin)
+	actual := szConfigManager.GetObserverOrigin(ctx)
 	assert.Equal(test, origin, actual)
 }
 
-func TestG2configmgr_AddConfig(test *testing.T) {
+func TestSzConfigManager_AddConfig(test *testing.T) {
 	ctx := context.TODO()
-	g2configmgr := getTestObject(ctx, test)
+	szConfigManager := getTestObject(ctx, test)
 	now := time.Now()
-	g2config := getG2Config(ctx)
-	configHandle, err1 := g2config.Create(ctx)
+	szConfig := getSzConfig(ctx)
+	configHandle, err1 := szConfig.CreateConfig(ctx)
 	if err1 != nil {
 		test.Log("Error:", err1.Error())
-		assert.FailNow(test, "g2config.Create()")
+		assert.FailNow(test, "szConfig.CreateConfig()")
 	}
-	inputJson := `{"DSRC_CODE": "GO_TEST_` + strconv.FormatInt(now.Unix(), 10) + `"}`
-	_, err2 := g2config.AddDataSource(ctx, configHandle, inputJson)
+	dataSourceCode := "GO_TEST_" + strconv.FormatInt(now.Unix(), 10)
+	_, err2 := szConfig.AddDataSource(ctx, configHandle, dataSourceCode)
 	if err2 != nil {
 		test.Log("Error:", err2.Error())
-		assert.FailNow(test, "g2config.AddDataSource()")
+		assert.FailNow(test, "szConfig.AddDataSource()")
 	}
-	configStr, err3 := g2config.Save(ctx, configHandle)
+	configDefinition, err3 := szConfig.ExportConfig(ctx, configHandle)
 	if err3 != nil {
 		test.Log("Error:", err2.Error())
-		assert.FailNow(test, configStr)
+		assert.FailNow(test, configDefinition)
 	}
-	configComments := fmt.Sprintf("g2configmgr_test at %s", now.UTC())
-	actual, err := g2configmgr.AddConfig(ctx, configStr, configComments)
-	testError(test, ctx, g2configmgr, err)
+	configComment := fmt.Sprintf("szconfigmanager_test at %s", now.UTC())
+	actual, err := szConfigManager.AddConfig(ctx, configDefinition, configComment)
+	testError(test, ctx, err)
 	printActual(test, actual)
 }
 
-func TestG2configmgr_GetConfig(test *testing.T) {
+func TestSzConfigManager_GetConfig(test *testing.T) {
 	ctx := context.TODO()
-	g2configmgr := getTestObject(ctx, test)
-	configID, err1 := g2configmgr.GetDefaultConfigID(ctx)
+	szConfigManager := getTestObject(ctx, test)
+	configID, err1 := szConfigManager.GetDefaultConfigId(ctx)
 	if err1 != nil {
 		test.Log("Error:", err1.Error())
-		assert.FailNow(test, "g2configmgr.GetDefaultConfigID()")
+		assert.FailNow(test, "szConfigManager.GetDefaultConfigId()")
 	}
-	actual, err := g2configmgr.GetConfig(ctx, configID)
-	testError(test, ctx, g2configmgr, err)
+	actual, err := szConfigManager.GetConfig(ctx, configID)
+	testError(test, ctx, err)
 	printActual(test, actual)
 }
 
-func TestG2configmgr_GetConfigList(test *testing.T) {
+func TestSzConfigManager_GetConfigList(test *testing.T) {
 	ctx := context.TODO()
-	g2configmgr := getTestObject(ctx, test)
-	actual, err := g2configmgr.GetConfigList(ctx)
-	testError(test, ctx, g2configmgr, err)
+	szConfigManager := getTestObject(ctx, test)
+	actual, err := szConfigManager.GetConfigList(ctx)
+	testError(test, ctx, err)
 	printActual(test, actual)
 }
 
-func TestG2configmgr_GetDefaultConfigID(test *testing.T) {
+func TestSzConfigManager_GetDefaultConfigID(test *testing.T) {
 	ctx := context.TODO()
-	g2configmgr := getTestObject(ctx, test)
-	actual, err := g2configmgr.GetDefaultConfigID(ctx)
-	testError(test, ctx, g2configmgr, err)
+	szConfigManager := getTestObject(ctx, test)
+	actual, err := szConfigManager.GetDefaultConfigId(ctx)
+	testError(test, ctx, err)
 	printActual(test, actual)
 }
 
-func TestG2configmgr_ReplaceDefaultConfigID(test *testing.T) {
+func TestSzConfigManager_ReplaceDefaultConfigID(test *testing.T) {
 	ctx := context.TODO()
-	g2configmgr := getTestObject(ctx, test)
-	oldConfigID, err1 := g2configmgr.GetDefaultConfigID(ctx)
+	szConfigManager := getTestObject(ctx, test)
+	currentDefaultConfigId, err1 := szConfigManager.GetDefaultConfigId(ctx)
 	if err1 != nil {
 		test.Log("Error:", err1.Error())
-		assert.FailNow(test, "g2configmgr.GetDefaultConfigID()")
+		assert.FailNow(test, "szConfigManager.GetDefaultConfigID()")
 	}
 
-	// FIXME: This is kind of a cheeter.
+	// TODO: This is kind of a cheeter.
 
-	newConfigID, err2 := g2configmgr.GetDefaultConfigID(ctx)
+	newDefaultConfigId, err2 := szConfigManager.GetDefaultConfigId(ctx)
 	if err2 != nil {
 		test.Log("Error:", err2.Error())
-		assert.FailNow(test, "g2configmgr.GetDefaultConfigID()-2")
+		assert.FailNow(test, "szConfigManager.GetDefaultConfigID()-2")
 	}
 
-	err := g2configmgr.ReplaceDefaultConfigID(ctx, oldConfigID, newConfigID)
-	testError(test, ctx, g2configmgr, err)
+	err := szConfigManager.ReplaceDefaultConfigId(ctx, currentDefaultConfigId, newDefaultConfigId)
+	testError(test, ctx, err)
 }
 
-func TestG2configmgr_SetDefaultConfigID(test *testing.T) {
+func TestSzConfigManager_SetDefaultConfigId(test *testing.T) {
 	ctx := context.TODO()
-	g2configmgr := getTestObject(ctx, test)
-	configID, err1 := g2configmgr.GetDefaultConfigID(ctx)
+	szConfigManager := getTestObject(ctx, test)
+	configId, err1 := szConfigManager.GetDefaultConfigId(ctx)
 	if err1 != nil {
 		test.Log("Error:", err1.Error())
-		assert.FailNow(test, "g2configmgr.GetDefaultConfigID()")
+		assert.FailNow(test, "szConfigManager.GetDefaultConfigId()")
 	}
-	err := g2configmgr.SetDefaultConfigID(ctx, configID)
-	testError(test, ctx, g2configmgr, err)
+	err := szConfigManager.SetDefaultConfigId(ctx, configId)
+	testError(test, ctx, err)
 }
 
-func TestG2configmgr_Init(test *testing.T) {
+func TestSzConfigManager_Init(test *testing.T) {
 	ctx := context.TODO()
-	g2configmgr := getTestObject(ctx, test)
-	moduleName := "Test module name"
-	verboseLogging := int64(0)
-	iniParams := "{}"
-	err := g2configmgr.Init(ctx, moduleName, iniParams, verboseLogging)
-	expectError(test, ctx, g2configmgr, err, "senzing-60124002")
+	szConfigManager := getTestObject(ctx, test)
+	instanceName := "Test name"
+	verboseLogging := sz.SZ_NO_LOGGING
+	settings := "{}"
+	err := szConfigManager.Inititialize(ctx, instanceName, settings, verboseLogging)
+	expectError(test, ctx, err, "senzing-60124002")
 }
 
-func TestG2configmgr_Destroy(test *testing.T) {
+func TestSzConfigManager_Destroy(test *testing.T) {
 	ctx := context.TODO()
-	g2configmgr := getTestObject(ctx, test)
-	err := g2configmgr.Destroy(ctx)
-	expectError(test, ctx, g2configmgr, err, "senzing-60124001")
+	szConfigManager := getTestObject(ctx, test)
+	err := szConfigManager.Destroy(ctx)
+	expectError(test, ctx, err, "senzing-60124001")
 }

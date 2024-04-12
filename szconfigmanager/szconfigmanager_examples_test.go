@@ -6,7 +6,6 @@ import (
 	"context"
 	"fmt"
 
-	g2pb "github.com/senzing-garage/g2-sdk-proto/go/g2configmgr"
 	"github.com/senzing-garage/go-logging/logging"
 )
 
@@ -14,81 +13,81 @@ import (
 // Examples for godoc documentation
 // ----------------------------------------------------------------------------
 
-func ExampleG2configmgr_SetObserverOrigin() {
+func ExampleSzConfigManager_SetObserverOrigin() {
 	// For more information, visit https://github.com/senzing-garage/g2-sdk-go-grpc/blob/main/g2configmgr/g2configmgr_examples_test.go
 	ctx := context.TODO()
-	g2configmgr := getG2Configmgr(ctx)
+	szConfigManager := getSzConfigManager(ctx)
 	origin := "Machine: nn; Task: UnitTest"
-	g2configmgr.SetObserverOrigin(ctx, origin)
+	szConfigManager.SetObserverOrigin(ctx, origin)
 	// Output:
 }
 
-func ExampleG2configmgr_GetObserverOrigin() {
+func ExampleSzConfigManager_GetObserverOrigin() {
 	// For more information, visit https://github.com/senzing-garage/g2-sdk-go-grpc/blob/main/g2config/g2configmgr_test.go
 	ctx := context.TODO()
-	g2configmgr := getG2Configmgr(ctx)
+	szConfigManager := getSzConfigManager(ctx)
 	origin := "Machine: nn; Task: UnitTest"
-	g2configmgr.SetObserverOrigin(ctx, origin)
-	result := g2configmgr.GetObserverOrigin(ctx)
+	szConfigManager.SetObserverOrigin(ctx, origin)
+	result := szConfigManager.GetObserverOrigin(ctx)
 	fmt.Println(result)
 	// Output: Machine: nn; Task: UnitTest
 }
 
-func ExampleG2configmgr_AddConfig() {
+func ExampleSzConfigManager_AddConfig() {
 	// For more information, visit https://github.com/senzing-garage/g2-sdk-go-grpc/blob/main/g2configmgr/g2configmgr_examples_test.go
 	ctx := context.TODO()
-	g2config := getG2Config(ctx)
-	configHandle, err := g2config.Create(ctx)
+	szConfig := getSzConfig(ctx)
+	configHandle, err := szConfig.CreateConfig(ctx)
 	if err != nil {
 		fmt.Println(err)
 	}
-	g2configmgr := getG2Configmgr(ctx)
-	configStr, err := g2config.Save(ctx, configHandle)
+	szConfigManager := getSzConfigManager(ctx)
+	configDefinition, err := szConfig.ExportConfig(ctx, configHandle)
 	if err != nil {
 		fmt.Println(err)
 	}
-	configComments := "Example configuration"
-	configID, err := g2configmgr.AddConfig(ctx, configStr, configComments)
+	configComment := "Example configuration"
+	configId, err := szConfigManager.AddConfig(ctx, configDefinition, configComment)
 	if err != nil {
 		fmt.Println(err)
 	}
-	fmt.Println(configID > 0) // Dummy output.
+	fmt.Println(configId > 0) // Dummy output.
 	// Output: true
 }
 
-func ExampleG2configmgr_GetConfig() {
+func ExampleSzConfigManager_GetConfig() {
 	// For more information, visit https://github.com/senzing-garage/g2-sdk-go-grpc/blob/main/g2configmgr/g2configmgr_examples_test.go
 	ctx := context.TODO()
-	g2configmgr := getG2Configmgr(ctx)
-	configID, err := g2configmgr.GetDefaultConfigID(ctx)
+	szConfigManager := getSzConfigManager(ctx)
+	configId, err := szConfigManager.GetDefaultConfigId(ctx)
 	if err != nil {
 		fmt.Println(err)
 	}
-	configStr, err := g2configmgr.GetConfig(ctx, configID)
+	configDefinition, err := szConfigManager.GetConfig(ctx, configId)
 	if err != nil {
 		fmt.Println(err)
 	}
-	fmt.Println(truncate(configStr, defaultTruncation))
+	fmt.Println(truncate(configDefinition, defaultTruncation))
 	// Output: {"G2_CONFIG":{"CFG_ATTR":[{"ATTR_ID":1001,"ATTR_CODE":"DATA_SOURCE","ATTR...
 }
 
-func ExampleG2configmgr_GetConfigList() {
+func ExampleSzConfigManager_GetConfigList() {
 	// For more information, visit https://github.com/senzing-garage/g2-sdk-go-grpc/blob/main/g2configmgr/g2configmgr_examples_test.go
 	ctx := context.TODO()
-	g2configmgr := getG2Configmgr(ctx)
-	jsonConfigList, err := g2configmgr.GetConfigList(ctx)
+	szConfigManager := getSzConfigManager(ctx)
+	configList, err := szConfigManager.GetConfigList(ctx)
 	if err != nil {
 		fmt.Println(err)
 	}
-	fmt.Println(truncate(jsonConfigList, 28))
+	fmt.Println(truncate(configList, 28))
 	// Output: {"CONFIGS":[{"CONFIG_ID":...
 }
 
-func ExampleG2configmgr_GetDefaultConfigID() {
+func ExampleSzConfigManager_GetDefaultConfigId() {
 	// For more information, visit https://github.com/senzing-garage/g2-sdk-go-grpc/blob/main/g2configmgr/g2configmgr_examples_test.go
 	ctx := context.TODO()
-	g2configmgr := getG2Configmgr(ctx)
-	configID, err := g2configmgr.GetDefaultConfigID(ctx)
+	szConfigManager := getSzConfigManager(ctx)
+	configID, err := szConfigManager.GetDefaultConfigId(ctx)
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -96,83 +95,83 @@ func ExampleG2configmgr_GetDefaultConfigID() {
 	// Output: true
 }
 
-func ExampleG2configmgr_ReplaceDefaultConfigID() {
+func ExampleSzConfigManager_ReplaceDefaultConfigId() {
 	// For more information, visit https://github.com/senzing-garage/g2-sdk-go-grpc/blob/main/g2configmgr/g2configmgr_examples_test.go
 	ctx := context.TODO()
-	g2configmgr := getG2Configmgr(ctx)
-	oldConfigID, err := g2configmgr.GetDefaultConfigID(ctx)
+	szConfigManager := getSzConfigManager(ctx)
+	currentDefaultConfigId, err := szConfigManager.GetDefaultConfigId(ctx)
 	if err != nil {
 		fmt.Println(err)
 	}
-	g2config := getG2Config(ctx)
-	configHandle, err := g2config.Create(ctx)
+	szConfig := getSzConfig(ctx)
+	configHandle, err := szConfig.CreateConfig(ctx)
 	if err != nil {
 		fmt.Println(err)
 	}
-	configStr, err := g2config.Save(ctx, configHandle)
+	configDefinition, err := szConfig.ExportConfig(ctx, configHandle)
 	if err != nil {
 		fmt.Println(err)
 	}
-	configComments := "Example configuration"
-	newConfigID, err := g2configmgr.AddConfig(ctx, configStr, configComments)
+	configComment := "Example configuration"
+	newDefaultConfigId, err := szConfigManager.AddConfig(ctx, configDefinition, configComment)
 	if err != nil {
 		fmt.Println(err)
 	}
-	err = g2configmgr.ReplaceDefaultConfigID(ctx, oldConfigID, newConfigID)
+	err = szConfigManager.ReplaceDefaultConfigId(ctx, currentDefaultConfigId, newDefaultConfigId)
 	if err != nil {
 		fmt.Println(err)
 	}
 	// Output:
 }
 
-func ExampleG2configmgr_SetDefaultConfigID() {
+func ExampleSzConfigManager_SetDefaultConfigId() {
 	// For more information, visit https://github.com/senzing-garage/g2-sdk-go-grpc/blob/main/g2configmgr/g2configmgr_examples_test.go
 	ctx := context.TODO()
-	g2configmgr := getG2Configmgr(ctx)
-	configID, err := g2configmgr.GetDefaultConfigID(ctx) // For example purposes only. Normally would use output from GetConfigList()
+	szConfigManager := getSzConfigManager(ctx)
+	configId, err := szConfigManager.GetDefaultConfigId(ctx) // For example purposes only. Normally would use output from GetConfigList()
 	if err != nil {
 		fmt.Println(err)
 	}
-	err = g2configmgr.SetDefaultConfigID(ctx, configID)
-	if err != nil {
-		fmt.Println(err)
-	}
-	// Output:
-}
-
-func ExampleG2configmgr_SetLogLevel() {
-	// For more information, visit https://github.com/senzing-garage/g2-sdk-go-grpc/blob/main/g2configmgr/g2configmgr_examples_test.go
-	ctx := context.TODO()
-	g2configmgr := getG2Configmgr(ctx)
-	err := g2configmgr.SetLogLevel(ctx, logging.LevelInfoName)
+	err = szConfigManager.SetDefaultConfigId(ctx, configId)
 	if err != nil {
 		fmt.Println(err)
 	}
 	// Output:
 }
 
-func ExampleG2configmgr_Init() {
+func ExampleSzConfigManager_SetLogLevel() {
 	// For more information, visit https://github.com/senzing-garage/g2-sdk-go-grpc/blob/main/g2configmgr/g2configmgr_examples_test.go
 	ctx := context.TODO()
-	grpcConnection := getGrpcConnection()
-	g2configmgr := &G2configmgr{
-		GrpcClient: g2pb.NewG2ConfigMgrClient(grpcConnection),
-	}
-	moduleName := "Test module name"
-	iniParams := "{}"
-	verboseLogging := int64(0)
-	err := g2configmgr.Init(ctx, moduleName, iniParams, verboseLogging)
+	szConfigManager := getSzConfigManager(ctx)
+	err := szConfigManager.SetLogLevel(ctx, logging.LevelInfoName)
 	if err != nil {
-		// This should produce a "senzing-60124002" error.
+		fmt.Println(err)
 	}
 	// Output:
 }
 
-func ExampleG2configmgr_Destroy() {
+// func ExampleSzConfigManager_Init() {
+// 	// For more information, visit https://github.com/senzing-garage/g2-sdk-go-grpc/blob/main/g2configmgr/g2configmgr_examples_test.go
+// 	ctx := context.TODO()
+// 	grpcConnection := getGrpcConnection()
+// 	szConfigManager := &SzConfigManager{
+// 		GrpcClient: szpb.NewG2ConfigMgrClient(grpcConnection),
+// 	}
+// 	moduleName := "Test module name"
+// 	iniParams := "{}"
+// 	verboseLogging := int64(0)
+// 	err := szConfigManager.Init(ctx, moduleName, iniParams, verboseLogging)
+// 	if err != nil {
+// 		// This should produce a "senzing-60124002" error.
+// 	}
+// 	// Output:
+// }
+
+func ExampleSzConfigManager_Destroy() {
 	// For more information, visit https://github.com/senzing-garage/g2-sdk-go-grpc/blob/main/g2configmgr/g2configmgr_examples_test.go
 	ctx := context.TODO()
-	g2configmgr := getG2Configmgr(ctx)
-	err := g2configmgr.Destroy(ctx)
+	szConfigManager := getSzConfigManager(ctx)
+	err := szConfigManager.Destroy(ctx)
 	if err != nil {
 		// This should produce a "senzing-60124001" error.
 	}

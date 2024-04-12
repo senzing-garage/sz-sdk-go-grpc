@@ -16,7 +16,7 @@ import (
 func ExampleG2diagnostic_SetObserverOrigin() {
 	// For more information, visit https://github.com/senzing-garage/g2-sdk-go-grpc/blob/main/g2diagnostic/g2diagnostic_examples_test.go
 	ctx := context.TODO()
-	g2diagnostic := getG2Diagnostic(ctx)
+	g2diagnostic := getSzDiagnostic(ctx)
 	origin := "Machine: nn; Task: UnitTest"
 	g2diagnostic.SetObserverOrigin(ctx, origin)
 	// Output:
@@ -25,7 +25,7 @@ func ExampleG2diagnostic_SetObserverOrigin() {
 func ExampleG2diagnostic_GetObserverOrigin() {
 	// For more information, visit https://github.com/senzing-garage/g2-sdk-go-grpc/blob/main/g2config/g2diagnostic_test.go
 	ctx := context.TODO()
-	g2diagnostic := getG2Diagnostic(ctx)
+	g2diagnostic := getSzDiagnostic(ctx)
 	origin := "Machine: nn; Task: UnitTest"
 	g2diagnostic.SetObserverOrigin(ctx, origin)
 	result := g2diagnostic.GetObserverOrigin(ctx)
@@ -36,7 +36,7 @@ func ExampleG2diagnostic_GetObserverOrigin() {
 func ExampleG2diagnostic_CheckDBPerf() {
 	// For more information, visit https://github.com/senzing-garage/g2-sdk-go-grpc/blob/main/g2diagnostic/g2diagnostic_examples_test.go
 	ctx := context.TODO()
-	g2diagnostic := getG2Diagnostic(ctx)
+	g2diagnostic := getSzDiagnostic(ctx)
 	secondsToRun := 1
 	result, err := g2diagnostic.CheckDBPerf(ctx, secondsToRun)
 	if err != nil {
@@ -61,7 +61,7 @@ func ExampleG2diagnostic_Init() {
 	// For more information, visit https://github.com/senzing-garage/g2-sdk-go-grpc/blob/main/g2diagnostic/g2diagnostic_examples_test.go
 	ctx := context.TODO()
 	grpcConnection := getGrpcConnection()
-	g2diagnostic := &G2diagnostic{
+	g2diagnostic := &SzDiagnostic{
 		GrpcClient: g2pb.NewG2DiagnosticClient(grpcConnection),
 	}
 	moduleName := "Test module name"
@@ -78,7 +78,7 @@ func ExampleG2diagnostic_InitWithConfigID() {
 	// For more information, visit https://github.com/senzing-garage/g2-sdk-go-grpc/blob/main/g2diagnostic/g2diagnostic_examples_test.go
 	ctx := context.TODO()
 	grpcConnection := getGrpcConnection()
-	g2diagnostic := &G2diagnostic{
+	g2diagnostic := &SzDiagnostic{
 		GrpcClient: g2pb.NewG2DiagnosticClient(grpcConnection),
 	}
 	moduleName := "Test module name"
@@ -95,8 +95,8 @@ func ExampleG2diagnostic_InitWithConfigID() {
 func ExampleG2diagnostic_Reinit() {
 	// For more information, visit https://github.com/senzing-garage/g2-sdk-go-grpc/blob/main/g2diagnostic/g2diagnostic_examples_test.go
 	ctx := context.TODO()
-	g2diagnostic := getG2Diagnostic(ctx)
-	g2Configmgr := getG2Configmgr(ctx)
+	g2diagnostic := getSzDiagnostic(ctx)
+	g2Configmgr := getSzConfigManager(ctx)
 	initConfigID, _ := g2Configmgr.GetDefaultConfigID(ctx)
 	err := g2diagnostic.Reinit(ctx, initConfigID)
 	if err != nil {
@@ -108,7 +108,7 @@ func ExampleG2diagnostic_Reinit() {
 func ExampleG2diagnostic_PurgeRepository() {
 	// For more information, visit https://github.com/Senzing/g2-sdk-go-grpc/blob/main/g2engine/g2engine_examples_test.go
 	ctx := context.TODO()
-	g2diagnostic := getG2Diagnostic(ctx)
+	g2diagnostic := getSzDiagnostic(ctx)
 	err := g2diagnostic.PurgeRepository(ctx)
 	if err != nil {
 		fmt.Println(err)
@@ -119,7 +119,7 @@ func ExampleG2diagnostic_PurgeRepository() {
 func ExampleG2diagnostic_Destroy() {
 	// For more information, visit https://github.com/senzing-garage/g2-sdk-go-grpc/blob/main/g2diagnostic/g2diagnostic_examples_test.go
 	ctx := context.TODO()
-	g2diagnostic := getG2Diagnostic(ctx)
+	g2diagnostic := getSzDiagnostic(ctx)
 	err := g2diagnostic.Destroy(ctx)
 	if err != nil {
 		// This should produce a "senzing-60134001" error.

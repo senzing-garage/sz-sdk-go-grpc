@@ -11,21 +11,21 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/senzing-garage/g2-sdk-go-grpc/helper"
-	g2diagnosticapi "github.com/senzing-garage/g2-sdk-go/g2diagnostic"
-	g2pb "github.com/senzing-garage/g2-sdk-proto/go/g2diagnostic"
 	"github.com/senzing-garage/go-logging/logging"
 	"github.com/senzing-garage/go-observing/notifier"
 	"github.com/senzing-garage/go-observing/observer"
 	"github.com/senzing-garage/go-observing/subject"
+	"github.com/senzing-garage/sz-sdk-go-grpc/helper"
+	szdiagnosticapi "github.com/senzing-garage/sz-sdk-go/szdiagnostic"
+	szpb "github.com/senzing-garage/sz-sdk-proto/go/szdiagnostic"
 )
 
 // ----------------------------------------------------------------------------
 // Types
 // ----------------------------------------------------------------------------
 
-type G2diagnostic struct {
-	GrpcClient     g2pb.G2DiagnosticClient
+type SzDiagnostic struct {
+	GrpcClient     szpb.SzDiagnosticClient
 	isTrace        bool // Performance optimization
 	logger         logging.LoggingInterface
 	observerOrigin string
@@ -33,42 +33,11 @@ type G2diagnostic struct {
 }
 
 // ----------------------------------------------------------------------------
-// Internal methods
-// ----------------------------------------------------------------------------
-
-// --- Logging ----------------------------------------------------------------
-
-// Get the Logger singleton.
-func (client *G2diagnostic) getLogger() logging.LoggingInterface {
-	var err error = nil
-	if client.logger == nil {
-		options := []interface{}{
-			&logging.OptionCallerSkip{Value: 4},
-		}
-		client.logger, err = logging.NewSenzingSdkLogger(ComponentId, g2diagnosticapi.IdMessages, options...)
-		if err != nil {
-			panic(err)
-		}
-	}
-	return client.logger
-}
-
-// Trace method entry.
-func (client *G2diagnostic) traceEntry(errorNumber int, details ...interface{}) {
-	client.getLogger().Log(errorNumber, details...)
-}
-
-// Trace method exit.
-func (client *G2diagnostic) traceExit(errorNumber int, details ...interface{}) {
-	client.getLogger().Log(errorNumber, details...)
-}
-
-// ----------------------------------------------------------------------------
 // Interface methods
 // ----------------------------------------------------------------------------
 
 /*
-The CheckDBPerf method performs inserts to determine rate of insertion.
+The CheckDatabasePerformance method performs inserts to determine rate of insertion.
 
 Input
   - ctx: A context to control lifecycle.
@@ -79,7 +48,7 @@ Output
   - A string containing a JSON document.
     Example: `{"numRecordsInserted":0,"insertTime":0}`
 */
-func (client *G2diagnostic) CheckDBPerf(ctx context.Context, secondsToRun int) (string, error) {
+func (client *SzDiagnostic) CheckDatabasePerformance(ctx context.Context, secondsToRun int) (string, error) {
 	var err error = nil
 	var result string = ""
 	if client.isTrace {
@@ -87,10 +56,10 @@ func (client *G2diagnostic) CheckDBPerf(ctx context.Context, secondsToRun int) (
 		client.traceEntry(1, secondsToRun)
 		defer func() { client.traceExit(2, secondsToRun, result, err, time.Since(entryTime)) }()
 	}
-	request := g2pb.CheckDBPerfRequest{
+	request := szpb.CheckDatabasePerformanceRequest{
 		SecondsToRun: int32(secondsToRun),
 	}
-	response, err := client.GrpcClient.CheckDBPerf(ctx, &request)
+	response, err := client.GrpcClient.CheckDatabasePerformance(ctx, &request)
 	result = response.GetResult()
 	err = helper.ConvertGrpcError(err)
 	if client.observers != nil {
@@ -103,22 +72,18 @@ func (client *G2diagnostic) CheckDBPerf(ctx context.Context, secondsToRun int) (
 }
 
 /*
-The Destroy method will destroy and perform cleanup for the Senzing G2Diagnostic object.
-It should be called after all other calls are complete.
+The Destroy method is a Null function for sz-sdk-go-grpc.
 
 Input
   - ctx: A context to control lifecycle.
 */
-func (client *G2diagnostic) Destroy(ctx context.Context) error {
+func (client *SzDiagnostic) Destroy(ctx context.Context) error {
 	var err error = nil
 	if client.isTrace {
 		entryTime := time.Now()
 		client.traceEntry(7)
 		defer func() { client.traceExit(8, err, time.Since(entryTime)) }()
 	}
-	request := g2pb.DestroyRequest{}
-	_, err = client.GrpcClient.Destroy(ctx, &request)
-	err = helper.ConvertGrpcError(err)
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{}
@@ -129,113 +94,30 @@ func (client *G2diagnostic) Destroy(ctx context.Context) error {
 }
 
 /*
-The GetObserverOrigin method returns the "origin" value of past Observer messages.
+The Initialize method is a Null function for sz-sdk-go-grpc.
 
 Input
   - ctx: A context to control lifecycle.
-
-Output
-  - The value sent in the Observer's "origin" key/value pair.
-*/
-func (client *G2diagnostic) GetObserverOrigin(ctx context.Context) string {
-	return client.observerOrigin
-}
-
-/*
-The GetSdkId method returns the identifier of this particular Software Development Kit (SDK).
-It is handy when working with multiple implementations of the same G2diagnosticInterface.
-For this implementation, "grpc" is returned.
-
-Input
-  - ctx: A context to control lifecycle.
-*/
-func (client *G2diagnostic) GetSdkId(ctx context.Context) string {
-	var err error = nil
-	if client.isTrace {
-		entryTime := time.Now()
-		client.traceEntry(59)
-		defer func() { client.traceExit(60, err, time.Since(entryTime)) }()
-	}
-	if client.observers != nil {
-		go func() {
-			details := map[string]string{}
-			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentId, 8024, err, details)
-		}()
-	}
-	return "grpc"
-}
-
-/*
-The Init method initializes the Senzing G2Diagnosis object.
-It must be called prior to any other calls.
-
-Input
-  - ctx: A context to control lifecycle.
-  - moduleName: A name for the auditing node, to help identify it within system logs.
-  - iniParams: A JSON string containing configuration parameters.
+  - instanceName: A name for the auditing node, to help identify it within system logs.
+  - settings: A JSON string containing configuration parameters.
   - verboseLogging: A flag to enable deeper logging of the G2 processing. 0 for no Senzing logging; 1 for logging.
+  - configId: The configuration ID used for the initialization.
 */
-func (client *G2diagnostic) Init(ctx context.Context, moduleName string, iniParams string, verboseLogging int64) error {
+func (client *SzDiagnostic) Initialize(ctx context.Context, instanceName string, settings string, verboseLogging int64, configId int64) error {
 	var err error = nil
 	if client.isTrace {
 		entryTime := time.Now()
-		client.traceEntry(47, moduleName, iniParams, verboseLogging)
-		defer func() { client.traceExit(48, moduleName, iniParams, verboseLogging, err, time.Since(entryTime)) }()
-	}
-	request := g2pb.InitRequest{
-		ModuleName:     moduleName,
-		IniParams:      iniParams,
-		VerboseLogging: verboseLogging,
-	}
-	_, err = client.GrpcClient.Init(ctx, &request)
-	err = helper.ConvertGrpcError(err)
-	if client.observers != nil {
-		go func() {
-			details := map[string]string{
-				"iniParams":      iniParams,
-				"moduleName":     moduleName,
-				"verboseLogging": strconv.FormatInt(verboseLogging, 10),
-			}
-			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentId, 8021, err, details)
-		}()
-	}
-	return err
-}
-
-/*
-The InitWithConfigID method initializes the Senzing G2Diagnosis object with a non-default configuration ID.
-It must be called prior to any other calls.
-
-Input
-  - ctx: A context to control lifecycle.
-  - moduleName: A name for the auditing node, to help identify it within system logs.
-  - iniParams: A JSON string containing configuration parameters.
-  - initConfigID: The configuration ID used for the initialization.
-  - verboseLogging: A flag to enable deeper logging of the G2 processing. 0 for no Senzing logging; 1 for logging.
-*/
-func (client *G2diagnostic) InitWithConfigID(ctx context.Context, moduleName string, iniParams string, initConfigID int64, verboseLogging int64) error {
-	var err error = nil
-	if client.isTrace {
-		entryTime := time.Now()
-		client.traceEntry(49, moduleName, iniParams, initConfigID, verboseLogging)
+		client.traceEntry(49, instanceName, settings, configId, verboseLogging)
 		defer func() {
-			client.traceExit(50, moduleName, iniParams, initConfigID, verboseLogging, err, time.Since(entryTime))
+			client.traceExit(50, instanceName, settings, configId, verboseLogging, err, time.Since(entryTime))
 		}()
 	}
-	request := g2pb.InitWithConfigIDRequest{
-		ModuleName:     moduleName,
-		IniParams:      iniParams,
-		InitConfigID:   initConfigID,
-		VerboseLogging: verboseLogging,
-	}
-	_, err = client.GrpcClient.InitWithConfigID(ctx, &request)
-	err = helper.ConvertGrpcError(err)
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{
-				"iniParams":      iniParams,
-				"initConfigID":   strconv.FormatInt(initConfigID, 10),
-				"moduleName":     moduleName,
+				"iniParams":      settings,
+				"initConfigID":   strconv.FormatInt(configId, 10),
+				"moduleName":     instanceName,
 				"verboseLogging": strconv.FormatInt(verboseLogging, 10),
 			}
 			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentId, 8022, err, details)
@@ -254,14 +136,14 @@ MUST be destroyed or shutdown.
 Input
   - ctx: A context to control lifecycle.
 */
-func (client *G2diagnostic) PurgeRepository(ctx context.Context) error {
+func (client *SzDiagnostic) PurgeRepository(ctx context.Context) error {
 	var err error = nil
 	if client.isTrace {
 		entryTime := time.Now()
 		client.traceEntry(117)
 		defer func() { client.traceExit(118, err, time.Since(entryTime)) }()
 	}
-	request := g2pb.PurgeRepositoryRequest{}
+	request := szpb.PurgeRepositoryRequest{}
 	_, err = client.GrpcClient.PurgeRepository(ctx, &request)
 	err = helper.ConvertGrpcError(err)
 	if client.observers != nil {
@@ -274,13 +156,108 @@ func (client *G2diagnostic) PurgeRepository(ctx context.Context) error {
 }
 
 /*
+The Initialize method is a Null function for sz-sdk-go-grpc.
+
+Input
+  - ctx: A context to control lifecycle.
+  - configId: The configuration ID used for the initialization.
+*/
+func (client *SzDiagnostic) Reinitialize(ctx context.Context, configId int64) error {
+	var err error = nil
+	if client.isTrace {
+		entryTime := time.Now()
+		client.traceEntry(51, configId)
+		defer func() { client.traceExit(52, configId, err, time.Since(entryTime)) }()
+	}
+	if client.observers != nil {
+		go func() {
+			details := map[string]string{
+				"initConfigID": strconv.FormatInt(configId, 10),
+			}
+			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentId, 8023, err, details)
+		}()
+	}
+	return err
+}
+
+// ----------------------------------------------------------------------------
+// Internal methods
+// ----------------------------------------------------------------------------
+
+// --- Logging ----------------------------------------------------------------
+
+// Get the Logger singleton.
+func (client *SzDiagnostic) getLogger() logging.LoggingInterface {
+	var err error = nil
+	if client.logger == nil {
+		options := []interface{}{
+			&logging.OptionCallerSkip{Value: 4},
+		}
+		client.logger, err = logging.NewSenzingSdkLogger(ComponentId, szdiagnosticapi.IdMessages, options...)
+		if err != nil {
+			panic(err)
+		}
+	}
+	return client.logger
+}
+
+// Trace method entry.
+func (client *SzDiagnostic) traceEntry(errorNumber int, details ...interface{}) {
+	client.getLogger().Log(errorNumber, details...)
+}
+
+// Trace method exit.
+func (client *SzDiagnostic) traceExit(errorNumber int, details ...interface{}) {
+	client.getLogger().Log(errorNumber, details...)
+}
+
+// --- Observer ---------------------------------------------------------------
+
+/*
+The GetObserverOrigin method returns the "origin" value of past Observer messages.
+
+Input
+  - ctx: A context to control lifecycle.
+
+Output
+  - The value sent in the Observer's "origin" key/value pair.
+*/
+func (client *SzDiagnostic) GetObserverOrigin(ctx context.Context) string {
+	return client.observerOrigin
+}
+
+/*
+The GetSdkId method returns the identifier of this particular Software Development Kit (SDK).
+It is handy when working with multiple implementations of the same G2diagnosticInterface.
+For this implementation, "grpc" is returned.
+
+Input
+  - ctx: A context to control lifecycle.
+*/
+func (client *SzDiagnostic) GetSdkId(ctx context.Context) string {
+	var err error = nil
+	if client.isTrace {
+		entryTime := time.Now()
+		client.traceEntry(59)
+		defer func() { client.traceExit(60, err, time.Since(entryTime)) }()
+	}
+	if client.observers != nil {
+		go func() {
+			details := map[string]string{}
+			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentId, 8024, err, details)
+		}()
+	}
+	return "grpc"
+}
+
+/*
 The RegisterObserver method adds the observer to the list of observers notified.
 
 Input
   - ctx: A context to control lifecycle.
   - observer: The observer to be added.
 */
-func (client *G2diagnostic) RegisterObserver(ctx context.Context, observer observer.Observer) error {
+func (client *SzDiagnostic) RegisterObserver(ctx context.Context, observer observer.Observer) error {
 	var err error = nil
 	if client.isTrace {
 		entryTime := time.Now()
@@ -303,43 +280,13 @@ func (client *G2diagnostic) RegisterObserver(ctx context.Context, observer obser
 }
 
 /*
-The Reinit method re-initializes the Senzing G2Diagnosis object.
-
-Input
-  - ctx: A context to control lifecycle.
-  - initConfigID: The configuration ID used for the initialization.
-*/
-func (client *G2diagnostic) Reinit(ctx context.Context, initConfigID int64) error {
-	var err error = nil
-	if client.isTrace {
-		entryTime := time.Now()
-		client.traceEntry(51, initConfigID)
-		defer func() { client.traceExit(52, initConfigID, err, time.Since(entryTime)) }()
-	}
-	request := g2pb.ReinitRequest{
-		InitConfigID: initConfigID,
-	}
-	_, err = client.GrpcClient.Reinit(ctx, &request)
-	err = helper.ConvertGrpcError(err)
-	if client.observers != nil {
-		go func() {
-			details := map[string]string{
-				"initConfigID": strconv.FormatInt(initConfigID, 10),
-			}
-			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentId, 8023, err, details)
-		}()
-	}
-	return err
-}
-
-/*
 The SetLogLevel method sets the level of logging.
 
 Input
   - ctx: A context to control lifecycle.
   - logLevelName: The desired log level. TRACE, DEBUG, INFO, WARN, ERROR, FATAL or PANIC.
 */
-func (client *G2diagnostic) SetLogLevel(ctx context.Context, logLevelName string) error {
+func (client *SzDiagnostic) SetLogLevel(ctx context.Context, logLevelName string) error {
 	var err error = nil
 	if client.isTrace {
 		entryTime := time.Now()
@@ -369,7 +316,7 @@ Input
   - ctx: A context to control lifecycle.
   - origin: The value sent in the Observer's "origin" key/value pair.
 */
-func (client *G2diagnostic) SetObserverOrigin(ctx context.Context, origin string) {
+func (client *SzDiagnostic) SetObserverOrigin(ctx context.Context, origin string) {
 	client.observerOrigin = origin
 }
 
@@ -380,7 +327,7 @@ Input
   - ctx: A context to control lifecycle.
   - observer: The observer to be added.
 */
-func (client *G2diagnostic) UnregisterObserver(ctx context.Context, observer observer.Observer) error {
+func (client *SzDiagnostic) UnregisterObserver(ctx context.Context, observer observer.Observer) error {
 	var err error = nil
 	if client.isTrace {
 		entryTime := time.Now()
