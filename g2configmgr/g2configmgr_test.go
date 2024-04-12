@@ -19,7 +19,7 @@ import (
 	g2configpb "github.com/senzing-garage/g2-sdk-proto/go/g2config"
 	g2pb "github.com/senzing-garage/g2-sdk-proto/go/g2configmgr"
 	g2enginepb "github.com/senzing-garage/g2-sdk-proto/go/g2engine"
-	"github.com/senzing-garage/go-common/truthset"
+	"github.com/senzing-garage/go-helpers/truthset"
 	"github.com/senzing-garage/go-logging/logging"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc"

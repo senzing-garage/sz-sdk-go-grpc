@@ -19,7 +19,7 @@ import (
 	g2diagnosticpb "github.com/senzing-garage/g2-sdk-proto/go/g2diagnostic"
 	g2enginepb "github.com/senzing-garage/g2-sdk-proto/go/g2engine"
 	g2productpb "github.com/senzing-garage/g2-sdk-proto/go/g2product"
-	"github.com/senzing-garage/go-common/truthset"
+	"github.com/senzing-garage/go-helpers/truthset"
 	"github.com/senzing-garage/go-logging/logging"
 	"github.com/senzing-garage/go-observing/observer"
 	"github.com/senzing-garage/go-observing/observerpb"
