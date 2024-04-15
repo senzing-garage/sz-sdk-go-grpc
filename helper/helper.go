@@ -7,7 +7,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/senzing-garage/g2-sdk-go/g2error"
+	"github.com/senzing-garage/sz-sdk-go/szerror"
 )
 
 // ----------------------------------------------------------------------------
@@ -68,5 +68,5 @@ func ConvertGrpcError(originalError error) error {
 			}
 		}
 	}
-	return g2error.Convert(result)
+	return szerror.Convert(result)
 }

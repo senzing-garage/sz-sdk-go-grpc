@@ -43,6 +43,8 @@ func getGrpcConnection() *grpc.ClientConn {
 }
 
 func getTestObject(ctx context.Context, test *testing.T) *SzConfig {
+	_ = ctx
+	_ = test
 	if szConfigSingleton == nil {
 		grpcConnection := getGrpcConnection()
 		szConfigSingleton = &SzConfig{
@@ -53,6 +55,7 @@ func getTestObject(ctx context.Context, test *testing.T) *SzConfig {
 }
 
 func getSzConfig(ctx context.Context) *SzConfig {
+	_ = ctx
 	if szConfigSingleton == nil {
 		grpcConnection := getGrpcConnection()
 		szConfigSingleton = &SzConfig{
@@ -76,14 +79,14 @@ func printActual(test *testing.T, actual interface{}) {
 	printResult(test, "Actual", actual)
 }
 
-func testError(test *testing.T, ctx context.Context, err error) {
+func testError(test *testing.T, err error) {
 	if err != nil {
 		test.Log("Error:", err.Error())
 		assert.FailNow(test, err.Error())
 	}
 }
 
-func expectError(test *testing.T, ctx context.Context, err error, messageId string) {
+func expectError(test *testing.T, err error, messageId string) {
 	if err != nil {
 		errorMessage := err.Error()[strings.Index(err.Error(), "{"):]
 		var dictionary map[string]interface{}
@@ -149,48 +152,48 @@ func TestSzConfig_AddDataSource(test *testing.T) {
 	ctx := context.TODO()
 	szConfig := getTestObject(ctx, test)
 	configHandle, err := szConfig.CreateConfig(ctx)
-	testError(test, ctx, err)
+	testError(test, err)
 	dataSourceCode := "GO_TEST"
 	actual, err := szConfig.AddDataSource(ctx, configHandle, dataSourceCode)
-	testError(test, ctx, err)
+	testError(test, err)
 	printActual(test, actual)
 	err = szConfig.CloseConfig(ctx, configHandle)
-	testError(test, ctx, err)
+	testError(test, err)
 }
 
 func TestSzConfig_AddDataSource_withLoad(test *testing.T) {
 	ctx := context.TODO()
 	szConfig := getTestObject(ctx, test)
 	configHandle, err := szConfig.CreateConfig(ctx)
-	testError(test, ctx, err)
+	testError(test, err)
 	configDefinition, err := szConfig.ExportConfig(ctx, configHandle)
-	testError(test, ctx, err)
+	testError(test, err)
 	err = szConfig.CloseConfig(ctx, configHandle)
-	testError(test, ctx, err)
+	testError(test, err)
 	configHandle2, err := szConfig.ImportConfig(ctx, configDefinition)
-	testError(test, ctx, err)
+	testError(test, err)
 	inputJson := "GO_TEST"
 	actual, err := szConfig.AddDataSource(ctx, configHandle2, inputJson)
-	testError(test, ctx, err)
+	testError(test, err)
 	printActual(test, actual)
 	err = szConfig.CloseConfig(ctx, configHandle2)
-	testError(test, ctx, err)
+	testError(test, err)
 }
 
 func TestSzConfig_Close(test *testing.T) {
 	ctx := context.TODO()
 	szConfig := getTestObject(ctx, test)
 	configHandle, err := szConfig.CreateConfig(ctx)
-	testError(test, ctx, err)
+	testError(test, err)
 	err = szConfig.CloseConfig(ctx, configHandle)
-	testError(test, ctx, err)
+	testError(test, err)
 }
 
 func TestSzConfig_Create(test *testing.T) {
 	ctx := context.TODO()
 	szConfig := getTestObject(ctx, test)
 	actual, err := szConfig.CreateConfig(ctx)
-	testError(test, ctx, err)
+	testError(test, err)
 	printActual(test, actual)
 }
 
@@ -198,75 +201,75 @@ func TestSzConfig_DeleteDataSource(test *testing.T) {
 	ctx := context.TODO()
 	szConfig := getTestObject(ctx, test)
 	configHandle, err := szConfig.CreateConfig(ctx)
-	testError(test, ctx, err)
+	testError(test, err)
 	actual, err := szConfig.GetDataSources(ctx, configHandle)
-	testError(test, ctx, err)
+	testError(test, err)
 	printResult(test, "Original", actual)
 	dataSourceCode := "GO_TEST"
 	_, err = szConfig.AddDataSource(ctx, configHandle, dataSourceCode)
-	testError(test, ctx, err)
+	testError(test, err)
 	actual, err = szConfig.GetDataSources(ctx, configHandle)
-	testError(test, ctx, err)
+	testError(test, err)
 	printResult(test, "     Add", actual)
 	err = szConfig.DeleteDataSource(ctx, configHandle, dataSourceCode)
-	testError(test, ctx, err)
+	testError(test, err)
 	actual, err = szConfig.GetDataSources(ctx, configHandle)
-	testError(test, ctx, err)
+	testError(test, err)
 	printResult(test, "  Delete", actual)
 	err = szConfig.CloseConfig(ctx, configHandle)
-	testError(test, ctx, err)
+	testError(test, err)
 }
 
 func TestSzConfig_DeleteDataSource_withLoad(test *testing.T) {
 	ctx := context.TODO()
 	szConfig := getTestObject(ctx, test)
 	configHandle, err := szConfig.CreateConfig(ctx)
-	testError(test, ctx, err)
+	testError(test, err)
 	actual, err := szConfig.GetDataSources(ctx, configHandle)
-	testError(test, ctx, err)
+	testError(test, err)
 	printResult(test, "Original", actual)
 	dataSourceCode := "GO_TEST"
 	_, err = szConfig.AddDataSource(ctx, configHandle, dataSourceCode)
-	testError(test, ctx, err)
+	testError(test, err)
 	actual, err = szConfig.GetDataSources(ctx, configHandle)
-	testError(test, ctx, err)
+	testError(test, err)
 	printResult(test, "     Add", actual)
 	configDefinition, err := szConfig.ExportConfig(ctx, configHandle)
-	testError(test, ctx, err)
+	testError(test, err)
 	err = szConfig.CloseConfig(ctx, configHandle)
-	testError(test, ctx, err)
+	testError(test, err)
 	configHandle2, err := szConfig.ImportConfig(ctx, configDefinition)
-	testError(test, ctx, err)
+	testError(test, err)
 	err = szConfig.DeleteDataSource(ctx, configHandle2, dataSourceCode)
-	testError(test, ctx, err)
+	testError(test, err)
 	actual, err = szConfig.GetDataSources(ctx, configHandle2)
-	testError(test, ctx, err)
+	testError(test, err)
 	printResult(test, "  Delete", actual)
 	err = szConfig.CloseConfig(ctx, configHandle2)
-	testError(test, ctx, err)
+	testError(test, err)
 }
 
 func TestSzConfig_GetDataSources(test *testing.T) {
 	ctx := context.TODO()
 	szConfig := getTestObject(ctx, test)
 	configHandle, err := szConfig.CreateConfig(ctx)
-	testError(test, ctx, err)
+	testError(test, err)
 	actual, err := szConfig.GetDataSources(ctx, configHandle)
-	testError(test, ctx, err)
+	testError(test, err)
 	printActual(test, actual)
 	err = szConfig.CloseConfig(ctx, configHandle)
-	testError(test, ctx, err)
+	testError(test, err)
 }
 
 func TestSzConfig_ImportConfig(test *testing.T) {
 	ctx := context.TODO()
 	szConfig := getTestObject(ctx, test)
 	configHandle, err := szConfig.CreateConfig(ctx)
-	testError(test, ctx, err)
+	testError(test, err)
 	configDefinition, err := szConfig.ExportConfig(ctx, configHandle)
-	testError(test, ctx, err)
+	testError(test, err)
 	actual, err := szConfig.ImportConfig(ctx, configDefinition)
-	testError(test, ctx, err)
+	testError(test, err)
 	printActual(test, actual)
 }
 
@@ -274,9 +277,9 @@ func TestSzConfig_ExportConfig(test *testing.T) {
 	ctx := context.TODO()
 	szConfig := getTestObject(ctx, test)
 	configHandle, err := szConfig.CreateConfig(ctx)
-	testError(test, ctx, err)
+	testError(test, err)
 	actual, err := szConfig.ExportConfig(ctx, configHandle)
-	testError(test, ctx, err)
+	testError(test, err)
 	printActual(test, actual)
 }
 
@@ -287,12 +290,12 @@ func TestSzConfig_Initialize(test *testing.T) {
 	verboseLogging := int64(0)
 	settings := "{}"
 	err := szConfig.Initialize(ctx, instanceName, settings, verboseLogging)
-	expectError(test, ctx, err, "senzing-60114002")
+	expectError(test, err, "senzing-60114002")
 }
 
 func TestSzConfig_Destroy(test *testing.T) {
 	ctx := context.TODO()
 	szConfig := getTestObject(ctx, test)
 	err := szConfig.Destroy(ctx)
-	expectError(test, ctx, err, "senzing-60114001")
+	expectError(test, err, "senzing-60114001")
 }

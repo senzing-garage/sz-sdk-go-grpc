@@ -13,13 +13,11 @@ import (
 	truncator "github.com/aquilax/truncate"
 	"github.com/senzing-garage/go-logging/logging"
 	"github.com/senzing-garage/sz-sdk-go-grpc/szconfig"
-	"github.com/senzing-garage/sz-sdk-go-grpc/szengine"
 	"github.com/senzing-garage/sz-sdk-go/sz"
 	szconfigmanagerapi "github.com/senzing-garage/sz-sdk-go/szconfigmanager"
 	"github.com/senzing-garage/sz-sdk-go/szerror"
 	szconfigpb "github.com/senzing-garage/sz-sdk-proto/go/szconfig"
 	szpb "github.com/senzing-garage/sz-sdk-proto/go/szconfigmanager"
-	szenginepb "github.com/senzing-garage/sz-sdk-proto/go/szengine"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
@@ -36,7 +34,6 @@ var (
 	localLogger              logging.LoggingInterface
 	szConfigManagerSingleton *SzConfigManager
 	szConfigSingleton        sz.SzConfig
-	szEngineSingleton        sz.SzEngine
 )
 
 // ----------------------------------------------------------------------------
@@ -59,10 +56,12 @@ func getGrpcConnection() *grpc.ClientConn {
 }
 
 func getTestObject(ctx context.Context, test *testing.T) *SzConfigManager {
+	_ = test
 	return getSzConfigManager(ctx)
 }
 
 func getSzConfig(ctx context.Context) sz.SzConfig {
+	_ = ctx
 	if szConfigSingleton == nil {
 		grpcConnection := getGrpcConnection()
 		szConfigSingleton = &szconfig.SzConfig{
@@ -73,6 +72,7 @@ func getSzConfig(ctx context.Context) sz.SzConfig {
 }
 
 func getSzConfigManager(ctx context.Context) *SzConfigManager {
+	_ = ctx
 	if szConfigManagerSingleton == nil {
 		grpcConnection := getGrpcConnection()
 		szConfigManagerSingleton = &SzConfigManager{
@@ -80,16 +80,6 @@ func getSzConfigManager(ctx context.Context) *SzConfigManager {
 		}
 	}
 	return szConfigManagerSingleton
-}
-
-func getSzEngine(ctx context.Context) sz.SzEngine {
-	if szEngineSingleton == nil {
-		grpcConnection := getGrpcConnection()
-		szEngineSingleton = &szengine.SzEngine{
-			GrpcClient: szenginepb.NewSzEngineClient(grpcConnection),
-		}
-	}
-	return szEngineSingleton
 }
 
 func truncate(aString string, length int) string {
@@ -106,14 +96,14 @@ func printActual(test *testing.T, actual interface{}) {
 	printResult(test, "Actual", actual)
 }
 
-func testError(test *testing.T, ctx context.Context, err error) {
+func testError(test *testing.T, err error) {
 	if err != nil {
 		test.Log("Error:", err.Error())
 		assert.FailNow(test, err.Error())
 	}
 }
 
-func expectError(test *testing.T, ctx context.Context, err error, messageId string) {
+func expectError(test *testing.T, err error, messageId string) {
 	if err != nil {
 		errorMessage := err.Error()[strings.Index(err.Error(), "{"):]
 		var dictionary map[string]interface{}
@@ -265,7 +255,7 @@ func TestSzConfigManager_AddConfig(test *testing.T) {
 	}
 	configComment := fmt.Sprintf("szconfigmanager_test at %s", now.UTC())
 	actual, err := szConfigManager.AddConfig(ctx, configDefinition, configComment)
-	testError(test, ctx, err)
+	testError(test, err)
 	printActual(test, actual)
 }
 
@@ -278,7 +268,7 @@ func TestSzConfigManager_GetConfig(test *testing.T) {
 		assert.FailNow(test, "szConfigManager.GetDefaultConfigId()")
 	}
 	actual, err := szConfigManager.GetConfig(ctx, configID)
-	testError(test, ctx, err)
+	testError(test, err)
 	printActual(test, actual)
 }
 
@@ -286,7 +276,7 @@ func TestSzConfigManager_GetConfigList(test *testing.T) {
 	ctx := context.TODO()
 	szConfigManager := getTestObject(ctx, test)
 	actual, err := szConfigManager.GetConfigList(ctx)
-	testError(test, ctx, err)
+	testError(test, err)
 	printActual(test, actual)
 }
 
@@ -294,7 +284,7 @@ func TestSzConfigManager_GetDefaultConfigID(test *testing.T) {
 	ctx := context.TODO()
 	szConfigManager := getTestObject(ctx, test)
 	actual, err := szConfigManager.GetDefaultConfigId(ctx)
-	testError(test, ctx, err)
+	testError(test, err)
 	printActual(test, actual)
 }
 
@@ -316,7 +306,7 @@ func TestSzConfigManager_ReplaceDefaultConfigID(test *testing.T) {
 	}
 
 	err := szConfigManager.ReplaceDefaultConfigId(ctx, currentDefaultConfigId, newDefaultConfigId)
-	testError(test, ctx, err)
+	testError(test, err)
 }
 
 func TestSzConfigManager_SetDefaultConfigId(test *testing.T) {
@@ -328,7 +318,7 @@ func TestSzConfigManager_SetDefaultConfigId(test *testing.T) {
 		assert.FailNow(test, "szConfigManager.GetDefaultConfigId()")
 	}
 	err := szConfigManager.SetDefaultConfigId(ctx, configId)
-	testError(test, ctx, err)
+	testError(test, err)
 }
 
 func TestSzConfigManager_Init(test *testing.T) {
@@ -338,12 +328,12 @@ func TestSzConfigManager_Init(test *testing.T) {
 	verboseLogging := sz.SZ_NO_LOGGING
 	settings := "{}"
 	err := szConfigManager.Initialize(ctx, instanceName, settings, verboseLogging)
-	expectError(test, ctx, err, "senzing-60124002")
+	expectError(test, err, "senzing-60124002")
 }
 
 func TestSzConfigManager_Destroy(test *testing.T) {
 	ctx := context.TODO()
 	szConfigManager := getTestObject(ctx, test)
 	err := szConfigManager.Destroy(ctx)
-	expectError(test, ctx, err, "senzing-60124001")
+	expectError(test, err, "senzing-60124001")
 }

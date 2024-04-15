@@ -125,14 +125,14 @@ func teardown() error {
 // Test interface functions
 // ----------------------------------------------------------------------------
 
-func TestG2product_SetObserverOrigin(test *testing.T) {
+func TestSzProduct_SetObserverOrigin(test *testing.T) {
 	ctx := context.TODO()
 	szProduct := getTestObject(ctx, test)
 	origin := "Machine: nn; Task: UnitTest"
 	szProduct.SetObserverOrigin(ctx, origin)
 }
 
-func TestG2product_GetObserverOrigin(test *testing.T) {
+func TestSzProduct_GetObserverOrigin(test *testing.T) {
 	ctx := context.TODO()
 	szProduct := getTestObject(ctx, test)
 	origin := "Machine: nn; Task: UnitTest"
@@ -141,7 +141,7 @@ func TestG2product_GetObserverOrigin(test *testing.T) {
 	assert.Equal(test, origin, actual)
 }
 
-func TestG2product_Initialize(test *testing.T) {
+func TestSzProduct_Initialize(test *testing.T) {
 	ctx := context.TODO()
 	szProduct := getSzProduct(ctx)
 	moduleName := "Test module name"
@@ -151,7 +151,7 @@ func TestG2product_Initialize(test *testing.T) {
 	expectError(test, err, "senzing-60164002")
 }
 
-func TestG2product_GetLicense(test *testing.T) {
+func TestSzProduct_GetLicense(test *testing.T) {
 	ctx := context.TODO()
 	szProduct := getTestObject(ctx, test)
 	actual, err := szProduct.GetLicense(ctx)
@@ -159,7 +159,7 @@ func TestG2product_GetLicense(test *testing.T) {
 	printActual(test, actual)
 }
 
-func TestG2product_GetVersion(test *testing.T) {
+func TestSzProduct_GetVersion(test *testing.T) {
 	ctx := context.TODO()
 	szProduct := getTestObject(ctx, test)
 	actual, err := szProduct.GetVersion(ctx)
@@ -167,7 +167,7 @@ func TestG2product_GetVersion(test *testing.T) {
 	printActual(test, actual)
 }
 
-func TestG2product_Destroy(test *testing.T) {
+func TestSzProduct_Destroy(test *testing.T) {
 	ctx := context.TODO()
 	szProduct := getTestObject(ctx, test)
 	err := szProduct.Destroy(ctx)

@@ -228,7 +228,7 @@ func (client *SzDiagnostic) GetObserverOrigin(ctx context.Context) string {
 
 /*
 The GetSdkId method returns the identifier of this particular Software Development Kit (SDK).
-It is handy when working with multiple implementations of the same G2diagnosticInterface.
+It is handy when working with multiple implementations of the same SzDiagnostic Interface.
 For this implementation, "grpc" is returned.
 
 Input

@@ -1,1 +1,1 @@
-# g2-sdk-go-grpc examples
+# sz-sdk-go-grpc examples

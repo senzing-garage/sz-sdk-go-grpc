@@ -63,10 +63,12 @@ func getGrpcConnection() *grpc.ClientConn {
 }
 
 func getTestObject(ctx context.Context, test *testing.T) *SzDiagnostic {
+	_ = test
 	return getSzDiagnostic(ctx)
 }
 
 func getSzConfig(ctx context.Context) sz.SzConfig {
+	_ = ctx
 	if szConfigSingleton == nil {
 		grpcConnection := getGrpcConnection()
 		szConfigSingleton = &szconfig.SzConfig{
@@ -77,6 +79,7 @@ func getSzConfig(ctx context.Context) sz.SzConfig {
 }
 
 func getSzConfigManager(ctx context.Context) sz.SzConfigManager {
+	_ = ctx
 	if szConfigManagerSingleton == nil {
 		grpcConnection := getGrpcConnection()
 		szConfigManagerSingleton = &szconfigmanager.SzConfigManager{
@@ -87,6 +90,7 @@ func getSzConfigManager(ctx context.Context) sz.SzConfigManager {
 }
 
 func getSzDiagnostic(ctx context.Context) *SzDiagnostic {
+	_ = ctx
 	if szDiagnosticSingleton == nil {
 		grpcConnection := getGrpcConnection()
 		szDiagnosticSingleton = &SzDiagnostic{
@@ -97,10 +101,11 @@ func getSzDiagnostic(ctx context.Context) *SzDiagnostic {
 }
 
 func getSzEngine(ctx context.Context) sz.SzEngine {
+	_ = ctx
 	if szEngineSingleton == nil {
 		grpcConnection := getGrpcConnection()
-		szEngineSingleton = &szengine.G2engine{
-			GrpcClient: szenginepb.NewG2EngineClient(grpcConnection),
+		szEngineSingleton = &szengine.SzEngine{
+			GrpcClient: szenginepb.NewSzEngineClient(grpcConnection),
 		}
 	}
 	return szEngineSingleton
@@ -120,14 +125,14 @@ func printActual(test *testing.T, actual interface{}) {
 	printResult(test, "Actual", actual)
 }
 
-func testError(test *testing.T, ctx context.Context, err error) {
+func testError(test *testing.T, err error) {
 	if err != nil {
 		test.Log("Error:", err.Error())
 		assert.FailNow(test, err.Error())
 	}
 }
 
-func expectError(test *testing.T, ctx context.Context, err error, messageId string) {
+func expectError(test *testing.T, err error, messageId string) {
 	if err != nil {
 		errorMessage := err.Error()[strings.Index(err.Error(), "{"):]
 		var dictionary map[string]interface{}
@@ -141,7 +146,7 @@ func expectError(test *testing.T, ctx context.Context, err error, messageId stri
 	}
 }
 
-func testErrorNoFail(test *testing.T, ctx context.Context, err error) {
+func testErrorNoFail(test *testing.T, err error) {
 	if err != nil {
 		test.Log("Error:", err.Error())
 	}
@@ -305,7 +310,7 @@ func TestSzDiagnostic_CheckDatabasePerformance(test *testing.T) {
 	szDiagnostic := getTestObject(ctx, test)
 	secondsToRun := 1
 	actual, err := szDiagnostic.CheckDatabasePerformance(ctx, secondsToRun)
-	testError(test, ctx, err)
+	testError(test, err)
 	printActual(test, actual)
 }
 
@@ -320,7 +325,7 @@ func TestSzDiagnostic_Initialize(test *testing.T) {
 	verboseLogging := sz.SZ_NO_LOGGING
 	configId := sz.SZ_INITIALIZE_WITH_DEFAULT_CONFIGURATION
 	err := szDiagnostic.Initialize(ctx, instanceName, settings, verboseLogging, configId)
-	expectError(test, ctx, err, "senzing-60134002")
+	expectError(test, err, "senzing-60134002")
 }
 
 func TestSzDiagnostic_Reinit(test *testing.T) {
@@ -328,15 +333,15 @@ func TestSzDiagnostic_Reinit(test *testing.T) {
 	szDiagnostic := getTestObject(ctx, test)
 	szConfigManager := getSzConfigManager(ctx)
 	configId, err := szConfigManager.GetDefaultConfigId(ctx)
-	testError(test, ctx, err)
+	testError(test, err)
 	err = szDiagnostic.Reinitialize(ctx, configId)
-	testErrorNoFail(test, ctx, err)
+	testErrorNoFail(test, err)
 }
 
 func TestSzDiagnostic_Destroy(test *testing.T) {
 	ctx := context.TODO()
 	szDiagnostic := getTestObject(ctx, test)
 	err := szDiagnostic.Destroy(ctx)
-	expectError(test, ctx, err, "senzing-60134001")
+	expectError(test, err, "senzing-60134001")
 	szDiagnosticSingleton = nil
 }

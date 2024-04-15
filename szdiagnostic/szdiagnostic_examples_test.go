@@ -33,7 +33,7 @@ func ExampleSzDiagnostic_GetObserverOrigin() {
 	// Output: Machine: nn; Task: UnitTest
 }
 
-func ExampleSzDiagnostic_CheckDBPerf() {
+func ExampleSzDiagnostic_CheckDatabasePerformance() {
 	// For more information, visit https://github.com/senzing-garage/sz-sdk-go-grpc/blob/main/szdiagnostic/szdiagnostic_examples_test.go
 	ctx := context.TODO()
 	szDiagnostic := getSzDiagnostic(ctx)
@@ -58,7 +58,7 @@ func ExampleSzDiagnostic_SetLogLevel() {
 }
 
 func ExampleSzDiagnostic_PurgeRepository() {
-	// For more information, visit https://github.com/Senzing/g2-sdk-go-grpc/blob/main/g2engine/g2engine_examples_test.go
+	// For more information, visit https://github.com/Senzing/sz-sdk-go-grpc/blob/main/szdiagnostic/szdiagnostic_examples_test.go
 	ctx := context.TODO()
 	szDiagnostic := getSzDiagnostic(ctx)
 	err := szDiagnostic.PurgeRepository(ctx)

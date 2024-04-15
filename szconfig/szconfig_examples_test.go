@@ -50,7 +50,7 @@ func ExampleSzConfig_AddDataSource() {
 	// Output: {"DSRC_ID":1001}
 }
 
-func ExampleSzConfig_Close() {
+func ExampleSzConfig_CloseConfig() {
 	// For more information, visit https://github.com/senzing-garage/sz-sdk-go-grpc/blob/main/szconfig/szconfig_examples_test.go
 	ctx := context.TODO()
 	szConfig := getSzConfig(ctx)
