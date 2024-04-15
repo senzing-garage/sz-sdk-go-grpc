@@ -465,7 +465,7 @@ func TestSzEngine_ExportJsonEntityReportIterator(test *testing.T) {
 	assert.Equal(test, 1, actualCount)
 }
 
-func TestSzEngine_FindNetworkByEntityIid(test *testing.T) {
+func TestSzEngine_FindNetworkByEntityId(test *testing.T) {
 	ctx := context.TODO()
 	szEngine := getTestObject(ctx, test)
 	record1 := truthset.CustomerRecords["1001"]
@@ -673,6 +673,10 @@ func TestSzEngine_PrimeEngine(test *testing.T) {
 	testError(test, err)
 }
 
+func TestSzEngine_ProcessRedoRecord(test *testing.T) {
+	// TODO: Write TestSzEngine_ProcessRedoRecord
+}
+
 func TestSzEngine_ReevaluateEntity(test *testing.T) {
 	ctx := context.TODO()
 	szEngine := getTestObject(ctx, test)
@@ -749,6 +753,14 @@ func TestSzEngine_SearchByAttributes(test *testing.T) {
 	actual, err := szEngine.SearchByAttributes(ctx, attributes, searchProfile, flags)
 	testError(test, err)
 	printActual(test, actual)
+}
+
+func TestSzEngine_StreamExportCsvEntityReport(test *testing.T) {
+	// TODO: Write TestSzEngine_StreamExportCsvEntityReport
+}
+
+func TestSzEngine_StreamExportJsonEntityReport(test *testing.T) {
+	// TODO: Write TestSzEngine_StreamExportJsonEntityReport
 }
 
 func TestSzEngine_WhyEntities(test *testing.T) {

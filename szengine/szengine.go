@@ -428,7 +428,7 @@ Input
   - exportHandle: A handle created by ExportJsonEntityReport() or ExportCsvEntityReport().
 
 Output
-  - TODO:
+  - TODO: Determine output
 */
 func (client *SzEngine) FetchNext(ctx context.Context, exportHandle uintptr) (string, error) {
 	var err error = nil
@@ -915,7 +915,7 @@ func (client *SzEngine) GetStats(ctx context.Context) (string, error) {
 }
 
 /*
-TODO: Fix description.
+TODO: Write description.
 The GetVirtualEntityByRecordId method...
 
 Input

@@ -180,7 +180,7 @@ func TestSzConfig_AddDataSource_withLoad(test *testing.T) {
 	testError(test, err)
 }
 
-func TestSzConfig_Close(test *testing.T) {
+func TestSzConfig_CloseConfig(test *testing.T) {
 	ctx := context.TODO()
 	szConfig := getTestObject(ctx, test)
 	configHandle, err := szConfig.CreateConfig(ctx)
@@ -189,7 +189,7 @@ func TestSzConfig_Close(test *testing.T) {
 	testError(test, err)
 }
 
-func TestSzConfig_Create(test *testing.T) {
+func TestSzConfig_CreateConfig(test *testing.T) {
 	ctx := context.TODO()
 	szConfig := getTestObject(ctx, test)
 	actual, err := szConfig.CreateConfig(ctx)
@@ -249,6 +249,16 @@ func TestSzConfig_DeleteDataSource_withLoad(test *testing.T) {
 	testError(test, err)
 }
 
+func TestSzConfig_ExportConfig(test *testing.T) {
+	ctx := context.TODO()
+	szConfig := getTestObject(ctx, test)
+	configHandle, err := szConfig.CreateConfig(ctx)
+	testError(test, err)
+	actual, err := szConfig.ExportConfig(ctx, configHandle)
+	testError(test, err)
+	printActual(test, actual)
+}
+
 func TestSzConfig_GetDataSources(test *testing.T) {
 	ctx := context.TODO()
 	szConfig := getTestObject(ctx, test)
@@ -269,16 +279,6 @@ func TestSzConfig_ImportConfig(test *testing.T) {
 	configDefinition, err := szConfig.ExportConfig(ctx, configHandle)
 	testError(test, err)
 	actual, err := szConfig.ImportConfig(ctx, configDefinition)
-	testError(test, err)
-	printActual(test, actual)
-}
-
-func TestSzConfig_ExportConfig(test *testing.T) {
-	ctx := context.TODO()
-	szConfig := getTestObject(ctx, test)
-	configHandle, err := szConfig.CreateConfig(ctx)
-	testError(test, err)
-	actual, err := szConfig.ExportConfig(ctx, configHandle)
 	testError(test, err)
 	printActual(test, actual)
 }

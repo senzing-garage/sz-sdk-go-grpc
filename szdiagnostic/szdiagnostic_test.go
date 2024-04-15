@@ -328,6 +328,10 @@ func TestSzDiagnostic_Initialize(test *testing.T) {
 	expectError(test, err, "senzing-60134002")
 }
 
+func TestSzDiagnostic_PurgeRepository(test *testing.T) {
+	// TODO: Write TestSzDiagnostic_PurgeRepository
+}
+
 func TestSzDiagnostic_Reinit(test *testing.T) {
 	ctx := context.TODO()
 	szDiagnostic := getTestObject(ctx, test)
