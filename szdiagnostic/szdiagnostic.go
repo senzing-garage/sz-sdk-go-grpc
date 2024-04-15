@@ -116,7 +116,7 @@ func (client *SzDiagnostic) Initialize(ctx context.Context, instanceName string,
 		go func() {
 			details := map[string]string{
 				"iniParams":      settings,
-				"initConfigID":   strconv.FormatInt(configId, 10),
+				"initConfigId":   strconv.FormatInt(configId, 10),
 				"moduleName":     instanceName,
 				"verboseLogging": strconv.FormatInt(verboseLogging, 10),
 			}
@@ -172,7 +172,7 @@ func (client *SzDiagnostic) Reinitialize(ctx context.Context, configId int64) er
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{
-				"initConfigID": strconv.FormatInt(configId, 10),
+				"initConfigId": strconv.FormatInt(configId, 10),
 			}
 			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentId, 8023, err, details)
 		}()
@@ -271,7 +271,7 @@ func (client *SzDiagnostic) RegisterObserver(ctx context.Context, observer obser
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{
-				"observerID": observer.GetObserverId(ctx),
+				"observerId": observer.GetObserverId(ctx),
 			}
 			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentId, 8025, err, details)
 		}()
@@ -340,7 +340,7 @@ func (client *SzDiagnostic) UnregisterObserver(ctx context.Context, observer obs
 		// In client.notify, each observer will get notified in a goroutine.
 		// Then client.observers may be set to nil, but observer goroutines will be OK.
 		details := map[string]string{
-			"observerID": observer.GetObserverId(ctx),
+			"observerId": observer.GetObserverId(ctx),
 		}
 		notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentId, 8027, err, details)
 	}

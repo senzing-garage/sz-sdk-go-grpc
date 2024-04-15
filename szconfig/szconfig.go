@@ -2,7 +2,7 @@
  *
  */
 
-// Package g2config implements a client for the service.
+// Package szconfig implements a client for the service.
 package szconfig
 
 import (
@@ -445,7 +445,7 @@ func (client *SzConfig) RegisterObserver(ctx context.Context, observer observer.
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{
-				"observerID": observer.GetObserverId(ctx),
+				"observerId": observer.GetObserverId(ctx),
 			}
 			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentId, 8011, err, details)
 		}()
@@ -484,7 +484,7 @@ func (client *SzConfig) UnregisterObserver(ctx context.Context, observer observe
 		// In client.notify, each observer will get notified in a goroutine.
 		// Then client.observers may be set to nil, but observer goroutines will be OK.
 		details := map[string]string{
-			"observerID": observer.GetObserverId(ctx),
+			"observerId": observer.GetObserverId(ctx),
 		}
 		notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentId, 8013, err, details)
 	}

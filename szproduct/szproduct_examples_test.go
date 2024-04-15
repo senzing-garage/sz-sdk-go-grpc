@@ -13,45 +13,45 @@ import (
 // Examples for godoc documentation
 // ----------------------------------------------------------------------------
 
-func ExampleG2product_SetObserverOrigin() {
-	// For more information, visit https://github.com/senzing-garage/g2-sdk-go-grpc/blob/main/g2product/g2product_examples_test.go
+func ExampleSzProduct_SetObserverOrigin() {
+	// For more information, visit https://github.com/senzing-garage/sz-sdk-go-grpc/blob/main/szproduct/szproduct_examples_test.go
 	ctx := context.TODO()
-	g2product := getG2Product(ctx)
+	szProduct := getSzProduct(ctx)
 	origin := "Machine: nn; Task: UnitTest"
-	g2product.SetObserverOrigin(ctx, origin)
+	szProduct.SetObserverOrigin(ctx, origin)
 	// Output:
 }
 
-func ExampleG2product_GetObserverOrigin() {
-	// For more information, visit https://github.com/senzing-garage/g2-sdk-go-grpc/blob/main/g2product/g2product_examples_test.go
+func ExampleSzProduct_GetObserverOrigin() {
+	// For more information, visit https://github.com/senzing-garage/sz-sdk-go-grpc/blob/main/szproduct/szproduct_examples_test.go
 	ctx := context.TODO()
-	g2product := getG2Product(ctx)
+	szProduct := getSzProduct(ctx)
 	origin := "Machine: nn; Task: UnitTest"
-	g2product.SetObserverOrigin(ctx, origin)
-	result := g2product.GetObserverOrigin(ctx)
+	szProduct.SetObserverOrigin(ctx, origin)
+	result := szProduct.GetObserverOrigin(ctx)
 	fmt.Println(result)
 	// Output: Machine: nn; Task: UnitTest
 }
 
-func ExampleG2product_Init() {
-	// For more information, visit https://github.com/senzing-garage/g2-sdk-go-grpc/blob/main/g2product/g2product_examples_test.go
+func ExampleSzProduct_Initialize() {
+	// For more information, visit https://github.com/senzing-garage/sz-sdk-go-grpc/blob/main/szproduct/szproduct_examples_test.go
 	ctx := context.TODO()
-	g2product := getG2Product(ctx)
+	szProduct := getSzProduct(ctx)
 	moduleName := "Test module name"
 	iniParams := "{}"
 	verboseLogging := int64(0)
-	err := g2product.Init(ctx, moduleName, iniParams, verboseLogging)
+	err := szProduct.Initialize(ctx, moduleName, iniParams, verboseLogging)
 	if err != nil {
 		// This should produce a "senzing-60164002" error.
 	}
 	// Output:
 }
 
-func ExampleG2product_License() {
-	// For more information, visit https://github.com/senzing-garage/g2-sdk-go-grpc/blob/main/g2product/g2product_examples_test.go
+func ExampleSzProduct_GetLicense() {
+	// For more information, visit https://github.com/senzing-garage/sz-sdk-go-grpc/blob/main/szproduct/szproduct_examples_test.go
 	ctx := context.TODO()
-	g2product := getG2Product(ctx)
-	result, err := g2product.License(ctx)
+	szProduct := getSzProduct(ctx)
+	result, err := szProduct.GetLicense(ctx)
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -59,22 +59,22 @@ func ExampleG2product_License() {
 	// Output:  {"customer":"","contract":"","issueDate":"2023-10-30","licenseType":"EVAL (Solely for non-productive use)","licenseLevel":"","billing":"","expireDate":"2024-10-30","recordLimit":100000}
 }
 
-func ExampleG2product_SetLogLevel() {
-	// For more information, visit https://github.com/senzing-garage/g2-sdk-go-grpc/blob/main/g2product/g2product_examples_test.go
+func ExampleSzProduct_SetLogLevel() {
+	// For more information, visit https://github.com/senzing-garage/sz-sdk-go-grpc/blob/main/szproduct/szproduct_examples_test.go
 	ctx := context.TODO()
-	g2product := getG2Product(ctx)
-	err := g2product.SetLogLevel(ctx, logging.LevelInfoName)
+	szProduct := getSzProduct(ctx)
+	err := szProduct.SetLogLevel(ctx, logging.LevelInfoName)
 	if err != nil {
 		fmt.Println(err)
 	}
 	// Output:
 }
 
-func ExampleG2product_Version() {
-	// For more information, visit https://github.com/senzing-garage/g2-sdk-go-grpc/blob/main/g2product/g2product_examples_test.go
+func ExampleSzProduct_GetVersion() {
+	// For more information, visit https://github.com/senzing-garage/sz-sdk-go-grpc/blob/main/szproduct/szproduct_examples_test.go
 	ctx := context.TODO()
-	g2product := getG2Product(ctx)
-	result, err := g2product.Version(ctx)
+	szProduct := getSzProduct(ctx)
+	result, err := szProduct.GetVersion(ctx)
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -82,11 +82,11 @@ func ExampleG2product_Version() {
 	// Output: {"PRODUCT_NAME":"Senzing API","VERSION":...
 }
 
-func ExampleG2product_Destroy() {
-	// For more information, visit https://github.com/senzing-garage/g2-sdk-go-grpc/blob/main/g2product/g2product_examples_test.go
+func ExampleSzProduct_Destroy() {
+	// For more information, visit https://github.com/senzing-garage/sz-sdk-go-grpc/blob/main/szproduct/szproduct_examples_test.go
 	ctx := context.TODO()
-	g2product := getG2Product(ctx)
-	err := g2product.Destroy(ctx)
+	szProduct := getSzProduct(ctx)
+	err := szProduct.Destroy(ctx)
 	if err != nil {
 		// This should produce a "senzing-60164001" error.
 	}

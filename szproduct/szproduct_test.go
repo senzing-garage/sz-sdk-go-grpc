@@ -9,8 +9,7 @@ import (
 	"testing"
 
 	truncator "github.com/aquilax/truncate"
-	"github.com/senzing-garage/g2-sdk-go/g2api"
-	g2pb "github.com/senzing-garage/g2-sdk-proto/go/g2product"
+	szpb "github.com/senzing-garage/sz-sdk-proto/go/szproduct"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
@@ -22,7 +21,7 @@ const (
 )
 
 var (
-	g2productSingleton g2api.G2product
+	szProductSingleton *SzProduct
 	grpcAddress        = "localhost:8261"
 	grpcConnection     *grpc.ClientConn
 )
@@ -43,24 +42,20 @@ func getGrpcConnection() *grpc.ClientConn {
 	return grpcConnection
 }
 
-func getTestObject(ctx context.Context, test *testing.T) g2api.G2product {
-	if g2productSingleton == nil {
-		grpcConnection := getGrpcConnection()
-		g2productSingleton = &G2product{
-			GrpcClient: g2pb.NewG2ProductClient(grpcConnection),
-		}
-	}
-	return g2productSingleton
+func getTestObject(ctx context.Context, test *testing.T) *SzProduct {
+	_ = test
+	return getSzProduct(ctx)
 }
 
-func getG2Product(ctx context.Context) g2api.G2product {
-	if g2productSingleton == nil {
+func getSzProduct(ctx context.Context) *SzProduct {
+	_ = ctx
+	if szProductSingleton == nil {
 		grpcConnection := getGrpcConnection()
-		g2productSingleton = &G2product{
-			GrpcClient: g2pb.NewG2ProductClient(grpcConnection),
+		szProductSingleton = &SzProduct{
+			GrpcClient: szpb.NewSzProductClient(grpcConnection),
 		}
 	}
-	return g2productSingleton
+	return szProductSingleton
 }
 
 func truncate(aString string, length int) string {
@@ -77,14 +72,14 @@ func printActual(test *testing.T, actual interface{}) {
 	printResult(test, "Actual", actual)
 }
 
-func testError(test *testing.T, ctx context.Context, g2product g2api.G2product, err error) {
+func testError(test *testing.T, err error) {
 	if err != nil {
 		test.Log("Error:", err.Error())
 		assert.FailNow(test, err.Error())
 	}
 }
 
-func expectError(test *testing.T, ctx context.Context, g2product g2api.G2product, err error, messageId string) {
+func expectError(test *testing.T, err error, messageId string) {
 	if err != nil {
 		errorMessage := err.Error()[strings.Index(err.Error(), "{"):]
 		var dictionary map[string]interface{}
@@ -95,12 +90,6 @@ func expectError(test *testing.T, ctx context.Context, g2product g2api.G2product
 		assert.Equal(test, messageId, dictionary["id"].(string))
 	} else {
 		assert.FailNow(test, "Should have failed with", messageId)
-	}
-}
-
-func testErrorNoFail(test *testing.T, ctx context.Context, g2product g2api.G2product, err error) {
-	if err != nil {
-		test.Log("Error:", err.Error())
 	}
 }
 
@@ -138,49 +127,49 @@ func teardown() error {
 
 func TestG2product_SetObserverOrigin(test *testing.T) {
 	ctx := context.TODO()
-	g2product := getTestObject(ctx, test)
+	szProduct := getTestObject(ctx, test)
 	origin := "Machine: nn; Task: UnitTest"
-	g2product.SetObserverOrigin(ctx, origin)
+	szProduct.SetObserverOrigin(ctx, origin)
 }
 
 func TestG2product_GetObserverOrigin(test *testing.T) {
 	ctx := context.TODO()
-	g2product := getTestObject(ctx, test)
+	szProduct := getTestObject(ctx, test)
 	origin := "Machine: nn; Task: UnitTest"
-	g2product.SetObserverOrigin(ctx, origin)
-	actual := g2product.GetObserverOrigin(ctx)
+	szProduct.SetObserverOrigin(ctx, origin)
+	actual := szProduct.GetObserverOrigin(ctx)
 	assert.Equal(test, origin, actual)
 }
 
-func TestG2product_Init(test *testing.T) {
+func TestG2product_Initialize(test *testing.T) {
 	ctx := context.TODO()
-	g2product := getG2Product(ctx)
+	szProduct := getSzProduct(ctx)
 	moduleName := "Test module name"
 	iniParams := "{}"
 	verboseLogging := int64(0)
-	err := g2product.Init(ctx, moduleName, iniParams, verboseLogging)
-	expectError(test, ctx, g2product, err, "senzing-60164002")
+	err := szProduct.Initialize(ctx, moduleName, iniParams, verboseLogging)
+	expectError(test, err, "senzing-60164002")
 }
 
-func TestG2product_License(test *testing.T) {
+func TestG2product_GetLicense(test *testing.T) {
 	ctx := context.TODO()
-	g2product := getTestObject(ctx, test)
-	actual, err := g2product.License(ctx)
-	testError(test, ctx, g2product, err)
+	szProduct := getTestObject(ctx, test)
+	actual, err := szProduct.GetLicense(ctx)
+	testError(test, err)
 	printActual(test, actual)
 }
 
-func TestG2product_Version(test *testing.T) {
+func TestG2product_GetVersion(test *testing.T) {
 	ctx := context.TODO()
-	g2product := getTestObject(ctx, test)
-	actual, err := g2product.Version(ctx)
-	testError(test, ctx, g2product, err)
+	szProduct := getTestObject(ctx, test)
+	actual, err := szProduct.GetVersion(ctx)
+	testError(test, err)
 	printActual(test, actual)
 }
 
 func TestG2product_Destroy(test *testing.T) {
 	ctx := context.TODO()
-	g2product := getTestObject(ctx, test)
-	err := g2product.Destroy(ctx)
-	expectError(test, ctx, g2product, err, "senzing-60164001")
+	szProduct := getTestObject(ctx, test)
+	err := szProduct.Destroy(ctx)
+	expectError(test, err, "senzing-60164001")
 }

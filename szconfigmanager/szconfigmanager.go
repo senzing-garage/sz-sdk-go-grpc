@@ -222,8 +222,8 @@ func (client *SzConfigManager) Initialize(ctx context.Context, instanceName stri
 /*
 The ReplaceDefaultConfigId method replaces the old configuration identifier with a new configuration identifier in the Senzing database.
 It is like a "compare-and-swap" instruction to serialize concurrent editing of configuration.
-If oldConfigID is no longer the "old configuration identifier", the operation will fail.
-To simply set the default configuration ID, use SetDefaultConfigID().
+If currentDefaultConfigId is no longer the "old configuration identifier", the operation will fail.
+To simply set the default configuration ID, use SetDefaultConfigIdD().
 
 Input
   - ctx: A context to control lifecycle.
@@ -256,7 +256,7 @@ func (client *SzConfigManager) ReplaceDefaultConfigId(ctx context.Context, curre
 
 /*
 The SetDefaultConfigId method replaces the sets a new configuration identifier in the Senzing database.
-To serialize modifying of the configuration identifier, see ReplaceDefaultConfigID().
+To serialize modifying of the configuration identifier, see ReplaceDefaultConfigId().
 
 Input
   - ctx: A context to control lifecycle.
@@ -277,7 +277,7 @@ func (client *SzConfigManager) SetDefaultConfigId(ctx context.Context, configId 
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{
-				"configID": strconv.FormatInt(configId, 10),
+				"configId": strconv.FormatInt(configId, 10),
 			}
 			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentId, 8008, err, details)
 		}()
@@ -333,7 +333,7 @@ func (client *SzConfigManager) GetObserverOrigin(ctx context.Context) string {
 
 /*
 The GetSdkId method returns the identifier of this particular Software Development Kit (SDK).
-It is handy when working with multiple implementations of the same G2configmgrInterface.
+It is handy when working with multiple implementations of the same SzConfigManager Interface.
 For this implementation, "grpc" is returned.
 
 Input
@@ -376,7 +376,7 @@ func (client *SzConfigManager) RegisterObserver(ctx context.Context, observer ob
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{
-				"observerID": observer.GetObserverId(ctx),
+				"observerId": observer.GetObserverId(ctx),
 			}
 			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentId, 8010, err, details)
 		}()
@@ -445,7 +445,7 @@ func (client *SzConfigManager) UnregisterObserver(ctx context.Context, observer 
 		// In client.notify, each observer will get notified in a goroutine.
 		// Then client.observers may be set to nil, but observer goroutines will be OK.
 		details := map[string]string{
-			"observerID": observer.GetObserverId(ctx),
+			"observerId": observer.GetObserverId(ctx),
 		}
 		notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentId, 8012, err, details)
 	}

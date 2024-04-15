@@ -181,7 +181,7 @@ func setupSenzingConfig(ctx context.Context) error {
 	// Persist the Senzing configuration to the Senzing repository.
 
 	szConfigManager := getSzConfigManager(ctx)
-	configComment := fmt.Sprintf("Created by g2diagnostic_test at %s", now.UTC())
+	configComment := fmt.Sprintf("Created by szconfigmanager_test at %s", now.UTC())
 	configId, err := szConfigManager.AddConfig(ctx, configDefinition, configComment)
 	if err != nil {
 		return createError(5913, err)
@@ -337,7 +337,7 @@ func TestSzConfigManager_Init(test *testing.T) {
 	instanceName := "Test name"
 	verboseLogging := sz.SZ_NO_LOGGING
 	settings := "{}"
-	err := szConfigManager.Inititialize(ctx, instanceName, settings, verboseLogging)
+	err := szConfigManager.Initialize(ctx, instanceName, settings, verboseLogging)
 	expectError(test, ctx, err, "senzing-60124002")
 }
 

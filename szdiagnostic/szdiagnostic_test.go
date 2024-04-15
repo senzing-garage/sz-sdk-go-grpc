@@ -286,25 +286,25 @@ func teardown() error {
 
 func TestSzDiagnostic_SetObserverOrigin(test *testing.T) {
 	ctx := context.TODO()
-	g2diagnostic := getTestObject(ctx, test)
+	szDiagnostic := getTestObject(ctx, test)
 	origin := "Machine: nn; Task: UnitTest"
-	g2diagnostic.SetObserverOrigin(ctx, origin)
+	szDiagnostic.SetObserverOrigin(ctx, origin)
 }
 
 func TestSzDiagnostic_GetObserverOrigin(test *testing.T) {
 	ctx := context.TODO()
-	g2diagnostic := getTestObject(ctx, test)
+	szDiagnostic := getTestObject(ctx, test)
 	origin := "Machine: nn; Task: UnitTest"
-	g2diagnostic.SetObserverOrigin(ctx, origin)
-	actual := g2diagnostic.GetObserverOrigin(ctx)
+	szDiagnostic.SetObserverOrigin(ctx, origin)
+	actual := szDiagnostic.GetObserverOrigin(ctx)
 	assert.Equal(test, origin, actual)
 }
 
 func TestSzDiagnostic_CheckDatabasePerformance(test *testing.T) {
 	ctx := context.TODO()
-	g2diagnostic := getTestObject(ctx, test)
+	szDiagnostic := getTestObject(ctx, test)
 	secondsToRun := 1
-	actual, err := g2diagnostic.CheckDatabasePerformance(ctx, secondsToRun)
+	actual, err := szDiagnostic.CheckDatabasePerformance(ctx, secondsToRun)
 	testError(test, ctx, err)
 	printActual(test, actual)
 }
@@ -312,14 +312,14 @@ func TestSzDiagnostic_CheckDatabasePerformance(test *testing.T) {
 func TestSzDiagnostic_Initialize(test *testing.T) {
 	ctx := context.TODO()
 	grpcConnection := getGrpcConnection()
-	g2diagnostic := &SzDiagnostic{
+	szDiagnostic := &SzDiagnostic{
 		GrpcClient: szpb.NewSzDiagnosticClient(grpcConnection),
 	}
 	instanceName := "Test name"
 	settings := "{}"
 	verboseLogging := sz.SZ_NO_LOGGING
 	configId := sz.SZ_INITIALIZE_WITH_DEFAULT_CONFIGURATION
-	err := g2diagnostic.Initialize(ctx, instanceName, settings, verboseLogging, configId)
+	err := szDiagnostic.Initialize(ctx, instanceName, settings, verboseLogging, configId)
 	expectError(test, ctx, err, "senzing-60134002")
 }
 
@@ -335,8 +335,8 @@ func TestSzDiagnostic_Reinit(test *testing.T) {
 
 func TestSzDiagnostic_Destroy(test *testing.T) {
 	ctx := context.TODO()
-	g2diagnostic := getTestObject(ctx, test)
-	err := g2diagnostic.Destroy(ctx)
+	szDiagnostic := getTestObject(ctx, test)
+	err := szDiagnostic.Destroy(ctx)
 	expectError(test, ctx, err, "senzing-60134001")
 	szDiagnosticSingleton = nil
 }

@@ -6,39 +6,39 @@ import (
 	"context"
 	"fmt"
 
-	g2pb "github.com/senzing-garage/g2-sdk-proto/go/g2diagnostic"
+	"github.com/senzing-garage/go-logging/logging"
 )
 
 // ----------------------------------------------------------------------------
 // Examples for godoc documentation
 // ----------------------------------------------------------------------------
 
-func ExampleG2diagnostic_SetObserverOrigin() {
-	// For more information, visit https://github.com/senzing-garage/g2-sdk-go-grpc/blob/main/g2diagnostic/g2diagnostic_examples_test.go
+func ExampleSzDiagnostic_SetObserverOrigin() {
+	// For more information, visit https://github.com/senzing-garage/sz-sdk-go-grpc/blob/main/szdiagnostic/szdiagnostic_examples_test.go
 	ctx := context.TODO()
-	g2diagnostic := getSzDiagnostic(ctx)
+	szDiagnostic := getSzDiagnostic(ctx)
 	origin := "Machine: nn; Task: UnitTest"
-	g2diagnostic.SetObserverOrigin(ctx, origin)
+	szDiagnostic.SetObserverOrigin(ctx, origin)
 	// Output:
 }
 
-func ExampleG2diagnostic_GetObserverOrigin() {
-	// For more information, visit https://github.com/senzing-garage/g2-sdk-go-grpc/blob/main/g2config/g2diagnostic_test.go
+func ExampleSzDiagnostic_GetObserverOrigin() {
+	// For more information, visit https://github.com/senzing-garage/sz-sdk-go-grpc/blob/main/szdiagnostic/szdiagnostic_examples_test.go
 	ctx := context.TODO()
-	g2diagnostic := getSzDiagnostic(ctx)
+	szDiagnostic := getSzDiagnostic(ctx)
 	origin := "Machine: nn; Task: UnitTest"
-	g2diagnostic.SetObserverOrigin(ctx, origin)
-	result := g2diagnostic.GetObserverOrigin(ctx)
+	szDiagnostic.SetObserverOrigin(ctx, origin)
+	result := szDiagnostic.GetObserverOrigin(ctx)
 	fmt.Println(result)
 	// Output: Machine: nn; Task: UnitTest
 }
 
-func ExampleG2diagnostic_CheckDBPerf() {
-	// For more information, visit https://github.com/senzing-garage/g2-sdk-go-grpc/blob/main/g2diagnostic/g2diagnostic_examples_test.go
+func ExampleSzDiagnostic_CheckDBPerf() {
+	// For more information, visit https://github.com/senzing-garage/sz-sdk-go-grpc/blob/main/szdiagnostic/szdiagnostic_examples_test.go
 	ctx := context.TODO()
-	g2diagnostic := getSzDiagnostic(ctx)
+	szDiagnostic := getSzDiagnostic(ctx)
 	secondsToRun := 1
-	result, err := g2diagnostic.CheckDBPerf(ctx, secondsToRun)
+	result, err := szDiagnostic.CheckDatabasePerformance(ctx, secondsToRun)
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -46,81 +46,33 @@ func ExampleG2diagnostic_CheckDBPerf() {
 	// Output: {"numRecordsInserted":...
 }
 
-// func ExampleG2diagnostic_SetLogLevel() {
-// 	// For more information, visit https://github.com/senzing-garage/g2-sdk-go-grpc/blob/main/g2diagnostic/g2diagnostic_examples_test.go
-// 	g2diagnostic := &G2diagnosticClient{}
-// 	ctx := context.TODO()
-// 	err := g2diagnostic.SetLogLevel(ctx, logger.LevelInfo)
-// 	if err != nil {
-// 		fmt.Println(err)
-// 	}
-// 	// Output:
-// }
-
-func ExampleG2diagnostic_Init() {
-	// For more information, visit https://github.com/senzing-garage/g2-sdk-go-grpc/blob/main/g2diagnostic/g2diagnostic_examples_test.go
+func ExampleSzDiagnostic_SetLogLevel() {
+	// For more information, visit https://github.com/senzing-garage/sz-sdk-go-grpc/blob/main/szdiagnostic/szdiagnostic_examples_test.go
 	ctx := context.TODO()
-	grpcConnection := getGrpcConnection()
-	g2diagnostic := &SzDiagnostic{
-		GrpcClient: g2pb.NewG2DiagnosticClient(grpcConnection),
-	}
-	moduleName := "Test module name"
-	iniParams := "{}"
-	verboseLogging := int64(0)
-	err := g2diagnostic.Init(ctx, moduleName, iniParams, verboseLogging)
-	if err != nil {
-		// This should produce a "senzing-60134002" error.
-	}
-	// Output:
-}
-
-func ExampleG2diagnostic_InitWithConfigID() {
-	// For more information, visit https://github.com/senzing-garage/g2-sdk-go-grpc/blob/main/g2diagnostic/g2diagnostic_examples_test.go
-	ctx := context.TODO()
-	grpcConnection := getGrpcConnection()
-	g2diagnostic := &SzDiagnostic{
-		GrpcClient: g2pb.NewG2DiagnosticClient(grpcConnection),
-	}
-	moduleName := "Test module name"
-	iniParams := "{}"
-	initConfigID := int64(1)
-	verboseLogging := int64(0)
-	err := g2diagnostic.InitWithConfigID(ctx, moduleName, iniParams, initConfigID, verboseLogging)
-	if err != nil {
-		// This should produce a "senzing-60134003" error.
-	}
-	// Output:
-}
-
-func ExampleG2diagnostic_Reinit() {
-	// For more information, visit https://github.com/senzing-garage/g2-sdk-go-grpc/blob/main/g2diagnostic/g2diagnostic_examples_test.go
-	ctx := context.TODO()
-	g2diagnostic := getSzDiagnostic(ctx)
-	g2Configmgr := getSzConfigManager(ctx)
-	initConfigID, _ := g2Configmgr.GetDefaultConfigID(ctx)
-	err := g2diagnostic.Reinit(ctx, initConfigID)
+	szDiagnostic := getSzDiagnostic(ctx)
+	err := szDiagnostic.SetLogLevel(ctx, logging.LevelInfoName)
 	if err != nil {
 		fmt.Println(err)
 	}
 	// Output:
 }
 
-func ExampleG2diagnostic_PurgeRepository() {
+func ExampleSzDiagnostic_PurgeRepository() {
 	// For more information, visit https://github.com/Senzing/g2-sdk-go-grpc/blob/main/g2engine/g2engine_examples_test.go
 	ctx := context.TODO()
-	g2diagnostic := getSzDiagnostic(ctx)
-	err := g2diagnostic.PurgeRepository(ctx)
+	szDiagnostic := getSzDiagnostic(ctx)
+	err := szDiagnostic.PurgeRepository(ctx)
 	if err != nil {
 		fmt.Println(err)
 	}
 	// Output:
 }
 
-func ExampleG2diagnostic_Destroy() {
-	// For more information, visit https://github.com/senzing-garage/g2-sdk-go-grpc/blob/main/g2diagnostic/g2diagnostic_examples_test.go
+func ExampleSzDiagnostic_Destroy() {
+	// For more information, visit https://github.com/senzing-garage/sz-sdk-go-grpc/blob/main/szdiagnostic/szdiagnostic_examples_test.go
 	ctx := context.TODO()
-	g2diagnostic := getSzDiagnostic(ctx)
-	err := g2diagnostic.Destroy(ctx)
+	szDiagnostic := getSzDiagnostic(ctx)
+	err := szDiagnostic.Destroy(ctx)
 	if err != nil {
 		// This should produce a "senzing-60134001" error.
 	}
