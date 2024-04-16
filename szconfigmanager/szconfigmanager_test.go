@@ -321,19 +321,19 @@ func TestSzConfigManager_SetDefaultConfigId(test *testing.T) {
 	testError(test, err)
 }
 
-func TestSzConfigManager_Init(test *testing.T) {
+func TestSzConfigManager_Initialize(test *testing.T) {
 	ctx := context.TODO()
 	szConfigManager := getTestObject(ctx, test)
 	instanceName := "Test name"
 	verboseLogging := sz.SZ_NO_LOGGING
 	settings := "{}"
 	err := szConfigManager.Initialize(ctx, instanceName, settings, verboseLogging)
-	expectError(test, err, "senzing-60124002")
+	testError(test, err)
 }
 
 func TestSzConfigManager_Destroy(test *testing.T) {
 	ctx := context.TODO()
 	szConfigManager := getTestObject(ctx, test)
 	err := szConfigManager.Destroy(ctx)
-	expectError(test, err, "senzing-60124001")
+	testError(test, err)
 }

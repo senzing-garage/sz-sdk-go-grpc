@@ -385,10 +385,10 @@ func TestSzEngine_ExportCsvEntityReport(test *testing.T) {
 	ctx := context.TODO()
 	szEngine := getTestObject(ctx, test)
 	expected := []string{
-		`RESOLVED_ENTITY_ID,RELATED_ENTITY_ID,MATCH_LEVEL,MATCH_KEY,DATA_SOURCE,RECORD_ID`,
-		`1,0,0,"","CUSTOMERS","1001"`,
-		`1,0,1,"+NAME+DOB+PHONE","CUSTOMERS","1002"`,
-		`1,0,1,"+NAME+DOB+EMAIL","CUSTOMERS","1003"`,
+		`RESOLVED_ENTITY_ID,RELATED_ENTITY_ID,MATCH_LEVEL_CODE,MATCH_KEY,DATA_SOURCE,RECORD_ID`,
+		`1,0,"","","CUSTOMERS","1001"`,
+		`1,0,"RESOLVED","+NAME+DOB+PHONE","CUSTOMERS","1002"`,
+		`1,0,"RESOLVED","+NAME+DOB+EMAIL","CUSTOMERS","1003"`,
 	}
 	csvColumnList := ""
 	flags := int64(-1)
@@ -410,10 +410,10 @@ func TestSzEngine_ExportCsvEntityReportIterator(test *testing.T) {
 	ctx := context.TODO()
 	szEngine := getTestObject(ctx, test)
 	expected := []string{
-		`RESOLVED_ENTITY_ID,RELATED_ENTITY_ID,MATCH_LEVEL,MATCH_KEY,DATA_SOURCE,RECORD_ID`,
-		`1,0,0,"","CUSTOMERS","1001"`,
-		`1,0,1,"+NAME+DOB+PHONE","CUSTOMERS","1002"`,
-		`1,0,1,"+NAME+DOB+EMAIL","CUSTOMERS","1003"`,
+		`RESOLVED_ENTITY_ID,RELATED_ENTITY_ID,MATCH_LEVEL_CODE,MATCH_KEY,DATA_SOURCE,RECORD_ID`,
+		`1,0,"","","CUSTOMERS","1001"`,
+		`1,0,"RESOLVED","+NAME+DOB+PHONE","CUSTOMERS","1002"`,
+		`1,0,"RESOLVED","+NAME+DOB+EMAIL","CUSTOMERS","1003"`,
 	}
 	csvColumnList := ""
 	flags := int64(-1)
@@ -804,7 +804,7 @@ func TestSzEngine_Initialize(test *testing.T) {
 	verboseLogging := sz.SZ_NO_LOGGING
 	configId := sz.SZ_INITIALIZE_WITH_DEFAULT_CONFIGURATION
 	err := szEngine.Initialize(ctx, instanceName, settings, verboseLogging, configId)
-	expectError(test, err, "senzing-60144002")
+	testError(test, err)
 }
 
 func TestSzEngine_Reinit(test *testing.T) {
@@ -840,6 +840,6 @@ func TestSzEngine_Destroy(test *testing.T) {
 	ctx := context.TODO()
 	szEngine := getTestObject(ctx, test)
 	err := szEngine.Destroy(ctx)
-	expectError(test, err, "senzing-60144001")
+	testError(test, err)
 	szEngineSingleton = nil
 }

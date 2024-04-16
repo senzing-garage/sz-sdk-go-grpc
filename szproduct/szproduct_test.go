@@ -148,7 +148,7 @@ func TestSzProduct_Initialize(test *testing.T) {
 	iniParams := "{}"
 	verboseLogging := int64(0)
 	err := szProduct.Initialize(ctx, moduleName, iniParams, verboseLogging)
-	expectError(test, err, "senzing-60164002")
+	testError(test, err)
 }
 
 func TestSzProduct_GetLicense(test *testing.T) {
@@ -171,5 +171,5 @@ func TestSzProduct_Destroy(test *testing.T) {
 	ctx := context.TODO()
 	szProduct := getTestObject(ctx, test)
 	err := szProduct.Destroy(ctx)
-	expectError(test, err, "senzing-60164001")
+	testError(test, err)
 }

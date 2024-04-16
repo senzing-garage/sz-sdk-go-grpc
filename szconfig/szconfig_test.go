@@ -290,12 +290,12 @@ func TestSzConfig_Initialize(test *testing.T) {
 	verboseLogging := int64(0)
 	settings := "{}"
 	err := szConfig.Initialize(ctx, instanceName, settings, verboseLogging)
-	expectError(test, err, "senzing-60114002")
+	testError(test, err)
 }
 
 func TestSzConfig_Destroy(test *testing.T) {
 	ctx := context.TODO()
 	szConfig := getTestObject(ctx, test)
 	err := szConfig.Destroy(ctx)
-	expectError(test, err, "senzing-60114001")
+	testError(test, err)
 }

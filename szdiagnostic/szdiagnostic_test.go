@@ -325,7 +325,7 @@ func TestSzDiagnostic_Initialize(test *testing.T) {
 	verboseLogging := sz.SZ_NO_LOGGING
 	configId := sz.SZ_INITIALIZE_WITH_DEFAULT_CONFIGURATION
 	err := szDiagnostic.Initialize(ctx, instanceName, settings, verboseLogging, configId)
-	expectError(test, err, "senzing-60134002")
+	testError(test, err)
 }
 
 func TestSzDiagnostic_PurgeRepository(test *testing.T) {
@@ -346,6 +346,6 @@ func TestSzDiagnostic_Destroy(test *testing.T) {
 	ctx := context.TODO()
 	szDiagnostic := getTestObject(ctx, test)
 	err := szDiagnostic.Destroy(ctx)
-	expectError(test, err, "senzing-60134001")
+	testError(test, err)
 	szDiagnosticSingleton = nil
 }
