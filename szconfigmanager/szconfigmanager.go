@@ -24,7 +24,7 @@ import (
 // Types
 // ----------------------------------------------------------------------------
 
-type SzConfigManager struct {
+type Szconfigmanager struct {
 	GrpcClient     szpb.SzConfigManagerClient
 	isTrace        bool // Performance optimization
 	logger         logging.LoggingInterface
@@ -47,7 +47,7 @@ Input
 Output
   - A configuration identifier.
 */
-func (client *SzConfigManager) AddConfig(ctx context.Context, configDefinition string, configComment string) (int64, error) {
+func (client *Szconfigmanager) AddConfig(ctx context.Context, configDefinition string, configComment string) (int64, error) {
 	var err error = nil
 	var result int64 = 0
 	if client.isTrace {
@@ -79,7 +79,7 @@ The Destroy method is a Null function for sz-sdk-go-grpc.
 Input
   - ctx: A context to control lifecycle.
 */
-func (client *SzConfigManager) Destroy(ctx context.Context) error {
+func (client *Szconfigmanager) Destroy(ctx context.Context) error {
 	var err error = nil
 	if client.isTrace {
 		entryTime := time.Now()
@@ -106,7 +106,7 @@ Output
   - A JSON document containing the Senzing configuration.
     See the example output.
 */
-func (client *SzConfigManager) GetConfig(ctx context.Context, configId int64) (string, error) {
+func (client *Szconfigmanager) GetConfig(ctx context.Context, configId int64) (string, error) {
 	var err error = nil
 	var result string = ""
 	if client.isTrace {
@@ -139,7 +139,7 @@ Output
   - A JSON document containing Senzing configurations.
     See the example output.
 */
-func (client *SzConfigManager) GetConfigList(ctx context.Context) (string, error) {
+func (client *Szconfigmanager) GetConfigList(ctx context.Context) (string, error) {
 	var err error = nil
 	var result string = ""
 	if client.isTrace {
@@ -169,7 +169,7 @@ Input
 Output
   - A configuration identifier which identifies the current configuration in use.
 */
-func (client *SzConfigManager) GetDefaultConfigId(ctx context.Context) (int64, error) {
+func (client *Szconfigmanager) GetDefaultConfigId(ctx context.Context) (int64, error) {
 	var err error = nil
 	var result int64 = 0
 	if client.isTrace {
@@ -199,7 +199,7 @@ Input
   - settings: A JSON string containing configuration parameters.
   - verboseLogging: A flag to enable deeper logging of the G2 processing. 0 for no Senzing logging; 1 for logging.
 */
-func (client *SzConfigManager) Initialize(ctx context.Context, instanceName string, settings string, verboseLogging int64) error {
+func (client *Szconfigmanager) Initialize(ctx context.Context, instanceName string, settings string, verboseLogging int64) error {
 	var err error = nil
 	if client.isTrace {
 		entryTime := time.Now()
@@ -230,7 +230,7 @@ Input
   - currentDefaultConfigId: The configuration identifier to replace.
   - newDefaultConfigId: The configuration identifier to use as the default.
 */
-func (client *SzConfigManager) ReplaceDefaultConfigId(ctx context.Context, currentDefaultConfigId int64, newDefaultConfigId int64) error {
+func (client *Szconfigmanager) ReplaceDefaultConfigId(ctx context.Context, currentDefaultConfigId int64, newDefaultConfigId int64) error {
 	var err error = nil
 	if client.isTrace {
 		entryTime := time.Now()
@@ -262,7 +262,7 @@ Input
   - ctx: A context to control lifecycle.
   - configId: The configuration identifier of the Senzing Engine configuration to use as the default.
 */
-func (client *SzConfigManager) SetDefaultConfigId(ctx context.Context, configId int64) error {
+func (client *Szconfigmanager) SetDefaultConfigId(ctx context.Context, configId int64) error {
 	var err error = nil
 	if client.isTrace {
 		entryTime := time.Now()
@@ -292,7 +292,7 @@ func (client *SzConfigManager) SetDefaultConfigId(ctx context.Context, configId 
 // --- Logging ----------------------------------------------------------------
 
 // Get the Logger singleton.
-func (client *SzConfigManager) getLogger() logging.LoggingInterface {
+func (client *Szconfigmanager) getLogger() logging.LoggingInterface {
 	var err error = nil
 	if client.logger == nil {
 		options := []interface{}{
@@ -307,12 +307,12 @@ func (client *SzConfigManager) getLogger() logging.LoggingInterface {
 }
 
 // Trace method entry.
-func (client *SzConfigManager) traceEntry(errorNumber int, details ...interface{}) {
+func (client *Szconfigmanager) traceEntry(errorNumber int, details ...interface{}) {
 	client.getLogger().Log(errorNumber, details...)
 }
 
 // Trace method exit.
-func (client *SzConfigManager) traceExit(errorNumber int, details ...interface{}) {
+func (client *Szconfigmanager) traceExit(errorNumber int, details ...interface{}) {
 	client.getLogger().Log(errorNumber, details...)
 }
 
@@ -327,7 +327,7 @@ Input
 Output
   - The value sent in the Observer's "origin" key/value pair.
 */
-func (client *SzConfigManager) GetObserverOrigin(ctx context.Context) string {
+func (client *Szconfigmanager) GetObserverOrigin(ctx context.Context) string {
 	return client.observerOrigin
 }
 
@@ -339,7 +339,7 @@ For this implementation, "grpc" is returned.
 Input
   - ctx: A context to control lifecycle.
 */
-func (client *SzConfigManager) GetSdkId(ctx context.Context) string {
+func (client *Szconfigmanager) GetSdkId(ctx context.Context) string {
 	var err error = nil
 	if client.isTrace {
 		entryTime := time.Now()
@@ -362,7 +362,7 @@ Input
   - ctx: A context to control lifecycle.
   - observer: The observer to be added.
 */
-func (client *SzConfigManager) RegisterObserver(ctx context.Context, observer observer.Observer) error {
+func (client *Szconfigmanager) RegisterObserver(ctx context.Context, observer observer.Observer) error {
 	var err error = nil
 	if client.isTrace {
 		entryTime := time.Now()
@@ -391,7 +391,7 @@ Input
   - ctx: A context to control lifecycle.
   - logLevelName: The desired log level. TRACE, DEBUG, INFO, WARN, ERROR, FATAL or PANIC.
 */
-func (client *SzConfigManager) SetLogLevel(ctx context.Context, logLevelName string) error {
+func (client *Szconfigmanager) SetLogLevel(ctx context.Context, logLevelName string) error {
 	var err error = nil
 	if client.isTrace {
 		entryTime := time.Now()
@@ -421,7 +421,7 @@ Input
   - ctx: A context to control lifecycle.
   - origin: The value sent in the Observer's "origin" key/value pair.
 */
-func (client *SzConfigManager) SetObserverOrigin(ctx context.Context, origin string) {
+func (client *Szconfigmanager) SetObserverOrigin(ctx context.Context, origin string) {
 	client.observerOrigin = origin
 }
 
@@ -432,7 +432,7 @@ Input
   - ctx: A context to control lifecycle.
   - observer: The observer to be added.
 */
-func (client *SzConfigManager) UnregisterObserver(ctx context.Context, observer observer.Observer) error {
+func (client *Szconfigmanager) UnregisterObserver(ctx context.Context, observer observer.Observer) error {
 	var err error = nil
 	if client.isTrace {
 		entryTime := time.Now()

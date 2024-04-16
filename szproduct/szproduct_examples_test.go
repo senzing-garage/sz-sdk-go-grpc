@@ -7,47 +7,14 @@ import (
 	"fmt"
 
 	"github.com/senzing-garage/go-logging/logging"
+	"github.com/senzing-garage/sz-sdk-go/sz"
 )
 
 // ----------------------------------------------------------------------------
-// Examples for godoc documentation
+// Interface functions - Examples for godoc documentation
 // ----------------------------------------------------------------------------
 
-func ExampleSzProduct_SetObserverOrigin() {
-	// For more information, visit https://github.com/senzing-garage/sz-sdk-go-grpc/blob/main/szproduct/szproduct_examples_test.go
-	ctx := context.TODO()
-	szProduct := getSzProduct(ctx)
-	origin := "Machine: nn; Task: UnitTest"
-	szProduct.SetObserverOrigin(ctx, origin)
-	// Output:
-}
-
-func ExampleSzProduct_GetObserverOrigin() {
-	// For more information, visit https://github.com/senzing-garage/sz-sdk-go-grpc/blob/main/szproduct/szproduct_examples_test.go
-	ctx := context.TODO()
-	szProduct := getSzProduct(ctx)
-	origin := "Machine: nn; Task: UnitTest"
-	szProduct.SetObserverOrigin(ctx, origin)
-	result := szProduct.GetObserverOrigin(ctx)
-	fmt.Println(result)
-	// Output: Machine: nn; Task: UnitTest
-}
-
-func ExampleSzProduct_Initialize() {
-	// For more information, visit https://github.com/senzing-garage/sz-sdk-go-grpc/blob/main/szproduct/szproduct_examples_test.go
-	ctx := context.TODO()
-	szProduct := getSzProduct(ctx)
-	moduleName := "Test module name"
-	iniParams := "{}"
-	verboseLogging := int64(0)
-	err := szProduct.Initialize(ctx, moduleName, iniParams, verboseLogging)
-	if err != nil {
-		// This should produce a "senzing-60164002" error.
-	}
-	// Output:
-}
-
-func ExampleSzProduct_GetLicense() {
+func ExampleSzproduct_GetLicense() {
 	// For more information, visit https://github.com/senzing-garage/sz-sdk-go-grpc/blob/main/szproduct/szproduct_examples_test.go
 	ctx := context.TODO()
 	szProduct := getSzProduct(ctx)
@@ -59,18 +26,7 @@ func ExampleSzProduct_GetLicense() {
 	// Output: {"customer":"Senzing Public Test License","contract":"Senzing Public Test - 50K records test","issueDate":"2023-11-02","licenseType":"EVAL (Solely for non-productive use)","licenseLevel":"STANDARD","billing":"YEARLY","expireDate":"2024-11-02","recordLimit":50000}
 }
 
-func ExampleSzProduct_SetLogLevel() {
-	// For more information, visit https://github.com/senzing-garage/sz-sdk-go-grpc/blob/main/szproduct/szproduct_examples_test.go
-	ctx := context.TODO()
-	szProduct := getSzProduct(ctx)
-	err := szProduct.SetLogLevel(ctx, logging.LevelInfoName)
-	if err != nil {
-		fmt.Println(err)
-	}
-	// Output:
-}
-
-func ExampleSzProduct_GetVersion() {
+func ExampleSzproduct_GetVersion() {
 	// For more information, visit https://github.com/senzing-garage/sz-sdk-go-grpc/blob/main/szproduct/szproduct_examples_test.go
 	ctx := context.TODO()
 	szProduct := getSzProduct(ctx)
@@ -82,13 +38,66 @@ func ExampleSzProduct_GetVersion() {
 	// Output: {"PRODUCT_NAME":"Senzing API","VERSION":...
 }
 
-func ExampleSzProduct_Destroy() {
+// ----------------------------------------------------------------------------
+// Logging and observing
+// ----------------------------------------------------------------------------
+
+func ExampleSzproduct_SetLogLevel() {
+	// For more information, visit https://github.com/senzing-garage/sz-sdk-go-grpc/blob/main/szproduct/szproduct_examples_test.go
+	ctx := context.TODO()
+	szProduct := getSzProduct(ctx)
+	err := szProduct.SetLogLevel(ctx, logging.LevelInfoName)
+	if err != nil {
+		fmt.Println(err)
+	}
+	// Output:
+}
+
+func ExampleSzproduct_SetObserverOrigin() {
+	// For more information, visit https://github.com/senzing-garage/sz-sdk-go-grpc/blob/main/szproduct/szproduct_examples_test.go
+	ctx := context.TODO()
+	szProduct := getSzProduct(ctx)
+	origin := "Machine: nn; Task: UnitTest"
+	szProduct.SetObserverOrigin(ctx, origin)
+	// Output:
+}
+
+func ExampleSzproduct_GetObserverOrigin() {
+	// For more information, visit https://github.com/senzing-garage/sz-sdk-go-grpc/blob/main/szproduct/szproduct_examples_test.go
+	ctx := context.TODO()
+	szProduct := getSzProduct(ctx)
+	origin := "Machine: nn; Task: UnitTest"
+	szProduct.SetObserverOrigin(ctx, origin)
+	result := szProduct.GetObserverOrigin(ctx)
+	fmt.Println(result)
+	// Output: Machine: nn; Task: UnitTest
+}
+
+// ----------------------------------------------------------------------------
+// Object creation / destruction
+// ----------------------------------------------------------------------------
+
+func ExampleSzproduct_Initialize() {
+	// For more information, visit https://github.com/senzing-garage/sz-sdk-go-grpc/blob/main/szproduct/szproduct_examples_test.go
+	ctx := context.TODO()
+	szProduct := getSzProduct(ctx)
+	instanceName := "Test name"
+	settings := "{}"
+	verboseLogging := sz.SZ_NO_LOGGING
+	err := szProduct.Initialize(ctx, instanceName, settings, verboseLogging)
+	if err != nil {
+		fmt.Println(err)
+	}
+	// Output:
+}
+
+func ExampleSzproduct_Destroy() {
 	// For more information, visit https://github.com/senzing-garage/sz-sdk-go-grpc/blob/main/szproduct/szproduct_examples_test.go
 	ctx := context.TODO()
 	szProduct := getSzProduct(ctx)
 	err := szProduct.Destroy(ctx)
 	if err != nil {
-		// This should produce a "senzing-60164001" error.
+		fmt.Println(err)
 	}
 	// Output:
 }

@@ -75,7 +75,7 @@ func getSzConfig(ctx context.Context) (sz.SzConfig, error) {
 	_ = ctx
 	var err error = nil
 	grpcConnection := getGrpcConnection()
-	result := &szconfig.SzConfig{
+	result := &szconfig.Szconfig{
 		GrpcClient: szconfigpb.NewSzConfigClient(grpcConnection),
 	}
 	return result, err
@@ -85,7 +85,7 @@ func getSzConfigManager(ctx context.Context) (sz.SzConfigManager, error) {
 	_ = ctx
 	var err error = nil
 	grpcConnection := getGrpcConnection()
-	result := &szconfigmanager.SzConfigManager{
+	result := &szconfigmanager.Szconfigmanager{
 		GrpcClient: szconfigmanagerpb.NewSzConfigManagerClient(grpcConnection),
 	}
 	return result, err
@@ -95,7 +95,7 @@ func getSzEngine(ctx context.Context) (sz.SzEngine, error) {
 	_ = ctx
 	var err error = nil
 	grpcConnection := getGrpcConnection()
-	result := &szengine.SzEngine{
+	result := &szengine.Szengine{
 		GrpcClient: szenginepb.NewSzEngineClient(grpcConnection),
 	}
 	return result, err
@@ -105,7 +105,7 @@ func getSzProduct(ctx context.Context) (sz.SzProduct, error) {
 	_ = ctx
 	var err error = nil
 	grpcConnection := getGrpcConnection()
-	result := &szproduct.SzProduct{
+	result := &szproduct.Szproduct{
 		GrpcClient: szproductpb.NewSzProductClient(grpcConnection),
 	}
 	return result, err

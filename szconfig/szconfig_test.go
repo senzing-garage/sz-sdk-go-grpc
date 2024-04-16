@@ -2,13 +2,12 @@ package szconfig
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"os"
-	"strings"
 	"testing"
 
 	truncator "github.com/aquilax/truncate"
+	"github.com/senzing-garage/sz-sdk-go/sz"
 	szpb "github.com/senzing-garage/sz-sdk-proto/go/szconfig"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc"
@@ -21,132 +20,14 @@ const (
 )
 
 var (
-	szConfigSingleton *SzConfig
+	szConfigSingleton *Szconfig
 	grpcAddress       = "localhost:8261"
 	grpcConnection    *grpc.ClientConn
 )
 
 // ----------------------------------------------------------------------------
-// Internal functions
+// Interface functions - test
 // ----------------------------------------------------------------------------
-
-func getGrpcConnection() *grpc.ClientConn {
-	var err error
-	if grpcConnection == nil {
-		grpcConnection, err = grpc.Dial(grpcAddress, grpc.WithTransportCredentials(insecure.NewCredentials()))
-		if err != nil {
-			fmt.Printf("Did not connect: %v\n", err)
-		}
-		//		defer grpcConnection.Close()
-	}
-	return grpcConnection
-}
-
-func getTestObject(ctx context.Context, test *testing.T) *SzConfig {
-	_ = ctx
-	_ = test
-	if szConfigSingleton == nil {
-		grpcConnection := getGrpcConnection()
-		szConfigSingleton = &SzConfig{
-			GrpcClient: szpb.NewSzConfigClient(grpcConnection),
-		}
-	}
-	return szConfigSingleton
-}
-
-func getSzConfig(ctx context.Context) *SzConfig {
-	_ = ctx
-	if szConfigSingleton == nil {
-		grpcConnection := getGrpcConnection()
-		szConfigSingleton = &SzConfig{
-			GrpcClient: szpb.NewSzConfigClient(grpcConnection),
-		}
-	}
-	return szConfigSingleton
-}
-
-func truncate(aString string, length int) string {
-	return truncator.Truncate(aString, length, "...", truncator.PositionEnd)
-}
-
-func printResult(test *testing.T, title string, result interface{}) {
-	if printResults {
-		test.Logf("%s: %v", title, truncate(fmt.Sprintf("%v", result), defaultTruncation))
-	}
-}
-
-func printActual(test *testing.T, actual interface{}) {
-	printResult(test, "Actual", actual)
-}
-
-func testError(test *testing.T, err error) {
-	if err != nil {
-		test.Log("Error:", err.Error())
-		assert.FailNow(test, err.Error())
-	}
-}
-
-func expectError(test *testing.T, err error, messageId string) {
-	if err != nil {
-		errorMessage := err.Error()[strings.Index(err.Error(), "{"):]
-		var dictionary map[string]interface{}
-		unmarshalErr := json.Unmarshal([]byte(errorMessage), &dictionary)
-		if unmarshalErr != nil {
-			test.Log("Unmarshal Error:", unmarshalErr.Error())
-		}
-		assert.Equal(test, messageId, dictionary["id"].(string))
-	} else {
-		assert.FailNow(test, "Should have failed with", messageId)
-	}
-}
-
-// ----------------------------------------------------------------------------
-// Test harness
-// ----------------------------------------------------------------------------
-
-func TestMain(m *testing.M) {
-	err := setup()
-	if err != nil {
-		fmt.Print(err)
-		os.Exit(1)
-	}
-	code := m.Run()
-	err = teardown()
-	if err != nil {
-		fmt.Print(err)
-	}
-	os.Exit(code)
-}
-
-func setup() error {
-	var err error = nil
-	return err
-}
-
-func teardown() error {
-	var err error = nil
-	return err
-}
-
-// ----------------------------------------------------------------------------
-// Test interface functions
-// ----------------------------------------------------------------------------
-
-func TestSzConfig_SetObserverOrigin(test *testing.T) {
-	ctx := context.TODO()
-	szConfig := getTestObject(ctx, test)
-	origin := "Machine: nn; Task: UnitTest"
-	szConfig.SetObserverOrigin(ctx, origin)
-}
-
-func TestSzConfig_GetObserverOrigin(test *testing.T) {
-	ctx := context.TODO()
-	szConfig := getTestObject(ctx, test)
-	origin := "Machine: nn; Task: UnitTest"
-	szConfig.SetObserverOrigin(ctx, origin)
-	actual := szConfig.GetObserverOrigin(ctx)
-	assert.Equal(test, origin, actual)
-}
 
 func TestSzConfig_AddDataSource(test *testing.T) {
 	ctx := context.TODO()
@@ -172,8 +53,8 @@ func TestSzConfig_AddDataSource_withLoad(test *testing.T) {
 	testError(test, err)
 	configHandle2, err := szConfig.ImportConfig(ctx, configDefinition)
 	testError(test, err)
-	inputJson := "GO_TEST"
-	actual, err := szConfig.AddDataSource(ctx, configHandle2, inputJson)
+	dataSourceCode := "GO_TEST"
+	actual, err := szConfig.AddDataSource(ctx, configHandle2, dataSourceCode)
 	testError(test, err)
 	printActual(test, actual)
 	err = szConfig.CloseConfig(ctx, configHandle2)
@@ -283,13 +164,50 @@ func TestSzConfig_ImportConfig(test *testing.T) {
 	printActual(test, actual)
 }
 
+// ----------------------------------------------------------------------------
+// Logging and observing
+// ----------------------------------------------------------------------------
+
+func TestSzConfig_SetObserverOrigin(test *testing.T) {
+	ctx := context.TODO()
+	szConfig := getTestObject(ctx, test)
+	origin := "Machine: nn; Task: UnitTest"
+	szConfig.SetObserverOrigin(ctx, origin)
+}
+
+func TestSzConfig_GetObserverOrigin(test *testing.T) {
+	ctx := context.TODO()
+	szConfig := getTestObject(ctx, test)
+	origin := "Machine: nn; Task: UnitTest"
+	szConfig.SetObserverOrigin(ctx, origin)
+	actual := szConfig.GetObserverOrigin(ctx)
+	assert.Equal(test, origin, actual)
+}
+
+// ----------------------------------------------------------------------------
+// Object creation / destruction
+// ----------------------------------------------------------------------------
+
+func TestSzConfig_AsInterface(test *testing.T) {
+	ctx := context.TODO()
+	szConfig := getSzConfigAsInterface(ctx)
+	configHandle, err := szConfig.CreateConfig(ctx)
+	testError(test, err)
+	actual, err := szConfig.GetDataSources(ctx, configHandle)
+	testError(test, err)
+	printActual(test, actual)
+	err = szConfig.CloseConfig(ctx, configHandle)
+	testError(test, err)
+}
+
 func TestSzConfig_Initialize(test *testing.T) {
 	ctx := context.TODO()
 	szConfig := getTestObject(ctx, test)
-	instanceName := "Test module name"
-	verboseLogging := int64(0)
-	settings := "{}"
-	err := szConfig.Initialize(ctx, instanceName, settings, verboseLogging)
+	instanceName := "Test name"
+	verboseLogging := sz.SZ_NO_LOGGING
+	settings, err := getSettings()
+	testError(test, err)
+	err = szConfig.Initialize(ctx, instanceName, settings, verboseLogging)
 	testError(test, err)
 }
 
@@ -298,4 +216,94 @@ func TestSzConfig_Destroy(test *testing.T) {
 	szConfig := getTestObject(ctx, test)
 	err := szConfig.Destroy(ctx)
 	testError(test, err)
+}
+
+// ----------------------------------------------------------------------------
+// Internal functions
+// ----------------------------------------------------------------------------
+
+func getGrpcConnection() *grpc.ClientConn {
+	var err error
+	if grpcConnection == nil {
+		grpcConnection, err = grpc.Dial(grpcAddress, grpc.WithTransportCredentials(insecure.NewCredentials()))
+		if err != nil {
+			fmt.Printf("Did not connect: %v\n", err)
+		}
+		//		defer grpcConnection.Close()
+	}
+	return grpcConnection
+}
+
+func getSettings() (string, error) {
+	return "{}", nil
+}
+
+func getSzConfig(ctx context.Context) *Szconfig {
+	_ = ctx
+	if szConfigSingleton == nil {
+		grpcConnection := getGrpcConnection()
+		szConfigSingleton = &Szconfig{
+			GrpcClient: szpb.NewSzConfigClient(grpcConnection),
+		}
+	}
+	return szConfigSingleton
+}
+
+func getSzConfigAsInterface(ctx context.Context) sz.SzConfig {
+	return getSzConfig(ctx)
+}
+
+func getTestObject(ctx context.Context, test *testing.T) *Szconfig {
+	_ = ctx
+	_ = test
+	return getSzConfig(ctx)
+}
+
+func printActual(test *testing.T, actual interface{}) {
+	printResult(test, "Actual", actual)
+}
+
+func printResult(test *testing.T, title string, result interface{}) {
+	if printResults {
+		test.Logf("%s: %v", title, truncate(fmt.Sprintf("%v", result), defaultTruncation))
+	}
+}
+
+func testError(test *testing.T, err error) {
+	if err != nil {
+		test.Log("Error:", err.Error())
+		assert.FailNow(test, err.Error())
+	}
+}
+
+func truncate(aString string, length int) string {
+	return truncator.Truncate(aString, length, "...", truncator.PositionEnd)
+}
+
+// ----------------------------------------------------------------------------
+// Test harness
+// ----------------------------------------------------------------------------
+
+func TestMain(m *testing.M) {
+	err := setup()
+	if err != nil {
+		fmt.Print(err)
+		os.Exit(1)
+	}
+	code := m.Run()
+	err = teardown()
+	if err != nil {
+		fmt.Print(err)
+	}
+	os.Exit(code)
+}
+
+func setup() error {
+	var err error = nil
+	return err
+}
+
+func teardown() error {
+	var err error = nil
+	return err
 }

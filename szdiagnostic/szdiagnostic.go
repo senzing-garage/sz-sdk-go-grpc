@@ -24,7 +24,7 @@ import (
 // Types
 // ----------------------------------------------------------------------------
 
-type SzDiagnostic struct {
+type Szdiagnostic struct {
 	GrpcClient     szpb.SzDiagnosticClient
 	isTrace        bool // Performance optimization
 	logger         logging.LoggingInterface
@@ -48,7 +48,7 @@ Output
   - A string containing a JSON document.
     Example: `{"numRecordsInserted":0,"insertTime":0}`
 */
-func (client *SzDiagnostic) CheckDatabasePerformance(ctx context.Context, secondsToRun int) (string, error) {
+func (client *Szdiagnostic) CheckDatabasePerformance(ctx context.Context, secondsToRun int) (string, error) {
 	var err error = nil
 	var result string = ""
 	if client.isTrace {
@@ -77,7 +77,7 @@ The Destroy method is a Null function for sz-sdk-go-grpc.
 Input
   - ctx: A context to control lifecycle.
 */
-func (client *SzDiagnostic) Destroy(ctx context.Context) error {
+func (client *Szdiagnostic) Destroy(ctx context.Context) error {
 	var err error = nil
 	if client.isTrace {
 		entryTime := time.Now()
@@ -103,7 +103,7 @@ Input
   - verboseLogging: A flag to enable deeper logging of the G2 processing. 0 for no Senzing logging; 1 for logging.
   - configId: The configuration ID used for the initialization.
 */
-func (client *SzDiagnostic) Initialize(ctx context.Context, instanceName string, settings string, verboseLogging int64, configId int64) error {
+func (client *Szdiagnostic) Initialize(ctx context.Context, instanceName string, settings string, verboseLogging int64, configId int64) error {
 	var err error = nil
 	if client.isTrace {
 		entryTime := time.Now()
@@ -136,7 +136,7 @@ MUST be destroyed or shutdown.
 Input
   - ctx: A context to control lifecycle.
 */
-func (client *SzDiagnostic) PurgeRepository(ctx context.Context) error {
+func (client *Szdiagnostic) PurgeRepository(ctx context.Context) error {
 	var err error = nil
 	if client.isTrace {
 		entryTime := time.Now()
@@ -162,7 +162,7 @@ Input
   - ctx: A context to control lifecycle.
   - configId: The configuration ID used for the initialization.
 */
-func (client *SzDiagnostic) Reinitialize(ctx context.Context, configId int64) error {
+func (client *Szdiagnostic) Reinitialize(ctx context.Context, configId int64) error {
 	var err error = nil
 	if client.isTrace {
 		entryTime := time.Now()
@@ -187,7 +187,7 @@ func (client *SzDiagnostic) Reinitialize(ctx context.Context, configId int64) er
 // --- Logging ----------------------------------------------------------------
 
 // Get the Logger singleton.
-func (client *SzDiagnostic) getLogger() logging.LoggingInterface {
+func (client *Szdiagnostic) getLogger() logging.LoggingInterface {
 	var err error = nil
 	if client.logger == nil {
 		options := []interface{}{
@@ -202,12 +202,12 @@ func (client *SzDiagnostic) getLogger() logging.LoggingInterface {
 }
 
 // Trace method entry.
-func (client *SzDiagnostic) traceEntry(errorNumber int, details ...interface{}) {
+func (client *Szdiagnostic) traceEntry(errorNumber int, details ...interface{}) {
 	client.getLogger().Log(errorNumber, details...)
 }
 
 // Trace method exit.
-func (client *SzDiagnostic) traceExit(errorNumber int, details ...interface{}) {
+func (client *Szdiagnostic) traceExit(errorNumber int, details ...interface{}) {
 	client.getLogger().Log(errorNumber, details...)
 }
 
@@ -222,7 +222,7 @@ Input
 Output
   - The value sent in the Observer's "origin" key/value pair.
 */
-func (client *SzDiagnostic) GetObserverOrigin(ctx context.Context) string {
+func (client *Szdiagnostic) GetObserverOrigin(ctx context.Context) string {
 	return client.observerOrigin
 }
 
@@ -234,7 +234,7 @@ For this implementation, "grpc" is returned.
 Input
   - ctx: A context to control lifecycle.
 */
-func (client *SzDiagnostic) GetSdkId(ctx context.Context) string {
+func (client *Szdiagnostic) GetSdkId(ctx context.Context) string {
 	var err error = nil
 	if client.isTrace {
 		entryTime := time.Now()
@@ -257,7 +257,7 @@ Input
   - ctx: A context to control lifecycle.
   - observer: The observer to be added.
 */
-func (client *SzDiagnostic) RegisterObserver(ctx context.Context, observer observer.Observer) error {
+func (client *Szdiagnostic) RegisterObserver(ctx context.Context, observer observer.Observer) error {
 	var err error = nil
 	if client.isTrace {
 		entryTime := time.Now()
@@ -286,7 +286,7 @@ Input
   - ctx: A context to control lifecycle.
   - logLevelName: The desired log level. TRACE, DEBUG, INFO, WARN, ERROR, FATAL or PANIC.
 */
-func (client *SzDiagnostic) SetLogLevel(ctx context.Context, logLevelName string) error {
+func (client *Szdiagnostic) SetLogLevel(ctx context.Context, logLevelName string) error {
 	var err error = nil
 	if client.isTrace {
 		entryTime := time.Now()
@@ -316,7 +316,7 @@ Input
   - ctx: A context to control lifecycle.
   - origin: The value sent in the Observer's "origin" key/value pair.
 */
-func (client *SzDiagnostic) SetObserverOrigin(ctx context.Context, origin string) {
+func (client *Szdiagnostic) SetObserverOrigin(ctx context.Context, origin string) {
 	client.observerOrigin = origin
 }
 
@@ -327,7 +327,7 @@ Input
   - ctx: A context to control lifecycle.
   - observer: The observer to be added.
 */
-func (client *SzDiagnostic) UnregisterObserver(ctx context.Context, observer observer.Observer) error {
+func (client *Szdiagnostic) UnregisterObserver(ctx context.Context, observer observer.Observer) error {
 	var err error = nil
 	if client.isTrace {
 		entryTime := time.Now()

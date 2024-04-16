@@ -2,10 +2,8 @@ package szdiagnostic
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"os"
-	"strings"
 	"testing"
 	"time"
 
@@ -35,19 +33,104 @@ const (
 var (
 	grpcAddress              = "localhost:8261"
 	grpcConnection           *grpc.ClientConn
-	localLogger              logging.LoggingInterface
+	logger                   logging.LoggingInterface
 	szConfigManagerSingleton sz.SzConfigManager
 	szConfigSingleton        sz.SzConfig
-	szDiagnosticSingleton    *SzDiagnostic
+	szDiagnosticSingleton    *Szdiagnostic
 	szEngineSingleton        sz.SzEngine
 )
+
+// ----------------------------------------------------------------------------
+// Interface functions - test
+// ----------------------------------------------------------------------------
+
+func TestSzDiagnostic_CheckDatabasePerformance(test *testing.T) {
+	ctx := context.TODO()
+	szDiagnostic := getTestObject(ctx, test)
+	secondsToRun := 1
+	actual, err := szDiagnostic.CheckDatabasePerformance(ctx, secondsToRun)
+	testError(test, err)
+	printActual(test, actual)
+}
+
+func TestSzDiagnostic_PurgeRepository(test *testing.T) {
+	ctx := context.TODO()
+	szDiagnostic := getTestObject(ctx, test)
+	err := szDiagnostic.PurgeRepository(ctx)
+	testError(test, err)
+}
+
+// ----------------------------------------------------------------------------
+// Logging and observing
+// ----------------------------------------------------------------------------
+
+func TestSzDiagnostic_SetObserverOrigin(test *testing.T) {
+	ctx := context.TODO()
+	szDiagnostic := getTestObject(ctx, test)
+	origin := "Machine: nn; Task: UnitTest"
+	szDiagnostic.SetObserverOrigin(ctx, origin)
+}
+
+func TestSzDiagnostic_GetObserverOrigin(test *testing.T) {
+	ctx := context.TODO()
+	szDiagnostic := getTestObject(ctx, test)
+	origin := "Machine: nn; Task: UnitTest"
+	szDiagnostic.SetObserverOrigin(ctx, origin)
+	actual := szDiagnostic.GetObserverOrigin(ctx)
+	assert.Equal(test, origin, actual)
+}
+
+// ----------------------------------------------------------------------------
+// Object creation / destruction
+// ----------------------------------------------------------------------------
+
+func TestSzDiagnostic_AsInterface(test *testing.T) {
+	ctx := context.TODO()
+	szDiagnostic := getSzDiagnosticAsInterface(ctx)
+	secondsToRun := 1
+	actual, err := szDiagnostic.CheckDatabasePerformance(ctx, secondsToRun)
+	testError(test, err)
+	printActual(test, actual)
+}
+
+func TestSzDiagnostic_Initialize(test *testing.T) {
+	ctx := context.TODO()
+	grpcConnection := getGrpcConnection()
+	szDiagnostic := &Szdiagnostic{
+		GrpcClient: szpb.NewSzDiagnosticClient(grpcConnection),
+	}
+	instanceName := "Test name"
+	settings := "{}"
+	verboseLogging := sz.SZ_NO_LOGGING
+	configId := sz.SZ_INITIALIZE_WITH_DEFAULT_CONFIGURATION
+	err := szDiagnostic.Initialize(ctx, instanceName, settings, verboseLogging, configId)
+	testError(test, err)
+}
+
+func TestSzDiagnostic_Reinitialize(test *testing.T) {
+	ctx := context.TODO()
+	szDiagnostic := getTestObject(ctx, test)
+	szConfigManager := getSzConfigManager(ctx)
+	configId, err := szConfigManager.GetDefaultConfigId(ctx)
+	testError(test, err)
+	err = szDiagnostic.Reinitialize(ctx, configId)
+	testErrorNoFail(test, err)
+}
+
+func TestSzDiagnostic_Destroy(test *testing.T) {
+	ctx := context.TODO()
+	szDiagnostic := getTestObject(ctx, test)
+	err := szDiagnostic.Destroy(ctx)
+	testError(test, err)
+	szDiagnosticSingleton = nil
+}
 
 // ----------------------------------------------------------------------------
 // Internal functions
 // ----------------------------------------------------------------------------
 
 func createError(errorId int, err error) error {
-	return szerror.Cast(localLogger.NewError(errorId, err), err)
+	return szerror.Cast(logger.NewError(errorId, err), err)
 }
 
 func getGrpcConnection() *grpc.ClientConn {
@@ -62,7 +145,7 @@ func getGrpcConnection() *grpc.ClientConn {
 	return grpcConnection
 }
 
-func getTestObject(ctx context.Context, test *testing.T) *SzDiagnostic {
+func getTestObject(ctx context.Context, test *testing.T) *Szdiagnostic {
 	_ = test
 	return getSzDiagnostic(ctx)
 }
@@ -71,7 +154,7 @@ func getSzConfig(ctx context.Context) sz.SzConfig {
 	_ = ctx
 	if szConfigSingleton == nil {
 		grpcConnection := getGrpcConnection()
-		szConfigSingleton = &szconfig.SzConfig{
+		szConfigSingleton = &szconfig.Szconfig{
 			GrpcClient: szconfigpb.NewSzConfigClient(grpcConnection),
 		}
 	}
@@ -82,47 +165,47 @@ func getSzConfigManager(ctx context.Context) sz.SzConfigManager {
 	_ = ctx
 	if szConfigManagerSingleton == nil {
 		grpcConnection := getGrpcConnection()
-		szConfigManagerSingleton = &szconfigmanager.SzConfigManager{
+		szConfigManagerSingleton = &szconfigmanager.Szconfigmanager{
 			GrpcClient: szconfigmanagerpb.NewSzConfigManagerClient(grpcConnection),
 		}
 	}
 	return szConfigManagerSingleton
 }
 
-func getSzDiagnostic(ctx context.Context) *SzDiagnostic {
+func getSzDiagnostic(ctx context.Context) *Szdiagnostic {
 	_ = ctx
 	if szDiagnosticSingleton == nil {
 		grpcConnection := getGrpcConnection()
-		szDiagnosticSingleton = &SzDiagnostic{
+		szDiagnosticSingleton = &Szdiagnostic{
 			GrpcClient: szpb.NewSzDiagnosticClient(grpcConnection),
 		}
 	}
 	return szDiagnosticSingleton
 }
 
+func getSzDiagnosticAsInterface(ctx context.Context) sz.SzDiagnostic {
+	return getSzDiagnostic(ctx)
+}
+
 func getSzEngine(ctx context.Context) sz.SzEngine {
 	_ = ctx
 	if szEngineSingleton == nil {
 		grpcConnection := getGrpcConnection()
-		szEngineSingleton = &szengine.SzEngine{
+		szEngineSingleton = &szengine.Szengine{
 			GrpcClient: szenginepb.NewSzEngineClient(grpcConnection),
 		}
 	}
 	return szEngineSingleton
 }
 
-func truncate(aString string, length int) string {
-	return truncator.Truncate(aString, length, "...", truncator.PositionEnd)
+func printActual(test *testing.T, actual interface{}) {
+	printResult(test, "Actual", actual)
 }
 
 func printResult(test *testing.T, title string, result interface{}) {
 	if printResults {
 		test.Logf("%s: %v", title, truncate(fmt.Sprintf("%v", result), defaultTruncation))
 	}
-}
-
-func printActual(test *testing.T, actual interface{}) {
-	printResult(test, "Actual", actual)
 }
 
 func testError(test *testing.T, err error) {
@@ -132,24 +215,14 @@ func testError(test *testing.T, err error) {
 	}
 }
 
-func expectError(test *testing.T, err error, messageId string) {
-	if err != nil {
-		errorMessage := err.Error()[strings.Index(err.Error(), "{"):]
-		var dictionary map[string]interface{}
-		unmarshalErr := json.Unmarshal([]byte(errorMessage), &dictionary)
-		if unmarshalErr != nil {
-			test.Log("Unmarshal Error:", unmarshalErr.Error())
-		}
-		assert.Equal(test, messageId, dictionary["id"].(string))
-	} else {
-		assert.FailNow(test, "Should have failed with", messageId)
-	}
-}
-
 func testErrorNoFail(test *testing.T, err error) {
 	if err != nil {
 		test.Log("Error:", err.Error())
 	}
+}
+
+func truncate(aString string, length int) string {
+	return truncator.Truncate(aString, length, "...", truncator.PositionEnd)
 }
 
 // ----------------------------------------------------------------------------
@@ -251,7 +324,7 @@ func setup() error {
 	options := []interface{}{
 		&logging.OptionCallerSkip{Value: 4},
 	}
-	localLogger, err = logging.NewSenzingSdkLogger(ComponentId, szdiagnosticapi.IdMessages, options...)
+	logger, err = logging.NewSenzingSdkLogger(ComponentId, szdiagnosticapi.IdMessages, options...)
 	if err != nil {
 		return createError(5901, err)
 	}
@@ -283,69 +356,4 @@ func setup() error {
 func teardown() error {
 	var err error = nil
 	return err
-}
-
-// ----------------------------------------------------------------------------
-// Test interface functions
-// ----------------------------------------------------------------------------
-
-func TestSzDiagnostic_SetObserverOrigin(test *testing.T) {
-	ctx := context.TODO()
-	szDiagnostic := getTestObject(ctx, test)
-	origin := "Machine: nn; Task: UnitTest"
-	szDiagnostic.SetObserverOrigin(ctx, origin)
-}
-
-func TestSzDiagnostic_GetObserverOrigin(test *testing.T) {
-	ctx := context.TODO()
-	szDiagnostic := getTestObject(ctx, test)
-	origin := "Machine: nn; Task: UnitTest"
-	szDiagnostic.SetObserverOrigin(ctx, origin)
-	actual := szDiagnostic.GetObserverOrigin(ctx)
-	assert.Equal(test, origin, actual)
-}
-
-func TestSzDiagnostic_CheckDatabasePerformance(test *testing.T) {
-	ctx := context.TODO()
-	szDiagnostic := getTestObject(ctx, test)
-	secondsToRun := 1
-	actual, err := szDiagnostic.CheckDatabasePerformance(ctx, secondsToRun)
-	testError(test, err)
-	printActual(test, actual)
-}
-
-func TestSzDiagnostic_Initialize(test *testing.T) {
-	ctx := context.TODO()
-	grpcConnection := getGrpcConnection()
-	szDiagnostic := &SzDiagnostic{
-		GrpcClient: szpb.NewSzDiagnosticClient(grpcConnection),
-	}
-	instanceName := "Test name"
-	settings := "{}"
-	verboseLogging := sz.SZ_NO_LOGGING
-	configId := sz.SZ_INITIALIZE_WITH_DEFAULT_CONFIGURATION
-	err := szDiagnostic.Initialize(ctx, instanceName, settings, verboseLogging, configId)
-	testError(test, err)
-}
-
-func TestSzDiagnostic_PurgeRepository(test *testing.T) {
-	// TODO: Write TestSzDiagnostic_PurgeRepository
-}
-
-func TestSzDiagnostic_Reinit(test *testing.T) {
-	ctx := context.TODO()
-	szDiagnostic := getTestObject(ctx, test)
-	szConfigManager := getSzConfigManager(ctx)
-	configId, err := szConfigManager.GetDefaultConfigId(ctx)
-	testError(test, err)
-	err = szDiagnostic.Reinitialize(ctx, configId)
-	testErrorNoFail(test, err)
-}
-
-func TestSzDiagnostic_Destroy(test *testing.T) {
-	ctx := context.TODO()
-	szDiagnostic := getTestObject(ctx, test)
-	err := szDiagnostic.Destroy(ctx)
-	testError(test, err)
-	szDiagnosticSingleton = nil
 }

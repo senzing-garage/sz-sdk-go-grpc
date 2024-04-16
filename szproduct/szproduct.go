@@ -24,7 +24,7 @@ import (
 // Types
 // ----------------------------------------------------------------------------
 
-type SzProduct struct {
+type Szproduct struct {
 	GrpcClient     szpb.SzProductClient
 	isTrace        bool // Performance optimization
 	logger         logging.LoggingInterface
@@ -42,7 +42,7 @@ The Destroy method is a Null function for sz-sdk-go-grpc.
 Input
   - ctx: A context to control lifecycle.
 */
-func (client *SzProduct) Destroy(ctx context.Context) error {
+func (client *Szproduct) Destroy(ctx context.Context) error {
 	var err error = nil
 	if client.isTrace {
 		entryTime := time.Now()
@@ -67,7 +67,7 @@ Input
   - settings: A JSON string containing configuration parameters.
   - verboseLogging: A flag to enable deeper logging of the G2 processing. 0 for no Senzing logging; 1 for logging.
 */
-func (client *SzProduct) Initialize(ctx context.Context, instanceName string, settings string, verboseLogging int64) error {
+func (client *Szproduct) Initialize(ctx context.Context, instanceName string, settings string, verboseLogging int64) error {
 	var err error = nil
 	if client.isTrace {
 		entryTime := time.Now()
@@ -97,7 +97,7 @@ Output
   - A JSON document containing Senzing license metadata.
     See the example output.
 */
-func (client *SzProduct) GetLicense(ctx context.Context) (string, error) {
+func (client *Szproduct) GetLicense(ctx context.Context) (string, error) {
 	var err error = nil
 	var result string = ""
 	if client.isTrace {
@@ -128,7 +128,7 @@ Output
   - A JSON document containing metadata about the Senzing Engine version being used.
     See the example output.
 */
-func (client *SzProduct) GetVersion(ctx context.Context) (string, error) {
+func (client *Szproduct) GetVersion(ctx context.Context) (string, error) {
 	var err error = nil
 	var result string = ""
 	if client.isTrace {
@@ -156,7 +156,7 @@ func (client *SzProduct) GetVersion(ctx context.Context) (string, error) {
 // --- Logging ----------------------------------------------------------------
 
 // Get the Logger singleton.
-func (client *SzProduct) getLogger() logging.LoggingInterface {
+func (client *Szproduct) getLogger() logging.LoggingInterface {
 	var err error = nil
 	if client.logger == nil {
 		options := []interface{}{
@@ -171,12 +171,12 @@ func (client *SzProduct) getLogger() logging.LoggingInterface {
 }
 
 // Trace method entry.
-func (client *SzProduct) traceEntry(errorNumber int, details ...interface{}) {
+func (client *Szproduct) traceEntry(errorNumber int, details ...interface{}) {
 	client.getLogger().Log(errorNumber, details...)
 }
 
 // Trace method exit.
-func (client *SzProduct) traceExit(errorNumber int, details ...interface{}) {
+func (client *Szproduct) traceExit(errorNumber int, details ...interface{}) {
 	client.getLogger().Log(errorNumber, details...)
 }
 
@@ -187,7 +187,7 @@ Input
   - ctx: A context to control lifecycle.
   - logLevel: The desired log level. TRACE, DEBUG, INFO, WARN, ERROR, FATAL or PANIC.
 */
-func (client *SzProduct) SetLogLevel(ctx context.Context, logLevelName string) error {
+func (client *Szproduct) SetLogLevel(ctx context.Context, logLevelName string) error {
 	var err error = nil
 	if client.isTrace {
 		entryTime := time.Now()
@@ -221,7 +221,7 @@ Input
 Output
   - The value sent in the Observer's "origin" key/value pair.
 */
-func (client *SzProduct) GetObserverOrigin(ctx context.Context) string {
+func (client *Szproduct) GetObserverOrigin(ctx context.Context) string {
 	return client.observerOrigin
 }
 
@@ -233,7 +233,7 @@ For this implementation, "grpc" is returned.
 Input
   - ctx: A context to control lifecycle.
 */
-func (client *SzProduct) GetSdkId(ctx context.Context) string {
+func (client *Szproduct) GetSdkId(ctx context.Context) string {
 	var err error = nil
 	if client.isTrace {
 		entryTime := time.Now()
@@ -256,7 +256,7 @@ Input
   - ctx: A context to control lifecycle.
   - observer: The observer to be added.
 */
-func (client *SzProduct) RegisterObserver(ctx context.Context, observer observer.Observer) error {
+func (client *Szproduct) RegisterObserver(ctx context.Context, observer observer.Observer) error {
 	var err error = nil
 	if client.isTrace {
 		entryTime := time.Now()
@@ -285,7 +285,7 @@ Input
   - ctx: A context to control lifecycle.
   - origin: The value sent in the Observer's "origin" key/value pair.
 */
-func (client *SzProduct) SetObserverOrigin(ctx context.Context, origin string) {
+func (client *Szproduct) SetObserverOrigin(ctx context.Context, origin string) {
 	client.observerOrigin = origin
 }
 
@@ -296,7 +296,7 @@ Input
   - ctx: A context to control lifecycle.
   - observer: The observer to be added.
 */
-func (client *SzProduct) UnregisterObserver(ctx context.Context, observer observer.Observer) error {
+func (client *Szproduct) UnregisterObserver(ctx context.Context, observer observer.Observer) error {
 	var err error = nil
 	if client.isTrace {
 		entryTime := time.Now()
