@@ -997,11 +997,12 @@ The Initialize method is a Null function for sz-sdk-go-grpc.
 
 Input
   - ctx: A context to control lifecycle.
-  - moduleName: A name for the auditing node, to help identify it within system logs.
-  - iniParams: A JSON string containing configuration parameters.
+  - instanceName: A name for the auditing node, to help identify it within system logs.
+  - settings: A JSON string containing configuration parameters.
+  - configId: The configuration ID used for the initialization.
   - verboseLogging: A flag to enable deeper logging of the G2 processing. 0 for no Senzing logging; 1 for logging.
 */
-func (client *Szengine) Initialize(ctx context.Context, instanceName string, settings string, verboseLogging int64, configId int64) error {
+func (client *Szengine) Initialize(ctx context.Context, instanceName string, settings string, configId int64, verboseLogging int64) error {
 	var err error = nil
 	if client.isTrace {
 		entryTime := time.Now()
@@ -1159,7 +1160,7 @@ func (client *Szengine) ReevaluateRecord(ctx context.Context, dataSourceCode str
 }
 
 /*
-The Initialize method is a Null function for sz-sdk-go-grpc.
+The Reinitialize method is a Null function for sz-sdk-go-grpc.
 
 Input
   - ctx: A context to control lifecycle.

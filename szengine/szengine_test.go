@@ -687,7 +687,7 @@ func TestSzEngine_Initialize(test *testing.T) {
 	settings := "{}"
 	verboseLogging := sz.SZ_NO_LOGGING
 	configId := sz.SZ_INITIALIZE_WITH_DEFAULT_CONFIGURATION
-	err := szEngine.Initialize(ctx, instanceName, settings, verboseLogging, configId)
+	err := szEngine.Initialize(ctx, instanceName, settings, configId, verboseLogging)
 	testError(test, err)
 }
 
@@ -715,20 +715,6 @@ func TestSzEngine_Destroy(test *testing.T) {
 
 func createError(errorId int, err error) error {
 	return szerror.Cast(logger.NewError(errorId, err), err)
-}
-
-func expectError(test *testing.T, err error, messageId string) {
-	if err != nil {
-		errorMessage := err.Error()[strings.Index(err.Error(), "{"):]
-		var dictionary map[string]interface{}
-		unmarshalErr := json.Unmarshal([]byte(errorMessage), &dictionary)
-		if unmarshalErr != nil {
-			test.Log("Unmarshal Error:", unmarshalErr.Error())
-		}
-		assert.Equal(test, messageId, dictionary["id"].(string))
-	} else {
-		assert.FailNow(test, "Should have failed with", messageId)
-	}
 }
 
 func getEntityId(record record.Record) int64 {

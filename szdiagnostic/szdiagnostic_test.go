@@ -103,7 +103,7 @@ func TestSzDiagnostic_Initialize(test *testing.T) {
 	settings := "{}"
 	verboseLogging := sz.SZ_NO_LOGGING
 	configId := sz.SZ_INITIALIZE_WITH_DEFAULT_CONFIGURATION
-	err := szDiagnostic.Initialize(ctx, instanceName, settings, verboseLogging, configId)
+	err := szDiagnostic.Initialize(ctx, instanceName, settings, configId, verboseLogging)
 	testError(test, err)
 }
 

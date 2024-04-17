@@ -32,7 +32,7 @@ type Szabstractfactory struct {
 
 /*
 TODO: Write description.
-The CreateConfig method...
+The CreateSzConfig method...
 
 Input
   - ctx: A context to control lifecycle.
@@ -41,7 +41,7 @@ Output
   - An sz.SzConfig object.
     See the example output.
 */
-func (factory *Szabstractfactory) CreateConfig(ctx context.Context) (sz.SzConfig, error) {
+func (factory *Szabstractfactory) CreateSzConfig(ctx context.Context) (sz.SzConfig, error) {
 	result := &szconfig.Szconfig{
 		GrpcClient: szconfigpb.NewSzConfigClient(factory.GrpcConnection),
 	}
@@ -50,7 +50,7 @@ func (factory *Szabstractfactory) CreateConfig(ctx context.Context) (sz.SzConfig
 
 /*
 TODO: Write description.
-The CreateConfigManager method...
+The CreateSzConfigManager method...
 
 Input
   - ctx: A context to control lifecycle.
@@ -59,7 +59,7 @@ Output
   - An sz.CreateConfigManager object.
     See the example output.
 */
-func (factory *Szabstractfactory) CreateConfigManager(ctx context.Context) (sz.SzConfigManager, error) {
+func (factory *Szabstractfactory) CreateSzConfigManager(ctx context.Context) (sz.SzConfigManager, error) {
 	result := &szconfigmanager.Szconfigmanager{
 		GrpcClient: szconfigmanagerpb.NewSzConfigManagerClient(factory.GrpcConnection),
 	}
@@ -68,7 +68,7 @@ func (factory *Szabstractfactory) CreateConfigManager(ctx context.Context) (sz.S
 
 /*
 TODO: Write description.
-The CreateDiagnostic method...
+The CreateSzDiagnostic method...
 
 Input
   - ctx: A context to control lifecycle.
@@ -77,7 +77,7 @@ Output
   - An sz.SzDiagnostic object.
     See the example output.
 */
-func (factory *Szabstractfactory) CreateDiagnostic(ctx context.Context) (sz.SzDiagnostic, error) {
+func (factory *Szabstractfactory) CreateSzDiagnostic(ctx context.Context) (sz.SzDiagnostic, error) {
 	result := &szdiagnostic.Szdiagnostic{
 		GrpcClient: szdiagnosticpb.NewSzDiagnosticClient(factory.GrpcConnection),
 	}
@@ -86,7 +86,7 @@ func (factory *Szabstractfactory) CreateDiagnostic(ctx context.Context) (sz.SzDi
 
 /*
 TODO: Write description.
-The CreateEngine method...
+The CreateSzEngine method...
 
 Input
   - ctx: A context to control lifecycle.
@@ -95,7 +95,7 @@ Output
   - An sz.SzEngine object.
     See the example output.
 */
-func (factory *Szabstractfactory) CreateEngine(ctx context.Context) (sz.SzEngine, error) {
+func (factory *Szabstractfactory) CreateSzEngine(ctx context.Context) (sz.SzEngine, error) {
 	result := &szengine.Szengine{
 		GrpcClient: szenginepb.NewSzEngineClient(factory.GrpcConnection),
 	}
@@ -104,7 +104,7 @@ func (factory *Szabstractfactory) CreateEngine(ctx context.Context) (sz.SzEngine
 
 /*
 TODO: Write description.
-The CreateProduct method...
+The CreateSzProduct method...
 
 Input
   - ctx: A context to control lifecycle.
@@ -113,7 +113,7 @@ Output
   - An sz.SzProduct object.
     See the example output.
 */
-func (factory *Szabstractfactory) CreateProduct(ctx context.Context) (sz.SzProduct, error) {
+func (factory *Szabstractfactory) CreateSzProduct(ctx context.Context) (sz.SzProduct, error) {
 	result := &szproduct.Szproduct{
 		GrpcClient: szproductpb.NewSzProductClient(factory.GrpcConnection),
 	}

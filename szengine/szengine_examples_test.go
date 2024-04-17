@@ -703,7 +703,7 @@ func ExampleSzengine_Initialize() {
 	settings := "{}"
 	verboseLogging := sz.SZ_NO_LOGGING
 	configId := sz.SZ_INITIALIZE_WITH_DEFAULT_CONFIGURATION
-	err := szEngine.Initialize(ctx, instanceName, settings, verboseLogging, configId)
+	err := szEngine.Initialize(ctx, instanceName, settings, configId, verboseLogging)
 	if err != nil {
 		// This should produce a "senzing-60144002" error.
 	}

@@ -100,10 +100,10 @@ Input
   - ctx: A context to control lifecycle.
   - instanceName: A name for the auditing node, to help identify it within system logs.
   - settings: A JSON string containing configuration parameters.
-  - verboseLogging: A flag to enable deeper logging of the G2 processing. 0 for no Senzing logging; 1 for logging.
   - configId: The configuration ID used for the initialization.
+  - verboseLogging: A flag to enable deeper logging of the G2 processing. 0 for no Senzing logging; 1 for logging.
 */
-func (client *Szdiagnostic) Initialize(ctx context.Context, instanceName string, settings string, verboseLogging int64, configId int64) error {
+func (client *Szdiagnostic) Initialize(ctx context.Context, instanceName string, settings string, configId int64, verboseLogging int64) error {
 	var err error = nil
 	if client.isTrace {
 		entryTime := time.Now()
@@ -115,9 +115,9 @@ func (client *Szdiagnostic) Initialize(ctx context.Context, instanceName string,
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{
-				"iniParams":      settings,
-				"initConfigId":   strconv.FormatInt(configId, 10),
-				"moduleName":     instanceName,
+				"settings":       settings,
+				"configId":       strconv.FormatInt(configId, 10),
+				"instanceName":   instanceName,
 				"verboseLogging": strconv.FormatInt(verboseLogging, 10),
 			}
 			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentId, 8022, err, details)
@@ -156,7 +156,7 @@ func (client *Szdiagnostic) PurgeRepository(ctx context.Context) error {
 }
 
 /*
-The Initialize method is a Null function for sz-sdk-go-grpc.
+The Reinitialize method is a Null function for sz-sdk-go-grpc.
 
 Input
   - ctx: A context to control lifecycle.
