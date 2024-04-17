@@ -188,7 +188,7 @@ func (client *Szconfigmanager) GetDefaultConfigId(ctx context.Context) (int64, e
 The ReplaceDefaultConfigId method replaces the old configuration identifier with a new configuration identifier in the Senzing database.
 It is like a "compare-and-swap" instruction to serialize concurrent editing of configuration.
 If currentDefaultConfigId is no longer the "old configuration identifier", the operation will fail.
-To simply set the default configuration ID, use SetDefaultConfigIdD().
+To simply set the default configuration ID, use SetDefaultConfigId().
 
 Input
   - ctx: A context to control lifecycle.

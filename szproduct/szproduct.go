@@ -133,7 +133,7 @@ func (client *Szproduct) GetObserverOrigin(ctx context.Context) string {
 
 /*
 The GetSdkId method returns the identifier of this particular Software Development Kit (SDK).
-It is handy when working with multiple implementations of the same SzProduct Interface.
+It is handy when working with multiple implementations of the same SzProduct interface.
 For this implementation, "grpc" is returned.
 
 Input

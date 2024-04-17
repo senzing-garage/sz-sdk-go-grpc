@@ -89,11 +89,9 @@ func (client *Szdiagnostic) Destroy(ctx context.Context) error {
 
 /*
 The PurgeRepository method removes every record in the Senzing repository.
-
 Before calling purgeRepository() all other instances of the Senzing API
 (whether in custom code, REST API, stream-loader, redoer, G2Loader, etc)
 MUST be destroyed or shutdown.
-
 Input
   - ctx: A context to control lifecycle.
 */
@@ -160,7 +158,7 @@ func (client *Szdiagnostic) GetObserverOrigin(ctx context.Context) string {
 
 /*
 The GetSdkId method returns the identifier of this particular Software Development Kit (SDK).
-It is handy when working with multiple implementations of the same SzDiagnostic Interface.
+It is handy when working with multiple implementations of the same SzDiagnostic interface.
 For this implementation, "grpc" is returned.
 
 Input
@@ -189,7 +187,7 @@ Input
   - ctx: A context to control lifecycle.
   - instanceName: A name for the auditing node, to help identify it within system logs.
   - settings: A JSON string containing configuration parameters.
-  - configId: The configuration ID used for the initialization.
+  - configId: The configuration ID used for the initialization.  0 for current default configuration.
   - verboseLogging: A flag to enable deeper logging of the G2 processing. 0 for no Senzing logging; 1 for logging.
 */
 func (client *Szdiagnostic) Initialize(ctx context.Context, instanceName string, settings string, configId int64, verboseLogging int64) error {

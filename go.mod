@@ -7,8 +7,8 @@ require (
 	github.com/senzing-garage/go-helpers v0.5.0
 	github.com/senzing-garage/go-logging v1.4.0
 	github.com/senzing-garage/go-observing v0.3.0
-	github.com/senzing-garage/sz-sdk-go v0.11.2-0.20240417134454-168cacac3e78
-	github.com/senzing-garage/sz-sdk-proto v0.6.4-0.20240410214036-44dc56eac1ff
+	github.com/senzing-garage/sz-sdk-go v0.11.2-0.20240417201722-795456c22f04
+	github.com/senzing-garage/sz-sdk-proto v0.6.4-0.20240417202255-d10809bdab19
 	github.com/stretchr/testify v1.9.0
 	google.golang.org/grpc v1.63.2
 )

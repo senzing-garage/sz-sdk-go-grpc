@@ -103,7 +103,7 @@ func (client *Szconfig) CloseConfig(ctx context.Context, configHandle uintptr) e
 The CreateConfig method creates an in-memory Senzing configuration from the g2config.json
 template configuration file located in the PIPELINE.RESOURCEPATH path.
 A handle is returned to identify the in-memory configuration.
-The handle is used by the AddDataSource(), ListDataSources(), DeleteDataSource(), Load(), and Save() methods.
+The handle is used by the AddDataSource(), ListDataSources(), DeleteDataSource(), and Save() methods.
 The handle is terminated by the Close() method.
 
 Input
@@ -140,7 +140,7 @@ The configHandle is created by the Create() method.
 Input
   - ctx: A context to control lifecycle.
   - configHandle: An identifier of an in-memory configuration.
-  - dataSourceCode: A JSON document in the format `{"DSRC_CODE": "NAME_OF_DATASOURCE"}`.
+  - dataSourceCode: The datasource name (e.g. "TEST_DATASOURCE").
 */
 func (client *Szconfig) DeleteDataSource(ctx context.Context, configHandle uintptr, dataSourceCode string) error {
 	var err error = nil
@@ -189,7 +189,7 @@ func (client *Szconfig) Destroy(ctx context.Context) error {
 }
 
 /*
-The ExportConfig method creates a JSON string representation of the Senzing G2Config object.
+The ExportConfig method creates a JSON string representation of the Senzing Szconfig object.
 The configHandle is created by the Create() method.
 
 Input
@@ -197,7 +197,7 @@ Input
   - configHandle: An identifier of an in-memory configuration.
 
 Output
-  - A string containing a JSON Document representation of the Senzing G2Config object.
+  - A string containing a JSON Document representation of the Senzing Szconfig object.
     See the example output.
 */
 func (client *Szconfig) ExportConfig(ctx context.Context, configHandle uintptr) (string, error) {
@@ -308,7 +308,7 @@ func (client *Szconfig) GetObserverOrigin(ctx context.Context) string {
 
 /*
 The GetSdkId method returns the identifier of this particular Software Development Kit (SDK).
-It is handy when working with multiple implementations of the same G2configInterface.
+It is handy when working with multiple implementations of the same SzConfig interface.
 For this implementation, "grpc" is returned.
 
 Input

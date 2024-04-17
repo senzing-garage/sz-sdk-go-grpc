@@ -133,7 +133,7 @@ func demonstrateConfigFunctions(ctx context.Context, szConfig sz.SzConfig, szCon
 
 	// Using SzConfig: Add data source to in-memory configuration.
 
-	for dataSourceCode, _ := range truthset.TruthsetDataSources {
+	for dataSourceCode := range truthset.TruthsetDataSources {
 		_, err := szConfig.AddDataSource(ctx, configHandle, dataSourceCode)
 		if err != nil {
 			return logger.NewError(5101, err)

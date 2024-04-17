@@ -31,7 +31,7 @@ type Szabstractfactory struct {
 // ----------------------------------------------------------------------------
 
 /*
-TODO: Write description.
+TODO: Write description for CreateSzConfig
 The CreateSzConfig method...
 
 Input
@@ -49,7 +49,7 @@ func (factory *Szabstractfactory) CreateSzConfig(ctx context.Context) (sz.SzConf
 }
 
 /*
-TODO: Write description.
+TODO: Write description for CreateSzConfigManager
 The CreateSzConfigManager method...
 
 Input
@@ -67,7 +67,7 @@ func (factory *Szabstractfactory) CreateSzConfigManager(ctx context.Context) (sz
 }
 
 /*
-TODO: Write description.
+TODO: Write description for CreateSzDiagnostic
 The CreateSzDiagnostic method...
 
 Input
@@ -85,7 +85,7 @@ func (factory *Szabstractfactory) CreateSzDiagnostic(ctx context.Context) (sz.Sz
 }
 
 /*
-TODO: Write description.
+TODO: Write description for CreateSzEngine
 The CreateSzEngine method...
 
 Input
@@ -103,7 +103,7 @@ func (factory *Szabstractfactory) CreateSzEngine(ctx context.Context) (sz.SzEngi
 }
 
 /*
-TODO: Write description.
+TODO: Write description for CreateSzProduct
 The CreateSzProduct method...
 
 Input

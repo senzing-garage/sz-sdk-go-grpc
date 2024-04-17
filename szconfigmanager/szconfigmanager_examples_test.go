@@ -162,7 +162,7 @@ func ExampleSzconfigmanager_GetObserverOrigin() {
 // ----------------------------------------------------------------------------
 
 func ExampleSzconfigmanager_Initialize() {
-	// // TODO: Write ExampleSzConfigManager_Initialize
+	// TODO: Write ExampleSzConfigManager_Initialize
 	// // For more information, visit https://github.com/senzing-garage/sz-sdk-go-grpc/blob/main/szconfigmananger/szconfigmanager_examples_test.go
 	// ctx := context.TODO()
 	// grpcConnection := getGrpcConnection()
