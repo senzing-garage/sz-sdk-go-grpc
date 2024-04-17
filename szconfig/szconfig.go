@@ -1,8 +1,6 @@
 /*
- *
- */
-
-// Package szconfig implements a client for the service.
+Package szconfig implements a client for the service.
+*/
 package szconfig
 
 import (
@@ -20,13 +18,9 @@ import (
 	szpb "github.com/senzing-garage/sz-sdk-proto/go/szconfig"
 )
 
-// ----------------------------------------------------------------------------
-// Types
-// ----------------------------------------------------------------------------
-
 type Szconfig struct {
 	GrpcClient     szpb.SzConfigClient
-	isTrace        bool // Performance optimization
+	isTrace        bool
 	logger         logging.LoggingInterface
 	observerOrigin string
 	observers      subject.Subject
@@ -295,97 +289,9 @@ func (client *Szconfig) ImportConfig(ctx context.Context, configDefinition strin
 	return result, err
 }
 
-/*
-The Initialize method is a Null function for sz-sdk-go-grpc.
-
-Input
-  - ctx: A context to control lifecycle.
-  - instanceName: A name for the auditing node, to help identify it within system logs.
-  - settings: A JSON string containing configuration parameters.
-  - verboseLogging: A flag to enable deeper logging of the G2 processing. 0 for no Senzing logging; 1 for logging.
-*/
-func (client *Szconfig) Initialize(ctx context.Context, instanceName string, settings string, verboseLogging int64) error {
-	var err error = nil
-	if client.isTrace {
-		entryTime := time.Now()
-		client.traceEntry(17, instanceName, settings, verboseLogging)
-		defer func() { client.traceExit(18, instanceName, settings, verboseLogging, err, time.Since(entryTime)) }()
-	}
-	if client.observers != nil {
-		go func() {
-			details := map[string]string{
-				"settings":       settings,
-				"instanceName":   instanceName,
-				"verboseLogging": strconv.FormatInt(verboseLogging, 10),
-			}
-			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentId, 8006, err, details)
-		}()
-	}
-	return err
-}
-
 // ----------------------------------------------------------------------------
-// Internal methods
+// Public non-interface methods
 // ----------------------------------------------------------------------------
-
-// --- Logging ----------------------------------------------------------------
-
-// Get the Logger singleton.
-func (client *Szconfig) getLogger() logging.LoggingInterface {
-	var err error = nil
-	if client.logger == nil {
-		options := []interface{}{
-			&logging.OptionCallerSkip{Value: 4},
-		}
-		client.logger, err = logging.NewSenzingSdkLogger(ComponentId, szconfigapi.IdMessages, options...)
-		if err != nil {
-			panic(err)
-		}
-	}
-	return client.logger
-}
-
-// Trace method entry.
-func (client *Szconfig) traceEntry(errorNumber int, details ...interface{}) {
-	client.getLogger().Log(errorNumber, details...)
-}
-
-// Trace method exit.
-func (client *Szconfig) traceExit(errorNumber int, details ...interface{}) {
-	client.getLogger().Log(errorNumber, details...)
-}
-
-/*
-The SetLogLevel method sets the level of logging.
-
-Input
-  - ctx: A context to control lifecycle.
-  - logLevelName: The desired log level. TRACE, DEBUG, INFO, WARN, ERROR, FATAL or PANIC.
-*/
-func (client *Szconfig) SetLogLevel(ctx context.Context, logLevelName string) error {
-	var err error = nil
-	if client.isTrace {
-		entryTime := time.Now()
-		client.traceEntry(25, logLevelName)
-		defer func() { client.traceExit(26, logLevelName, err, time.Since(entryTime)) }()
-	}
-	if !logging.IsValidLogLevelName(logLevelName) {
-		return fmt.Errorf("invalid error level: %s", logLevelName)
-	}
-	err = client.getLogger().SetLogLevel(logLevelName)
-	client.isTrace = (logLevelName == logging.LevelTraceName)
-	if client.observers != nil {
-		go func() {
-			details := map[string]string{
-				"logLevel": logLevelName,
-			}
-			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentId, 8012, err, details)
-		}()
-	}
-	return err
-}
-
-// --- Observer ---------------------------------------------------------------
 
 /*
 The GetObserverOrigin method returns the "origin" value of past Observer messages.
@@ -425,6 +331,35 @@ func (client *Szconfig) GetSdkId(ctx context.Context) string {
 }
 
 /*
+The Initialize method is a Null function for sz-sdk-go-grpc.
+
+Input
+  - ctx: A context to control lifecycle.
+  - instanceName: A name for the auditing node, to help identify it within system logs.
+  - settings: A JSON string containing configuration parameters.
+  - verboseLogging: A flag to enable deeper logging of the G2 processing. 0 for no Senzing logging; 1 for logging.
+*/
+func (client *Szconfig) Initialize(ctx context.Context, instanceName string, settings string, verboseLogging int64) error {
+	var err error = nil
+	if client.isTrace {
+		entryTime := time.Now()
+		client.traceEntry(17, instanceName, settings, verboseLogging)
+		defer func() { client.traceExit(18, instanceName, settings, verboseLogging, err, time.Since(entryTime)) }()
+	}
+	if client.observers != nil {
+		go func() {
+			details := map[string]string{
+				"settings":       settings,
+				"instanceName":   instanceName,
+				"verboseLogging": strconv.FormatInt(verboseLogging, 10),
+			}
+			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentId, 8006, err, details)
+		}()
+	}
+	return err
+}
+
+/*
 The RegisterObserver method adds the observer to the list of observers notified.
 
 Input
@@ -448,6 +383,36 @@ func (client *Szconfig) RegisterObserver(ctx context.Context, observer observer.
 				"observerId": observer.GetObserverId(ctx),
 			}
 			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentId, 8011, err, details)
+		}()
+	}
+	return err
+}
+
+/*
+The SetLogLevel method sets the level of logging.
+
+Input
+  - ctx: A context to control lifecycle.
+  - logLevelName: The desired log level. TRACE, DEBUG, INFO, WARN, ERROR, FATAL or PANIC.
+*/
+func (client *Szconfig) SetLogLevel(ctx context.Context, logLevelName string) error {
+	var err error = nil
+	if client.isTrace {
+		entryTime := time.Now()
+		client.traceEntry(25, logLevelName)
+		defer func() { client.traceExit(26, logLevelName, err, time.Since(entryTime)) }()
+	}
+	if !logging.IsValidLogLevelName(logLevelName) {
+		return fmt.Errorf("invalid error level: %s", logLevelName)
+	}
+	err = client.getLogger().SetLogLevel(logLevelName)
+	client.isTrace = (logLevelName == logging.LevelTraceName)
+	if client.observers != nil {
+		go func() {
+			details := map[string]string{
+				"logLevel": logLevelName,
+			}
+			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentId, 8012, err, details)
 		}()
 	}
 	return err
@@ -493,4 +458,35 @@ func (client *Szconfig) UnregisterObserver(ctx context.Context, observer observe
 		client.observers = nil
 	}
 	return err
+}
+
+// ----------------------------------------------------------------------------
+// Internal methods
+// ----------------------------------------------------------------------------
+
+// --- Logging ----------------------------------------------------------------
+
+// Get the Logger singleton.
+func (client *Szconfig) getLogger() logging.LoggingInterface {
+	var err error = nil
+	if client.logger == nil {
+		options := []interface{}{
+			&logging.OptionCallerSkip{Value: 4},
+		}
+		client.logger, err = logging.NewSenzingSdkLogger(ComponentId, szconfigapi.IdMessages, options...)
+		if err != nil {
+			panic(err)
+		}
+	}
+	return client.logger
+}
+
+// Trace method entry.
+func (client *Szconfig) traceEntry(errorNumber int, details ...interface{}) {
+	client.getLogger().Log(errorNumber, details...)
+}
+
+// Trace method exit.
+func (client *Szconfig) traceExit(errorNumber int, details ...interface{}) {
+	client.getLogger().Log(errorNumber, details...)
 }

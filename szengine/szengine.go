@@ -1,8 +1,6 @@
 /*
- *
- */
-
-// Package szengine implements a client for the service.
+Package szengine implements a client for the service.
+*/
 package szengine
 
 import (
@@ -22,10 +20,6 @@ import (
 	szpb "github.com/senzing-garage/sz-sdk-proto/go/szengine"
 )
 
-// ----------------------------------------------------------------------------
-// Types
-// ----------------------------------------------------------------------------
-
 type Szengine struct {
 	GrpcClient     szpb.SzEngineClient
 	isTrace        bool // Performance optimization
@@ -35,7 +29,7 @@ type Szengine struct {
 }
 
 // ----------------------------------------------------------------------------
-// Interface methods
+// sz-sdk-go.SzEngine interface methods
 // ----------------------------------------------------------------------------
 
 /*
@@ -993,33 +987,27 @@ func (client *Szengine) HowEntityByEntityId(ctx context.Context, entityId int64,
 }
 
 /*
-The Initialize method is a Null function for sz-sdk-go-grpc.
+The PrimeEngine method pre-initializes some of the heavier weight internal resources of the G2 engine.
+The G2 Engine uses "lazy initialization".
+PrimeEngine() forces initialization.
 
 Input
   - ctx: A context to control lifecycle.
-  - instanceName: A name for the auditing node, to help identify it within system logs.
-  - settings: A JSON string containing configuration parameters.
-  - configId: The configuration ID used for the initialization.
-  - verboseLogging: A flag to enable deeper logging of the G2 processing. 0 for no Senzing logging; 1 for logging.
 */
-func (client *Szengine) Initialize(ctx context.Context, instanceName string, settings string, configId int64, verboseLogging int64) error {
+func (client *Szengine) PrimeEngine(ctx context.Context) error {
 	var err error = nil
 	if client.isTrace {
 		entryTime := time.Now()
-		client.traceEntry(99, instanceName, settings, verboseLogging, configId)
-		defer func() {
-			client.traceExit(100, instanceName, settings, verboseLogging, configId, err, time.Since(entryTime))
-		}()
+		client.traceEntry(103)
+		defer func() { client.traceExit(104, err, time.Since(entryTime)) }()
 	}
+	request := szpb.PrimeEngineRequest{}
+	_, err = client.GrpcClient.PrimeEngine(ctx, &request)
+	err = helper.ConvertGrpcError(err)
 	if client.observers != nil {
 		go func() {
-			details := map[string]string{
-				"configId":       strconv.FormatInt(configId, 10),
-				"instancename":   instanceName,
-				"settings":       settings,
-				"verboseLogging": strconv.FormatInt(verboseLogging, 10),
-			}
-			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentId, 8047, err, details)
+			details := map[string]string{}
+			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentId, 8049, err, details)
 		}()
 	}
 	return err
@@ -1055,33 +1043,6 @@ func (client *Szengine) ProcessRedoRecord(ctx context.Context, redoRecord string
 		}()
 	}
 	return result, err
-}
-
-/*
-The PrimeEngine method pre-initializes some of the heavier weight internal resources of the G2 engine.
-The G2 Engine uses "lazy initialization".
-PrimeEngine() forces initialization.
-
-Input
-  - ctx: A context to control lifecycle.
-*/
-func (client *Szengine) PrimeEngine(ctx context.Context) error {
-	var err error = nil
-	if client.isTrace {
-		entryTime := time.Now()
-		client.traceEntry(103)
-		defer func() { client.traceExit(104, err, time.Since(entryTime)) }()
-	}
-	request := szpb.PrimeEngineRequest{}
-	_, err = client.GrpcClient.PrimeEngine(ctx, &request)
-	err = helper.ConvertGrpcError(err)
-	if client.observers != nil {
-		go func() {
-			details := map[string]string{}
-			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentId, 8049, err, details)
-		}()
-	}
-	return err
 }
 
 /*
@@ -1406,75 +1367,8 @@ func (client *Szengine) WhyRecords(ctx context.Context, dataSourceCode1 string, 
 }
 
 // ----------------------------------------------------------------------------
-// Internal methods
+// Public non-interface methods
 // ----------------------------------------------------------------------------
-
-// --- Logging ----------------------------------------------------------------
-
-// Get the Logger singleton.
-func (client *Szengine) getLogger() logging.LoggingInterface {
-	var err error = nil
-	if client.logger == nil {
-		options := []interface{}{
-			&logging.OptionCallerSkip{Value: 4},
-		}
-		client.logger, err = logging.NewSenzingSdkLogger(ComponentId, szengineapi.IdMessages, options...)
-		if err != nil {
-			panic(err)
-		}
-	}
-	return client.logger
-}
-
-// Trace method entry.
-func (client *Szengine) traceEntry(errorNumber int, details ...interface{}) {
-	client.getLogger().Log(errorNumber, details...)
-}
-
-// Trace method exit.
-func (client *Szengine) traceExit(errorNumber int, details ...interface{}) {
-	client.getLogger().Log(errorNumber, details...)
-}
-
-/*
-The SetLogLevel method sets the level of logging.
-
-Input
-  - ctx: A context to control lifecycle.
-  - logLevelName: The desired log level. TRACE, DEBUG, INFO, WARN, ERROR, FATAL or PANIC.
-*/
-func (client *Szengine) SetLogLevel(ctx context.Context, logLevelName string) error {
-	var err error = nil
-	if client.isTrace {
-		entryTime := time.Now()
-		client.traceEntry(137, logLevelName)
-		defer func() { client.traceExit(138, logLevelName, err, time.Since(entryTime)) }()
-	}
-	if !logging.IsValidLogLevelName(logLevelName) {
-		return fmt.Errorf("invalid error level: %s", logLevelName)
-	}
-	err = client.getLogger().SetLogLevel(logLevelName)
-	client.isTrace = (logLevelName == logging.LevelTraceName)
-	if client.observers != nil {
-		go func() {
-			details := map[string]string{
-				"logLevel": logLevelName,
-			}
-			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentId, 8077, err, details)
-		}()
-	}
-	return err
-}
-
-func formatFlags(flags int64) string {
-	return strconv.FormatInt(flags, 10)
-}
-
-func formatEntityId(entityId int64) string {
-	return strconv.FormatInt(entityId, 10)
-}
-
-// --- Observer ---------------------------------------------------------------
 
 /*
 The GetObserverOrigin method returns the "origin" value of past Observer messages.
@@ -1514,6 +1408,39 @@ func (client *Szengine) GetSdkId(ctx context.Context) string {
 }
 
 /*
+The Initialize method is a Null function for sz-sdk-go-grpc.
+
+Input
+  - ctx: A context to control lifecycle.
+  - instanceName: A name for the auditing node, to help identify it within system logs.
+  - settings: A JSON string containing configuration parameters.
+  - configId: The configuration ID used for the initialization.
+  - verboseLogging: A flag to enable deeper logging of the G2 processing. 0 for no Senzing logging; 1 for logging.
+*/
+func (client *Szengine) Initialize(ctx context.Context, instanceName string, settings string, configId int64, verboseLogging int64) error {
+	var err error = nil
+	if client.isTrace {
+		entryTime := time.Now()
+		client.traceEntry(99, instanceName, settings, verboseLogging, configId)
+		defer func() {
+			client.traceExit(100, instanceName, settings, verboseLogging, configId, err, time.Since(entryTime))
+		}()
+	}
+	if client.observers != nil {
+		go func() {
+			details := map[string]string{
+				"configId":       strconv.FormatInt(configId, 10),
+				"instancename":   instanceName,
+				"settings":       settings,
+				"verboseLogging": strconv.FormatInt(verboseLogging, 10),
+			}
+			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentId, 8047, err, details)
+		}()
+	}
+	return err
+}
+
+/*
 The RegisterObserver method adds the observer to the list of observers notified.
 
 Input
@@ -1537,6 +1464,36 @@ func (client *Szengine) RegisterObserver(ctx context.Context, observer observer.
 				"observerId": observer.GetObserverId(ctx),
 			}
 			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentId, 8076, err, details)
+		}()
+	}
+	return err
+}
+
+/*
+The SetLogLevel method sets the level of logging.
+
+Input
+  - ctx: A context to control lifecycle.
+  - logLevelName: The desired log level. TRACE, DEBUG, INFO, WARN, ERROR, FATAL or PANIC.
+*/
+func (client *Szengine) SetLogLevel(ctx context.Context, logLevelName string) error {
+	var err error = nil
+	if client.isTrace {
+		entryTime := time.Now()
+		client.traceEntry(137, logLevelName)
+		defer func() { client.traceExit(138, logLevelName, err, time.Since(entryTime)) }()
+	}
+	if !logging.IsValidLogLevelName(logLevelName) {
+		return fmt.Errorf("invalid error level: %s", logLevelName)
+	}
+	err = client.getLogger().SetLogLevel(logLevelName)
+	client.isTrace = (logLevelName == logging.LevelTraceName)
+	if client.observers != nil {
+		go func() {
+			details := map[string]string{
+				"logLevel": logLevelName,
+			}
+			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentId, 8077, err, details)
 		}()
 	}
 	return err
@@ -1582,4 +1539,43 @@ func (client *Szengine) UnregisterObserver(ctx context.Context, observer observe
 		client.observers = nil
 	}
 	return err
+}
+
+// ----------------------------------------------------------------------------
+// Internal methods
+// ----------------------------------------------------------------------------
+
+// --- Logging ----------------------------------------------------------------
+
+// Get the Logger singleton.
+func (client *Szengine) getLogger() logging.LoggingInterface {
+	var err error = nil
+	if client.logger == nil {
+		options := []interface{}{
+			&logging.OptionCallerSkip{Value: 4},
+		}
+		client.logger, err = logging.NewSenzingSdkLogger(ComponentId, szengineapi.IdMessages, options...)
+		if err != nil {
+			panic(err)
+		}
+	}
+	return client.logger
+}
+
+// Trace method entry.
+func (client *Szengine) traceEntry(errorNumber int, details ...interface{}) {
+	client.getLogger().Log(errorNumber, details...)
+}
+
+// Trace method exit.
+func (client *Szengine) traceExit(errorNumber int, details ...interface{}) {
+	client.getLogger().Log(errorNumber, details...)
+}
+
+func formatFlags(flags int64) string {
+	return strconv.FormatInt(flags, 10)
+}
+
+func formatEntityId(entityId int64) string {
+	return strconv.FormatInt(entityId, 10)
 }

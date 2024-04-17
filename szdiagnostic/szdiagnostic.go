@@ -1,8 +1,6 @@
 /*
- *
- */
-
-// Package main implements a client for the service.
+Package main implements a client for the service.
+*/
 package szdiagnostic
 
 import (
@@ -20,20 +18,16 @@ import (
 	szpb "github.com/senzing-garage/sz-sdk-proto/go/szdiagnostic"
 )
 
-// ----------------------------------------------------------------------------
-// Types
-// ----------------------------------------------------------------------------
-
 type Szdiagnostic struct {
 	GrpcClient     szpb.SzDiagnosticClient
-	isTrace        bool // Performance optimization
+	isTrace        bool
 	logger         logging.LoggingInterface
 	observerOrigin string
 	observers      subject.Subject
 }
 
 // ----------------------------------------------------------------------------
-// Interface methods
+// sz-sdk-go.SzDiagnostic interface methods
 // ----------------------------------------------------------------------------
 
 /*
@@ -94,39 +88,6 @@ func (client *Szdiagnostic) Destroy(ctx context.Context) error {
 }
 
 /*
-The Initialize method is a Null function for sz-sdk-go-grpc.
-
-Input
-  - ctx: A context to control lifecycle.
-  - instanceName: A name for the auditing node, to help identify it within system logs.
-  - settings: A JSON string containing configuration parameters.
-  - configId: The configuration ID used for the initialization.
-  - verboseLogging: A flag to enable deeper logging of the G2 processing. 0 for no Senzing logging; 1 for logging.
-*/
-func (client *Szdiagnostic) Initialize(ctx context.Context, instanceName string, settings string, configId int64, verboseLogging int64) error {
-	var err error = nil
-	if client.isTrace {
-		entryTime := time.Now()
-		client.traceEntry(49, instanceName, settings, configId, verboseLogging)
-		defer func() {
-			client.traceExit(50, instanceName, settings, configId, verboseLogging, err, time.Since(entryTime))
-		}()
-	}
-	if client.observers != nil {
-		go func() {
-			details := map[string]string{
-				"settings":       settings,
-				"configId":       strconv.FormatInt(configId, 10),
-				"instanceName":   instanceName,
-				"verboseLogging": strconv.FormatInt(verboseLogging, 10),
-			}
-			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentId, 8022, err, details)
-		}()
-	}
-	return err
-}
-
-/*
 The PurgeRepository method removes every record in the Senzing repository.
 
 Before calling purgeRepository() all other instances of the Senzing API
@@ -181,37 +142,8 @@ func (client *Szdiagnostic) Reinitialize(ctx context.Context, configId int64) er
 }
 
 // ----------------------------------------------------------------------------
-// Internal methods
+// Public non-interface methods
 // ----------------------------------------------------------------------------
-
-// --- Logging ----------------------------------------------------------------
-
-// Get the Logger singleton.
-func (client *Szdiagnostic) getLogger() logging.LoggingInterface {
-	var err error = nil
-	if client.logger == nil {
-		options := []interface{}{
-			&logging.OptionCallerSkip{Value: 4},
-		}
-		client.logger, err = logging.NewSenzingSdkLogger(ComponentId, szdiagnosticapi.IdMessages, options...)
-		if err != nil {
-			panic(err)
-		}
-	}
-	return client.logger
-}
-
-// Trace method entry.
-func (client *Szdiagnostic) traceEntry(errorNumber int, details ...interface{}) {
-	client.getLogger().Log(errorNumber, details...)
-}
-
-// Trace method exit.
-func (client *Szdiagnostic) traceExit(errorNumber int, details ...interface{}) {
-	client.getLogger().Log(errorNumber, details...)
-}
-
-// --- Observer ---------------------------------------------------------------
 
 /*
 The GetObserverOrigin method returns the "origin" value of past Observer messages.
@@ -248,6 +180,39 @@ func (client *Szdiagnostic) GetSdkId(ctx context.Context) string {
 		}()
 	}
 	return "grpc"
+}
+
+/*
+The Initialize method is a Null function for sz-sdk-go-grpc.
+
+Input
+  - ctx: A context to control lifecycle.
+  - instanceName: A name for the auditing node, to help identify it within system logs.
+  - settings: A JSON string containing configuration parameters.
+  - configId: The configuration ID used for the initialization.
+  - verboseLogging: A flag to enable deeper logging of the G2 processing. 0 for no Senzing logging; 1 for logging.
+*/
+func (client *Szdiagnostic) Initialize(ctx context.Context, instanceName string, settings string, configId int64, verboseLogging int64) error {
+	var err error = nil
+	if client.isTrace {
+		entryTime := time.Now()
+		client.traceEntry(49, instanceName, settings, configId, verboseLogging)
+		defer func() {
+			client.traceExit(50, instanceName, settings, configId, verboseLogging, err, time.Since(entryTime))
+		}()
+	}
+	if client.observers != nil {
+		go func() {
+			details := map[string]string{
+				"settings":       settings,
+				"configId":       strconv.FormatInt(configId, 10),
+				"instanceName":   instanceName,
+				"verboseLogging": strconv.FormatInt(verboseLogging, 10),
+			}
+			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentId, 8022, err, details)
+		}()
+	}
+	return err
 }
 
 /*
@@ -349,4 +314,35 @@ func (client *Szdiagnostic) UnregisterObserver(ctx context.Context, observer obs
 		client.observers = nil
 	}
 	return err
+}
+
+// ----------------------------------------------------------------------------
+// Internal methods
+// ----------------------------------------------------------------------------
+
+// --- Logging ----------------------------------------------------------------
+
+// Get the Logger singleton.
+func (client *Szdiagnostic) getLogger() logging.LoggingInterface {
+	var err error = nil
+	if client.logger == nil {
+		options := []interface{}{
+			&logging.OptionCallerSkip{Value: 4},
+		}
+		client.logger, err = logging.NewSenzingSdkLogger(ComponentId, szdiagnosticapi.IdMessages, options...)
+		if err != nil {
+			panic(err)
+		}
+	}
+	return client.logger
+}
+
+// Trace method entry.
+func (client *Szdiagnostic) traceEntry(errorNumber int, details ...interface{}) {
+	client.getLogger().Log(errorNumber, details...)
+}
+
+// Trace method exit.
+func (client *Szdiagnostic) traceExit(errorNumber int, details ...interface{}) {
+	client.getLogger().Log(errorNumber, details...)
 }

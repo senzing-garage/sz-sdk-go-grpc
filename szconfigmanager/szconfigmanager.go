@@ -1,8 +1,6 @@
 /*
- *
- */
-
-// Package scconfigmanaer implements a client for the service.
+Package szconfigmanager implements a client for the service.
+*/
 package szconfigmanager
 
 import (
@@ -20,13 +18,9 @@ import (
 	szpb "github.com/senzing-garage/sz-sdk-proto/go/szconfigmanager"
 )
 
-// ----------------------------------------------------------------------------
-// Types
-// ----------------------------------------------------------------------------
-
 type Szconfigmanager struct {
 	GrpcClient     szpb.SzConfigManagerClient
-	isTrace        bool // Performance optimization
+	isTrace        bool
 	logger         logging.LoggingInterface
 	observerOrigin string
 	observers      subject.Subject
@@ -191,35 +185,6 @@ func (client *Szconfigmanager) GetDefaultConfigId(ctx context.Context) (int64, e
 }
 
 /*
-The Initialize method is a Null function for sz-sdk-go-grpc.
-
-Input
-  - ctx: A context to control lifecycle.
-  - instanceName: A name for the auditing node, to help identify it within system logs.
-  - settings: A JSON string containing configuration parameters.
-  - verboseLogging: A flag to enable deeper logging of the G2 processing. 0 for no Senzing logging; 1 for logging.
-*/
-func (client *Szconfigmanager) Initialize(ctx context.Context, instanceName string, settings string, verboseLogging int64) error {
-	var err error = nil
-	if client.isTrace {
-		entryTime := time.Now()
-		client.traceEntry(17, instanceName, settings, verboseLogging)
-		defer func() { client.traceExit(18, instanceName, settings, verboseLogging, err, time.Since(entryTime)) }()
-	}
-	if client.observers != nil {
-		go func() {
-			details := map[string]string{
-				"settings":       settings,
-				"instanceName":   instanceName,
-				"verboseLogging": strconv.FormatInt(verboseLogging, 10),
-			}
-			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentId, 8006, err, details)
-		}()
-	}
-	return err
-}
-
-/*
 The ReplaceDefaultConfigId method replaces the old configuration identifier with a new configuration identifier in the Senzing database.
 It is like a "compare-and-swap" instruction to serialize concurrent editing of configuration.
 If currentDefaultConfigId is no longer the "old configuration identifier", the operation will fail.
@@ -286,37 +251,8 @@ func (client *Szconfigmanager) SetDefaultConfigId(ctx context.Context, configId 
 }
 
 // ----------------------------------------------------------------------------
-// Internal methods
+// Public non-interface methods
 // ----------------------------------------------------------------------------
-
-// --- Logging ----------------------------------------------------------------
-
-// Get the Logger singleton.
-func (client *Szconfigmanager) getLogger() logging.LoggingInterface {
-	var err error = nil
-	if client.logger == nil {
-		options := []interface{}{
-			&logging.OptionCallerSkip{Value: 4},
-		}
-		client.logger, err = logging.NewSenzingSdkLogger(ComponentId, szconfigmanagerapi.IdMessages, options...)
-		if err != nil {
-			panic(err)
-		}
-	}
-	return client.logger
-}
-
-// Trace method entry.
-func (client *Szconfigmanager) traceEntry(errorNumber int, details ...interface{}) {
-	client.getLogger().Log(errorNumber, details...)
-}
-
-// Trace method exit.
-func (client *Szconfigmanager) traceExit(errorNumber int, details ...interface{}) {
-	client.getLogger().Log(errorNumber, details...)
-}
-
-// --- Observer ---------------------------------------------------------------
 
 /*
 The GetObserverOrigin method returns the "origin" value of past Observer messages.
@@ -353,6 +289,35 @@ func (client *Szconfigmanager) GetSdkId(ctx context.Context) string {
 		}()
 	}
 	return "grpc"
+}
+
+/*
+The Initialize method is a Null function for sz-sdk-go-grpc.
+
+Input
+  - ctx: A context to control lifecycle.
+  - instanceName: A name for the auditing node, to help identify it within system logs.
+  - settings: A JSON string containing configuration parameters.
+  - verboseLogging: A flag to enable deeper logging of the G2 processing. 0 for no Senzing logging; 1 for logging.
+*/
+func (client *Szconfigmanager) Initialize(ctx context.Context, instanceName string, settings string, verboseLogging int64) error {
+	var err error = nil
+	if client.isTrace {
+		entryTime := time.Now()
+		client.traceEntry(17, instanceName, settings, verboseLogging)
+		defer func() { client.traceExit(18, instanceName, settings, verboseLogging, err, time.Since(entryTime)) }()
+	}
+	if client.observers != nil {
+		go func() {
+			details := map[string]string{
+				"settings":       settings,
+				"instanceName":   instanceName,
+				"verboseLogging": strconv.FormatInt(verboseLogging, 10),
+			}
+			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentId, 8006, err, details)
+		}()
+	}
+	return err
 }
 
 /*
@@ -454,4 +419,35 @@ func (client *Szconfigmanager) UnregisterObserver(ctx context.Context, observer 
 		client.observers = nil
 	}
 	return err
+}
+
+// ----------------------------------------------------------------------------
+// Internal methods
+// ----------------------------------------------------------------------------
+
+// --- Logging ----------------------------------------------------------------
+
+// Get the Logger singleton.
+func (client *Szconfigmanager) getLogger() logging.LoggingInterface {
+	var err error = nil
+	if client.logger == nil {
+		options := []interface{}{
+			&logging.OptionCallerSkip{Value: 4},
+		}
+		client.logger, err = logging.NewSenzingSdkLogger(ComponentId, szconfigmanagerapi.IdMessages, options...)
+		if err != nil {
+			panic(err)
+		}
+	}
+	return client.logger
+}
+
+// Trace method entry.
+func (client *Szconfigmanager) traceEntry(errorNumber int, details ...interface{}) {
+	client.getLogger().Log(errorNumber, details...)
+}
+
+// Trace method exit.
+func (client *Szconfigmanager) traceExit(errorNumber int, details ...interface{}) {
+	client.getLogger().Log(errorNumber, details...)
 }
