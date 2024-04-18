@@ -129,8 +129,8 @@ func ExampleConvertGrpcError() {
 		if szerror.Is(err, szerror.SzBadInput) {
 			fmt.Println("Is a SzBadInputError")
 		}
-		if szerror.Is(err, szerror.SzUnknownDatasource) {
-			fmt.Println("Is a SzUnknownDatasourceError")
+		if szerror.Is(err, szerror.SzUnknownDataSource) {
+			fmt.Println("Is a SzUnknownDataSourceError")
 		}
 		if szerror.Is(err, szerror.SzRetryable) {
 			fmt.Println("Is a SzRetryableError.")
@@ -138,5 +138,5 @@ func ExampleConvertGrpcError() {
 	}
 	// Output:
 	// Is a SzBadInputError
-	// Is a SzUnknownDatasourceError
+	// Is a SzUnknownDataSourceError
 }
