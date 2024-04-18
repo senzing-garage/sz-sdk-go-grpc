@@ -13,7 +13,7 @@ import (
 // Interface functions - Examples for godoc documentation
 // ----------------------------------------------------------------------------
 
-func ExampleSzConfigManager_AddConfig() {
+func ExampleSzconfigmanager_AddConfig() {
 	// For more information, visit https://github.com/senzing-garage/sz-sdk-go-grpc/blob/main/szconfigmananger/szconfigmanager_examples_test.go
 	ctx := context.TODO()
 	szConfig := getSzConfig(ctx)
@@ -38,7 +38,7 @@ func ExampleSzConfigManager_AddConfig() {
 	// Output: true
 }
 
-func ExampleSzConfigManager_GetConfig() {
+func ExampleSzconfigmanager_GetConfig() {
 	// For more information, visit https://github.com/senzing-garage/sz-sdk-go-grpc/blob/main/szconfigmananger/szconfigmanager_examples_test.go
 	ctx := context.TODO()
 	szConfigManager := getSzConfigManager(ctx)
@@ -54,7 +54,7 @@ func ExampleSzConfigManager_GetConfig() {
 	// Output: {"G2_CONFIG":{"CFG_ATTR":[{"ATTR_ID":1001,"ATTR_CODE":"DATA_SOURCE","ATTR...
 }
 
-func ExampleSzConfigManager_GetConfigList() {
+func ExampleSzconfigmanager_GetConfigList() {
 	// For more information, visit https://github.com/senzing-garage/sz-sdk-go-grpc/blob/main/szconfigmananger/szconfigmanager_examples_test.go
 	ctx := context.TODO()
 	szConfigManager := getSzConfigManager(ctx)
@@ -66,7 +66,7 @@ func ExampleSzConfigManager_GetConfigList() {
 	// Output: {"CONFIGS":[{"CONFIG_ID":...
 }
 
-func ExampleSzConfigManager_GetDefaultConfigId() {
+func ExampleSzconfigmanager_GetDefaultConfigId() {
 	// For more information, visit https://github.com/senzing-garage/sz-sdk-go-grpc/blob/main/szconfigmananger/szconfigmanager_examples_test.go
 	ctx := context.TODO()
 	szConfigManager := getSzConfigManager(ctx)
@@ -78,7 +78,7 @@ func ExampleSzConfigManager_GetDefaultConfigId() {
 	// Output: true
 }
 
-func ExampleSzConfigManager_ReplaceDefaultConfigId() {
+func ExampleSzconfigmanager_ReplaceDefaultConfigId() {
 	// For more information, visit https://github.com/senzing-garage/sz-sdk-go-grpc/blob/main/szconfigmananger/szconfigmanager_examples_test.go
 	ctx := context.TODO()
 	szConfigManager := getSzConfigManager(ctx)
@@ -107,7 +107,7 @@ func ExampleSzConfigManager_ReplaceDefaultConfigId() {
 	// Output:
 }
 
-func ExampleSzConfigManager_SetDefaultConfigId() {
+func ExampleSzconfigmanager_SetDefaultConfigId() {
 	// For more information, visit https://github.com/senzing-garage/sz-sdk-go-grpc/blob/main/szconfigmananger/szconfigmanager_examples_test.go
 	ctx := context.TODO()
 	szConfigManager := getSzConfigManager(ctx)
@@ -162,7 +162,7 @@ func ExampleSzconfigmanager_GetObserverOrigin() {
 // ----------------------------------------------------------------------------
 
 func ExampleSzconfigmanager_Initialize() {
-	// TODO: Write ExampleSzConfigManager_Initialize
+	// TODO: Write ExampleSzconfigmanager_Initialize
 	// // For more information, visit https://github.com/senzing-garage/sz-sdk-go-grpc/blob/main/szconfigmananger/szconfigmanager_examples_test.go
 	// ctx := context.TODO()
 	// grpcConnection := getGrpcConnection()

@@ -55,7 +55,7 @@ var (
 // Interface functions - test
 // ----------------------------------------------------------------------------
 
-func TestSzEngine_AddRecord(test *testing.T) {
+func TestSzengine_AddRecord(test *testing.T) {
 	ctx := context.TODO()
 	szEngine := getTestObject(ctx, test)
 	flags := sz.SZ_WITHOUT_INFO
@@ -71,7 +71,7 @@ func TestSzEngine_AddRecord(test *testing.T) {
 	}
 }
 
-func TestSzEngine_AddRecord_szBadInput(test *testing.T) {
+func TestSzengine_AddRecord_szBadInput(test *testing.T) {
 	ctx := context.TODO()
 	szEngine := getTestObject(ctx, test)
 	record1, err := record.NewRecord(`{"DATA_SOURCE": "TEST", "RECORD_ID": "ADD_TEST_ERR_1", "NAME_FULL": "NOBODY NOMATCH"}`)
@@ -101,7 +101,7 @@ func TestSzEngine_AddRecord_szBadInput(test *testing.T) {
 	printActual(test, actual)
 }
 
-func TestSzEngine_AddRecord_withInfo(test *testing.T) {
+func TestSzengine_AddRecord_withInfo(test *testing.T) {
 	ctx := context.TODO()
 	szEngine := getTestObject(ctx, test)
 	flags := sz.SZ_WITH_INFO
@@ -117,13 +117,13 @@ func TestSzEngine_AddRecord_withInfo(test *testing.T) {
 	}
 }
 
-func TestSzEngine_CloseExport(test *testing.T) {
+func TestSzengine_CloseExport(test *testing.T) {
 	// Tested in:
-	//  - TestSzEngine_ExportCsvEntityReport
-	//  - TestSzEngine_ExportJsonEntityReport
+	//  - TestSzengine_ExportCsvEntityReport
+	//  - TestSzengine_ExportJsonEntityReport
 }
 
-func TestSzEngine_CountRedoRecords(test *testing.T) {
+func TestSzengine_CountRedoRecords(test *testing.T) {
 	expected := int64(1)
 	ctx := context.TODO()
 	szEngine := getTestObject(ctx, test)
@@ -133,7 +133,7 @@ func TestSzEngine_CountRedoRecords(test *testing.T) {
 	assert.Equal(test, expected, actual)
 }
 
-func TestSzEngine_DeleteRecord(test *testing.T) {
+func TestSzengine_DeleteRecord(test *testing.T) {
 	ctx := context.TODO()
 	szEngine := getTestObject(ctx, test)
 	record := truthset.CustomerRecords["1009"]
@@ -146,7 +146,7 @@ func TestSzEngine_DeleteRecord(test *testing.T) {
 	printActual(test, actual)
 }
 
-func TestSzEngine_DeleteRecord_withInfo(test *testing.T) {
+func TestSzengine_DeleteRecord_withInfo(test *testing.T) {
 	ctx := context.TODO()
 	szEngine := getTestObject(ctx, test)
 	record := truthset.CustomerRecords["1010"]
@@ -159,7 +159,7 @@ func TestSzEngine_DeleteRecord_withInfo(test *testing.T) {
 	printActual(test, actual)
 }
 
-func TestSzEngine_ExportCsvEntityReport(test *testing.T) {
+func TestSzengine_ExportCsvEntityReport(test *testing.T) {
 	expected := []string{
 		`RESOLVED_ENTITY_ID,RELATED_ENTITY_ID,MATCH_LEVEL_CODE,MATCH_KEY,DATA_SOURCE,RECORD_ID`,
 		`1,0,"","","CUSTOMERS","1001"`,
@@ -184,7 +184,7 @@ func TestSzEngine_ExportCsvEntityReport(test *testing.T) {
 	assert.Equal(test, len(expected), actualCount)
 }
 
-func TestSzEngine_ExportCsvEntityReportIterator(test *testing.T) {
+func TestSzengine_ExportCsvEntityReportIterator(test *testing.T) {
 	expected := []string{
 		`RESOLVED_ENTITY_ID,RELATED_ENTITY_ID,MATCH_LEVEL_CODE,MATCH_KEY,DATA_SOURCE,RECORD_ID`,
 		`1,0,"","","CUSTOMERS","1001"`,
@@ -204,7 +204,7 @@ func TestSzEngine_ExportCsvEntityReportIterator(test *testing.T) {
 	assert.Equal(test, len(expected), actualCount)
 }
 
-func TestSzEngine_ExportJsonEntityReport(test *testing.T) {
+func TestSzengine_ExportJsonEntityReport(test *testing.T) {
 	ctx := context.TODO()
 	szEngine := getTestObject(ctx, test)
 	aRecord := testfixtures.FixtureRecords["65536-periods"]
@@ -235,7 +235,7 @@ func TestSzEngine_ExportJsonEntityReport(test *testing.T) {
 	assert.True(test, len(jsonEntityReport) > 65536)
 }
 
-func TestSzEngine_ExportJsonEntityReportIterator(test *testing.T) {
+func TestSzengine_ExportJsonEntityReportIterator(test *testing.T) {
 	expected := 1
 	ctx := context.TODO()
 	szEngine := getTestObject(ctx, test)
@@ -249,12 +249,12 @@ func TestSzEngine_ExportJsonEntityReportIterator(test *testing.T) {
 	assert.Equal(test, expected, actualCount)
 }
 
-func TestSzEngine_FetchNext(test *testing.T) {
+func TestSzengine_FetchNext(test *testing.T) {
 	// Tested in:
-	//  - TestSzEngine_ExportJsonEntityReport
+	//  - TestSzengine_ExportJsonEntityReport
 }
 
-func TestSzEngine_FindNetworkByEntityId(test *testing.T) {
+func TestSzengine_FindNetworkByEntityId(test *testing.T) {
 	ctx := context.TODO()
 	szEngine := getTestObject(ctx, test)
 	record1 := truthset.CustomerRecords["1001"]
@@ -269,7 +269,7 @@ func TestSzEngine_FindNetworkByEntityId(test *testing.T) {
 	printActual(test, actual)
 }
 
-func TestSzEngine_FindNetworkByRecordId(test *testing.T) {
+func TestSzengine_FindNetworkByRecordId(test *testing.T) {
 	ctx := context.TODO()
 	szEngine := getTestObject(ctx, test)
 	record1 := truthset.CustomerRecords["1001"]
@@ -285,7 +285,7 @@ func TestSzEngine_FindNetworkByRecordId(test *testing.T) {
 	printActual(test, actual)
 }
 
-func TestSzEngine_FindPathByEntityId(test *testing.T) {
+func TestSzengine_FindPathByEntityId(test *testing.T) {
 	ctx := context.TODO()
 	szEngine := getTestObject(ctx, test)
 	startEntityId := getEntityId(truthset.CustomerRecords["1001"])
@@ -299,7 +299,7 @@ func TestSzEngine_FindPathByEntityId(test *testing.T) {
 	printActual(test, actual)
 }
 
-func TestSzEngine_FindPathByEntityId_excluding(test *testing.T) {
+func TestSzengine_FindPathByEntityId_excluding(test *testing.T) {
 	ctx := context.TODO()
 	szEngine := getTestObject(ctx, test)
 	startRecord := truthset.CustomerRecords["1001"]
@@ -314,7 +314,7 @@ func TestSzEngine_FindPathByEntityId_excluding(test *testing.T) {
 	printActual(test, actual)
 }
 
-func TestSzEngine_FindPathByEntityId_excludingAndIncluding(test *testing.T) {
+func TestSzengine_FindPathByEntityId_excludingAndIncluding(test *testing.T) {
 	ctx := context.TODO()
 	szEngine := getTestObject(ctx, test)
 	startRecord := truthset.CustomerRecords["1001"]
@@ -329,7 +329,7 @@ func TestSzEngine_FindPathByEntityId_excludingAndIncluding(test *testing.T) {
 	printActual(test, actual)
 }
 
-func TestSzEngine_FindPathByEntityId_including(test *testing.T) {
+func TestSzengine_FindPathByEntityId_including(test *testing.T) {
 	ctx := context.TODO()
 	szEngine := getTestObject(ctx, test)
 	startRecord := truthset.CustomerRecords["1001"]
@@ -344,7 +344,7 @@ func TestSzEngine_FindPathByEntityId_including(test *testing.T) {
 	printActual(test, actual)
 }
 
-func TestSzEngine_FindPathByRecordId(test *testing.T) {
+func TestSzengine_FindPathByRecordId(test *testing.T) {
 	ctx := context.TODO()
 	szEngine := getTestObject(ctx, test)
 	record1 := truthset.CustomerRecords["1001"]
@@ -358,7 +358,7 @@ func TestSzEngine_FindPathByRecordId(test *testing.T) {
 	printActual(test, actual)
 }
 
-func TestSzEngine_FindPathByRecordId_excluding(test *testing.T) {
+func TestSzengine_FindPathByRecordId_excluding(test *testing.T) {
 	ctx := context.TODO()
 	szEngine := getTestObject(ctx, test)
 	record1 := truthset.CustomerRecords["1001"]
@@ -372,7 +372,7 @@ func TestSzEngine_FindPathByRecordId_excluding(test *testing.T) {
 	printActual(test, actual)
 }
 
-func TestSzEngine_FindPathByRecordId_excludingAndIncluding(test *testing.T) {
+func TestSzengine_FindPathByRecordId_excludingAndIncluding(test *testing.T) {
 	ctx := context.TODO()
 	szEngine := getTestObject(ctx, test)
 	record1 := truthset.CustomerRecords["1001"]
@@ -386,7 +386,7 @@ func TestSzEngine_FindPathByRecordId_excludingAndIncluding(test *testing.T) {
 	printActual(test, actual)
 }
 
-func TestSzEngine_FindPathByRecordId_including(test *testing.T) {
+func TestSzengine_FindPathByRecordId_including(test *testing.T) {
 	ctx := context.TODO()
 	szEngine := getTestObject(ctx, test)
 	record1 := truthset.CustomerRecords["1001"]
@@ -400,7 +400,7 @@ func TestSzEngine_FindPathByRecordId_including(test *testing.T) {
 	printActual(test, actual)
 }
 
-func TestSzEngine_GetActiveConfigId(test *testing.T) {
+func TestSzengine_GetActiveConfigId(test *testing.T) {
 	ctx := context.TODO()
 	szEngine := getTestObject(ctx, test)
 	actual, err := szEngine.GetActiveConfigId(ctx)
@@ -408,7 +408,7 @@ func TestSzEngine_GetActiveConfigId(test *testing.T) {
 	printActual(test, actual)
 }
 
-func TestSzEngine_GetEntityByEntityId(test *testing.T) {
+func TestSzengine_GetEntityByEntityId(test *testing.T) {
 	ctx := context.TODO()
 	szEngine := getTestObject(ctx, test)
 	entityId := getEntityId(truthset.CustomerRecords["1001"])
@@ -418,7 +418,7 @@ func TestSzEngine_GetEntityByEntityId(test *testing.T) {
 	printActual(test, actual)
 }
 
-func TestSzEngine_GetEntityByRecordId(test *testing.T) {
+func TestSzengine_GetEntityByRecordId(test *testing.T) {
 	ctx := context.TODO()
 	szEngine := getTestObject(ctx, test)
 	record := truthset.CustomerRecords["1001"]
@@ -428,7 +428,7 @@ func TestSzEngine_GetEntityByRecordId(test *testing.T) {
 	printActual(test, actual)
 }
 
-func TestSzEngine_GetRecord(test *testing.T) {
+func TestSzengine_GetRecord(test *testing.T) {
 	ctx := context.TODO()
 	szEngine := getTestObject(ctx, test)
 	record := truthset.CustomerRecords["1001"]
@@ -438,7 +438,7 @@ func TestSzEngine_GetRecord(test *testing.T) {
 	printActual(test, actual)
 }
 
-func TestSzEngine_GetRedoRecord(test *testing.T) {
+func TestSzengine_GetRedoRecord(test *testing.T) {
 	ctx := context.TODO()
 	szEngine := getTestObject(ctx, test)
 	actual, err := szEngine.GetRedoRecord(ctx)
@@ -446,7 +446,7 @@ func TestSzEngine_GetRedoRecord(test *testing.T) {
 	printActual(test, actual)
 }
 
-func TestSzEngine_GetRepositoryLastModifiedTime(test *testing.T) {
+func TestSzengine_GetRepositoryLastModifiedTime(test *testing.T) {
 	ctx := context.TODO()
 	szEngine := getTestObject(ctx, test)
 	actual, err := szEngine.GetRepositoryLastModifiedTime(ctx)
@@ -454,7 +454,7 @@ func TestSzEngine_GetRepositoryLastModifiedTime(test *testing.T) {
 	printActual(test, actual)
 }
 
-func TestSzEngine_GetStats(test *testing.T) {
+func TestSzengine_GetStats(test *testing.T) {
 	ctx := context.TODO()
 	szEngine := getTestObject(ctx, test)
 	actual, err := szEngine.GetStats(ctx)
@@ -462,7 +462,7 @@ func TestSzEngine_GetStats(test *testing.T) {
 	printActual(test, actual)
 }
 
-func TestSzEngine_GetVirtualEntityByRecordId(test *testing.T) {
+func TestSzengine_GetVirtualEntityByRecordId(test *testing.T) {
 	ctx := context.TODO()
 	szEngine := getTestObject(ctx, test)
 	record1 := truthset.CustomerRecords["1001"]
@@ -474,7 +474,7 @@ func TestSzEngine_GetVirtualEntityByRecordId(test *testing.T) {
 	printActual(test, actual)
 }
 
-func TestSzEngine_HowEntityByEntityId(test *testing.T) {
+func TestSzengine_HowEntityByEntityId(test *testing.T) {
 	ctx := context.TODO()
 	szEngine := getTestObject(ctx, test)
 	entityId := getEntityId(truthset.CustomerRecords["1001"])
@@ -484,15 +484,15 @@ func TestSzEngine_HowEntityByEntityId(test *testing.T) {
 	printActual(test, actual)
 }
 
-func TestSzEngine_PrimeEngine(test *testing.T) {
+func TestSzengine_PrimeEngine(test *testing.T) {
 	ctx := context.TODO()
 	szEngine := getTestObject(ctx, test)
 	err := szEngine.PrimeEngine(ctx)
 	testError(test, err)
 }
 
-func TestSzEngine_ProcessRedoRecord(test *testing.T) {
-	// TODO: Implement TestSzEngine_ProcessRedoRecord
+func TestSzengine_ProcessRedoRecord(test *testing.T) {
+	// TODO: Implement TestSzengine_ProcessRedoRecord
 	// ctx := context.TODO()
 	// szEngine := getTestObject(ctx, test)
 	// flags := sz.SZ_WITHOUT_INFO
@@ -501,8 +501,8 @@ func TestSzEngine_ProcessRedoRecord(test *testing.T) {
 	// printActual(test, actual)
 }
 
-func TestSzEngine_ProcessRedoRecord_withInfo(test *testing.T) {
-	// TODO: Implement TestSzEngine_ProcessRedoRecord_withInfo
+func TestSzengine_ProcessRedoRecord_withInfo(test *testing.T) {
+	// TODO: Implement TestSzengine_ProcessRedoRecord_withInfo
 	// ctx := context.TODO()
 	// szEngine := getTestObject(ctx, test)
 	// flags := sz.SZ_WITH_INFO
@@ -511,7 +511,7 @@ func TestSzEngine_ProcessRedoRecord_withInfo(test *testing.T) {
 	// printActual(test, actual)
 }
 
-func TestSzEngine_ReevaluateEntity(test *testing.T) {
+func TestSzengine_ReevaluateEntity(test *testing.T) {
 	ctx := context.TODO()
 	szEngine := getTestObject(ctx, test)
 	entityId := getEntityId(truthset.CustomerRecords["1001"])
@@ -521,7 +521,7 @@ func TestSzEngine_ReevaluateEntity(test *testing.T) {
 	printActual(test, actual)
 }
 
-func TestSzEngine_ReevaluateEntity_withInfo(test *testing.T) {
+func TestSzengine_ReevaluateEntity_withInfo(test *testing.T) {
 	ctx := context.TODO()
 	szEngine := getTestObject(ctx, test)
 	entityId := getEntityId(truthset.CustomerRecords["1001"])
@@ -531,7 +531,7 @@ func TestSzEngine_ReevaluateEntity_withInfo(test *testing.T) {
 	printActual(test, actual)
 }
 
-func TestSzEngine_ReevaluateRecord(test *testing.T) {
+func TestSzengine_ReevaluateRecord(test *testing.T) {
 	ctx := context.TODO()
 	szEngine := getTestObject(ctx, test)
 	record := truthset.CustomerRecords["1001"]
@@ -541,7 +541,7 @@ func TestSzEngine_ReevaluateRecord(test *testing.T) {
 	printActual(test, actual)
 }
 
-func TestSzEngine_ReevaluateRecord_withInfo(test *testing.T) {
+func TestSzengine_ReevaluateRecord_withInfo(test *testing.T) {
 	ctx := context.TODO()
 	szEngine := getTestObject(ctx, test)
 	record := truthset.CustomerRecords["1001"]
@@ -551,7 +551,7 @@ func TestSzEngine_ReevaluateRecord_withInfo(test *testing.T) {
 	printActual(test, actual)
 }
 
-func TestSzEngine_SearchByAttributes(test *testing.T) {
+func TestSzengine_SearchByAttributes(test *testing.T) {
 	ctx := context.TODO()
 	szEngine := getTestObject(ctx, test)
 	attributes := `{"NAMES": [{"NAME_TYPE": "PRIMARY", "NAME_LAST": "JOHNSON"}], "SSN_NUMBER": "053-39-3251"}`
@@ -562,15 +562,15 @@ func TestSzEngine_SearchByAttributes(test *testing.T) {
 	printActual(test, actual)
 }
 
-func TestSzEngine_StreamExportCsvEntityReport(test *testing.T) {
-	// TODO: Write TestSzEngine_StreamExportCsvEntityReport
+func TestSzengine_StreamExportCsvEntityReport(test *testing.T) {
+	// TODO: Write TestSzengine_StreamExportCsvEntityReport
 }
 
-func TestSzEngine_StreamExportJsonEntityReport(test *testing.T) {
-	// TODO: Write TestSzEngine_StreamExportJsonEntityReport
+func TestSzengine_StreamExportJsonEntityReport(test *testing.T) {
+	// TODO: Write TestSzengine_StreamExportJsonEntityReport
 }
 
-func TestSzEngine_SearchByAttributes_searchProfile(test *testing.T) {
+func TestSzengine_SearchByAttributes_searchProfile(test *testing.T) {
 	ctx := context.TODO()
 	szEngine := getTestObject(ctx, test)
 	attributes := `{"NAMES": [{"NAME_TYPE": "PRIMARY", "NAME_LAST": "JOHNSON"}], "SSN_NUMBER": "053-39-3251"}`
@@ -581,7 +581,7 @@ func TestSzEngine_SearchByAttributes_searchProfile(test *testing.T) {
 	printActual(test, actual)
 }
 
-func TestSzEngine_WhyEntities(test *testing.T) {
+func TestSzengine_WhyEntities(test *testing.T) {
 	ctx := context.TODO()
 	szEngine := getTestObject(ctx, test)
 	entityId1 := getEntityId(truthset.CustomerRecords["1001"])
@@ -592,7 +592,7 @@ func TestSzEngine_WhyEntities(test *testing.T) {
 	printActual(test, actual)
 }
 
-func TestSzEngine_WhyRecordInEntity(test *testing.T) {
+func TestSzengine_WhyRecordInEntity(test *testing.T) {
 	ctx := context.TODO()
 	szEngine := getTestObject(ctx, test)
 	record := truthset.CustomerRecords["1001"]
@@ -602,7 +602,7 @@ func TestSzEngine_WhyRecordInEntity(test *testing.T) {
 	printActual(test, actual)
 }
 
-func TestSzEngine_WhyRecords(test *testing.T) {
+func TestSzengine_WhyRecords(test *testing.T) {
 	ctx := context.TODO()
 	szEngine := getTestObject(ctx, test)
 	record1 := truthset.CustomerRecords["1001"]
@@ -617,14 +617,14 @@ func TestSzEngine_WhyRecords(test *testing.T) {
 // Logging and observing
 // ----------------------------------------------------------------------------
 
-func TestSzEngine_SetObserverOrigin(test *testing.T) {
+func TestSzengine_SetObserverOrigin(test *testing.T) {
 	ctx := context.TODO()
 	szEngine := getTestObject(ctx, test)
 	origin := "Machine: nn; Task: UnitTest"
 	szEngine.SetObserverOrigin(ctx, origin)
 }
 
-func TestSzEngine_GetObserverOrigin(test *testing.T) {
+func TestSzengine_GetObserverOrigin(test *testing.T) {
 	ctx := context.TODO()
 	szEngine := getTestObject(ctx, test)
 	origin := "Machine: nn; Task: UnitTest"
@@ -638,7 +638,7 @@ func TestSzEngine_GetObserverOrigin(test *testing.T) {
 // Object creation / destruction
 // ----------------------------------------------------------------------------
 
-func TestSzEngine_AsInterface(test *testing.T) {
+func TestSzengine_AsInterface(test *testing.T) {
 	expected := int64(0)
 	ctx := context.TODO()
 	szEngine := getSzEngineAsInterface(ctx)
@@ -648,7 +648,7 @@ func TestSzEngine_AsInterface(test *testing.T) {
 	assert.Equal(test, expected, actual)
 }
 
-func TestSzEngine_Initialize(test *testing.T) {
+func TestSzengine_Initialize(test *testing.T) {
 	ctx := context.TODO()
 	szEngine := getTestObject(ctx, test)
 	instanceName := "Test name"
@@ -659,7 +659,7 @@ func TestSzEngine_Initialize(test *testing.T) {
 	testError(test, err)
 }
 
-func TestSzEngine_Reinitialize(test *testing.T) {
+func TestSzengine_Reinitialize(test *testing.T) {
 	ctx := context.TODO()
 	szEngine := getTestObject(ctx, test)
 	configId, err := szEngine.GetActiveConfigId(ctx)
@@ -669,7 +669,7 @@ func TestSzEngine_Reinitialize(test *testing.T) {
 	printActual(test, configId)
 }
 
-func TestSzEngine_Destroy(test *testing.T) {
+func TestSzengine_Destroy(test *testing.T) {
 	ctx := context.TODO()
 	szEngine := getTestObject(ctx, test)
 	err := szEngine.Destroy(ctx)
