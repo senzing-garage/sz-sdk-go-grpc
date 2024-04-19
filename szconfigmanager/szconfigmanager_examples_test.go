@@ -81,17 +81,17 @@ func ExampleSzconfigmanager_GetDefaultConfigId() {
 func ExampleSzconfigmanager_ReplaceDefaultConfigId() {
 	// For more information, visit https://github.com/senzing-garage/sz-sdk-go-grpc/blob/main/szconfigmananger/szconfigmanager_examples_test.go
 	ctx := context.TODO()
-	szConfigManager := getSzConfigManager(ctx)
-	currentDefaultConfigId, err := szConfigManager.GetDefaultConfigId(ctx)
-	if err != nil {
-		fmt.Println(err)
-	}
 	szConfig := getSzConfig(ctx)
 	configHandle, err := szConfig.CreateConfig(ctx)
 	if err != nil {
 		fmt.Println(err)
 	}
 	configDefinition, err := szConfig.ExportConfig(ctx, configHandle)
+	if err != nil {
+		fmt.Println(err)
+	}
+	szConfigManager := getSzConfigManager(ctx)
+	currentDefaultConfigId, err := szConfigManager.GetDefaultConfigId(ctx)
 	if err != nil {
 		fmt.Println(err)
 	}

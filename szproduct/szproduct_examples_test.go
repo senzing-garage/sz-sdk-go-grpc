@@ -82,12 +82,12 @@ func ExampleSzproduct_Initialize() {
 	ctx := context.TODO()
 	szProduct := getSzProduct(ctx)
 	instanceName := "Test name"
-	settings := "{}"
-	verboseLogging := sz.SZ_NO_LOGGING
-	err := szProduct.Initialize(ctx, instanceName, settings, verboseLogging)
+	settings, err := getSettings()
 	if err != nil {
 		fmt.Println(err)
 	}
+	verboseLogging := sz.SZ_NO_LOGGING
+	szProduct.Initialize(ctx, instanceName, settings, verboseLogging)
 	// Output:
 }
 

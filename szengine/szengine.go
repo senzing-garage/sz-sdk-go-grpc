@@ -1226,6 +1226,7 @@ Input
 
 Output
   - A JSON document.
+    See the example output.
 */
 func (client *Szengine) WhyRecordInEntity(ctx context.Context, dataSourceCode string, recordId string, flags int64) (string, error) {
 	var err error = nil

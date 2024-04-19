@@ -254,7 +254,6 @@ func getSzConfigAsInterface(ctx context.Context) sz.SzConfig {
 }
 
 func getTestObject(ctx context.Context, test *testing.T) *Szconfig {
-	_ = ctx
 	_ = test
 	return getSzConfig(ctx)
 }

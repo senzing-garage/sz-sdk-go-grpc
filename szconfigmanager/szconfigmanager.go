@@ -310,8 +310,8 @@ func (client *Szconfigmanager) Initialize(ctx context.Context, instanceName stri
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{
-				"settings":       settings,
 				"instanceName":   instanceName,
+				"settings":       settings,
 				"verboseLogging": strconv.FormatInt(verboseLogging, 10),
 			}
 			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentId, 8006, err, details)
@@ -371,7 +371,7 @@ func (client *Szconfigmanager) SetLogLevel(ctx context.Context, logLevelName str
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{
-				"logLevel": logLevelName,
+				"logLevelName": logLevelName,
 			}
 			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentId, 8011, err, details)
 		}()

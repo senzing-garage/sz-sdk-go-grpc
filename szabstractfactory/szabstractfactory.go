@@ -17,10 +17,6 @@ import (
 	"google.golang.org/grpc"
 )
 
-// ----------------------------------------------------------------------------
-// Types
-// ----------------------------------------------------------------------------
-
 // Szconfig is the default implementation of the Szconfig interface.
 type Szabstractfactory struct {
 	GrpcConnection *grpc.ClientConn

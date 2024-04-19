@@ -133,17 +133,48 @@ func ExampleSzengine_ExportCsvEntityReport() {
 	// Output: true
 }
 
+func ExampleSzengine_ExportCsvEntityReportIterator() {
+	// For more information, visit https://github.com/senzing-garage/sz-sdk-go-grpc/blob/main/szengine/szengine_examples_test.go
+	ctx := context.TODO()
+	szEngine := getSzEngine(ctx)
+	csvColumnList := ""
+	flags := sz.SZ_NO_FLAGS
+	for result := range szEngine.ExportCsvEntityReportIterator(ctx, csvColumnList, flags) {
+		if result.Error != nil {
+			fmt.Println(result.Error)
+			break
+		}
+		fmt.Println(result.Value)
+	}
+	// Output: RESOLVED_ENTITY_ID,RELATED_ENTITY_ID,MATCH_LEVEL_CODE,MATCH_KEY,DATA_SOURCE,RECORD_ID
+}
+
 func ExampleSzengine_ExportJsonEntityReport() {
 	// For more information, visit https://github.com/senzing-garage/sz-sdk-go-grpc/blob/main/szengine/szengine_examples_test.go
 	ctx := context.TODO()
 	szEngine := getSzEngine(ctx)
 	flags := sz.SZ_NO_FLAGS
-	responseHandle, err := szEngine.ExportJsonEntityReport(ctx, flags)
+	exportHandle, err := szEngine.ExportJsonEntityReport(ctx, flags)
 	if err != nil {
 		fmt.Println(err)
 	}
-	fmt.Println(responseHandle > 0) // Dummy output.
+	fmt.Println(exportHandle > 0) // Dummy output.
 	// Output: true
+}
+
+func ExampleSzengine_ExportJsonEntityReportIterator() {
+	// For more information, visit https://github.com/senzing-garage/sz-sdk-go-grpc/blob/main/szengine/szengine_examples_test.go
+	ctx := context.TODO()
+	szEngine := getSzEngine(ctx)
+	flags := sz.SZ_NO_FLAGS
+	for result := range szEngine.ExportJsonEntityReportIterator(ctx, flags) {
+		if result.Error != nil {
+			fmt.Println(result.Error)
+			break
+		}
+		fmt.Println(result.Value)
+	}
+	// Output:
 }
 
 func ExampleSzengine_FetchNext() {
@@ -696,7 +727,7 @@ func ExampleSzengine_Destroy() {
 	szEngine := getSzEngine(ctx)
 	err := szEngine.Destroy(ctx)
 	if err != nil {
-		// This should produce a "senzing-60164001" error.
+		fmt.Println(err)
 	}
 	// Output:
 }

@@ -174,8 +174,8 @@ func (client *Szproduct) Initialize(ctx context.Context, instanceName string, se
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{
-				"iniParams":      settings,
-				"moduleName":     instanceName,
+				"instanceName":   instanceName,
+				"settings":       settings,
 				"verboseLogging": strconv.FormatInt(verboseLogging, 10),
 			}
 			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentId, 8002, err, details)
@@ -235,7 +235,7 @@ func (client *Szproduct) SetLogLevel(ctx context.Context, logLevelName string) e
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{
-				"logLevel": logLevelName,
+				"logLevelName": logLevelName,
 			}
 			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentId, 8009, err, details)
 		}()

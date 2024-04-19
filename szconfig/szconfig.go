@@ -158,7 +158,7 @@ func (client *Szconfig) DeleteDataSource(ctx context.Context, configHandle uintp
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{
-				"inputJson": dataSourceCode,
+				"dataSourceCode": dataSourceCode,
 			}
 			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentId, 8004, err, details)
 		}()
@@ -259,13 +259,14 @@ func (client *Szconfig) GetDataSources(ctx context.Context, configHandle uintptr
 }
 
 /*
-The ImportConfig method initializes the Senzing G2Config object from a JSON string.
-The configHandle is created by the Create() method.
+The ImportConfig method initializes the in-memory Senzing G2Config object from a JSON string.
 
 Input
   - ctx: A context to control lifecycle.
-  - configHandle: An identifier of an in-memory configuration.
   - configDefinition: A JSON document containing the Senzing configuration.
+
+Output
+  - An identifier of an in-memory configuration.
 */
 func (client *Szconfig) ImportConfig(ctx context.Context, configDefinition string) (uintptr, error) {
 	var err error = nil
@@ -349,8 +350,8 @@ func (client *Szconfig) Initialize(ctx context.Context, instanceName string, set
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{
+				"instancename":   instanceName,
 				"settings":       settings,
-				"instanceName":   instanceName,
 				"verboseLogging": strconv.FormatInt(verboseLogging, 10),
 			}
 			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentId, 8006, err, details)

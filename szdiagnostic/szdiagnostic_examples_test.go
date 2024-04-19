@@ -82,7 +82,7 @@ func ExampleSzdiagnostic_Destroy() {
 	szDiagnostic := getSzDiagnostic(ctx)
 	err := szDiagnostic.Destroy(ctx)
 	if err != nil {
-		// This should produce a "senzing-60134001" error.
+		fmt.Println(err)
 	}
 	// Output:
 }
