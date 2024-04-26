@@ -13,17 +13,29 @@ import (
 // Interface functions - Examples for godoc documentation
 // ----------------------------------------------------------------------------
 
-func ExampleSzdiagnostic_CheckDatabasePerformance() {
+func ExampleSzdiagnostic_CheckDatastorePerformance() {
 	// For more information, visit https://github.com/senzing-garage/sz-sdk-go-grpc/blob/main/szdiagnostic/szdiagnostic_examples_test.go
 	ctx := context.TODO()
 	szDiagnostic := getSzDiagnostic(ctx)
 	secondsToRun := 1
-	result, err := szDiagnostic.CheckDatabasePerformance(ctx, secondsToRun)
+	result, err := szDiagnostic.CheckDatastorePerformance(ctx, secondsToRun)
 	if err != nil {
 		fmt.Println(err)
 	}
 	fmt.Println(truncate(result, 25))
 	// Output: {"numRecordsInserted":...
+}
+
+func ExampleSzdiagnostic_GetDatastoreInfo() {
+	// For more information, visit https://github.com/senzing-garage/sz-sdk-go-grpc/blob/main/szdiagnostic/szdiagnostic_examples_test.go
+	ctx := context.TODO()
+	szDiagnostic := getSzDiagnostic(ctx)
+	result, err := szDiagnostic.GetDatastoreInfo(ctx)
+	if err != nil {
+		fmt.Println(err)
+	}
+	fmt.Println(result)
+	// Output: {"dataStores":[{"id":"CORE", "type":"sqlite3","location":"/tmp/sqlite/G2C.db"}]}
 }
 
 func ExampleSzdiagnostic_PurgeRepository() {

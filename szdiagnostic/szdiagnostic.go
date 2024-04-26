@@ -31,7 +31,7 @@ type Szdiagnostic struct {
 // ----------------------------------------------------------------------------
 
 /*
-The CheckDatabasePerformance method performs inserts to determine rate of insertion.
+The CheckDatastorePerformance method performs inserts to determine rate of insertion.
 
 Input
   - ctx: A context to control lifecycle.
@@ -42,7 +42,7 @@ Output
   - A string containing a JSON document.
     Example: `{"numRecordsInserted":0,"insertTime":0}`
 */
-func (client *Szdiagnostic) CheckDatabasePerformance(ctx context.Context, secondsToRun int) (string, error) {
+func (client *Szdiagnostic) CheckDatastorePerformance(ctx context.Context, secondsToRun int) (string, error) {
 	var err error = nil
 	var result string = ""
 	if client.isTrace {
@@ -50,10 +50,10 @@ func (client *Szdiagnostic) CheckDatabasePerformance(ctx context.Context, second
 		client.traceEntry(1, secondsToRun)
 		defer func() { client.traceExit(2, secondsToRun, result, err, time.Since(entryTime)) }()
 	}
-	request := szpb.CheckDatabasePerformanceRequest{
+	request := szpb.CheckDatastorePerformanceRequest{
 		SecondsToRun: int32(secondsToRun),
 	}
-	response, err := client.GrpcClient.CheckDatabasePerformance(ctx, &request)
+	response, err := client.GrpcClient.CheckDatastorePerformance(ctx, &request)
 	result = response.GetResult()
 	err = helper.ConvertGrpcError(err)
 	if client.observers != nil {
@@ -85,6 +85,37 @@ func (client *Szdiagnostic) Destroy(ctx context.Context) error {
 		}()
 	}
 	return err
+}
+
+/*
+The GetDatastoreInfo method retrieves information about the underlying datastore.
+
+Input
+  - ctx: A context to control lifecycle.
+
+Output
+
+  - A string containing a JSON document.
+*/
+func (client *Szdiagnostic) GetDatastoreInfo(ctx context.Context) (string, error) {
+	var err error = nil
+	var result string = ""
+	if client.isTrace {
+		entryTime := time.Now()
+		client.traceEntry(1)
+		defer func() { client.traceExit(2, result, err, time.Since(entryTime)) }()
+	}
+	request := szpb.GetDatastoreInfoRequest{}
+	response, err := client.GrpcClient.GetDatastoreInfo(ctx, &request)
+	result = response.GetResult()
+	err = helper.ConvertGrpcError(err)
+	if client.observers != nil {
+		go func() {
+			details := map[string]string{}
+			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentId, 8001, err, details)
+		}()
+	}
+	return result, err
 }
 
 /*
