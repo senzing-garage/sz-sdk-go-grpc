@@ -61,12 +61,21 @@ func TestSzdiagnostic_GetDatastoreInfo(test *testing.T) {
 	printActual(test, actual)
 }
 
-func TestSzdiagnostic_PurgeRepository(test *testing.T) {
+func TestSzdiagnostic_GetFeature(test *testing.T) {
 	ctx := context.TODO()
 	szDiagnostic := getTestObject(ctx, test)
-	err := szDiagnostic.PurgeRepository(ctx)
+	featureId := int64(1)
+	actual, err := szDiagnostic.GetFeature(ctx, featureId)
 	testError(test, err)
+	printActual(test, actual)
 }
+
+// func TestSzdiagnostic_PurgeRepository(test *testing.T) {
+// 	ctx := context.TODO()
+// 	szDiagnostic := getTestObject(ctx, test)
+// 	err := szDiagnostic.PurgeRepository(ctx)
+// 	testError(test, err)
+// }
 
 // ----------------------------------------------------------------------------
 // Logging and observing

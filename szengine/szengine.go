@@ -90,7 +90,7 @@ func (client *Szengine) CloseExport(ctx context.Context, exportHandle uintptr) e
 		defer func() { client.traceExit(14, exportHandle, err, time.Since(entryTime)) }()
 	}
 	request := szpb.CloseExportRequest{
-		ResponseHandle: int64(exportHandle),
+		ExportHandle: int64(exportHandle),
 	}
 	_, err = client.GrpcClient.CloseExport(ctx, &request)
 	err = helper.ConvertGrpcError(err)
@@ -423,7 +423,7 @@ func (client *Szengine) FetchNext(ctx context.Context, exportHandle uintptr) (st
 		defer func() { client.traceExit(32, exportHandle, result, err, time.Since(entryTime)) }()
 	}
 	request := szpb.FetchNextRequest{
-		ResponseHandle: int64(exportHandle),
+		ExportHandle: int64(exportHandle),
 	}
 	response, err := client.GrpcClient.FetchNext(ctx, &request)
 	result = response.GetResult()
@@ -432,6 +432,87 @@ func (client *Szengine) FetchNext(ctx context.Context, exportHandle uintptr) (st
 		go func() {
 			details := map[string]string{}
 			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentId, 8015, err, details)
+		}()
+	}
+	return result, err
+}
+
+/*
+TODO: Document FindInterestingEntitiesByEntityId ()
+The FindInterestingEntitiesByEntityId method...
+
+Input
+  - ctx: A context to control lifecycle.
+  - entityId: The unique identifier of an entity.
+  - flags: Flags used to control information returned.
+
+Output
+  - A JSON document.
+    See the example output.
+*/
+func (client *Szengine) FindInterestingEntitiesByEntityId(ctx context.Context, entityId int64, flags int64) (string, error) {
+	var err error = nil
+	var result string = ""
+	if client.isTrace {
+		entryTime := time.Now()
+		client.traceEntry(33, entityId, flags)
+		defer func() { client.traceExit(34, entityId, flags, result, err, time.Since(entryTime)) }()
+	}
+	request := szpb.FindInterestingEntitiesByEntityIdRequest{
+		EntityId: entityId,
+		Flags:    flags,
+	}
+	response, err := client.GrpcClient.FindInterestingEntitiesByEntityId(ctx, &request)
+	result = response.GetResult()
+	err = helper.ConvertGrpcError(err)
+	if client.observers != nil {
+		go func() {
+			details := map[string]string{
+				"entityId": strconv.FormatInt(entityId, 10),
+			}
+			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentId, 8016, err, details)
+		}()
+	}
+	return result, err
+}
+
+/*
+TODO: Document FindInterestingEntitiesByRecordId()
+The FindInterestingEntitiesByRecordId method...
+
+Input
+  - ctx: A context to control lifecycle.
+  - dataSourceCode: Identifies the provenance of the data.
+  - recordId: The unique identifier within the records of the same data source.
+  - flags: Flags used to control information returned.
+
+Output
+  - A JSON document.
+    See the example output.
+*/
+func (client *Szengine) FindInterestingEntitiesByRecordId(ctx context.Context, dataSourceCode string, recordId string, flags int64) (string, error) {
+	var err error = nil
+	var result string = ""
+	if client.isTrace {
+		entryTime := time.Now()
+		client.traceEntry(35, dataSourceCode, recordId, flags)
+		defer func() { client.traceExit(36, dataSourceCode, recordId, flags, result, err, time.Since(entryTime)) }()
+	}
+	request := szpb.FindInterestingEntitiesByRecordIdRequest{
+		DataSourceCode: dataSourceCode,
+		RecordId:       recordId,
+		Flags:          flags,
+	}
+	response, err := client.GrpcClient.FindInterestingEntitiesByRecordId(ctx, &request)
+	result = response.GetResult()
+	err = helper.ConvertGrpcError(err)
+	if client.observers != nil {
+		go func() {
+			details := map[string]string{
+				"dataSourceCode": dataSourceCode,
+				"recordID":       recordId,
+			}
+			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentId, 8017, err, details)
 		}()
 	}
 	return result, err
@@ -823,37 +904,6 @@ func (client *Szengine) GetRedoRecord(ctx context.Context) (string, error) {
 		go func() {
 			details := map[string]string{}
 			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentId, 8041, err, details)
-		}()
-	}
-	return result, err
-}
-
-/*
-The GetRepositoryLastModifiedTime method retrieves the last modified time of the Senzing repository,
-measured in the number of seconds between the last modified time and January 1, 1970 12:00am GMT (epoch time).
-
-Input
-  - ctx: A context to control lifecycle.
-
-Output
-  - A Unix Timestamp.
-*/
-func (client *Szengine) GetRepositoryLastModifiedTime(ctx context.Context) (int64, error) {
-	var err error = nil
-	var result int64 = 0
-	if client.isTrace {
-		entryTime := time.Now()
-		client.traceEntry(89)
-		defer func() { client.traceExit(90, result, err, time.Since(entryTime)) }()
-	}
-	request := szpb.GetRepositoryLastModifiedTimeRequest{}
-	response, err := client.GrpcClient.GetRepositoryLastModifiedTime(ctx, &request)
-	result = response.GetResult()
-	err = helper.ConvertGrpcError(err)
-	if client.observers != nil {
-		go func() {
-			details := map[string]string{}
-			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentId, 8042, err, details)
 		}()
 	}
 	return result, err

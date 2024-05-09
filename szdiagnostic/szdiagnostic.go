@@ -119,6 +119,41 @@ func (client *Szdiagnostic) GetDatastoreInfo(ctx context.Context) (string, error
 }
 
 /*
+TODO: Document GetFeature()
+The GetFeature method...
+
+Input
+  - ctx: A context to control lifecycle.
+  - featureId: The identifier of the feature to describe.
+
+Output
+
+  - A string containing a JSON document.
+*/
+func (client *Szdiagnostic) GetFeature(ctx context.Context, featureId int64) (string, error) {
+	var err error = nil
+	var result string = ""
+	if client.isTrace {
+		entryTime := time.Now()
+		client.traceEntry(99, featureId)
+		defer func() { client.traceExit(99, featureId, result, err, time.Since(entryTime)) }()
+	}
+	request := szpb.GetFeatureRequest{
+		FeatureId: featureId,
+	}
+	response, err := client.GrpcClient.GetFeature(ctx, &request)
+	result = response.GetResult()
+	err = helper.ConvertGrpcError(err)
+	if client.observers != nil {
+		go func() {
+			details := map[string]string{}
+			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentId, 8999, err, details)
+		}()
+	}
+	return result, err
+}
+
+/*
 The PurgeRepository method removes every record in the Senzing repository.
 Before calling purgeRepository() all other instances of the Senzing API
 (whether in custom code, REST API, stream-loader, redoer, G2Loader, etc)

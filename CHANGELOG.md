@@ -11,6 +11,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Updated dependencies
   - google.golang.org/grpc v1.63.2
 
+## [0.7.1] - 2024-05-09
+
+### Changed in 0.7.1
+
 ## [0.7.0] - 2024-03-01
 
 ### Changed in 0.7.0

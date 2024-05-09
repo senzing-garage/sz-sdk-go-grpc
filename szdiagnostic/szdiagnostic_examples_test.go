@@ -38,6 +38,19 @@ func ExampleSzdiagnostic_GetDatastoreInfo() {
 	// Output: {"dataStores":[{"id":"CORE", "type":"sqlite3","location":"/tmp/sqlite/G2C.db"}]}
 }
 
+func ExampleSzdiagnostic_GetFeature() {
+	// For more information, visit https://github.com/senzing-garage/sz-sdk-go-grpc/blob/main/szdiagnostic/szdiagnostic_examples_test.go
+	ctx := context.TODO()
+	szDiagnostic := getSzDiagnostic(ctx)
+	featureId := int64(1)
+	result, err := szDiagnostic.GetFeature(ctx, featureId)
+	if err != nil {
+		fmt.Println(err)
+	}
+	fmt.Println(result)
+	// Output: {"LIB_FEAT_ID":1,"FTYPE_CODE":"NAME","ELEMENTS":[{"FELEM_CODE":"TOKENIZED_NM","FELEM_VALUE":"ROBERT|SMITH"},{"FELEM_CODE":"CATEGORY","FELEM_VALUE":"PERSON"},{"FELEM_CODE":"CULTURE","FELEM_VALUE":"ANGLO"},{"FELEM_CODE":"GIVEN_NAME","FELEM_VALUE":"Robert"},{"FELEM_CODE":"SUR_NAME","FELEM_VALUE":"Smith"},{"FELEM_CODE":"FULL_NAME","FELEM_VALUE":"Robert Smith"}]}
+}
+
 func ExampleSzdiagnostic_PurgeRepository() {
 	// For more information, visit https://github.com/Senzing/sz-sdk-go-grpc/blob/main/szdiagnostic/szdiagnostic_examples_test.go
 	ctx := context.TODO()
