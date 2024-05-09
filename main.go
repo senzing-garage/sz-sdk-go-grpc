@@ -8,21 +8,17 @@ import (
 	"math/big"
 	"time"
 
-	"github.com/senzing-garage/g2-sdk-go-grpc/g2config"
-	"github.com/senzing-garage/g2-sdk-go-grpc/g2configmgr"
-	"github.com/senzing-garage/g2-sdk-go-grpc/g2diagnostic"
-	"github.com/senzing-garage/g2-sdk-go-grpc/g2engine"
-	"github.com/senzing-garage/g2-sdk-go-grpc/g2product"
-	"github.com/senzing-garage/g2-sdk-go/g2api"
-	g2configpb "github.com/senzing-garage/g2-sdk-proto/go/g2config"
-	g2configmgrpb "github.com/senzing-garage/g2-sdk-proto/go/g2configmgr"
-	g2diagnosticpb "github.com/senzing-garage/g2-sdk-proto/go/g2diagnostic"
-	g2enginepb "github.com/senzing-garage/g2-sdk-proto/go/g2engine"
-	g2productpb "github.com/senzing-garage/g2-sdk-proto/go/g2product"
-	"github.com/senzing-garage/go-common/truthset"
+	"github.com/senzing-garage/go-helpers/truthset"
 	"github.com/senzing-garage/go-logging/logging"
-	"github.com/senzing-garage/go-observing/observer"
-	"github.com/senzing-garage/go-observing/observerpb"
+	"github.com/senzing-garage/sz-sdk-go-grpc/szconfig"
+	"github.com/senzing-garage/sz-sdk-go-grpc/szconfigmanager"
+	"github.com/senzing-garage/sz-sdk-go-grpc/szengine"
+	"github.com/senzing-garage/sz-sdk-go-grpc/szproduct"
+	"github.com/senzing-garage/sz-sdk-go/sz"
+	szconfigpb "github.com/senzing-garage/sz-sdk-proto/go/szconfig"
+	szconfigmanagerpb "github.com/senzing-garage/sz-sdk-proto/go/szconfigmanager"
+	szenginepb "github.com/senzing-garage/sz-sdk-proto/go/szengine"
+	szproductpb "github.com/senzing-garage/sz-sdk-proto/go/szproduct"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 )
@@ -75,53 +71,48 @@ func getGrpcConnection() *grpc.ClientConn {
 	return grpcConnection
 }
 
-func getG2config(ctx context.Context) (g2api.G2config, error) {
+func getSzConfig(ctx context.Context) (sz.SzConfig, error) {
+	_ = ctx
 	var err error = nil
 	grpcConnection := getGrpcConnection()
-	result := &g2config.G2config{
-		GrpcClient: g2configpb.NewG2ConfigClient(grpcConnection),
+	result := &szconfig.Szconfig{
+		GrpcClient: szconfigpb.NewSzConfigClient(grpcConnection),
 	}
 	return result, err
 }
 
-func getG2configmgr(ctx context.Context) (g2api.G2configmgr, error) {
+func getSzConfigManager(ctx context.Context) (sz.SzConfigManager, error) {
+	_ = ctx
 	var err error = nil
 	grpcConnection := getGrpcConnection()
-	result := &g2configmgr.G2configmgr{
-		GrpcClient: g2configmgrpb.NewG2ConfigMgrClient(grpcConnection),
+	result := &szconfigmanager.Szconfigmanager{
+		GrpcClient: szconfigmanagerpb.NewSzConfigManagerClient(grpcConnection),
 	}
 	return result, err
 }
 
-func getG2diagnostic(ctx context.Context) (g2api.G2diagnostic, error) {
+func getSzEngine(ctx context.Context) (sz.SzEngine, error) {
+	_ = ctx
 	var err error = nil
 	grpcConnection := getGrpcConnection()
-	result := &g2diagnostic.G2diagnostic{
-		GrpcClient: g2diagnosticpb.NewG2DiagnosticClient(grpcConnection),
+	result := &szengine.Szengine{
+		GrpcClient: szenginepb.NewSzEngineClient(grpcConnection),
 	}
 	return result, err
 }
 
-func getG2engine(ctx context.Context) (g2api.G2engine, error) {
+func getSzProduct(ctx context.Context) (sz.SzProduct, error) {
+	_ = ctx
 	var err error = nil
 	grpcConnection := getGrpcConnection()
-	result := &g2engine.G2engine{
-		GrpcClient: g2enginepb.NewG2EngineClient(grpcConnection),
-	}
-	return result, err
-}
-
-func getG2product(ctx context.Context) (g2api.G2product, error) {
-	var err error = nil
-	grpcConnection := getGrpcConnection()
-	result := &g2product.G2product{
-		GrpcClient: g2productpb.NewG2ProductClient(grpcConnection),
+	result := &szproduct.Szproduct{
+		GrpcClient: szproductpb.NewSzProductClient(grpcConnection),
 	}
 	return result, err
 }
 
 func getLogger(ctx context.Context) (logging.LoggingInterface, error) {
-
+	_ = ctx
 	logger, err := logging.NewSenzingLogger("my-unique-%04d", Messages)
 	if err != nil {
 		fmt.Println(err)
@@ -130,43 +121,43 @@ func getLogger(ctx context.Context) (logging.LoggingInterface, error) {
 	return logger, err
 }
 
-func demonstrateConfigFunctions(ctx context.Context, g2Config g2api.G2config, g2Configmgr g2api.G2configmgr) error {
+func demonstrateConfigFunctions(ctx context.Context, szConfig sz.SzConfig, szConfigManager sz.SzConfigManager) error {
 	now := time.Now()
 
-	// Using G2Config: Create a default configuration in memory.
+	// Using SzConfig: Create a default configuration in memory.
 
-	configHandle, err := g2Config.Create(ctx)
+	configHandle, err := szConfig.CreateConfig(ctx)
 	if err != nil {
 		return logger.NewError(5100, err)
 	}
 
-	// Using G2Config: Add data source to in-memory configuration.
+	// Using SzConfig: Add data source to in-memory configuration.
 
-	for _, testDataSource := range truthset.TruthsetDataSources {
-		_, err := g2Config.AddDataSource(ctx, configHandle, testDataSource.Json)
+	for dataSourceCode := range truthset.TruthsetDataSources {
+		_, err := szConfig.AddDataSource(ctx, configHandle, dataSourceCode)
 		if err != nil {
 			return logger.NewError(5101, err)
 		}
 	}
 
-	// Using G2Config: Persist configuration to a string.
+	// Using SzConfig: Persist configuration to a string.
 
-	configStr, err := g2Config.Save(ctx, configHandle)
+	configStr, err := szConfig.ExportConfig(ctx, configHandle)
 	if err != nil {
 		return logger.NewError(5102, err)
 	}
 
-	// Using G2Configmgr: Persist configuration string to database.
+	// Using SzConfigManager: Persist configuration string to database.
 
-	configComments := fmt.Sprintf("Created by g2diagnostic_test at %s", now.UTC())
-	configID, err := g2Configmgr.AddConfig(ctx, configStr, configComments)
+	configComments := fmt.Sprintf("Created by szmain.go at %s", now.UTC())
+	configID, err := szConfigManager.AddConfig(ctx, configStr, configComments)
 	if err != nil {
 		return logger.NewError(5103, err)
 	}
 
-	// Using G2Configmgr: Set new configuration as the default.
+	// Using SzConfigManager: Set new configuration as the default.
 
-	err = g2Configmgr.SetDefaultConfigID(ctx, configID)
+	err = szConfigManager.SetDefaultConfigId(ctx, configID)
 	if err != nil {
 		return logger.NewError(5104, err)
 	}
@@ -174,39 +165,38 @@ func demonstrateConfigFunctions(ctx context.Context, g2Config g2api.G2config, g2
 	return err
 }
 
-func demonstrateAddRecord(ctx context.Context, g2Engine g2api.G2engine) (string, error) {
+func demonstrateAddRecord(ctx context.Context, szEngine sz.SzEngine) (string, error) {
 	dataSourceCode := "TEST"
 	randomNumber, err := rand.Int(rand.Reader, big.NewInt(1000000000))
 	if err != nil {
 		panic(err)
 	}
-	recordID := randomNumber.String()
-	jsonData := fmt.Sprintf(
+	recordId := randomNumber.String()
+	recordDefinition := fmt.Sprintf(
 		"%s%s%s",
 		`{"SOCIAL_HANDLE": "flavorh", "DATE_OF_BIRTH": "4/8/1983", "ADDR_STATE": "LA", "ADDR_POSTAL_CODE": "71232", "SSN_NUMBER": "053-39-3251", "ENTITY_TYPE": "TEST", "GENDER": "F", "srccode": "MDMPER", "CC_ACCOUNT_NUMBER": "5534202208773608", "RECORD_ID": "`,
-		recordID,
+		recordId,
 		`", "DSRC_ACTION": "A", "ADDR_CITY": "Delhi", "DRIVERS_LICENSE_STATE": "DE", "PHONE_NUMBER": "225-671-0796", "NAME_LAST": "SEAMAN", "entityid": "284430058", "ADDR_LINE1": "772 Armstrong RD"}`)
-	loadID := dataSourceCode
-	var flags int64 = 0
+	var flags int64 = sz.SZ_WITH_INFO
 
-	// Using G2Engine: Add record and return "withInfo".
+	// Using SzEngine: Add record and return "withInfo".
 
-	return g2Engine.AddRecordWithInfo(ctx, dataSourceCode, recordID, jsonData, loadID, flags)
+	return szEngine.AddRecord(ctx, dataSourceCode, recordId, recordDefinition, flags)
 }
 
-func demonstrateAdditionalFunctions(ctx context.Context, g2Diagnostic g2api.G2diagnostic, g2Engine g2api.G2engine, g2Product g2api.G2product) error {
+func demonstrateAdditionalFunctions(ctx context.Context, szEngine sz.SzEngine, szProduct sz.SzProduct) error {
 
-	// Using G2Engine: Add records with information returned.
+	// Using SzEngine: Add records with information returned.
 
-	withInfo, err := demonstrateAddRecord(ctx, g2Engine)
+	withInfo, err := demonstrateAddRecord(ctx, szEngine)
 	if err != nil {
 		failOnError(5302, err)
 	}
 	logger.Log(2003, withInfo)
 
-	// Using G2Product: Show license metadata.
+	// Using SzProduct: Show license metadata.
 
-	license, err := g2Product.License(ctx)
+	license, err := szProduct.GetLicense(ctx)
 	if err != nil {
 		failOnError(5303, err)
 	}
@@ -249,91 +239,82 @@ func main() {
 
 	// Create observers.
 
-	observer1 := &observer.ObserverNull{
-		Id: "Observer 1",
-	}
-	observer2 := &observer.ObserverNull{
-		Id: "Observer 2",
-	}
+	// observer1 := &observer.ObserverNull{
+	// 	Id: "Observer 1",
+	// }
+	// observer2 := &observer.ObserverNull{
+	// 	Id: "Observer 2",
+	// }
 
-	grpcConnection, err := grpc.Dial("localhost:8261", grpc.WithTransportCredentials(insecure.NewCredentials()))
-	if err != nil {
-		fmt.Printf("Did not connect: %v\n", err)
-	}
+	// grpcConnection, err := grpc.Dial("localhost:8261", grpc.WithTransportCredentials(insecure.NewCredentials()))
+	// if err != nil {
+	// 	fmt.Printf("Did not connect: %v\n", err)
+	// }
 
-	observer3 := &observer.ObserverGrpc{
-		Id:         "Observer 3",
-		GrpcClient: observerpb.NewObserverClient(grpcConnection),
-	}
+	// observer3 := &observer.ObserverGrpc{
+	// 	Id:         "Observer 3",
+	// 	GrpcClient: observerpb.NewObserverClient(grpcConnection),
+	// }
 
 	// Get Senzing objects for installing a Senzing Engine configuration.
 
-	g2Config, err := getG2config(ctx)
+	szConfig, err := getSzConfig(ctx)
 	if err != nil {
 		failOnError(5001, err)
 	}
-	err = g2Config.RegisterObserver(ctx, observer1)
-	if err != nil {
-		panic(err)
-	}
-	err = g2Config.RegisterObserver(ctx, observer2)
-	if err != nil {
-		panic(err)
-	}
-	err = g2Config.RegisterObserver(ctx, observer3)
-	if err != nil {
-		panic(err)
-	}
-	g2Config.SetObserverOrigin(ctx, "g2-sdk-go-grpc main.go")
+	// err = szConfig.RegisterObserver(ctx, observer1)
+	// if err != nil {
+	// 	panic(err)
+	// }
+	// err = szConfig.RegisterObserver(ctx, observer2)
+	// if err != nil {
+	// 	panic(err)
+	// }
+	// err = szConfig.RegisterObserver(ctx, observer3)
+	// if err != nil {
+	// 	panic(err)
+	// }
+	// szConfig.SetObserverOrigin(ctx, "s-sdk-go-grpc main.go")
 
-	g2Configmgr, err := getG2configmgr(ctx)
+	szConfigManager, err := getSzConfigManager(ctx)
 	if err != nil {
 		failOnError(5005, err)
 	}
-	err = g2Configmgr.RegisterObserver(ctx, observer1)
-	if err != nil {
-		panic(err)
-	}
+	// err = szConfigManager.RegisterObserver(ctx, observer1)
+	// if err != nil {
+	// 	panic(err)
+	// }
 
 	// Persist the Senzing configuration to the Senzing repository.
 
-	err = demonstrateConfigFunctions(ctx, g2Config, g2Configmgr)
+	err = demonstrateConfigFunctions(ctx, szConfig, szConfigManager)
 	if err != nil {
 		failOnError(5008, err)
 	}
 
 	// Now that a Senzing configuration is installed, get the remainder of the Senzing objects.
 
-	g2Diagnostic, err := getG2diagnostic(ctx)
-	if err != nil {
-		failOnError(5009, err)
-	}
-	err = g2Diagnostic.RegisterObserver(ctx, observer1)
-	if err != nil {
-		panic(err)
-	}
-
-	g2Engine, err := getG2engine(ctx)
+	szEngine, err := getSzEngine(ctx)
 	if err != nil {
 		failOnError(5010, err)
 	}
-	err = g2Engine.RegisterObserver(ctx, observer1)
-	if err != nil {
-		panic(err)
-	}
+	// err = szEngine.RegisterObserver(ctx, observer1)
+	// if err != nil {
+	// 	panic(err)
+	// }
 
-	g2Product, err := getG2product(ctx)
+	szProduct, err := getSzProduct(ctx)
 	if err != nil {
 		failOnError(5011, err)
 	}
-	err = g2Product.RegisterObserver(ctx, observer1)
-	if err != nil {
-		panic(err)
-	}
+	// err = szProduct.RegisterObserver(ctx, observer1)
+	// if err != nil {
+	// 	panic(err)
+	// }
 
 	// Demonstrate tests.
 
-	err = demonstrateAdditionalFunctions(ctx, g2Diagnostic, g2Engine, g2Product)
+	err = demonstrateAdditionalFunctions(ctx, szEngine, szProduct)
 	if err != nil {
 		failOnError(5015, err)
 	}

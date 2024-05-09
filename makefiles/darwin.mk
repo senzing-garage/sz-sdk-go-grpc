@@ -16,8 +16,9 @@ DYLD_LIBRARY_PATH := $(LD_LIBRARY_PATH)
 
 .PHONY: clean-osarch-specific
 clean-osarch-specific:
-	@rm -rf $(TARGET_DIRECTORY) || true
-	@rm -f $(GOPATH)/bin/$(PROGRAM_NAME) || true
+	@rm -f  $(GOPATH)/bin/$(PROGRAM_NAME) || true
+	@rm -f  $(MAKEFILE_DIRECTORY)/coverage.xml || true
+	@rm -fr $(TARGET_DIRECTORY) || true
 
 
 .PHONY: hello-world-osarch-specific

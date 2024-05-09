@@ -1,4 +1,4 @@
-# g2-sdk-go-grpc development
+# sz-sdk-go-grpc development
 
 ## Install Go
 
@@ -39,7 +39,7 @@ The following instructions build the example `main.go` program.
 
     ```console
     export GIT_ACCOUNT=senzing
-    export GIT_REPOSITORY=g2-sdk-go-grpc
+    export GIT_REPOSITORY=sz-sdk-go-grpc
     export GIT_ACCOUNT_DIR=~/${GIT_ACCOUNT}.git
     export GIT_REPOSITORY_DIR="${GIT_ACCOUNT_DIR}/${GIT_REPOSITORY}"
 

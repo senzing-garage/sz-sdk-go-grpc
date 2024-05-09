@@ -5,7 +5,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/senzing-garage/g2-sdk-go/g2error"
+	"github.com/senzing-garage/sz-sdk-go/szerror"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -13,17 +13,17 @@ import (
 
 var testCases = []struct {
 	expectedType        error
-	expectedTypes       []g2error.G2ErrorTypeIds
-	falseTypes          []g2error.G2ErrorTypeIds
+	expectedTypes       []szerror.SzErrorTypeIds
+	falseTypes          []szerror.SzErrorTypeIds
 	gRpcCode            codes.Code
 	senzingErrorMessage string
 	name                string
 }{
 	{
-		name:          "helper-g2error-0023",
-		expectedType:  g2error.G2BadInputError{},
-		expectedTypes: []g2error.G2ErrorTypeIds{g2error.G2BadInput},
-		falseTypes:    []g2error.G2ErrorTypeIds{g2error.G2Retryable},
+		name:          "helper-szerror-0023",
+		expectedType:  szerror.SzBadInputError{},
+		expectedTypes: []szerror.SzErrorTypeIds{szerror.SzBadInput},
+		falseTypes:    []szerror.SzErrorTypeIds{szerror.SzRetryable},
 		gRpcCode:      codes.Unknown,
 		senzingErrorMessage: `{
 			"date": "2023-03-27",
@@ -105,11 +105,11 @@ func TestConvertGrpcError(test *testing.T) {
 			actual := ConvertGrpcError(originalError)
 			assert.NotNil(test, actual)
 			assert.IsType(test, testCase.expectedType, actual)
-			for _, g2ErrorTypeId := range testCase.expectedTypes {
-				assert.True(test, g2error.Is(actual, g2ErrorTypeId), g2ErrorTypeId)
+			for _, szerrorTypeId := range testCase.expectedTypes {
+				assert.True(test, szerror.Is(actual, szerrorTypeId), szerrorTypeId)
 			}
-			for _, g2ErrorTypeId := range testCase.falseTypes {
-				assert.False(test, g2error.Is(actual, g2ErrorTypeId), g2ErrorTypeId)
+			for _, szerrorTypeId := range testCase.falseTypes {
+				assert.False(test, szerror.Is(actual, szerrorTypeId), szerrorTypeId)
 			}
 		})
 	}
@@ -121,22 +121,22 @@ func TestConvertGrpcError(test *testing.T) {
 // ----------------------------------------------------------------------------
 
 func ExampleConvertGrpcError() {
-	// For more information, visit https://github.com/senzing-garage/g2-sdk-go-grpc/blob/main/helper/helper_test.go
-	senzingErrorMessage := "99912E|Test message"                        // Example message from Senzing G2 engine.
+	// For more information, visit https://github.com/senzing-garage/sz-sdk-go-grpc/blob/main/helper/helper_test.go
+	senzingErrorMessage := "27E|Test message"                           // Example message from Senzing G2 engine.
 	grpcStatusError := status.Error(codes.Unknown, senzingErrorMessage) // Create a gRPC *status.Error
 	err := ConvertGrpcError(grpcStatusError)
 	if err != nil {
-		if g2error.Is(err, g2error.G2BadInput) {
-			fmt.Println("Is a G2BadInputError")
+		if szerror.Is(err, szerror.SzBadInput) {
+			fmt.Println("Is a SzBadInputError")
 		}
-		if g2error.Is(err, g2error.G2UnknownDatasource) {
-			fmt.Println("Is a G2UnknownDatasourceError")
+		if szerror.Is(err, szerror.SzUnknownDataSource) {
+			fmt.Println("Is a SzUnknownDataSourceError")
 		}
-		if g2error.Is(err, g2error.G2Retryable) {
-			fmt.Println("Is a G2RetryableError.")
+		if szerror.Is(err, szerror.SzRetryable) {
+			fmt.Println("Is a SzRetryableError.")
 		}
 	}
 	// Output:
-	// Is a G2BadInputError
-	// Is a G2UnknownDatasourceError
+	// Is a SzBadInputError
+	// Is a SzUnknownDataSourceError
 }
