@@ -69,12 +69,12 @@ func TestSzconfigmanager_AddConfig(test *testing.T) {
 func TestSzconfigmanager_GetConfig(test *testing.T) {
 	ctx := context.TODO()
 	szConfigManager := getTestObject(ctx, test)
-	configId, err1 := szConfigManager.GetDefaultConfigID(ctx)
+	configID, err1 := szConfigManager.GetDefaultConfigID(ctx)
 	if err1 != nil {
 		test.Log("Error:", err1.Error())
-		assert.FailNow(test, "szConfigManager.GetDefaultConfigId()")
+		assert.FailNow(test, "szConfigManager.GetDefaultConfigID()")
 	}
-	actual, err := szConfigManager.GetConfig(ctx, configId)
+	actual, err := szConfigManager.GetConfig(ctx, configID)
 	testError(test, err)
 	printActual(test, actual)
 }
@@ -98,33 +98,33 @@ func TestSzconfigmanager_GetDefaultConfigID(test *testing.T) {
 func TestSzconfigmanager_ReplaceDefaultConfigID(test *testing.T) {
 	ctx := context.TODO()
 	szConfigManager := getTestObject(ctx, test)
-	currentDefaultConfigId, err1 := szConfigManager.GetDefaultConfigID(ctx)
+	currentDefaultConfigID, err1 := szConfigManager.GetDefaultConfigID(ctx)
 	if err1 != nil {
 		test.Log("Error:", err1.Error())
-		assert.FailNow(test, "szConfigManager.GetDefaultConfigId()")
+		assert.FailNow(test, "szConfigManager.GetDefaultConfigID()")
 	}
 
 	// TODO: This is kind of a cheater.
 
-	newDefaultConfigId, err2 := szConfigManager.GetDefaultConfigID(ctx)
+	newDefaultConfigID, err2 := szConfigManager.GetDefaultConfigID(ctx)
 	if err2 != nil {
 		test.Log("Error:", err2.Error())
-		assert.FailNow(test, "szConfigManager.GetDefaultConfigId()-2")
+		assert.FailNow(test, "szConfigManager.GetDefaultConfigID()-2")
 	}
 
-	err := szConfigManager.ReplaceDefaultConfigID(ctx, currentDefaultConfigId, newDefaultConfigId)
+	err := szConfigManager.ReplaceDefaultConfigID(ctx, currentDefaultConfigID, newDefaultConfigID)
 	testError(test, err)
 }
 
 func TestSzconfigmanager_SetDefaultConfigID(test *testing.T) {
 	ctx := context.TODO()
 	szConfigManager := getTestObject(ctx, test)
-	configId, err1 := szConfigManager.GetDefaultConfigID(ctx)
+	configID, err1 := szConfigManager.GetDefaultConfigID(ctx)
 	if err1 != nil {
 		test.Log("Error:", err1.Error())
-		assert.FailNow(test, "szConfigManager.GetDefaultConfigId()")
+		assert.FailNow(test, "szConfigManager.GetDefaultConfigID()")
 	}
-	err := szConfigManager.SetDefaultConfigID(ctx, configId)
+	err := szConfigManager.SetDefaultConfigID(ctx, configID)
 	testError(test, err)
 }
 
@@ -189,7 +189,7 @@ func createError(errorID int, err error) error {
 func getGrpcConnection() *grpc.ClientConn {
 	var err error
 	if grpcConnection == nil {
-		grpcConnection, err = grpc.Dial(grpcAddress, grpc.WithTransportCredentials(insecure.NewCredentials()))
+		grpcConnection, err = grpc.NewClient(grpcAddress, grpc.WithTransportCredentials(insecure.NewCredentials()))
 		if err != nil {
 			fmt.Printf("Did not connect: %v\n", err)
 		}
@@ -308,12 +308,12 @@ func setupSenzingConfig(ctx context.Context) error {
 
 	szConfigManager := getSzConfigManager(ctx)
 	configComment := fmt.Sprintf("Created by szconfigmanager_test at %s", now.UTC())
-	configId, err := szConfigManager.AddConfig(ctx, configDefinition, configComment)
+	configID, err := szConfigManager.AddConfig(ctx, configDefinition, configComment)
 	if err != nil {
 		return createError(5913, err)
 	}
 
-	err = szConfigManager.SetDefaultConfigID(ctx, configId)
+	err = szConfigManager.SetDefaultConfigID(ctx, configID)
 	if err != nil {
 		return createError(5914, err)
 	}
@@ -323,12 +323,12 @@ func setupSenzingConfig(ctx context.Context) error {
 
 func setup() error {
 	ctx := context.TODO()
-	var err error = nil
+	var err error
 
 	options := []interface{}{
 		&logging.OptionCallerSkip{Value: 4},
 	}
-	logger, err = logging.NewSenzingLogger(ComponentId, szconfigmanagerapi.IDMessages, options...)
+	logger, err = logging.NewSenzingLogger(ComponentID, szconfigmanagerapi.IDMessages, options...)
 	if err != nil {
 		return createError(5901, err)
 	}
@@ -344,6 +344,6 @@ func setup() error {
 }
 
 func teardown() error {
-	var err error = nil
+	var err error
 	return err
 }

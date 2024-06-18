@@ -43,8 +43,8 @@ Output
     Example: `{"numRecordsInserted":0,"insertTime":0}`
 */
 func (client *Szdiagnostic) CheckDatastorePerformance(ctx context.Context, secondsToRun int) (string, error) {
-	var err error = nil
-	var result string = ""
+	var err error
+	var result string
 	if client.isTrace {
 		entryTime := time.Now()
 		client.traceEntry(1, secondsToRun)
@@ -59,7 +59,7 @@ func (client *Szdiagnostic) CheckDatastorePerformance(ctx context.Context, secon
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{}
-			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentId, 8001, err, details)
+			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentID, 8001, err, details)
 		}()
 	}
 	return result, err
@@ -72,7 +72,7 @@ Input
   - ctx: A context to control lifecycle.
 */
 func (client *Szdiagnostic) Destroy(ctx context.Context) error {
-	var err error = nil
+	var err error
 	if client.isTrace {
 		entryTime := time.Now()
 		client.traceEntry(7)
@@ -81,7 +81,7 @@ func (client *Szdiagnostic) Destroy(ctx context.Context) error {
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{}
-			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentId, 8003, err, details)
+			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentID, 8003, err, details)
 		}()
 	}
 	return err
@@ -98,8 +98,8 @@ Output
   - A string containing a JSON document.
 */
 func (client *Szdiagnostic) GetDatastoreInfo(ctx context.Context) (string, error) {
-	var err error = nil
-	var result string = ""
+	var err error
+	var result string
 	if client.isTrace {
 		entryTime := time.Now()
 		client.traceEntry(1)
@@ -112,7 +112,7 @@ func (client *Szdiagnostic) GetDatastoreInfo(ctx context.Context) (string, error
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{}
-			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentId, 8001, err, details)
+			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentID, 8001, err, details)
 		}()
 	}
 	return result, err
@@ -124,22 +124,22 @@ The GetFeature method...
 
 Input
   - ctx: A context to control lifecycle.
-  - featureId: The identifier of the feature to describe.
+  - featureID: The identifier of the feature to describe.
 
 Output
 
   - A string containing a JSON document.
 */
-func (client *Szdiagnostic) GetFeature(ctx context.Context, featureId int64) (string, error) {
-	var err error = nil
-	var result string = ""
+func (client *Szdiagnostic) GetFeature(ctx context.Context, featureID int64) (string, error) {
+	var err error
+	var result string
 	if client.isTrace {
 		entryTime := time.Now()
-		client.traceEntry(99, featureId)
-		defer func() { client.traceExit(99, featureId, result, err, time.Since(entryTime)) }()
+		client.traceEntry(99, featureID)
+		defer func() { client.traceExit(99, featureID, result, err, time.Since(entryTime)) }()
 	}
 	request := szpb.GetFeatureRequest{
-		FeatureId: featureId,
+		FeatureId: featureID,
 	}
 	response, err := client.GrpcClient.GetFeature(ctx, &request)
 	result = response.GetResult()
@@ -147,7 +147,7 @@ func (client *Szdiagnostic) GetFeature(ctx context.Context, featureId int64) (st
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{}
-			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentId, 8999, err, details)
+			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentID, 8999, err, details)
 		}()
 	}
 	return result, err
@@ -162,7 +162,7 @@ Input
   - ctx: A context to control lifecycle.
 */
 func (client *Szdiagnostic) PurgeRepository(ctx context.Context) error {
-	var err error = nil
+	var err error
 	if client.isTrace {
 		entryTime := time.Now()
 		client.traceEntry(117)
@@ -174,7 +174,7 @@ func (client *Szdiagnostic) PurgeRepository(ctx context.Context) error {
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{}
-			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentId, 8056, err, details)
+			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentID, 8056, err, details)
 		}()
 	}
 	return err
@@ -185,21 +185,21 @@ The Reinitialize method is a Null function for sz-sdk-go-grpc.
 
 Input
   - ctx: A context to control lifecycle.
-  - configId: The configuration ID used for the initialization.
+  - configID: The configuration ID used for the initialization.
 */
-func (client *Szdiagnostic) Reinitialize(ctx context.Context, configId int64) error {
-	var err error = nil
+func (client *Szdiagnostic) Reinitialize(ctx context.Context, configID int64) error {
+	var err error
 	if client.isTrace {
 		entryTime := time.Now()
-		client.traceEntry(51, configId)
-		defer func() { client.traceExit(52, configId, err, time.Since(entryTime)) }()
+		client.traceEntry(51, configID)
+		defer func() { client.traceExit(52, configID, err, time.Since(entryTime)) }()
 	}
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{
-				"configId": strconv.FormatInt(configId, 10),
+				"configID": strconv.FormatInt(configID, 10),
 			}
-			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentId, 8023, err, details)
+			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentID, 8023, err, details)
 		}()
 	}
 	return err
@@ -219,31 +219,8 @@ Output
   - The value sent in the Observer's "origin" key/value pair.
 */
 func (client *Szdiagnostic) GetObserverOrigin(ctx context.Context) string {
+	_ = ctx
 	return client.observerOrigin
-}
-
-/*
-The GetSdkId method returns the identifier of this particular Software Development Kit (SDK).
-It is handy when working with multiple implementations of the same SzDiagnostic interface.
-For this implementation, "grpc" is returned.
-
-Input
-  - ctx: A context to control lifecycle.
-*/
-func (client *Szdiagnostic) GetSdkId(ctx context.Context) string {
-	var err error = nil
-	if client.isTrace {
-		entryTime := time.Now()
-		client.traceEntry(59)
-		defer func() { client.traceExit(60, err, time.Since(entryTime)) }()
-	}
-	if client.observers != nil {
-		go func() {
-			details := map[string]string{}
-			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentId, 8024, err, details)
-		}()
-	}
-	return "grpc"
 }
 
 /*
@@ -253,27 +230,27 @@ Input
   - ctx: A context to control lifecycle.
   - instanceName: A name for the auditing node, to help identify it within system logs.
   - settings: A JSON string containing configuration parameters.
-  - configId: The configuration ID used for the initialization.  0 for current default configuration.
+  - configID: The configuration ID used for the initialization.  0 for current default configuration.
   - verboseLogging: A flag to enable deeper logging of the G2 processing. 0 for no Senzing logging; 1 for logging.
 */
-func (client *Szdiagnostic) Initialize(ctx context.Context, instanceName string, settings string, configId int64, verboseLogging int64) error {
-	var err error = nil
+func (client *Szdiagnostic) Initialize(ctx context.Context, instanceName string, settings string, configID int64, verboseLogging int64) error {
+	var err error
 	if client.isTrace {
 		entryTime := time.Now()
-		client.traceEntry(49, instanceName, settings, configId, verboseLogging)
+		client.traceEntry(49, instanceName, settings, configID, verboseLogging)
 		defer func() {
-			client.traceExit(50, instanceName, settings, configId, verboseLogging, err, time.Since(entryTime))
+			client.traceExit(50, instanceName, settings, configID, verboseLogging, err, time.Since(entryTime))
 		}()
 	}
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{
 				"settings":       settings,
-				"configId":       strconv.FormatInt(configId, 10),
+				"configID":       strconv.FormatInt(configID, 10),
 				"instanceName":   instanceName,
 				"verboseLogging": strconv.FormatInt(verboseLogging, 10),
 			}
-			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentId, 8022, err, details)
+			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentID, 8022, err, details)
 		}()
 	}
 	return err
@@ -287,7 +264,7 @@ Input
   - observer: The observer to be added.
 */
 func (client *Szdiagnostic) RegisterObserver(ctx context.Context, observer observer.Observer) error {
-	var err error = nil
+	var err error
 	if client.isTrace {
 		entryTime := time.Now()
 		client.traceEntry(55, observer.GetObserverID(ctx))
@@ -302,7 +279,7 @@ func (client *Szdiagnostic) RegisterObserver(ctx context.Context, observer obser
 			details := map[string]string{
 				"observerID": observer.GetObserverID(ctx),
 			}
-			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentId, 8025, err, details)
+			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentID, 8025, err, details)
 		}()
 	}
 	return err
@@ -316,7 +293,7 @@ Input
   - logLevelName: The desired log level. TRACE, DEBUG, INFO, WARN, ERROR, FATAL or PANIC.
 */
 func (client *Szdiagnostic) SetLogLevel(ctx context.Context, logLevelName string) error {
-	var err error = nil
+	var err error
 	if client.isTrace {
 		entryTime := time.Now()
 		client.traceEntry(53, logLevelName)
@@ -332,7 +309,7 @@ func (client *Szdiagnostic) SetLogLevel(ctx context.Context, logLevelName string
 			details := map[string]string{
 				"logLevel": logLevelName,
 			}
-			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentId, 8026, err, details)
+			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentID, 8026, err, details)
 		}()
 	}
 	return err
@@ -346,6 +323,7 @@ Input
   - origin: The value sent in the Observer's "origin" key/value pair.
 */
 func (client *Szdiagnostic) SetObserverOrigin(ctx context.Context, origin string) {
+	_ = ctx
 	client.observerOrigin = origin
 }
 
@@ -357,7 +335,7 @@ Input
   - observer: The observer to be added.
 */
 func (client *Szdiagnostic) UnregisterObserver(ctx context.Context, observer observer.Observer) error {
-	var err error = nil
+	var err error
 	if client.isTrace {
 		entryTime := time.Now()
 		client.traceEntry(57, observer.GetObserverID(ctx))
@@ -371,7 +349,7 @@ func (client *Szdiagnostic) UnregisterObserver(ctx context.Context, observer obs
 		details := map[string]string{
 			"observerID": observer.GetObserverID(ctx),
 		}
-		notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentId, 8027, err, details)
+		notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentID, 8027, err, details)
 	}
 	err = client.observers.UnregisterObserver(ctx, observer)
 	if !client.observers.HasObservers(ctx) {
@@ -388,12 +366,12 @@ func (client *Szdiagnostic) UnregisterObserver(ctx context.Context, observer obs
 
 // Get the Logger singleton.
 func (client *Szdiagnostic) getLogger() logging.Logging {
-	var err error = nil
+	var err error
 	if client.logger == nil {
 		options := []interface{}{
 			&logging.OptionCallerSkip{Value: 4},
 		}
-		client.logger, err = logging.NewSenzingLogger(ComponentId, szdiagnosticapi.IDMessages, options...)
+		client.logger, err = logging.NewSenzingLogger(ComponentID, szdiagnosticapi.IDMessages, options...)
 		if err != nil {
 			panic(err)
 		}

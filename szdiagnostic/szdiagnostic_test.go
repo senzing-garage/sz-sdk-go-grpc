@@ -65,8 +65,8 @@ func TestSzdiagnostic_GetDatastoreInfo(test *testing.T) {
 func TestSzdiagnostic_GetFeature(test *testing.T) {
 	ctx := context.TODO()
 	szDiagnostic := getTestObject(ctx, test)
-	featureId := int64(1)
-	actual, err := szDiagnostic.GetFeature(ctx, featureId)
+	featureID := int64(1)
+	actual, err := szDiagnostic.GetFeature(ctx, featureID)
 	testError(test, err)
 	printActual(test, actual)
 }
@@ -120,8 +120,8 @@ func TestSzdiagnostic_Initialize(test *testing.T) {
 	instanceName := "Test name"
 	settings := "{}"
 	verboseLogging := senzing.SzNoLogging
-	configId := senzing.SzInitializeWithDefaultConfiguration
-	err := szDiagnostic.Initialize(ctx, instanceName, settings, configId, verboseLogging)
+	configID := senzing.SzInitializeWithDefaultConfiguration
+	err := szDiagnostic.Initialize(ctx, instanceName, settings, configID, verboseLogging)
 	testError(test, err)
 }
 
@@ -129,9 +129,9 @@ func TestSzdiagnostic_Reinitialize(test *testing.T) {
 	ctx := context.TODO()
 	szDiagnostic := getTestObject(ctx, test)
 	szConfigManager := getSzConfigManager(ctx)
-	configId, err := szConfigManager.GetDefaultConfigID(ctx)
+	configID, err := szConfigManager.GetDefaultConfigID(ctx)
 	testError(test, err)
-	err = szDiagnostic.Reinitialize(ctx, configId)
+	err = szDiagnostic.Reinitialize(ctx, configID)
 	testErrorNoFail(test, err)
 }
 
@@ -152,7 +152,7 @@ func createError(errorID int, err error) error {
 }
 
 func getGrpcConnection() *grpc.ClientConn {
-	var err error = nil
+	var err error
 	if grpcConnection == nil {
 		grpcConnection, err = grpc.NewClient(grpcAddress, grpc.WithTransportCredentials(insecure.NewCredentials()))
 		if err != nil {
@@ -298,18 +298,18 @@ func setupSenzingConfig(ctx context.Context) error {
 
 	szConfigManager := getSzConfigManager(ctx)
 	configComment := fmt.Sprintf("Created by szdiagnostic_test at %s", now.UTC())
-	configId, err := szConfigManager.AddConfig(ctx, configDefinition, configComment)
+	configID, err := szConfigManager.AddConfig(ctx, configDefinition, configComment)
 	if err != nil {
 		return createError(5913, err)
 	}
 
-	err = szConfigManager.SetDefaultConfigID(ctx, configId)
+	err = szConfigManager.SetDefaultConfigID(ctx, configID)
 	if err != nil {
 		return createError(5914, err)
 	}
 
 	szDiagnostic := getSzDiagnostic(ctx)
-	err = szDiagnostic.Reinitialize(ctx, configId)
+	err = szDiagnostic.Reinitialize(ctx, configID)
 
 	return err
 }
@@ -321,12 +321,12 @@ func setupPurgeRepository(ctx context.Context) error {
 }
 
 func setupAddRecords(ctx context.Context) error {
-	var err error = nil
+	var err error
 	szEngine := getSzEngine(ctx)
-	testRecordIds := []string{"1001", "1002", "1003", "1004", "1005", "1039", "1040"}
+	testRecordIDs := []string{"1001", "1002", "1003", "1004", "1005", "1039", "1040"}
 	flags := senzing.SzWithoutInfo
-	for _, testRecordId := range testRecordIds {
-		testRecord := truthset.CustomerRecords[testRecordId]
+	for _, testRecordID := range testRecordIDs {
+		testRecord := truthset.CustomerRecords[testRecordID]
 		_, err := szEngine.AddRecord(ctx, testRecord.DataSource, testRecord.ID, testRecord.JSON, flags)
 		if err != nil {
 			return createError(5917, err)
@@ -337,12 +337,12 @@ func setupAddRecords(ctx context.Context) error {
 
 func setup() error {
 	ctx := context.TODO()
-	var err error = nil
+	var err error
 
 	options := []interface{}{
 		&logging.OptionCallerSkip{Value: 4},
 	}
-	logger, err = logging.NewSenzingLogger(ComponentId, szdiagnosticapi.IDMessages, options...)
+	logger, err = logging.NewSenzingLogger(ComponentID, szdiagnosticapi.IDMessages, options...)
 	if err != nil {
 		return createError(5901, err)
 	}
@@ -372,6 +372,6 @@ func setup() error {
 }
 
 func teardown() error {
-	var err error = nil
+	var err error
 	return err
 }

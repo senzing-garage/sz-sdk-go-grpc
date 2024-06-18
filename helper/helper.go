@@ -40,7 +40,7 @@ Output
 func ConvertGrpcError(originalError error) error {
 
 	if originalError == nil {
-		return originalError
+		return nil
 	}
 
 	result := originalError

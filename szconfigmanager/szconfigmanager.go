@@ -42,8 +42,8 @@ Output
   - A configuration identifier.
 */
 func (client *Szconfigmanager) AddConfig(ctx context.Context, configDefinition string, configComment string) (int64, error) {
-	var err error = nil
-	var result int64 = 0
+	var err error
+	var result int64
 	if client.isTrace {
 		entryTime := time.Now()
 		client.traceEntry(1, configDefinition, configComment)
@@ -61,7 +61,7 @@ func (client *Szconfigmanager) AddConfig(ctx context.Context, configDefinition s
 			details := map[string]string{
 				"configComment": configComment,
 			}
-			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentId, 8001, err, details)
+			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentID, 8001, err, details)
 		}()
 	}
 	return result, err
@@ -74,7 +74,7 @@ Input
   - ctx: A context to control lifecycle.
 */
 func (client *Szconfigmanager) Destroy(ctx context.Context) error {
-	var err error = nil
+	var err error
 	if client.isTrace {
 		entryTime := time.Now()
 		client.traceEntry(5)
@@ -83,7 +83,7 @@ func (client *Szconfigmanager) Destroy(ctx context.Context) error {
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{}
-			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentId, 8002, err, details)
+			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentID, 8002, err, details)
 		}()
 	}
 	return err
@@ -94,22 +94,23 @@ The GetConfig method retrieves a specific Senzing configuration JSON document fr
 
 Input
   - ctx: A context to control lifecycle.
-  - configId: The configuration identifier of the desired Senzing Engine configuration JSON document to retrieve.
+  - configID: The configuration identifier of the desired Senzing Engine configuration JSON document to retrieve.
 
 Output
   - A JSON document containing the Senzing configuration.
     See the example output.
 */
-func (client *Szconfigmanager) GetConfig(ctx context.Context, configId int64) (string, error) {
-	var err error = nil
-	var result string = ""
+func (client *Szconfigmanager) GetConfig(ctx context.Context, configID int64) (string, error) {
+	_ = ctx
+	var err error
+	var result string
 	if client.isTrace {
 		entryTime := time.Now()
-		client.traceEntry(7, configId)
-		defer func() { client.traceExit(8, configId, result, err, time.Since(entryTime)) }()
+		client.traceEntry(7, configID)
+		defer func() { client.traceExit(8, configID, result, err, time.Since(entryTime)) }()
 	}
 	request := szpb.GetConfigRequest{
-		ConfigId: configId,
+		ConfigId: configID,
 	}
 	response, err := client.GrpcClient.GetConfig(ctx, &request)
 	result = response.GetResult()
@@ -117,7 +118,7 @@ func (client *Szconfigmanager) GetConfig(ctx context.Context, configId int64) (s
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{}
-			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentId, 8003, err, details)
+			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentID, 8003, err, details)
 		}()
 	}
 	return result, err
@@ -134,8 +135,8 @@ Output
     See the example output.
 */
 func (client *Szconfigmanager) GetConfigs(ctx context.Context) (string, error) {
-	var err error = nil
-	var result string = ""
+	var err error
+	var result string
 	if client.isTrace {
 		entryTime := time.Now()
 		client.traceEntry(9)
@@ -148,7 +149,7 @@ func (client *Szconfigmanager) GetConfigs(ctx context.Context) (string, error) {
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{}
-			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentId, 8004, err, details)
+			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentID, 8004, err, details)
 		}()
 	}
 	return result, err
@@ -164,8 +165,8 @@ Output
   - A configuration identifier which identifies the current configuration in use.
 */
 func (client *Szconfigmanager) GetDefaultConfigID(ctx context.Context) (int64, error) {
-	var err error = nil
-	var result int64 = 0
+	var err error
+	var result int64
 	if client.isTrace {
 		entryTime := time.Now()
 		client.traceEntry(11)
@@ -178,7 +179,7 @@ func (client *Szconfigmanager) GetDefaultConfigID(ctx context.Context) (int64, e
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{}
-			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentId, 8005, err, details)
+			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentID, 8005, err, details)
 		}()
 	}
 	return result, err
@@ -187,33 +188,33 @@ func (client *Szconfigmanager) GetDefaultConfigID(ctx context.Context) (int64, e
 /*
 The ReplaceDefaultConfigID method replaces the old configuration identifier with a new configuration identifier in the Senzing database.
 It is like a "compare-and-swap" instruction to serialize concurrent editing of configuration.
-If currentDefaultConfigId is no longer the "old configuration identifier", the operation will fail.
-To simply set the default configuration ID, use SetDefaultConfigId().
+If currentDefaultConfigID is no longer the "old configuration identifier", the operation will fail.
+To simply set the default configuration ID, use SetDefaultConfigID().
 
 Input
   - ctx: A context to control lifecycle.
-  - currentDefaultConfigId: The configuration identifier to replace.
-  - newDefaultConfigId: The configuration identifier to use as the default.
+  - currentDefaultConfigID: The configuration identifier to replace.
+  - newDefaultConfigID: The configuration identifier to use as the default.
 */
-func (client *Szconfigmanager) ReplaceDefaultConfigID(ctx context.Context, currentDefaultConfigId int64, newDefaultConfigId int64) error {
-	var err error = nil
+func (client *Szconfigmanager) ReplaceDefaultConfigID(ctx context.Context, currentDefaultConfigID int64, newDefaultConfigID int64) error {
+	var err error
 	if client.isTrace {
 		entryTime := time.Now()
-		client.traceEntry(19, currentDefaultConfigId, newDefaultConfigId)
-		defer func() { client.traceExit(20, currentDefaultConfigId, newDefaultConfigId, err, time.Since(entryTime)) }()
+		client.traceEntry(19, currentDefaultConfigID, newDefaultConfigID)
+		defer func() { client.traceExit(20, currentDefaultConfigID, newDefaultConfigID, err, time.Since(entryTime)) }()
 	}
 	request := szpb.ReplaceDefaultConfigIdRequest{
-		CurrentDefaultConfigId: currentDefaultConfigId,
-		NewDefaultConfigId:     newDefaultConfigId,
+		CurrentDefaultConfigId: currentDefaultConfigID,
+		NewDefaultConfigId:     newDefaultConfigID,
 	}
 	_, err = client.GrpcClient.ReplaceDefaultConfigId(ctx, &request)
 	err = helper.ConvertGrpcError(err)
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{
-				"newDefaultConfigId": strconv.FormatInt(newDefaultConfigId, 10),
+				"newDefaultConfigID": strconv.FormatInt(newDefaultConfigID, 10),
 			}
-			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentId, 8007, err, details)
+			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentID, 8007, err, details)
 		}()
 	}
 	return err
@@ -225,26 +226,26 @@ To serialize modifying of the configuration identifier, see ReplaceDefaultConfig
 
 Input
   - ctx: A context to control lifecycle.
-  - configId: The configuration identifier of the Senzing Engine configuration to use as the default.
+  - configID: The configuration identifier of the Senzing Engine configuration to use as the default.
 */
-func (client *Szconfigmanager) SetDefaultConfigID(ctx context.Context, configId int64) error {
-	var err error = nil
+func (client *Szconfigmanager) SetDefaultConfigID(ctx context.Context, configID int64) error {
+	var err error
 	if client.isTrace {
 		entryTime := time.Now()
-		client.traceEntry(21, configId)
-		defer func() { client.traceExit(22, configId, err, time.Since(entryTime)) }()
+		client.traceEntry(21, configID)
+		defer func() { client.traceExit(22, configID, err, time.Since(entryTime)) }()
 	}
 	request := szpb.SetDefaultConfigIdRequest{
-		ConfigId: configId,
+		ConfigId: configID,
 	}
 	_, err = client.GrpcClient.SetDefaultConfigId(ctx, &request)
 	err = helper.ConvertGrpcError(err)
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{
-				"configId": strconv.FormatInt(configId, 10),
+				"configID": strconv.FormatInt(configID, 10),
 			}
-			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentId, 8008, err, details)
+			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentID, 8008, err, details)
 		}()
 	}
 	return err
@@ -264,31 +265,8 @@ Output
   - The value sent in the Observer's "origin" key/value pair.
 */
 func (client *Szconfigmanager) GetObserverOrigin(ctx context.Context) string {
+	_ = ctx
 	return client.observerOrigin
-}
-
-/*
-The GetSdkId method returns the identifier of this particular Software Development Kit (SDK).
-It is handy when working with multiple implementations of the same SzConfigManager Interface.
-For this implementation, "grpc" is returned.
-
-Input
-  - ctx: A context to control lifecycle.
-*/
-func (client *Szconfigmanager) GetSdkId(ctx context.Context) string {
-	var err error = nil
-	if client.isTrace {
-		entryTime := time.Now()
-		client.traceEntry(29)
-		defer func() { client.traceExit(30, err, time.Since(entryTime)) }()
-	}
-	if client.observers != nil {
-		go func() {
-			details := map[string]string{}
-			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentId, 8010, err, details)
-		}()
-	}
-	return "grpc"
 }
 
 /*
@@ -301,7 +279,7 @@ Input
   - verboseLogging: A flag to enable deeper logging of the G2 processing. 0 for no Senzing logging; 1 for logging.
 */
 func (client *Szconfigmanager) Initialize(ctx context.Context, instanceName string, settings string, verboseLogging int64) error {
-	var err error = nil
+	var err error
 	if client.isTrace {
 		entryTime := time.Now()
 		client.traceEntry(17, instanceName, settings, verboseLogging)
@@ -314,7 +292,7 @@ func (client *Szconfigmanager) Initialize(ctx context.Context, instanceName stri
 				"settings":       settings,
 				"verboseLogging": strconv.FormatInt(verboseLogging, 10),
 			}
-			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentId, 8006, err, details)
+			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentID, 8006, err, details)
 		}()
 	}
 	return err
@@ -328,7 +306,8 @@ Input
   - observer: The observer to be added.
 */
 func (client *Szconfigmanager) RegisterObserver(ctx context.Context, observer observer.Observer) error {
-	var err error = nil
+	_ = ctx
+	var err error
 	if client.isTrace {
 		entryTime := time.Now()
 		client.traceEntry(25, observer.GetObserverID(ctx))
@@ -343,7 +322,7 @@ func (client *Szconfigmanager) RegisterObserver(ctx context.Context, observer ob
 			details := map[string]string{
 				"observerID": observer.GetObserverID(ctx),
 			}
-			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentId, 8010, err, details)
+			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentID, 8010, err, details)
 		}()
 	}
 	return err
@@ -357,7 +336,7 @@ Input
   - logLevelName: The desired log level. TRACE, DEBUG, INFO, WARN, ERROR, FATAL or PANIC.
 */
 func (client *Szconfigmanager) SetLogLevel(ctx context.Context, logLevelName string) error {
-	var err error = nil
+	var err error
 	if client.isTrace {
 		entryTime := time.Now()
 		client.traceEntry(23, logLevelName)
@@ -373,7 +352,7 @@ func (client *Szconfigmanager) SetLogLevel(ctx context.Context, logLevelName str
 			details := map[string]string{
 				"logLevelName": logLevelName,
 			}
-			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentId, 8011, err, details)
+			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentID, 8011, err, details)
 		}()
 	}
 	return err
@@ -387,6 +366,7 @@ Input
   - origin: The value sent in the Observer's "origin" key/value pair.
 */
 func (client *Szconfigmanager) SetObserverOrigin(ctx context.Context, origin string) {
+	_ = ctx
 	client.observerOrigin = origin
 }
 
@@ -398,7 +378,7 @@ Input
   - observer: The observer to be added.
 */
 func (client *Szconfigmanager) UnregisterObserver(ctx context.Context, observer observer.Observer) error {
-	var err error = nil
+	var err error
 	if client.isTrace {
 		entryTime := time.Now()
 		client.traceEntry(27, observer.GetObserverID(ctx))
@@ -412,7 +392,7 @@ func (client *Szconfigmanager) UnregisterObserver(ctx context.Context, observer 
 		details := map[string]string{
 			"observerID": observer.GetObserverID(ctx),
 		}
-		notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentId, 8012, err, details)
+		notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentID, 8012, err, details)
 	}
 	err = client.observers.UnregisterObserver(ctx, observer)
 	if !client.observers.HasObservers(ctx) {
@@ -429,12 +409,12 @@ func (client *Szconfigmanager) UnregisterObserver(ctx context.Context, observer 
 
 // Get the Logger singleton.
 func (client *Szconfigmanager) getLogger() logging.Logging {
-	var err error = nil
+	var err error
 	if client.logger == nil {
 		options := []interface{}{
 			&logging.OptionCallerSkip{Value: 4},
 		}
-		client.logger, err = logging.NewSenzingLogger(ComponentId, szconfigmanagerapi.IDMessages, options...)
+		client.logger, err = logging.NewSenzingLogger(ComponentID, szconfigmanagerapi.IDMessages, options...)
 		if err != nil {
 			panic(err)
 		}

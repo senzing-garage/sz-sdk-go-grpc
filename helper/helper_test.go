@@ -15,7 +15,7 @@ var testCases = []struct {
 	expectedType        error
 	expectedTypes       []error
 	falseTypes          []error
-	gRpcCode            codes.Code
+	gRPCCode            codes.Code
 	senzingErrorMessage string
 	name                string
 }{
@@ -24,7 +24,7 @@ var testCases = []struct {
 		expectedType:  szerror.ErrSzBadInput,
 		expectedTypes: []error{szerror.ErrSzBadInput},
 		falseTypes:    []error{szerror.ErrSzRetryable},
-		gRpcCode:      codes.Unknown,
+		gRPCCode:      codes.Unknown,
 		senzingErrorMessage: `{
 			"date": "2023-03-27",
 			"time": "20:34:11.451202917",
@@ -84,12 +84,12 @@ func TestMain(m *testing.M) {
 }
 
 func setup() error {
-	var err error = nil
+	var err error
 	return err
 }
 
 func teardown() error {
-	var err error = nil
+	var err error
 	return err
 }
 

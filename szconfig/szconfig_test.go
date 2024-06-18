@@ -225,7 +225,7 @@ func TestSzconfig_Destroy(test *testing.T) {
 func getGrpcConnection() *grpc.ClientConn {
 	var err error
 	if grpcConnection == nil {
-		grpcConnection, err = grpc.Dial(grpcAddress, grpc.WithTransportCredentials(insecure.NewCredentials()))
+		grpcConnection, err = grpc.NewClient(grpcAddress, grpc.WithTransportCredentials(insecure.NewCredentials()))
 		if err != nil {
 			fmt.Printf("Did not connect: %v\n", err)
 		}
@@ -298,11 +298,11 @@ func TestMain(m *testing.M) {
 }
 
 func setup() error {
-	var err error = nil
+	var err error
 	return err
 }
 
 func teardown() error {
-	var err error = nil
+	var err error
 	return err
 }

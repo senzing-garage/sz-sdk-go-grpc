@@ -27,7 +27,7 @@ import (
 // Constants
 // ----------------------------------------------------------------------------
 
-const MessageIdTemplate = "senzing-9999%04d"
+const MessageIDTemplate = "senzing-9999%04d"
 
 // ----------------------------------------------------------------------------
 // Variables
@@ -45,14 +45,13 @@ var Messages = map[int]string{
 
 // Values updated via "go install -ldflags" parameters.
 
-var programName string = "unknown"
-var buildVersion string = "0.0.0"
-var buildIteration string = "0"
-
 var (
+	buildIteration = "0"
+	buildVersion   = "0.0.0"
 	grpcAddress    = "localhost:8261"
 	grpcConnection *grpc.ClientConn
 	logger         logging.Logging
+	programName    = "unknown"
 )
 
 // ----------------------------------------------------------------------------
@@ -60,7 +59,7 @@ var (
 // ----------------------------------------------------------------------------
 
 func main() {
-	var err error = nil
+	var err error
 	ctx := context.TODO()
 
 	// Configure the "log" standard library.
@@ -172,7 +171,7 @@ func main() {
 // ----------------------------------------------------------------------------
 
 func getGrpcConnection() *grpc.ClientConn {
-	var err error = nil
+	var err error
 	if grpcConnection == nil {
 		grpcConnection, err = grpc.NewClient(grpcAddress, grpc.WithTransportCredentials(insecure.NewCredentials()))
 		if err != nil {
@@ -185,7 +184,7 @@ func getGrpcConnection() *grpc.ClientConn {
 
 func getSzConfig(ctx context.Context) (senzing.SzConfig, error) {
 	_ = ctx
-	var err error = nil
+	var err error
 	grpcConnection := getGrpcConnection()
 	result := &szconfig.Szconfig{
 		GrpcClient: szconfigpb.NewSzConfigClient(grpcConnection),
@@ -195,7 +194,7 @@ func getSzConfig(ctx context.Context) (senzing.SzConfig, error) {
 
 func getSzConfigManager(ctx context.Context) (senzing.SzConfigManager, error) {
 	_ = ctx
-	var err error = nil
+	var err error
 	grpcConnection := getGrpcConnection()
 	result := &szconfigmanager.Szconfigmanager{
 		GrpcClient: szconfigmanagerpb.NewSzConfigManagerClient(grpcConnection),
@@ -205,7 +204,7 @@ func getSzConfigManager(ctx context.Context) (senzing.SzConfigManager, error) {
 
 func getSzEngine(ctx context.Context) (senzing.SzEngine, error) {
 	_ = ctx
-	var err error = nil
+	var err error
 	grpcConnection := getGrpcConnection()
 	result := &szengine.Szengine{
 		GrpcClient: szenginepb.NewSzEngineClient(grpcConnection),
@@ -215,7 +214,7 @@ func getSzEngine(ctx context.Context) (senzing.SzEngine, error) {
 
 func getSzProduct(ctx context.Context) (senzing.SzProduct, error) {
 	_ = ctx
-	var err error = nil
+	var err error
 	grpcConnection := getGrpcConnection()
 	result := &szproduct.Szproduct{
 		GrpcClient: szproductpb.NewSzProductClient(grpcConnection),
@@ -283,17 +282,17 @@ func demonstrateAddRecord(ctx context.Context, szEngine senzing.SzEngine) (strin
 	if err != nil {
 		panic(err)
 	}
-	recordId := randomNumber.String()
+	recordID := randomNumber.String()
 	recordDefinition := fmt.Sprintf(
 		"%s%s%s",
 		`{"SOCIAL_HANDLE": "flavorh", "DATE_OF_BIRTH": "4/8/1983", "ADDR_STATE": "LA", "ADDR_POSTAL_CODE": "71232", "SSN_NUMBER": "053-39-3251", "ENTITY_TYPE": "TEST", "GENDER": "F", "srccode": "MDMPER", "CC_ACCOUNT_NUMBER": "5534202208773608", "RECORD_ID": "`,
-		recordId,
+		recordID,
 		`", "DSRC_ACTION": "A", "ADDR_CITY": "Delhi", "DRIVERS_LICENSE_STATE": "DE", "PHONE_NUMBER": "225-671-0796", "NAME_LAST": "SEAMAN", "entityid": "284430058", "ADDR_LINE1": "772 Armstrong RD"}`)
 	var flags int64 = senzing.SzWithInfo
 
 	// Using SzEngine: Add record and return "withInfo".
 
-	return szEngine.AddRecord(ctx, dataSourceCode, recordId, recordDefinition, flags)
+	return szEngine.AddRecord(ctx, dataSourceCode, recordID, recordDefinition, flags)
 }
 
 func demonstrateAdditionalFunctions(ctx context.Context, szEngine senzing.SzEngine, szProduct senzing.SzProduct) error {
@@ -317,7 +316,7 @@ func demonstrateAdditionalFunctions(ctx context.Context, szEngine senzing.SzEngi
 	return err
 }
 
-func failOnError(msgId int, err error) {
-	logger.Log(msgId, err)
+func failOnError(msgID int, err error) {
+	logger.Log(msgID, err)
 	panic(err.Error())
 }

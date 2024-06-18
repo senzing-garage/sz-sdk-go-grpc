@@ -44,8 +44,8 @@ Output
     See the example output.
 */
 func (client *Szconfig) AddDataSource(ctx context.Context, configHandle uintptr, dataSourceCode string) (string, error) {
-	var err error = nil
-	var result string = ""
+	var err error
+	var result string
 	if client.isTrace {
 		entryTime := time.Now()
 		client.traceEntry(1, configHandle, dataSourceCode)
@@ -64,7 +64,7 @@ func (client *Szconfig) AddDataSource(ctx context.Context, configHandle uintptr,
 				"dataSourceCode": dataSourceCode,
 				"return":         result,
 			}
-			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentId, 8001, err, details)
+			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentID, 8001, err, details)
 		}()
 	}
 	return result, err
@@ -79,7 +79,7 @@ Input
   - configHandle: An identifier of an in-memory configuration.
 */
 func (client *Szconfig) CloseConfig(ctx context.Context, configHandle uintptr) error {
-	var err error = nil
+	var err error
 	if client.isTrace {
 		entryTime := time.Now()
 		client.traceEntry(5, configHandle)
@@ -93,7 +93,7 @@ func (client *Szconfig) CloseConfig(ctx context.Context, configHandle uintptr) e
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{}
-			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentId, 8002, err, details)
+			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentID, 8002, err, details)
 		}()
 	}
 	return err
@@ -113,8 +113,8 @@ Output
   - A Pointer to an in-memory Senzing configuration.
 */
 func (client *Szconfig) CreateConfig(ctx context.Context) (uintptr, error) {
-	var err error = nil
-	var result uintptr = 0
+	var err error
+	var result uintptr
 	if client.isTrace {
 		entryTime := time.Now()
 		client.traceEntry(7)
@@ -127,7 +127,7 @@ func (client *Szconfig) CreateConfig(ctx context.Context) (uintptr, error) {
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{}
-			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentId, 8003, err, details)
+			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentID, 8003, err, details)
 		}()
 	}
 	return result, err
@@ -143,7 +143,7 @@ Input
   - dataSourceCode: The datasource name (e.g. "TEST_DATASOURCE").
 */
 func (client *Szconfig) DeleteDataSource(ctx context.Context, configHandle uintptr, dataSourceCode string) error {
-	var err error = nil
+	var err error
 	if client.isTrace {
 		entryTime := time.Now()
 		client.traceEntry(9, configHandle, dataSourceCode)
@@ -160,7 +160,7 @@ func (client *Szconfig) DeleteDataSource(ctx context.Context, configHandle uintp
 			details := map[string]string{
 				"dataSourceCode": dataSourceCode,
 			}
-			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentId, 8004, err, details)
+			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentID, 8004, err, details)
 		}()
 	}
 	return err
@@ -173,7 +173,7 @@ Input
   - ctx: A context to control lifecycle.
 */
 func (client *Szconfig) Destroy(ctx context.Context) error {
-	var err error = nil
+	var err error
 	if client.isTrace {
 		entryTime := time.Now()
 		client.traceEntry(11)
@@ -182,7 +182,7 @@ func (client *Szconfig) Destroy(ctx context.Context) error {
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{}
-			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentId, 8005, err, details)
+			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentID, 8005, err, details)
 		}()
 	}
 	return err
@@ -201,8 +201,8 @@ Output
     See the example output.
 */
 func (client *Szconfig) ExportConfig(ctx context.Context, configHandle uintptr) (string, error) {
-	var err error = nil
-	var result string = ""
+	var err error
+	var result string
 	if client.isTrace {
 		entryTime := time.Now()
 		client.traceEntry(23, configHandle)
@@ -217,7 +217,7 @@ func (client *Szconfig) ExportConfig(ctx context.Context, configHandle uintptr) 
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{}
-			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentId, 8009, err, details)
+			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentID, 8009, err, details)
 		}()
 	}
 	return result, err
@@ -236,8 +236,8 @@ Output
     See the example output.
 */
 func (client *Szconfig) GetDataSources(ctx context.Context, configHandle uintptr) (string, error) {
-	var err error = nil
-	var result string = ""
+	var err error
+	var result string
 	if client.isTrace {
 		entryTime := time.Now()
 		client.traceEntry(19, configHandle)
@@ -252,7 +252,7 @@ func (client *Szconfig) GetDataSources(ctx context.Context, configHandle uintptr
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{}
-			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentId, 8007, err, details)
+			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentID, 8007, err, details)
 		}()
 	}
 	return result, err
@@ -269,7 +269,7 @@ Output
   - An identifier of an in-memory configuration.
 */
 func (client *Szconfig) ImportConfig(ctx context.Context, configDefinition string) (uintptr, error) {
-	var err error = nil
+	var err error
 	if client.isTrace {
 		entryTime := time.Now()
 		client.traceEntry(21, configDefinition)
@@ -284,7 +284,7 @@ func (client *Szconfig) ImportConfig(ctx context.Context, configDefinition strin
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{}
-			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentId, 8008, err, details)
+			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentID, 8008, err, details)
 		}()
 	}
 	return result, err
@@ -304,31 +304,8 @@ Output
   - The value sent in the Observer's "origin" key/value pair.
 */
 func (client *Szconfig) GetObserverOrigin(ctx context.Context) string {
+	_ = ctx
 	return client.observerOrigin
-}
-
-/*
-The GetSdkId method returns the identifier of this particular Software Development Kit (SDK).
-It is handy when working with multiple implementations of the same SzConfig interface.
-For this implementation, "grpc" is returned.
-
-Input
-  - ctx: A context to control lifecycle.
-*/
-func (client *Szconfig) GetSdkId(ctx context.Context) string {
-	var err error = nil
-	if client.isTrace {
-		entryTime := time.Now()
-		client.traceEntry(31)
-		defer func() { client.traceExit(32, err, time.Since(entryTime)) }()
-	}
-	if client.observers != nil {
-		go func() {
-			details := map[string]string{}
-			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentId, 8010, err, details)
-		}()
-	}
-	return "grpc"
 }
 
 /*
@@ -341,7 +318,7 @@ Input
   - verboseLogging: A flag to enable deeper logging of the G2 processing. 0 for no Senzing logging; 1 for logging.
 */
 func (client *Szconfig) Initialize(ctx context.Context, instanceName string, settings string, verboseLogging int64) error {
-	var err error = nil
+	var err error
 	if client.isTrace {
 		entryTime := time.Now()
 		client.traceEntry(17, instanceName, settings, verboseLogging)
@@ -354,7 +331,7 @@ func (client *Szconfig) Initialize(ctx context.Context, instanceName string, set
 				"settings":       settings,
 				"verboseLogging": strconv.FormatInt(verboseLogging, 10),
 			}
-			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentId, 8006, err, details)
+			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentID, 8006, err, details)
 		}()
 	}
 	return err
@@ -368,7 +345,7 @@ Input
   - observer: The observer to be added.
 */
 func (client *Szconfig) RegisterObserver(ctx context.Context, observer observer.Observer) error {
-	var err error = nil
+	var err error
 	if client.isTrace {
 		entryTime := time.Now()
 		client.traceEntry(27, observer.GetObserverID(ctx))
@@ -383,7 +360,7 @@ func (client *Szconfig) RegisterObserver(ctx context.Context, observer observer.
 			details := map[string]string{
 				"observerID": observer.GetObserverID(ctx),
 			}
-			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentId, 8011, err, details)
+			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentID, 8011, err, details)
 		}()
 	}
 	return err
@@ -397,7 +374,7 @@ Input
   - logLevelName: The desired log level. TRACE, DEBUG, INFO, WARN, ERROR, FATAL or PANIC.
 */
 func (client *Szconfig) SetLogLevel(ctx context.Context, logLevelName string) error {
-	var err error = nil
+	var err error
 	if client.isTrace {
 		entryTime := time.Now()
 		client.traceEntry(25, logLevelName)
@@ -413,7 +390,7 @@ func (client *Szconfig) SetLogLevel(ctx context.Context, logLevelName string) er
 			details := map[string]string{
 				"logLevel": logLevelName,
 			}
-			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentId, 8012, err, details)
+			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentID, 8012, err, details)
 		}()
 	}
 	return err
@@ -427,6 +404,7 @@ Input
   - origin: The value sent in the Observer's "origin" key/value pair.
 */
 func (client *Szconfig) SetObserverOrigin(ctx context.Context, origin string) {
+	_ = ctx
 	client.observerOrigin = origin
 }
 
@@ -438,7 +416,7 @@ Input
   - observer: The observer to be added.
 */
 func (client *Szconfig) UnregisterObserver(ctx context.Context, observer observer.Observer) error {
-	var err error = nil
+	var err error
 	if client.isTrace {
 		entryTime := time.Now()
 		client.traceEntry(29, observer.GetObserverID(ctx))
@@ -452,7 +430,7 @@ func (client *Szconfig) UnregisterObserver(ctx context.Context, observer observe
 		details := map[string]string{
 			"observerID": observer.GetObserverID(ctx),
 		}
-		notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentId, 8013, err, details)
+		notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentID, 8013, err, details)
 	}
 	err = client.observers.UnregisterObserver(ctx, observer)
 	if !client.observers.HasObservers(ctx) {
@@ -469,12 +447,12 @@ func (client *Szconfig) UnregisterObserver(ctx context.Context, observer observe
 
 // Get the Logger singleton.
 func (client *Szconfig) getLogger() logging.Logging {
-	var err error = nil
+	var err error
 	if client.logger == nil {
 		options := []interface{}{
 			&logging.OptionCallerSkip{Value: 4},
 		}
-		client.logger, err = logging.NewSenzingLogger(ComponentId, szconfigapi.IDMessages, options...)
+		client.logger, err = logging.NewSenzingLogger(ComponentID, szconfigapi.IDMessages, options...)
 		if err != nil {
 			panic(err)
 		}

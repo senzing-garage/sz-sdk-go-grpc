@@ -42,8 +42,8 @@ func ExampleSzdiagnostic_GetFeature() {
 	// For more information, visit https://github.com/senzing-garage/sz-sdk-go-grpc/blob/main/szdiagnostic/szdiagnostic_examples_test.go
 	ctx := context.TODO()
 	szDiagnostic := getSzDiagnostic(ctx)
-	featureId := int64(1)
-	result, err := szDiagnostic.GetFeature(ctx, featureId)
+	featureID := int64(1)
+	result, err := szDiagnostic.GetFeature(ctx, featureID)
 	if err != nil {
 		fmt.Println(err)
 	}

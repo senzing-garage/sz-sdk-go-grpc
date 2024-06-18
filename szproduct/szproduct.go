@@ -37,7 +37,7 @@ Input
   - ctx: A context to control lifecycle.
 */
 func (client *Szproduct) Destroy(ctx context.Context) error {
-	var err error = nil
+	var err error
 	if client.isTrace {
 		entryTime := time.Now()
 		client.traceEntry(3)
@@ -46,7 +46,7 @@ func (client *Szproduct) Destroy(ctx context.Context) error {
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{}
-			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentId, 8001, err, details)
+			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentID, 8001, err, details)
 		}()
 	}
 	return err
@@ -63,8 +63,8 @@ Output
     See the example output.
 */
 func (client *Szproduct) GetLicense(ctx context.Context) (string, error) {
-	var err error = nil
-	var result string = ""
+	var err error
+	var result string
 	if client.isTrace {
 		entryTime := time.Now()
 		client.traceEntry(11)
@@ -77,7 +77,7 @@ func (client *Szproduct) GetLicense(ctx context.Context) (string, error) {
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{}
-			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentId, 8003, err, details)
+			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentID, 8003, err, details)
 		}()
 	}
 	return result, err
@@ -94,8 +94,8 @@ Output
     See the example output.
 */
 func (client *Szproduct) GetVersion(ctx context.Context) (string, error) {
-	var err error = nil
-	var result string = ""
+	var err error
+	var result string
 	if client.isTrace {
 		entryTime := time.Now()
 		client.traceEntry(19)
@@ -108,7 +108,7 @@ func (client *Szproduct) GetVersion(ctx context.Context) (string, error) {
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{}
-			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentId, 8006, err, details)
+			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentID, 8006, err, details)
 		}()
 	}
 	return result, err
@@ -128,31 +128,8 @@ Output
   - The value sent in the Observer's "origin" key/value pair.
 */
 func (client *Szproduct) GetObserverOrigin(ctx context.Context) string {
+	_ = ctx
 	return client.observerOrigin
-}
-
-/*
-The GetSdkId method returns the identifier of this particular Software Development Kit (SDK).
-It is handy when working with multiple implementations of the same SzProduct interface.
-For this implementation, "grpc" is returned.
-
-Input
-  - ctx: A context to control lifecycle.
-*/
-func (client *Szproduct) GetSdkId(ctx context.Context) string {
-	var err error = nil
-	if client.isTrace {
-		entryTime := time.Now()
-		client.traceEntry(25)
-		defer func() { client.traceExit(26, err, time.Since(entryTime)) }()
-	}
-	if client.observers != nil {
-		go func() {
-			details := map[string]string{}
-			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentId, 8007, err, details)
-		}()
-	}
-	return "grpc"
 }
 
 /*
@@ -165,7 +142,7 @@ Input
   - verboseLogging: A flag to enable deeper logging of the G2 processing. 0 for no Senzing logging; 1 for logging.
 */
 func (client *Szproduct) Initialize(ctx context.Context, instanceName string, settings string, verboseLogging int64) error {
-	var err error = nil
+	var err error
 	if client.isTrace {
 		entryTime := time.Now()
 		client.traceEntry(9, instanceName, settings, verboseLogging)
@@ -178,7 +155,7 @@ func (client *Szproduct) Initialize(ctx context.Context, instanceName string, se
 				"settings":       settings,
 				"verboseLogging": strconv.FormatInt(verboseLogging, 10),
 			}
-			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentId, 8002, err, details)
+			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentID, 8002, err, details)
 		}()
 	}
 	return err
@@ -192,7 +169,7 @@ Input
   - observer: The observer to be added.
 */
 func (client *Szproduct) RegisterObserver(ctx context.Context, observer observer.Observer) error {
-	var err error = nil
+	var err error
 	if client.isTrace {
 		entryTime := time.Now()
 		client.traceEntry(21, observer.GetObserverID(ctx))
@@ -207,7 +184,7 @@ func (client *Szproduct) RegisterObserver(ctx context.Context, observer observer
 			details := map[string]string{
 				"observerID": observer.GetObserverID(ctx),
 			}
-			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentId, 8008, err, details)
+			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentID, 8008, err, details)
 		}()
 	}
 	return err
@@ -221,7 +198,7 @@ Input
   - logLevel: The desired log level. TRACE, DEBUG, INFO, WARN, ERROR, FATAL or PANIC.
 */
 func (client *Szproduct) SetLogLevel(ctx context.Context, logLevelName string) error {
-	var err error = nil
+	var err error
 	if client.isTrace {
 		entryTime := time.Now()
 		client.traceEntry(13, logLevelName)
@@ -237,7 +214,7 @@ func (client *Szproduct) SetLogLevel(ctx context.Context, logLevelName string) e
 			details := map[string]string{
 				"logLevelName": logLevelName,
 			}
-			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentId, 8009, err, details)
+			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentID, 8009, err, details)
 		}()
 	}
 	return err
@@ -251,6 +228,7 @@ Input
   - origin: The value sent in the Observer's "origin" key/value pair.
 */
 func (client *Szproduct) SetObserverOrigin(ctx context.Context, origin string) {
+	_ = ctx
 	client.observerOrigin = origin
 }
 
@@ -262,7 +240,7 @@ Input
   - observer: The observer to be added.
 */
 func (client *Szproduct) UnregisterObserver(ctx context.Context, observer observer.Observer) error {
-	var err error = nil
+	var err error
 	if client.isTrace {
 		entryTime := time.Now()
 		client.traceEntry(23, observer.GetObserverID(ctx))
@@ -276,7 +254,7 @@ func (client *Szproduct) UnregisterObserver(ctx context.Context, observer observ
 		details := map[string]string{
 			"observerID": observer.GetObserverID(ctx),
 		}
-		notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentId, 8010, err, details)
+		notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentID, 8010, err, details)
 	}
 	err = client.observers.UnregisterObserver(ctx, observer)
 	if !client.observers.HasObservers(ctx) {
@@ -293,12 +271,12 @@ func (client *Szproduct) UnregisterObserver(ctx context.Context, observer observ
 
 // Get the Logger singleton.
 func (client *Szproduct) getLogger() logging.Logging {
-	var err error = nil
+	var err error
 	if client.logger == nil {
 		options := []interface{}{
 			&logging.OptionCallerSkip{Value: 4},
 		}
-		client.logger, err = logging.NewSenzingLogger(ComponentId, szproductapi.IDMessages, options...)
+		client.logger, err = logging.NewSenzingLogger(ComponentID, szproductapi.IDMessages, options...)
 		if err != nil {
 			panic(err)
 		}

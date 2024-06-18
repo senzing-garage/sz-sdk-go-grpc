@@ -38,6 +38,7 @@ Output
     See the example output.
 */
 func (factory *Szabstractfactory) CreateSzConfig(ctx context.Context) (senzing.SzConfig, error) {
+	_ = ctx
 	result := &szconfig.Szconfig{
 		GrpcClient: szconfigpb.NewSzConfigClient(factory.GrpcConnection),
 	}
@@ -56,6 +57,7 @@ Output
     See the example output.
 */
 func (factory *Szabstractfactory) CreateSzConfigManager(ctx context.Context) (senzing.SzConfigManager, error) {
+	_ = ctx
 	result := &szconfigmanager.Szconfigmanager{
 		GrpcClient: szconfigmanagerpb.NewSzConfigManagerClient(factory.GrpcConnection),
 	}
@@ -74,6 +76,7 @@ Output
     See the example output.
 */
 func (factory *Szabstractfactory) CreateSzDiagnostic(ctx context.Context) (senzing.SzDiagnostic, error) {
+	_ = ctx
 	result := &szdiagnostic.Szdiagnostic{
 		GrpcClient: szdiagnosticpb.NewSzDiagnosticClient(factory.GrpcConnection),
 	}
@@ -92,6 +95,7 @@ Output
     See the example output.
 */
 func (factory *Szabstractfactory) CreateSzEngine(ctx context.Context) (senzing.SzEngine, error) {
+	_ = ctx
 	result := &szengine.Szengine{
 		GrpcClient: szenginepb.NewSzEngineClient(factory.GrpcConnection),
 	}
@@ -110,6 +114,7 @@ Output
     See the example output.
 */
 func (factory *Szabstractfactory) CreateSzProduct(ctx context.Context) (senzing.SzProduct, error) {
+	_ = ctx
 	result := &szproduct.Szproduct{
 		GrpcClient: szproductpb.NewSzProductClient(factory.GrpcConnection),
 	}
