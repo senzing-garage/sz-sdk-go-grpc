@@ -65,11 +65,11 @@ func TestSzengine_AddRecord(test *testing.T) {
 		truthset.CustomerRecords["1004"],
 		truthset.CustomerRecords["1005"],
 	}
+	defer func() { handleError(deleteRecords(ctx, records)) }()
 	for _, record := range records {
 		actual, err := szEngine.AddRecord(ctx, record.DataSource, record.ID, record.JSON, flags)
 		testError(test, err)
 		printActual(test, actual)
-		defer func() { _, _ = szEngine.DeleteRecord(ctx, record.DataSource, record.ID, flags) }()
 	}
 }
 
@@ -111,11 +111,11 @@ func TestSzengine_AddRecord_withInfo(test *testing.T) {
 		truthset.CustomerRecords["1004"],
 		truthset.CustomerRecords["1005"],
 	}
+	defer func() { handleError(deleteRecords(ctx, records)) }()
 	for _, record := range records {
 		actual, err := szEngine.AddRecord(ctx, record.DataSource, record.ID, record.JSON, flags)
 		testError(test, err)
 		printActual(test, actual)
-		defer func() { _, _ = szEngine.DeleteRecord(ctx, record.DataSource, record.ID, flags) }()
 	}
 }
 
@@ -705,6 +705,19 @@ func createError(errorID int, err error) error {
 	return logger.NewError(errorID, err)
 }
 
+func deleteRecords(ctx context.Context, records []record.Record) error {
+	var err error
+	szEngine := getSzEngine(ctx)
+	flags := senzing.SzWithoutInfo
+	for _, record := range records {
+		_, err = szEngine.DeleteRecord(ctx, record.DataSource, record.ID, flags)
+		if err != nil {
+			return err
+		}
+	}
+	return err
+}
+
 func getEntityID(record record.Record) int64 {
 	return getEntityIDForRecord(record.DataSource, record.ID)
 }
@@ -798,6 +811,12 @@ func getSzEngineAsInterface(ctx context.Context) senzing.SzEngine {
 func getTestObject(ctx context.Context, test *testing.T) *Szengine {
 	_ = test
 	return getSzEngine(ctx)
+}
+
+func handleError(err error) {
+	if err != nil {
+		panic(err)
+	}
 }
 
 func printActual(test *testing.T, actual interface{}) {
