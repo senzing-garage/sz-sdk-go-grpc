@@ -11,7 +11,7 @@ import (
 	truncator "github.com/aquilax/truncate"
 	"github.com/senzing-garage/go-logging/logging"
 	"github.com/senzing-garage/sz-sdk-go-grpc/szconfig"
-	"github.com/senzing-garage/sz-sdk-go/sz"
+	"github.com/senzing-garage/sz-sdk-go/senzing"
 	szconfigmanagerapi "github.com/senzing-garage/sz-sdk-go/szconfigmanager"
 	"github.com/senzing-garage/sz-sdk-go/szerror"
 	szconfigpb "github.com/senzing-garage/sz-sdk-proto/go/szconfig"
@@ -31,7 +31,7 @@ var (
 	grpcConnection           *grpc.ClientConn
 	logger                   logging.LoggingInterface
 	szConfigManagerSingleton *Szconfigmanager
-	szConfigSingleton        sz.SzConfig
+	szConfigSingleton        senzing.SzConfig
 )
 
 // ----------------------------------------------------------------------------
@@ -163,7 +163,7 @@ func TestSzconfigmanager_Initialize(test *testing.T) {
 	ctx := context.TODO()
 	szConfigManager := getTestObject(ctx, test)
 	instanceName := "Test name"
-	verboseLogging := sz.SZ_NO_LOGGING
+	verboseLogging := senzing.SzNoLogging
 	settings, err := getSettings()
 	testError(test, err)
 	err = szConfigManager.Initialize(ctx, instanceName, settings, verboseLogging)
@@ -200,7 +200,7 @@ func getSettings() (string, error) {
 	return "{}", nil
 }
 
-func getSzConfig(ctx context.Context) sz.SzConfig {
+func getSzConfig(ctx context.Context) senzing.SzConfig {
 	_ = ctx
 	if szConfigSingleton == nil {
 		grpcConnection := getGrpcConnection()
@@ -222,7 +222,7 @@ func getSzConfigManager(ctx context.Context) *Szconfigmanager {
 	return szConfigManagerSingleton
 }
 
-func getSzConfigManagerAsInterface(ctx context.Context) sz.SzConfigManager {
+func getSzConfigManagerAsInterface(ctx context.Context) senzing.SzConfigManager {
 	return getSzConfigManager(ctx)
 }
 

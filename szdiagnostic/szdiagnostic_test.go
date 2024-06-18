@@ -13,7 +13,7 @@ import (
 	"github.com/senzing-garage/sz-sdk-go-grpc/szconfig"
 	"github.com/senzing-garage/sz-sdk-go-grpc/szconfigmanager"
 	"github.com/senzing-garage/sz-sdk-go-grpc/szengine"
-	"github.com/senzing-garage/sz-sdk-go/sz"
+	"github.com/senzing-garage/sz-sdk-go/senzing"
 	szdiagnosticapi "github.com/senzing-garage/sz-sdk-go/szdiagnostic"
 	"github.com/senzing-garage/sz-sdk-go/szerror"
 	szconfigpb "github.com/senzing-garage/sz-sdk-proto/go/szconfig"
@@ -34,10 +34,10 @@ var (
 	grpcAddress              = "localhost:8261"
 	grpcConnection           *grpc.ClientConn
 	logger                   logging.LoggingInterface
-	szConfigManagerSingleton sz.SzConfigManager
-	szConfigSingleton        sz.SzConfig
+	szConfigManagerSingleton senzing.SzConfigManager
+	szConfigSingleton        senzing.SzConfig
 	szDiagnosticSingleton    *Szdiagnostic
-	szEngineSingleton        sz.SzEngine
+	szEngineSingleton        senzing.SzEngine
 )
 
 // ----------------------------------------------------------------------------
@@ -118,8 +118,8 @@ func TestSzdiagnostic_Initialize(test *testing.T) {
 	}
 	instanceName := "Test name"
 	settings := "{}"
-	verboseLogging := sz.SZ_NO_LOGGING
-	configId := sz.SZ_INITIALIZE_WITH_DEFAULT_CONFIGURATION
+	verboseLogging := senzing.SzNoLogging
+	configId := senzing.SzInitializeWithDefaultConfiguration
 	err := szDiagnostic.Initialize(ctx, instanceName, settings, configId, verboseLogging)
 	testError(test, err)
 }
@@ -167,7 +167,7 @@ func getTestObject(ctx context.Context, test *testing.T) *Szdiagnostic {
 	return getSzDiagnostic(ctx)
 }
 
-func getSzConfig(ctx context.Context) sz.SzConfig {
+func getSzConfig(ctx context.Context) senzing.SzConfig {
 	_ = ctx
 	if szConfigSingleton == nil {
 		grpcConnection := getGrpcConnection()
@@ -178,7 +178,7 @@ func getSzConfig(ctx context.Context) sz.SzConfig {
 	return szConfigSingleton
 }
 
-func getSzConfigManager(ctx context.Context) sz.SzConfigManager {
+func getSzConfigManager(ctx context.Context) senzing.SzConfigManager {
 	_ = ctx
 	if szConfigManagerSingleton == nil {
 		grpcConnection := getGrpcConnection()
@@ -200,11 +200,11 @@ func getSzDiagnostic(ctx context.Context) *Szdiagnostic {
 	return szDiagnosticSingleton
 }
 
-func getSzDiagnosticAsInterface(ctx context.Context) sz.SzDiagnostic {
+func getSzDiagnosticAsInterface(ctx context.Context) senzing.SzDiagnostic {
 	return getSzDiagnostic(ctx)
 }
 
-func getSzEngine(ctx context.Context) sz.SzEngine {
+func getSzEngine(ctx context.Context) senzing.SzEngine {
 	_ = ctx
 	if szEngineSingleton == nil {
 		grpcConnection := getGrpcConnection()
@@ -323,7 +323,7 @@ func setupAddRecords(ctx context.Context) error {
 	var err error = nil
 	szEngine := getSzEngine(ctx)
 	testRecordIds := []string{"1001", "1002", "1003", "1004", "1005", "1039", "1040"}
-	flags := sz.SZ_WITHOUT_INFO
+	flags := senzing.SzWithoutInfo
 	for _, testRecordId := range testRecordIds {
 		testRecord := truthset.CustomerRecords[testRecordId]
 		_, err := szEngine.AddRecord(ctx, testRecord.DataSource, testRecord.Id, testRecord.Json, flags)

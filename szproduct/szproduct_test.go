@@ -7,7 +7,7 @@ import (
 	"testing"
 
 	truncator "github.com/aquilax/truncate"
-	"github.com/senzing-garage/sz-sdk-go/sz"
+	"github.com/senzing-garage/sz-sdk-go/senzing"
 	szpb "github.com/senzing-garage/sz-sdk-proto/go/szproduct"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc"
@@ -83,7 +83,7 @@ func TestSzproduct_Initialize(test *testing.T) {
 	instanceName := "Test name"
 	settings, err := getSettings()
 	testError(test, err)
-	verboseLogging := sz.SZ_NO_LOGGING
+	verboseLogging := senzing.SzNoLogging
 	err = szProduct.Initialize(ctx, instanceName, settings, verboseLogging)
 	testError(test, err)
 }
@@ -126,7 +126,7 @@ func getSzProduct(ctx context.Context) *Szproduct {
 	return szProductSingleton
 }
 
-func getSzProductAsInterface(ctx context.Context) sz.SzProduct {
+func getSzProductAsInterface(ctx context.Context) senzing.SzProduct {
 	return getSzProduct(ctx)
 }
 

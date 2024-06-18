@@ -8,7 +8,7 @@ import (
 
 	truncator "github.com/aquilax/truncate"
 	"github.com/senzing-garage/go-logging/logging"
-	"github.com/senzing-garage/sz-sdk-go/sz"
+	"github.com/senzing-garage/sz-sdk-go/senzing"
 	"github.com/senzing-garage/sz-sdk-go/szconfig"
 	"github.com/senzing-garage/sz-sdk-go/szerror"
 	"github.com/stretchr/testify/assert"
@@ -20,7 +20,7 @@ const (
 	defaultTruncation = 76
 	instanceName      = "SzAbstractFactory Test"
 	printResults      = false
-	verboseLogging    = sz.SZ_NO_LOGGING
+	verboseLogging    = senzing.SzNoLogging
 )
 
 var (
@@ -97,7 +97,7 @@ func createError(errorId int, err error) error {
 	return szerror.Cast(logger.NewError(errorId, err), err)
 }
 
-func getSzAbstractFactory(ctx context.Context) sz.SzAbstractFactory {
+func getSzAbstractFactory(ctx context.Context) senzing.SzAbstractFactory {
 	_ = ctx
 	grpcConnection, err := grpc.Dial(grpcAddress, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
@@ -109,7 +109,7 @@ func getSzAbstractFactory(ctx context.Context) sz.SzAbstractFactory {
 	return result
 }
 
-func getTestObject(ctx context.Context, test *testing.T) sz.SzAbstractFactory {
+func getTestObject(ctx context.Context, test *testing.T) senzing.SzAbstractFactory {
 	_ = test
 	return getSzAbstractFactory(ctx)
 }
@@ -124,7 +124,7 @@ func printResult(test *testing.T, title string, result interface{}) {
 	}
 }
 
-func testError(test *testing.T, ctx context.Context, szAbstractFactory sz.SzAbstractFactory, err error) {
+func testError(test *testing.T, ctx context.Context, szAbstractFactory senzing.SzAbstractFactory, err error) {
 	_ = ctx
 	_ = szAbstractFactory
 	if err != nil {

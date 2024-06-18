@@ -15,7 +15,7 @@ import (
 	"github.com/senzing-garage/go-observing/observer"
 	"github.com/senzing-garage/go-observing/subject"
 	"github.com/senzing-garage/sz-sdk-go-grpc/helper"
-	"github.com/senzing-garage/sz-sdk-go/sz"
+	"github.com/senzing-garage/sz-sdk-go/senzing"
 	szengineapi "github.com/senzing-garage/sz-sdk-go/szengine"
 	szpb "github.com/senzing-garage/sz-sdk-proto/go/szengine"
 )
@@ -243,8 +243,8 @@ Input
 Output
   - A channel of strings that can be iterated over.
 */
-func (client *Szengine) ExportCsvEntityReportIterator(ctx context.Context, csvColumnList string, flags int64) chan sz.StringFragment {
-	stringFragmentChannel := make(chan sz.StringFragment)
+func (client *Szengine) ExportCsvEntityReportIterator(ctx context.Context, csvColumnList string, flags int64) chan senzing.StringFragment {
+	stringFragmentChannel := make(chan senzing.StringFragment)
 	go func() {
 		defer close(stringFragmentChannel)
 		var err error = nil
@@ -259,7 +259,7 @@ func (client *Szengine) ExportCsvEntityReportIterator(ctx context.Context, csvCo
 		}
 		stream, err := client.GrpcClient.StreamExportCsvEntityReport(ctx, &request)
 		if err != nil {
-			stringFragmentChannel <- sz.StringFragment{
+			stringFragmentChannel <- senzing.StringFragment{
 				Error: err,
 			}
 			return
@@ -268,7 +268,7 @@ func (client *Szengine) ExportCsvEntityReportIterator(ctx context.Context, csvCo
 		for {
 			select {
 			case <-ctx.Done():
-				stringFragmentChannel <- sz.StringFragment{
+				stringFragmentChannel <- senzing.StringFragment{
 					Error: ctx.Err(),
 				}
 				break forLoop
@@ -278,13 +278,13 @@ func (client *Szengine) ExportCsvEntityReportIterator(ctx context.Context, csvCo
 					if err == io.EOF {
 						break forLoop
 					} else {
-						stringFragmentChannel <- sz.StringFragment{
+						stringFragmentChannel <- senzing.StringFragment{
 							Error: err,
 						}
 						break forLoop
 					}
 				}
-				stringFragmentChannel <- sz.StringFragment{
+				stringFragmentChannel <- senzing.StringFragment{
 					Value: response.Result,
 				}
 			}
@@ -347,8 +347,8 @@ Input
 Output
   - A channel of strings that can be iterated over.
 */
-func (client *Szengine) ExportJsonEntityReportIterator(ctx context.Context, flags int64) chan sz.StringFragment {
-	stringFragmentChannel := make(chan sz.StringFragment)
+func (client *Szengine) ExportJsonEntityReportIterator(ctx context.Context, flags int64) chan senzing.StringFragment {
+	stringFragmentChannel := make(chan senzing.StringFragment)
 	go func() {
 		defer close(stringFragmentChannel)
 		var err error = nil
@@ -362,7 +362,7 @@ func (client *Szengine) ExportJsonEntityReportIterator(ctx context.Context, flag
 		}
 		stream, err := client.GrpcClient.StreamExportJsonEntityReport(ctx, &request)
 		if err != nil {
-			stringFragmentChannel <- sz.StringFragment{
+			stringFragmentChannel <- senzing.StringFragment{
 				Error: err,
 			}
 			return
@@ -371,7 +371,7 @@ func (client *Szengine) ExportJsonEntityReportIterator(ctx context.Context, flag
 		for {
 			select {
 			case <-ctx.Done():
-				stringFragmentChannel <- sz.StringFragment{
+				stringFragmentChannel <- senzing.StringFragment{
 					Error: ctx.Err(),
 				}
 				break forLoop
@@ -381,13 +381,13 @@ func (client *Szengine) ExportJsonEntityReportIterator(ctx context.Context, flag
 					if err == io.EOF {
 						break forLoop
 					} else {
-						stringFragmentChannel <- sz.StringFragment{
+						stringFragmentChannel <- senzing.StringFragment{
 							Error: err,
 						}
 						break forLoop
 					}
 				}
-				stringFragmentChannel <- sz.StringFragment{
+				stringFragmentChannel <- senzing.StringFragment{
 					Value: response.Result,
 				}
 			}

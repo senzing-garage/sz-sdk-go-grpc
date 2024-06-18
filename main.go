@@ -14,7 +14,7 @@ import (
 	"github.com/senzing-garage/sz-sdk-go-grpc/szconfigmanager"
 	"github.com/senzing-garage/sz-sdk-go-grpc/szengine"
 	"github.com/senzing-garage/sz-sdk-go-grpc/szproduct"
-	"github.com/senzing-garage/sz-sdk-go/sz"
+	"github.com/senzing-garage/sz-sdk-go/senzing"
 	szconfigpb "github.com/senzing-garage/sz-sdk-proto/go/szconfig"
 	szconfigmanagerpb "github.com/senzing-garage/sz-sdk-proto/go/szconfigmanager"
 	szenginepb "github.com/senzing-garage/sz-sdk-proto/go/szengine"
@@ -71,7 +71,7 @@ func getGrpcConnection() *grpc.ClientConn {
 	return grpcConnection
 }
 
-func getSzConfig(ctx context.Context) (sz.SzConfig, error) {
+func getSzConfig(ctx context.Context) (senzing.SzConfig, error) {
 	_ = ctx
 	var err error = nil
 	grpcConnection := getGrpcConnection()
@@ -81,7 +81,7 @@ func getSzConfig(ctx context.Context) (sz.SzConfig, error) {
 	return result, err
 }
 
-func getSzConfigManager(ctx context.Context) (sz.SzConfigManager, error) {
+func getSzConfigManager(ctx context.Context) (senzing.SzConfigManager, error) {
 	_ = ctx
 	var err error = nil
 	grpcConnection := getGrpcConnection()
@@ -91,7 +91,7 @@ func getSzConfigManager(ctx context.Context) (sz.SzConfigManager, error) {
 	return result, err
 }
 
-func getSzEngine(ctx context.Context) (sz.SzEngine, error) {
+func getSzEngine(ctx context.Context) (senzing.SzEngine, error) {
 	_ = ctx
 	var err error = nil
 	grpcConnection := getGrpcConnection()
@@ -101,7 +101,7 @@ func getSzEngine(ctx context.Context) (sz.SzEngine, error) {
 	return result, err
 }
 
-func getSzProduct(ctx context.Context) (sz.SzProduct, error) {
+func getSzProduct(ctx context.Context) (senzing.SzProduct, error) {
 	_ = ctx
 	var err error = nil
 	grpcConnection := getGrpcConnection()
@@ -121,7 +121,7 @@ func getLogger(ctx context.Context) (logging.LoggingInterface, error) {
 	return logger, err
 }
 
-func demonstrateConfigFunctions(ctx context.Context, szConfig sz.SzConfig, szConfigManager sz.SzConfigManager) error {
+func demonstrateConfigFunctions(ctx context.Context, szConfig senzing.SzConfig, szConfigManager senzing.SzConfigManager) error {
 	now := time.Now()
 
 	// Using SzConfig: Create a default configuration in memory.
@@ -165,7 +165,7 @@ func demonstrateConfigFunctions(ctx context.Context, szConfig sz.SzConfig, szCon
 	return err
 }
 
-func demonstrateAddRecord(ctx context.Context, szEngine sz.SzEngine) (string, error) {
+func demonstrateAddRecord(ctx context.Context, szEngine senzing.SzEngine) (string, error) {
 	dataSourceCode := "TEST"
 	randomNumber, err := rand.Int(rand.Reader, big.NewInt(1000000000))
 	if err != nil {
@@ -177,14 +177,14 @@ func demonstrateAddRecord(ctx context.Context, szEngine sz.SzEngine) (string, er
 		`{"SOCIAL_HANDLE": "flavorh", "DATE_OF_BIRTH": "4/8/1983", "ADDR_STATE": "LA", "ADDR_POSTAL_CODE": "71232", "SSN_NUMBER": "053-39-3251", "ENTITY_TYPE": "TEST", "GENDER": "F", "srccode": "MDMPER", "CC_ACCOUNT_NUMBER": "5534202208773608", "RECORD_ID": "`,
 		recordId,
 		`", "DSRC_ACTION": "A", "ADDR_CITY": "Delhi", "DRIVERS_LICENSE_STATE": "DE", "PHONE_NUMBER": "225-671-0796", "NAME_LAST": "SEAMAN", "entityid": "284430058", "ADDR_LINE1": "772 Armstrong RD"}`)
-	var flags int64 = sz.SZ_WITH_INFO
+	var flags int64 = senzing.SzWithInfo
 
 	// Using SzEngine: Add record and return "withInfo".
 
 	return szEngine.AddRecord(ctx, dataSourceCode, recordId, recordDefinition, flags)
 }
 
-func demonstrateAdditionalFunctions(ctx context.Context, szEngine sz.SzEngine, szProduct sz.SzProduct) error {
+func demonstrateAdditionalFunctions(ctx context.Context, szEngine senzing.SzEngine, szProduct senzing.SzProduct) error {
 
 	// Using SzEngine: Add records with information returned.
 
