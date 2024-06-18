@@ -42,7 +42,7 @@ func ExampleSzconfigmanager_GetConfig() {
 	// For more information, visit https://github.com/senzing-garage/sz-sdk-go-grpc/blob/main/szconfigmananger/szconfigmanager_examples_test.go
 	ctx := context.TODO()
 	szConfigManager := getSzConfigManager(ctx)
-	configId, err := szConfigManager.GetDefaultConfigId(ctx)
+	configId, err := szConfigManager.GetDefaultConfigID(ctx)
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -54,11 +54,11 @@ func ExampleSzconfigmanager_GetConfig() {
 	// Output: {"G2_CONFIG":{"CFG_ATTR":[{"ATTR_ID":1001,"ATTR_CODE":"DATA_SOURCE","ATTR...
 }
 
-func ExampleSzconfigmanager_GetConfigList() {
+func ExampleSzconfigmanager_GetConfigs() {
 	// For more information, visit https://github.com/senzing-garage/sz-sdk-go-grpc/blob/main/szconfigmananger/szconfigmanager_examples_test.go
 	ctx := context.TODO()
 	szConfigManager := getSzConfigManager(ctx)
-	configList, err := szConfigManager.GetConfigList(ctx)
+	configList, err := szConfigManager.GetConfigs(ctx)
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -66,11 +66,11 @@ func ExampleSzconfigmanager_GetConfigList() {
 	// Output: {"CONFIGS":[{"CONFIG_ID":...
 }
 
-func ExampleSzconfigmanager_GetDefaultConfigId() {
+func ExampleSzconfigmanager_GetDefaultConfigID() {
 	// For more information, visit https://github.com/senzing-garage/sz-sdk-go-grpc/blob/main/szconfigmananger/szconfigmanager_examples_test.go
 	ctx := context.TODO()
 	szConfigManager := getSzConfigManager(ctx)
-	configId, err := szConfigManager.GetDefaultConfigId(ctx)
+	configId, err := szConfigManager.GetDefaultConfigID(ctx)
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -78,7 +78,7 @@ func ExampleSzconfigmanager_GetDefaultConfigId() {
 	// Output: true
 }
 
-func ExampleSzconfigmanager_ReplaceDefaultConfigId() {
+func ExampleSzconfigmanager_ReplaceDefaultConfigID() {
 	// For more information, visit https://github.com/senzing-garage/sz-sdk-go-grpc/blob/main/szconfigmananger/szconfigmanager_examples_test.go
 	ctx := context.TODO()
 	szConfig := getSzConfig(ctx)
@@ -91,7 +91,7 @@ func ExampleSzconfigmanager_ReplaceDefaultConfigId() {
 		fmt.Println(err)
 	}
 	szConfigManager := getSzConfigManager(ctx)
-	currentDefaultConfigId, err := szConfigManager.GetDefaultConfigId(ctx)
+	currentDefaultConfigId, err := szConfigManager.GetDefaultConfigID(ctx)
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -100,22 +100,22 @@ func ExampleSzconfigmanager_ReplaceDefaultConfigId() {
 	if err != nil {
 		fmt.Println(err)
 	}
-	err = szConfigManager.ReplaceDefaultConfigId(ctx, currentDefaultConfigId, newDefaultConfigId)
+	err = szConfigManager.ReplaceDefaultConfigID(ctx, currentDefaultConfigId, newDefaultConfigId)
 	if err != nil {
 		fmt.Println(err)
 	}
 	// Output:
 }
 
-func ExampleSzconfigmanager_SetDefaultConfigId() {
+func ExampleSzconfigmanager_SetDefaultConfigID() {
 	// For more information, visit https://github.com/senzing-garage/sz-sdk-go-grpc/blob/main/szconfigmananger/szconfigmanager_examples_test.go
 	ctx := context.TODO()
 	szConfigManager := getSzConfigManager(ctx)
-	configId, err := szConfigManager.GetDefaultConfigId(ctx) // For example purposes only. Normally would use output from GetConfigList()
+	configId, err := szConfigManager.GetDefaultConfigID(ctx) // For example purposes only. Normally would use output from GetConfigList()
 	if err != nil {
 		fmt.Println(err)
 	}
-	err = szConfigManager.SetDefaultConfigId(ctx, configId)
+	err = szConfigManager.SetDefaultConfigID(ctx, configId)
 	if err != nil {
 		fmt.Println(err)
 	}

@@ -2,11 +2,11 @@ package helper
 
 import (
 	"encoding/json"
-	"errors"
 	"reflect"
 	"strconv"
 	"strings"
 
+	"github.com/senzing-garage/go-messaging/parser"
 	"github.com/senzing-garage/sz-sdk-go/szerror"
 )
 
@@ -14,7 +14,7 @@ import (
 // Private functions
 // ----------------------------------------------------------------------------
 
-func isJson(unknownString string) bool {
+func isJSON(unknownString string) bool {
 	unknownStringUnescaped, err := strconv.Unquote(unknownString)
 	if err != nil {
 		unknownStringUnescaped = unknownString
@@ -56,7 +56,7 @@ func ConvertGrpcError(originalError error) error {
 			indexOfDesc := strings.Index(errorMessage, " desc = ")
 			senzingErrorMessage := errorMessage[indexOfDesc+8:] // Implicitly safe from "0+8" because of "rpc error:" prefix.
 
-			if isJson(senzingErrorMessage) {
+			if isJSON(senzingErrorMessage) {
 
 				// TODO: Add information about any gRPC error.
 				// Status: https://pkg.go.dev/google.golang.org/grpc/status
@@ -64,9 +64,21 @@ func ConvertGrpcError(originalError error) error {
 
 				// Create a new Senzing nested error.
 
-				result = errors.New(senzingErrorMessage)
+				parsedMessage, err := parser.Parse(senzingErrorMessage)
+				if err != nil {
+					return originalError
+				}
+				reason := parsedMessage.Reason
+				if len(reason) < 10 {
+					return originalError
+				}
+				senzingErrorCode, err := strconv.Atoi(reason[4:8])
+				if err != nil {
+					return originalError
+				}
+				result = szerror.New(senzingErrorCode, senzingErrorMessage)
 			}
 		}
 	}
-	return szerror.Convert(result)
+	return result
 }

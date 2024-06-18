@@ -45,6 +45,7 @@ setup-osarch-specific:
 		--name senzing-serve-grpc \
 		--publish 8261:8261 \
 		--rm \
+		--user 0 \
 		senzing/serve-grpc
 	@echo "senzing/serve-grpc running in background."
 

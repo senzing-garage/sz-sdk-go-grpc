@@ -2,6 +2,7 @@ package szdiagnostic
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"os"
 	"testing"
@@ -33,7 +34,7 @@ const (
 var (
 	grpcAddress              = "localhost:8261"
 	grpcConnection           *grpc.ClientConn
-	logger                   logging.LoggingInterface
+	logger                   logging.Logging
 	szConfigManagerSingleton senzing.SzConfigManager
 	szConfigSingleton        senzing.SzConfig
 	szDiagnosticSingleton    *Szdiagnostic
@@ -128,7 +129,7 @@ func TestSzdiagnostic_Reinitialize(test *testing.T) {
 	ctx := context.TODO()
 	szDiagnostic := getTestObject(ctx, test)
 	szConfigManager := getSzConfigManager(ctx)
-	configId, err := szConfigManager.GetDefaultConfigId(ctx)
+	configId, err := szConfigManager.GetDefaultConfigID(ctx)
 	testError(test, err)
 	err = szDiagnostic.Reinitialize(ctx, configId)
 	testErrorNoFail(test, err)
@@ -146,14 +147,14 @@ func TestSzdiagnostic_Destroy(test *testing.T) {
 // Internal functions
 // ----------------------------------------------------------------------------
 
-func createError(errorId int, err error) error {
-	return szerror.Cast(logger.NewError(errorId, err), err)
+func createError(errorID int, err error) error {
+	return logger.NewError(errorID, err)
 }
 
 func getGrpcConnection() *grpc.ClientConn {
 	var err error = nil
 	if grpcConnection == nil {
-		grpcConnection, err = grpc.Dial(grpcAddress, grpc.WithTransportCredentials(insecure.NewCredentials()))
+		grpcConnection, err = grpc.NewClient(grpcAddress, grpc.WithTransportCredentials(insecure.NewCredentials()))
 		if err != nil {
 			fmt.Printf("Did not connect: %v\n", err)
 		}
@@ -249,13 +250,13 @@ func truncate(aString string, length int) string {
 func TestMain(m *testing.M) {
 	err := setup()
 	if err != nil {
-		if szerror.Is(err, szerror.SzUnrecoverable) {
+		if errors.Is(err, szerror.ErrSzUnrecoverable) {
 			fmt.Printf("\nUnrecoverable error detected. \n\n")
 		}
-		if szerror.Is(err, szerror.SzRetryable) {
+		if errors.Is(err, szerror.ErrSzRetryable) {
 			fmt.Printf("\nRetryable error detected. \n\n")
 		}
-		if szerror.Is(err, szerror.SzBadInput) {
+		if errors.Is(err, szerror.ErrSzBadInput) {
 			fmt.Printf("\nBad user input error detected. \n\n")
 		}
 		fmt.Print(err)
@@ -302,7 +303,7 @@ func setupSenzingConfig(ctx context.Context) error {
 		return createError(5913, err)
 	}
 
-	err = szConfigManager.SetDefaultConfigId(ctx, configId)
+	err = szConfigManager.SetDefaultConfigID(ctx, configId)
 	if err != nil {
 		return createError(5914, err)
 	}
@@ -326,7 +327,7 @@ func setupAddRecords(ctx context.Context) error {
 	flags := senzing.SzWithoutInfo
 	for _, testRecordId := range testRecordIds {
 		testRecord := truthset.CustomerRecords[testRecordId]
-		_, err := szEngine.AddRecord(ctx, testRecord.DataSource, testRecord.Id, testRecord.Json, flags)
+		_, err := szEngine.AddRecord(ctx, testRecord.DataSource, testRecord.ID, testRecord.JSON, flags)
 		if err != nil {
 			return createError(5917, err)
 		}
@@ -341,7 +342,7 @@ func setup() error {
 	options := []interface{}{
 		&logging.OptionCallerSkip{Value: 4},
 	}
-	logger, err = logging.NewSenzingSdkLogger(ComponentId, szdiagnosticapi.IdMessages, options...)
+	logger, err = logging.NewSenzingLogger(ComponentId, szdiagnosticapi.IDMessages, options...)
 	if err != nil {
 		return createError(5901, err)
 	}

@@ -204,7 +204,7 @@ func TestSzconfig_Initialize(test *testing.T) {
 	ctx := context.TODO()
 	szConfig := getTestObject(ctx, test)
 	instanceName := "Test name"
-	verboseLogging := senzingz.SZ_NO_LOGGING
+	verboseLogging := senzing.SzNoLogging
 	settings, err := getSettings()
 	testError(test, err)
 	err = szConfig.Initialize(ctx, instanceName, settings, verboseLogging)

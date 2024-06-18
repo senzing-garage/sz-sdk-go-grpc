@@ -10,7 +10,6 @@ import (
 	"github.com/senzing-garage/go-logging/logging"
 	"github.com/senzing-garage/sz-sdk-go/senzing"
 	"github.com/senzing-garage/sz-sdk-go/szconfig"
-	"github.com/senzing-garage/sz-sdk-go/szerror"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
@@ -25,7 +24,7 @@ const (
 
 var (
 	grpcAddress = "localhost:8261"
-	logger      logging.LoggingInterface
+	logger      logging.Logging
 )
 
 // ----------------------------------------------------------------------------
@@ -51,7 +50,7 @@ func TestSzAbstractFactory_CreateSzConfigManager(test *testing.T) {
 	szConfigManager, err := szAbstractFactory.CreateSzConfigManager(ctx)
 	testError(test, ctx, szAbstractFactory, err)
 	defer szConfigManager.Destroy(ctx)
-	configList, err := szConfigManager.GetConfigList(ctx)
+	configList, err := szConfigManager.GetConfigs(ctx)
 	testError(test, ctx, szAbstractFactory, err)
 	printActual(test, configList)
 }
@@ -93,8 +92,8 @@ func TestSzAbstractFactory_CreateSzProduct(test *testing.T) {
 // Internal functions
 // ----------------------------------------------------------------------------
 
-func createError(errorId int, err error) error {
-	return szerror.Cast(logger.NewError(errorId, err), err)
+func createError(errorID int, err error) error {
+	return logger.NewError(errorID, err)
 }
 
 func getSzAbstractFactory(ctx context.Context) senzing.SzAbstractFactory {
@@ -157,7 +156,7 @@ func TestMain(m *testing.M) {
 
 func setup() error {
 	var err error = nil
-	logger, err = logging.NewSenzingSdkLogger(ComponentId, szconfig.IdMessages)
+	logger, err = logging.NewSenzingLogger(ComponentId, szconfig.IDMessages)
 	if err != nil {
 		return createError(5901, err)
 	}

@@ -21,7 +21,7 @@ import (
 type Szconfig struct {
 	GrpcClient     szpb.SzConfigClient
 	isTrace        bool
-	logger         logging.LoggingInterface
+	logger         logging.Logging
 	observerOrigin string
 	observers      subject.Subject
 }
@@ -371,17 +371,17 @@ func (client *Szconfig) RegisterObserver(ctx context.Context, observer observer.
 	var err error = nil
 	if client.isTrace {
 		entryTime := time.Now()
-		client.traceEntry(27, observer.GetObserverId(ctx))
-		defer func() { client.traceExit(28, observer.GetObserverId(ctx), err, time.Since(entryTime)) }()
+		client.traceEntry(27, observer.GetObserverID(ctx))
+		defer func() { client.traceExit(28, observer.GetObserverID(ctx), err, time.Since(entryTime)) }()
 	}
 	if client.observers == nil {
-		client.observers = &subject.SubjectImpl{}
+		client.observers = &subject.SimpleSubject{}
 	}
 	err = client.observers.RegisterObserver(ctx, observer)
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{
-				"observerId": observer.GetObserverId(ctx),
+				"observerID": observer.GetObserverID(ctx),
 			}
 			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentId, 8011, err, details)
 		}()
@@ -441,8 +441,8 @@ func (client *Szconfig) UnregisterObserver(ctx context.Context, observer observe
 	var err error = nil
 	if client.isTrace {
 		entryTime := time.Now()
-		client.traceEntry(29, observer.GetObserverId(ctx))
-		defer func() { client.traceExit(30, observer.GetObserverId(ctx), err, time.Since(entryTime)) }()
+		client.traceEntry(29, observer.GetObserverID(ctx))
+		defer func() { client.traceExit(30, observer.GetObserverID(ctx), err, time.Since(entryTime)) }()
 	}
 	if client.observers != nil {
 		// Tricky code:
@@ -450,7 +450,7 @@ func (client *Szconfig) UnregisterObserver(ctx context.Context, observer observe
 		// In client.notify, each observer will get notified in a goroutine.
 		// Then client.observers may be set to nil, but observer goroutines will be OK.
 		details := map[string]string{
-			"observerId": observer.GetObserverId(ctx),
+			"observerID": observer.GetObserverID(ctx),
 		}
 		notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentId, 8013, err, details)
 	}
@@ -468,13 +468,13 @@ func (client *Szconfig) UnregisterObserver(ctx context.Context, observer observe
 // --- Logging ----------------------------------------------------------------
 
 // Get the Logger singleton.
-func (client *Szconfig) getLogger() logging.LoggingInterface {
+func (client *Szconfig) getLogger() logging.Logging {
 	var err error = nil
 	if client.logger == nil {
 		options := []interface{}{
 			&logging.OptionCallerSkip{Value: 4},
 		}
-		client.logger, err = logging.NewSenzingSdkLogger(ComponentId, szconfigapi.IdMessages, options...)
+		client.logger, err = logging.NewSenzingLogger(ComponentId, szconfigapi.IDMessages, options...)
 		if err != nil {
 			panic(err)
 		}
