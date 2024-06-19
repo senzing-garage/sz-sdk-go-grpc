@@ -75,13 +75,13 @@ func (client *Szengine) AddRecord(ctx context.Context, dataSourceCode string, re
 }
 
 /*
-The CloseExport method closes the exported document created by ExportJsonEntityReport().
-It is part of the ExportJsonEntityReport(), FetchNext(), CloseExport()
+The CloseExport method closes the exported document created by ExportJSONEntityReport().
+It is part of the ExportJSONEntityReport(), FetchNext(), CloseExport()
 lifecycle of a list of sized entities.
 
 Input
   - ctx: A context to control lifecycle.
-  - exportHandle: A handle created by ExportJsonEntityReport() or ExportCsvEntityReport().
+  - exportHandle: A handle created by ExportJSONEntityReport() or ExportCsvEntityReport().
 */
 func (client *Szengine) CloseExport(ctx context.Context, exportHandle uintptr) error {
 	var err error
@@ -300,8 +300,8 @@ func (client *Szengine) ExportCsvEntityReportIterator(ctx context.Context, csvCo
 }
 
 /*
-The ExportJsonEntityReport method initializes a cursor over a document of exported entities.
-It is part of the ExportJsonEntityReport(), FetchNext(), CloseExport()
+The ExportJSONEntityReport method initializes a cursor over a document of exported entities.
+It is part of the ExportJSONEntityReport(), FetchNext(), CloseExport()
 lifecycle of a list of entities to export.
 
 Input
@@ -335,9 +335,9 @@ func (client *Szengine) ExportJSONEntityReport(ctx context.Context, flags int64)
 }
 
 /*
-The ExportJsonEntityReportIterator method creates an Iterator that can be used in a for-loop
+The ExportJSONEntityReportIterator method creates an Iterator that can be used in a for-loop
 to scroll through a document of exported entities.
-It is a convenience method for the ExportJsonEntityReport(), FetchNext(), CloseExport()
+It is a convenience method for the ExportJSONEntityReport(), FetchNext(), CloseExport()
 lifecycle of a list of entities to export.
 
 Input
@@ -403,12 +403,12 @@ func (client *Szengine) ExportJSONEntityReportIterator(ctx context.Context, flag
 
 /*
 The FetchNext method is used to scroll through an exported document.
-It is part of the ExportJsonEntityReport() or ExportCsvEntityReport(), FetchNext(), CloseExport()
+It is part of the ExportJSONEntityReport() or ExportCsvEntityReport(), FetchNext(), CloseExport()
 lifecycle of a list of exported entities.
 
 Input
   - ctx: A context to control lifecycle.
-  - exportHandle: A handle created by ExportJsonEntityReport() or ExportCsvEntityReport().
+  - exportHandle: A handle created by ExportJSONEntityReport() or ExportCsvEntityReport().
 
 Output
   - TODO: Document output for FetchNext
@@ -437,7 +437,7 @@ func (client *Szengine) FetchNext(ctx context.Context, exportHandle uintptr) (st
 }
 
 /*
-TODO: Document FindInterestingEntitiesByEntityID ()
+TODO: Document FindInterestingEntitiesByEntityID
 The FindInterestingEntitiesByEntityID method...
 
 Input
@@ -476,7 +476,7 @@ func (client *Szengine) FindInterestingEntitiesByEntityID(ctx context.Context, e
 }
 
 /*
-TODO: Document FindInterestingEntitiesByRecordID()
+TODO: Document FindInterestingEntitiesByRecordID
 The FindInterestingEntitiesByRecordID method...
 
 Input
@@ -571,8 +571,8 @@ This includes the requested entities, paths between them, and relations to other
 
 Input
   - ctx: A context to control lifecycle.
-  - entityList: A JSON document listing entities.
-    Example: `{"ENTITIES": [{"ENTITY_ID": 1}, {"ENTITY_ID": 2}, {"ENTITY_ID": 3}]}`
+  - recordList: A JSON document listing entities.
+    Example: `{"RECORDS": [{"DATA_SOURCE": "CUSTOMERS", "RECORD_ID": "1001"}]}`
   - maxDegree: The maximum number of degrees in paths between search entities.
   - buildOutDegree: The number of degrees of relationships to show around each search entity.
   - maxEntities: The maximum number of entities to return in the discovered network.
@@ -622,7 +622,7 @@ Input
   - startEntityID: The entity ID for the starting entity of the search path.
   - endEntityID: The entity ID for the ending entity of the search path.
   - maxDegrees: The maximum number of degrees in paths between search entities.
-  - exclusions: A JSON document listing entities that should be avoided on the path.
+  - avoidEntityIDs: A JSON document listing entities that should be avoided on the path.
   - requiredDataSources: A JSON document listing data sources that should be included on the path.
   - flags: Flags used to control information returned.
 
@@ -677,7 +677,7 @@ Input
   - endDataSourceCode: Identifies the provenance of the record for the ending entity of the search path.
   - endRecordID: The unique identifier within the records of the same data source for the ending entity of the search path.
   - maxDegrees: The maximum number of degrees in paths between search entities.
-  - exclusions: A JSON document listing entities that should be avoided on the path.
+  - avoidRecordKeys: A JSON document listing entities that should be avoided on the path.
   - requiredDataSources: A JSON document listing data sources that should be included on the path.
   - flags: Flags used to control information returned.
 
@@ -941,13 +941,13 @@ func (client *Szengine) GetStats(ctx context.Context) (string, error) {
 }
 
 /*
-TODO: Write description for GetVirtualEntityByRecordID
+TODO: Document GetVirtualEntityByRecordID
 The GetVirtualEntityByRecordID method...
 
 Input
   - ctx: A context to control lifecycle.
-  - recordList: A JSON document.
-    Example: `{"RECORDS": [{"DATA_SOURCE": "TEST","RECORD_ID": "111"},{"DATA_SOURCE": "TEST","RECORD_ID": "222"}]}`
+  - recordKeys: A JSON document.
+    Example: `{"RECORDS": [{"DATA_SOURCE": "CUSTOMERS", "RECORD_ID": "1001"}]}`
   - flags: Flags used to control information returned.
 
 Output
@@ -980,7 +980,7 @@ func (client *Szengine) GetVirtualEntityByRecordID(ctx context.Context, recordKe
 }
 
 /*
-TODO: Write description for HowEntityByEntityID
+TODO: Document HowEntityByEntityID
 The HowEntityByEntityID method...
 
 Input
@@ -1080,7 +1080,7 @@ func (client *Szengine) ProcessRedoRecord(ctx context.Context, redoRecord string
 }
 
 /*
-TODO: Write description for ReevaluateEntity
+TODO: Document ReevaluateEntity
 The ReevaluateEntity method...
 
 Input
@@ -1115,7 +1115,7 @@ func (client *Szengine) ReevaluateEntity(ctx context.Context, entityID int64, fl
 }
 
 /*
-TODO: Write description for ReevaluateRecord
+TODO: Document ReevaluateRecord
 The ReevaluateRecord method...
 
 Input
@@ -1263,8 +1263,7 @@ func (client *Szengine) WhyEntities(ctx context.Context, entityID1 int64, entity
 }
 
 /*
-TODO: Write description for WhyRecordInEntity
-TODO: Assign entry/exit trace IDs
+TODO: Document WhyRecordInEntity
 The WhyRecordInEntity method...
 
 Input
@@ -1378,7 +1377,7 @@ Input
   - ctx: A context to control lifecycle.
   - instanceName: A name for the auditing node, to help identify it within system logs.
   - settings: A JSON string containing configuration parameters.
-  - configID: The configuration ID used for the initialization.
+  - configID: The configuration ID used for the initialization.  0 for current default configuration.
   - verboseLogging: A flag to enable deeper logging of the G2 processing. 0 for no Senzing logging; 1 for logging.
 */
 func (client *Szengine) Initialize(ctx context.Context, instanceName string, settings string, configID int64, verboseLogging int64) error {
@@ -1394,7 +1393,7 @@ func (client *Szengine) Initialize(ctx context.Context, instanceName string, set
 		go func() {
 			details := map[string]string{
 				"configID":       strconv.FormatInt(configID, 10),
-				"instancename":   instanceName,
+				"instanceName":   instanceName,
 				"settings":       settings,
 				"verboseLogging": strconv.FormatInt(verboseLogging, 10),
 			}
@@ -1455,7 +1454,7 @@ func (client *Szengine) SetLogLevel(ctx context.Context, logLevelName string) er
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{
-				"logLevel": logLevelName,
+				"logLevelName": logLevelName,
 			}
 			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentID, 8077, err, details)
 		}()
@@ -1498,10 +1497,10 @@ func (client *Szengine) UnregisterObserver(ctx context.Context, observer observe
 			"observerID": observer.GetObserverID(ctx),
 		}
 		notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentID, 8078, err, details)
-	}
-	err = client.observers.UnregisterObserver(ctx, observer)
-	if !client.observers.HasObservers(ctx) {
-		client.observers = nil
+		err = client.observers.UnregisterObserver(ctx, observer)
+		if !client.observers.HasObservers(ctx) {
+			client.observers = nil
+		}
 	}
 	return err
 }

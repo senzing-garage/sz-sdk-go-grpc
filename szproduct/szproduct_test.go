@@ -7,33 +7,43 @@ import (
 	"testing"
 
 	truncator "github.com/aquilax/truncate"
+	"github.com/senzing-garage/go-observing/observer"
 	"github.com/senzing-garage/sz-sdk-go/senzing"
 	szpb "github.com/senzing-garage/sz-sdk-proto/go/szproduct"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 )
 
 const (
+	badLogLevelName   = "BadLogLevelName"
 	defaultTruncation = 76
+	instanceName      = "SzProduct Test"
+	observerOrigin    = "SzProduct observer"
 	printResults      = false
+	verboseLogging    = senzing.SzNoLogging
 )
 
 var (
 	szProductSingleton *Szproduct
 	grpcAddress        = "localhost:8261"
 	grpcConnection     *grpc.ClientConn
+	observerSingleton  = &observer.NullObserver{
+		ID:       "Observer 1",
+		IsSilent: true,
+	}
 )
 
 // ----------------------------------------------------------------------------
-// Interface functions - test
+// Interface methods - test
 // ----------------------------------------------------------------------------
 
 func TestSzproduct_GetLicense(test *testing.T) {
 	ctx := context.TODO()
 	szProduct := getTestObject(ctx, test)
 	actual, err := szProduct.GetLicense(ctx)
-	testError(test, err)
+	require.NoError(test, err)
 	printActual(test, actual)
 }
 
@@ -41,13 +51,19 @@ func TestSzproduct_GetVersion(test *testing.T) {
 	ctx := context.TODO()
 	szProduct := getTestObject(ctx, test)
 	actual, err := szProduct.GetVersion(ctx)
-	testError(test, err)
+	require.NoError(test, err)
 	printActual(test, actual)
 }
 
 // ----------------------------------------------------------------------------
 // Logging and observing
 // ----------------------------------------------------------------------------
+
+func TestSzproduct_SetLogLevel_badLogLevelName(test *testing.T) {
+	ctx := context.TODO()
+	szConfig := getTestObject(ctx, test)
+	_ = szConfig.SetLogLevel(ctx, badLogLevelName)
+}
 
 func TestSzproduct_SetObserverOrigin(test *testing.T) {
 	ctx := context.TODO()
@@ -65,6 +81,13 @@ func TestSzproduct_GetObserverOrigin(test *testing.T) {
 	assert.Equal(test, origin, actual)
 }
 
+func TestSzproduct_UnregisterObserver(test *testing.T) {
+	ctx := context.TODO()
+	szProduct := getTestObject(ctx, test)
+	err := szProduct.UnregisterObserver(ctx, observerSingleton)
+	require.NoError(test, err)
+}
+
 // ----------------------------------------------------------------------------
 // Object creation / destruction
 // ----------------------------------------------------------------------------
@@ -73,7 +96,7 @@ func TestSzproduct_AsInterface(test *testing.T) {
 	ctx := context.TODO()
 	szProduct := getSzProductAsInterface(ctx)
 	actual, err := szProduct.GetLicense(ctx)
-	testError(test, err)
+	require.NoError(test, err)
 	printActual(test, actual)
 }
 
@@ -82,17 +105,31 @@ func TestSzproduct_Initialize(test *testing.T) {
 	szProduct := getSzProduct(ctx)
 	instanceName := "Test name"
 	settings, err := getSettings()
-	testError(test, err)
+	require.NoError(test, err)
 	verboseLogging := senzing.SzNoLogging
 	err = szProduct.Initialize(ctx, instanceName, settings, verboseLogging)
-	testError(test, err)
+	require.NoError(test, err)
 }
+
+// TODO: Implement TestSzengine_Initialize_error
+// func TestSzproduct_Initialize_error(test *testing.T) {}
 
 func TestSzproduct_Destroy(test *testing.T) {
 	ctx := context.TODO()
 	szProduct := getTestObject(ctx, test)
 	err := szProduct.Destroy(ctx)
-	testError(test, err)
+	require.NoError(test, err)
+}
+
+// TODO: Implement TestSzengine_Destroy_error
+// func TestSzproduct_Destroy_error(test *testing.T) {}
+
+func TestSzproduct_Destroy_withObserver(test *testing.T) {
+	ctx := context.TODO()
+	szProductSingleton = nil
+	szProduct := getTestObject(ctx, test)
+	err := szProduct.Destroy(ctx)
+	require.NoError(test, err)
 }
 
 // ----------------------------------------------------------------------------
@@ -142,13 +179,6 @@ func printActual(test *testing.T, actual interface{}) {
 func printResult(test *testing.T, title string, result interface{}) {
 	if printResults {
 		test.Logf("%s: %v", title, truncate(fmt.Sprintf("%v", result), defaultTruncation))
-	}
-}
-
-func testError(test *testing.T, err error) {
-	if err != nil {
-		test.Log("Error:", err.Error())
-		assert.FailNow(test, err.Error())
 	}
 }
 

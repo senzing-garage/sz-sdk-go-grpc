@@ -1,6 +1,5 @@
 github.com/aquilax/truncate v1.0.0 h1:UgIGS8U/aZ4JyOJ2h3xcF5cSQ06+gGBnjxH2RUHJe0U=
 github.com/aquilax/truncate v1.0.0/go.mod h1:BeMESIDMlvlS3bmg4BVvBbbZUNwWtS8uzYPAKXwwhLw=
-github.com/creack/pty v1.1.9/go.mod h1:oKZEueFk5CKHvIhNR5MUki03XCEU+Q6VDXinZuGJ33E=
 github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc h1:U9qPSI2PIWSS1VwoXQT9A3Wy9MM3WgvqSxFWenqJduM=
 github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/google/go-cmp v0.6.0 h1:ofyhxvXcZhMsU5ulbFiLKl/XBFqE1GSq7atu8tAmTRI=
@@ -23,6 +22,8 @@ github.com/senzing-garage/go-observing v0.3.2 h1:jXW5u656aZywe/UEUi7ga7nieBSW4CU
 github.com/senzing-garage/go-observing v0.3.2/go.mod h1:5yHCwaaIrwX81JOghAL/1Q1V8eF7SQhyBBdhTb7+rgY=
 github.com/senzing-garage/sz-sdk-go v0.13.4 h1:x1VWf4Kch8wlEPVEVOWbizhYyCbp5LiTSm9cQsv9XJI=
 github.com/senzing-garage/sz-sdk-go v0.13.4/go.mod h1:pr9d622FPNGFPgAFooCcUWNeh+AEyVDkvR3Fmsp6whg=
+github.com/senzing-garage/sz-sdk-go-core v0.7.3 h1:hRG/xSzal+uPY3UAhdPv+nQNwiTMoyNOQ2bgY8QfmqQ=
+github.com/senzing-garage/sz-sdk-go-core v0.7.3/go.mod h1:+N+l991tA8PHqtKD/f8ubZ/KaedN4uiXB6oHsQo+b6g=
 github.com/senzing-garage/sz-sdk-proto v0.7.6 h1:mHiZr094UTBcRW1OkNam1Pu/pMLZRO/4cIIyjQ/yDlY=
 github.com/senzing-garage/sz-sdk-proto v0.7.6/go.mod h1:7CZSZ5yEVmT2T0yiijjdq7dWsdQ/KtRgvKRqCy+j7SI=
 github.com/stretchr/testify v1.9.0 h1:HtqpIVDClZ4nwg75+f6Lvsy/wHu+3BoSGCbBAcpTsTg=

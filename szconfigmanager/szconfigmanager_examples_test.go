@@ -10,11 +10,11 @@ import (
 )
 
 // ----------------------------------------------------------------------------
-// Interface functions - Examples for godoc documentation
+// Interface methods - Examples for godoc documentation
 // ----------------------------------------------------------------------------
 
 func ExampleSzconfigmanager_AddConfig() {
-	// For more information, visit https://github.com/senzing-garage/sz-sdk-go-grpc/blob/main/szconfigmananger/szconfigmanager_examples_test.go
+	// For more information, visit https://github.com/senzing-garage/sz-sdk-go-grpc/blob/main/szconfigmanager/szconfigmanager_examples_test.go
 	ctx := context.TODO()
 	szConfig := getSzConfig(ctx)
 	configHandle, err := szConfig.CreateConfig(ctx)
@@ -39,7 +39,7 @@ func ExampleSzconfigmanager_AddConfig() {
 }
 
 func ExampleSzconfigmanager_GetConfig() {
-	// For more information, visit https://github.com/senzing-garage/sz-sdk-go-grpc/blob/main/szconfigmananger/szconfigmanager_examples_test.go
+	// For more information, visit https://github.com/senzing-garage/sz-sdk-go-grpc/blob/main/szconfigmanager/szconfigmanager_examples_test.go
 	ctx := context.TODO()
 	szConfigManager := getSzConfigManager(ctx)
 	configID, err := szConfigManager.GetDefaultConfigID(ctx)
@@ -55,7 +55,7 @@ func ExampleSzconfigmanager_GetConfig() {
 }
 
 func ExampleSzconfigmanager_GetConfigs() {
-	// For more information, visit https://github.com/senzing-garage/sz-sdk-go-grpc/blob/main/szconfigmananger/szconfigmanager_examples_test.go
+	// For more information, visit https://github.com/senzing-garage/sz-sdk-go-grpc/blob/main/szconfigmanager/szconfigmanager_examples_test.go
 	ctx := context.TODO()
 	szConfigManager := getSzConfigManager(ctx)
 	configList, err := szConfigManager.GetConfigs(ctx)
@@ -67,7 +67,7 @@ func ExampleSzconfigmanager_GetConfigs() {
 }
 
 func ExampleSzconfigmanager_GetDefaultConfigID() {
-	// For more information, visit https://github.com/senzing-garage/sz-sdk-go-grpc/blob/main/szconfigmananger/szconfigmanager_examples_test.go
+	// For more information, visit https://github.com/senzing-garage/sz-sdk-go-grpc/blob/main/szconfigmanager/szconfigmanager_examples_test.go
 	ctx := context.TODO()
 	szConfigManager := getSzConfigManager(ctx)
 	configID, err := szConfigManager.GetDefaultConfigID(ctx)
@@ -79,7 +79,7 @@ func ExampleSzconfigmanager_GetDefaultConfigID() {
 }
 
 func ExampleSzconfigmanager_ReplaceDefaultConfigID() {
-	// For more information, visit https://github.com/senzing-garage/sz-sdk-go-grpc/blob/main/szconfigmananger/szconfigmanager_examples_test.go
+	// For more information, visit https://github.com/senzing-garage/sz-sdk-go-grpc/blob/main/szconfigmanager/szconfigmanager_examples_test.go
 	ctx := context.TODO()
 	szConfig := getSzConfig(ctx)
 	configHandle, err := szConfig.CreateConfig(ctx)
@@ -108,7 +108,7 @@ func ExampleSzconfigmanager_ReplaceDefaultConfigID() {
 }
 
 func ExampleSzconfigmanager_SetDefaultConfigID() {
-	// For more information, visit https://github.com/senzing-garage/sz-sdk-go-grpc/blob/main/szconfigmananger/szconfigmanager_examples_test.go
+	// For more information, visit https://github.com/senzing-garage/sz-sdk-go-grpc/blob/main/szconfigmanager/szconfigmanager_examples_test.go
 	ctx := context.TODO()
 	szConfigManager := getSzConfigManager(ctx)
 	configID, err := szConfigManager.GetDefaultConfigID(ctx) // For example purposes only. Normally would use output from GetConfigList()
@@ -127,7 +127,7 @@ func ExampleSzconfigmanager_SetDefaultConfigID() {
 // ----------------------------------------------------------------------------
 
 func ExampleSzconfigmanager_SetLogLevel() {
-	// For more information, visit https://github.com/senzing-garage/sz-sdk-go-grpc/blob/main/szconfigmananger/szconfigmanager_examples_test.go
+	// For more information, visit https://github.com/senzing-garage/sz-sdk-go-grpc/blob/main/szconfigmanager/szconfigmanager_examples_test.go
 	ctx := context.TODO()
 	szConfigManager := getSzConfigManager(ctx)
 	err := szConfigManager.SetLogLevel(ctx, logging.LevelInfoName)
@@ -138,7 +138,7 @@ func ExampleSzconfigmanager_SetLogLevel() {
 }
 
 func ExampleSzconfigmanager_SetObserverOrigin() {
-	// For more information, visit https://github.com/senzing-garage/sz-sdk-go-grpc/blob/main/szconfigmananger/szconfigmanager_examples_test.go
+	// For more information, visit https://github.com/senzing-garage/sz-sdk-go-grpc/blob/main/szconfigmanager/szconfigmanager_examples_test.go
 	ctx := context.TODO()
 	szConfigManager := getSzConfigManager(ctx)
 	origin := "Machine: nn; Task: UnitTest"
@@ -147,7 +147,7 @@ func ExampleSzconfigmanager_SetObserverOrigin() {
 }
 
 func ExampleSzconfigmanager_GetObserverOrigin() {
-	// For more information, visit https://github.com/senzing-garage/sz-sdk-go-grpc/blob/main/szconfigmananger/szconfigmananger_test.go
+	// For more information, visit https://github.com/senzing-garage/sz-sdk-go-grpc/blob/main/szconfigmanager/szconfigmananger_test.go
 	ctx := context.TODO()
 	szConfigManager := getSzConfigManager(ctx)
 	origin := "Machine: nn; Task: UnitTest"
@@ -163,7 +163,7 @@ func ExampleSzconfigmanager_GetObserverOrigin() {
 
 func ExampleSzconfigmanager_Initialize() {
 	// TODO: Write ExampleSzconfigmanager_Initialize
-	// // For more information, visit https://github.com/senzing-garage/sz-sdk-go-grpc/blob/main/szconfigmananger/szconfigmanager_examples_test.go
+	// // For more information, visit https://github.com/senzing-garage/sz-sdk-go-grpc/blob/main/szconfigmanager/szconfigmanager_examples_test.go
 	// ctx := context.TODO()
 	// grpcConnection := getGrpcConnection()
 	// szConfigManager := &SzConfigManager{
@@ -180,7 +180,7 @@ func ExampleSzconfigmanager_Initialize() {
 }
 
 func ExampleSzconfigmanager_Destroy() {
-	// For more information, visit https://github.com/senzing-garage/sz-sdk-go-grpc/blob/main/szconfigmananger/szconfigmanager_examples_test.go
+	// For more information, visit https://github.com/senzing-garage/sz-sdk-go-grpc/blob/main/szconfigmanager/szconfigmanager_examples_test.go
 	ctx := context.TODO()
 	szConfigManager := getSzConfigManager(ctx)
 	err := szConfigManager.Destroy(ctx)

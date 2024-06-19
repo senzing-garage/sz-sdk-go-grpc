@@ -13,8 +13,10 @@ import (
 )
 
 // ----------------------------------------------------------------------------
-// Interface functions - Examples for godoc documentation
+// Interface methods - Examples for godoc documentation
 // ----------------------------------------------------------------------------
+
+func ExampleSzengine() {}
 
 func ExampleSzengine_AddRecord() {
 	// For more information, visit https://github.com/senzing-garage/sz-sdk-go-grpc/blob/main/szengine/szengine_examples_test.go

@@ -52,7 +52,8 @@ setup-osarch-specific:
 
 .PHONY: test-osarch-specific
 test-osarch-specific:
-	@go test -v -p 1 ./...
+	@go test -json -v -p 1 ./... 2>&1 | tee /tmp/gotest.log | gotestfmt
+
 
 # -----------------------------------------------------------------------------
 # Makefile targets supported only by this platform.

@@ -10,11 +10,13 @@ import (
 	"time"
 
 	"github.com/senzing-garage/go-logging/logging"
+	"github.com/senzing-garage/go-messaging/messenger"
 	"github.com/senzing-garage/go-observing/notifier"
 	"github.com/senzing-garage/go-observing/observer"
 	"github.com/senzing-garage/go-observing/subject"
+	"github.com/senzing-garage/sz-sdk-go-core/helpers"
 	"github.com/senzing-garage/sz-sdk-go-grpc/helper"
-	szconfigapi "github.com/senzing-garage/sz-sdk-go/szconfig"
+	"github.com/senzing-garage/sz-sdk-go/szconfig"
 	szpb "github.com/senzing-garage/sz-sdk-proto/go/szconfig"
 )
 
@@ -22,9 +24,15 @@ type Szconfig struct {
 	GrpcClient     szpb.SzConfigClient
 	isTrace        bool
 	logger         logging.Logging
+	messenger      messenger.Messenger
 	observerOrigin string
 	observers      subject.Subject
 }
+
+const (
+	baseCallerSkip       = 4
+	initialByteArraySize = 65535
+)
 
 // ----------------------------------------------------------------------------
 // sz-sdk-go.SzConfig interface methods
@@ -388,7 +396,7 @@ func (client *Szconfig) SetLogLevel(ctx context.Context, logLevelName string) er
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{
-				"logLevel": logLevelName,
+				"logLevelName": logLevelName,
 			}
 			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentID, 8012, err, details)
 		}()
@@ -431,10 +439,10 @@ func (client *Szconfig) UnregisterObserver(ctx context.Context, observer observe
 			"observerID": observer.GetObserverID(ctx),
 		}
 		notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentID, 8013, err, details)
-	}
-	err = client.observers.UnregisterObserver(ctx, observer)
-	if !client.observers.HasObservers(ctx) {
-		client.observers = nil
+		err = client.observers.UnregisterObserver(ctx, observer)
+		if !client.observers.HasObservers(ctx) {
+			client.observers = nil
+		}
 	}
 	return err
 }
@@ -447,17 +455,18 @@ func (client *Szconfig) UnregisterObserver(ctx context.Context, observer observe
 
 // Get the Logger singleton.
 func (client *Szconfig) getLogger() logging.Logging {
-	var err error
 	if client.logger == nil {
-		options := []interface{}{
-			&logging.OptionCallerSkip{Value: 4},
-		}
-		client.logger, err = logging.NewSenzingLogger(ComponentID, szconfigapi.IDMessages, options...)
-		if err != nil {
-			panic(err)
-		}
+		client.logger = helpers.GetLogger(ComponentID, szconfig.IDMessages, baseCallerSkip)
 	}
 	return client.logger
+}
+
+// Get the Messenger singleton.
+func (client *Szconfig) getMessenger() messenger.Messenger {
+	if client.messenger == nil {
+		client.messenger = helpers.GetMessenger(ComponentID, szconfig.IDMessages, baseCallerSkip)
+	}
+	return client.messenger
 }
 
 // Trace method entry.

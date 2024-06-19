@@ -10,10 +10,13 @@ import (
 	"time"
 
 	"github.com/senzing-garage/go-logging/logging"
+	"github.com/senzing-garage/go-messaging/messenger"
 	"github.com/senzing-garage/go-observing/notifier"
 	"github.com/senzing-garage/go-observing/observer"
 	"github.com/senzing-garage/go-observing/subject"
+	"github.com/senzing-garage/sz-sdk-go-core/helpers"
 	"github.com/senzing-garage/sz-sdk-go-grpc/helper"
+	"github.com/senzing-garage/sz-sdk-go/szconfigmanager"
 	szconfigmanagerapi "github.com/senzing-garage/sz-sdk-go/szconfigmanager"
 	szpb "github.com/senzing-garage/sz-sdk-proto/go/szconfigmanager"
 )
@@ -22,9 +25,14 @@ type Szconfigmanager struct {
 	GrpcClient     szpb.SzConfigManagerClient
 	isTrace        bool
 	logger         logging.Logging
+	messenger      messenger.Messenger
 	observerOrigin string
 	observers      subject.Subject
 }
+
+const (
+	baseCallerSkip = 4
+)
 
 // ----------------------------------------------------------------------------
 // sz-sdk-go.SzConfigManager interface methods
@@ -393,10 +401,10 @@ func (client *Szconfigmanager) UnregisterObserver(ctx context.Context, observer 
 			"observerID": observer.GetObserverID(ctx),
 		}
 		notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentID, 8012, err, details)
-	}
-	err = client.observers.UnregisterObserver(ctx, observer)
-	if !client.observers.HasObservers(ctx) {
-		client.observers = nil
+		err = client.observers.UnregisterObserver(ctx, observer)
+		if !client.observers.HasObservers(ctx) {
+			client.observers = nil
+		}
 	}
 	return err
 }
@@ -420,6 +428,14 @@ func (client *Szconfigmanager) getLogger() logging.Logging {
 		}
 	}
 	return client.logger
+}
+
+// Get the Messenger singleton.
+func (client *Szconfigmanager) getMessenger() messenger.Messenger {
+	if client.messenger == nil {
+		client.messenger = helpers.GetMessenger(ComponentID, szconfigmanager.IDMessages, baseCallerSkip)
+	}
+	return client.messenger
 }
 
 // Trace method entry.

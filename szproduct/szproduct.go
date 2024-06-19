@@ -195,7 +195,7 @@ The SetLogLevel method sets the level of logging.
 
 Input
   - ctx: A context to control lifecycle.
-  - logLevel: The desired log level. TRACE, DEBUG, INFO, WARN, ERROR, FATAL or PANIC.
+  - logLevelName: The desired log level. TRACE, DEBUG, INFO, WARN, ERROR, FATAL or PANIC.
 */
 func (client *Szproduct) SetLogLevel(ctx context.Context, logLevelName string) error {
 	var err error
@@ -255,10 +255,10 @@ func (client *Szproduct) UnregisterObserver(ctx context.Context, observer observ
 			"observerID": observer.GetObserverID(ctx),
 		}
 		notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentID, 8010, err, details)
-	}
-	err = client.observers.UnregisterObserver(ctx, observer)
-	if !client.observers.HasObservers(ctx) {
-		client.observers = nil
+		err = client.observers.UnregisterObserver(ctx, observer)
+		if !client.observers.HasObservers(ctx) {
+			client.observers = nil
+		}
 	}
 	return err
 }

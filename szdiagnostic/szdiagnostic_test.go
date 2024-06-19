@@ -11,6 +11,7 @@ import (
 	truncator "github.com/aquilax/truncate"
 	"github.com/senzing-garage/go-helpers/truthset"
 	"github.com/senzing-garage/go-logging/logging"
+	"github.com/senzing-garage/go-observing/observer"
 	"github.com/senzing-garage/sz-sdk-go-grpc/szconfig"
 	"github.com/senzing-garage/sz-sdk-go-grpc/szconfigmanager"
 	"github.com/senzing-garage/sz-sdk-go-grpc/szengine"
@@ -22,19 +23,30 @@ import (
 	szpb "github.com/senzing-garage/sz-sdk-proto/go/szdiagnostic"
 	szenginepb "github.com/senzing-garage/sz-sdk-proto/go/szengine"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 )
 
 const (
+	badFeatureID      = int64(-1)
+	badLogLevelName   = "BadLogLevelName"
+	badSecondsToRun   = -1
 	defaultTruncation = 76
+	instanceName      = "SzDiagnostic Test"
+	observerOrigin    = "SzDiagnostic observer"
 	printResults      = false
+	verboseLogging    = senzing.SzNoLogging
 )
 
 var (
-	grpcAddress              = "localhost:8261"
-	grpcConnection           *grpc.ClientConn
-	logger                   logging.Logging
+	grpcAddress       = "localhost:8261"
+	grpcConnection    *grpc.ClientConn
+	logger            logging.Logging
+	observerSingleton = &observer.NullObserver{
+		ID:       "Observer 1",
+		IsSilent: true,
+	}
 	szConfigManagerSingleton senzing.SzConfigManager
 	szConfigSingleton        senzing.SzConfig
 	szDiagnosticSingleton    *Szdiagnostic
@@ -42,7 +54,7 @@ var (
 )
 
 // ----------------------------------------------------------------------------
-// Interface functions - test
+// Interface methods - test
 // ----------------------------------------------------------------------------
 
 func TestSzdiagnostic_CheckDatastorePerformance(test *testing.T) {
@@ -50,17 +62,31 @@ func TestSzdiagnostic_CheckDatastorePerformance(test *testing.T) {
 	szDiagnostic := getTestObject(ctx, test)
 	secondsToRun := 1
 	actual, err := szDiagnostic.CheckDatastorePerformance(ctx, secondsToRun)
-	testError(test, err)
+	require.NoError(test, err)
 	printActual(test, actual)
 }
+
+func TestSzdiagnostic_CheckDatastorePerformance_badSecondsToRun(test *testing.T) {
+	ctx := context.TODO()
+	szDiagnostic := getTestObject(ctx, test)
+	actual, err := szDiagnostic.CheckDatastorePerformance(ctx, badSecondsToRun)
+	require.NoError(test, err) // TODO: TestSzdiagnostic_CheckDatastorePerformance_badSecondsToRun should fail.
+	printActual(test, actual)
+}
+
+// TODO: Implement TestSzdiagnostic_CheckDatastorePerformance_error
+// func TestSzdiagnostic_CheckDatastorePerformance_error(test *testing.T) {}
 
 func TestSzdiagnostic_GetDatastoreInfo(test *testing.T) {
 	ctx := context.TODO()
 	szDiagnostic := getTestObject(ctx, test)
 	actual, err := szDiagnostic.GetDatastoreInfo(ctx)
-	testError(test, err)
+	require.NoError(test, err)
 	printActual(test, actual)
 }
+
+// TODO: Implement TestSzdiagnostic_GetDatastoreInfo_error
+// func TestSzdiagnostic_GetDatastoreInfo_error(test *testing.T) {}
 
 func TestSzdiagnostic_GetFeature(test *testing.T) {
 	ctx := context.TODO()
@@ -82,6 +108,12 @@ func TestSzdiagnostic_GetFeature(test *testing.T) {
 // Logging and observing
 // ----------------------------------------------------------------------------
 
+func TestSzdiagnostic_SetLogLevel_badLogLevelName(test *testing.T) {
+	ctx := context.TODO()
+	szConfig := getTestObject(ctx, test)
+	_ = szConfig.SetLogLevel(ctx, badLogLevelName)
+}
+
 func TestSzdiagnostic_SetObserverOrigin(test *testing.T) {
 	ctx := context.TODO()
 	szDiagnostic := getTestObject(ctx, test)
@@ -98,6 +130,13 @@ func TestSzdiagnostic_GetObserverOrigin(test *testing.T) {
 	assert.Equal(test, origin, actual)
 }
 
+func TestSzdiagnostic_UnregisterObserver(test *testing.T) {
+	ctx := context.TODO()
+	szDiagnostic := getTestObject(ctx, test)
+	err := szDiagnostic.UnregisterObserver(ctx, observerSingleton)
+	require.NoError(test, err)
+}
+
 // ----------------------------------------------------------------------------
 // Object creation / destruction
 // ----------------------------------------------------------------------------
@@ -107,7 +146,7 @@ func TestSzdiagnostic_AsInterface(test *testing.T) {
 	szDiagnostic := getSzDiagnosticAsInterface(ctx)
 	secondsToRun := 1
 	actual, err := szDiagnostic.CheckDatastorePerformance(ctx, secondsToRun)
-	testError(test, err)
+	require.NoError(test, err)
 	printActual(test, actual)
 }
 

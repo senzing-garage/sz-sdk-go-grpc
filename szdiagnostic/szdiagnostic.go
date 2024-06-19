@@ -88,7 +88,7 @@ func (client *Szdiagnostic) Destroy(ctx context.Context) error {
 }
 
 /*
-The GetDatastoreInfo method retrieves information about the underlying datastore.
+The GetDatastoreInfo method returns information about the state of the datastore.
 
 Input
   - ctx: A context to control lifecycle.
@@ -350,10 +350,10 @@ func (client *Szdiagnostic) UnregisterObserver(ctx context.Context, observer obs
 			"observerID": observer.GetObserverID(ctx),
 		}
 		notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentID, 8027, err, details)
-	}
-	err = client.observers.UnregisterObserver(ctx, observer)
-	if !client.observers.HasObservers(ctx) {
-		client.observers = nil
+		err = client.observers.UnregisterObserver(ctx, observer)
+		if !client.observers.HasObservers(ctx) {
+			client.observers = nil
+		}
 	}
 	return err
 }

@@ -10,7 +10,7 @@ import (
 )
 
 // ----------------------------------------------------------------------------
-// Interface functions - Examples for godoc documentation
+// Interface methods - Examples for godoc documentation
 // ----------------------------------------------------------------------------
 
 func ExampleSzdiagnostic_CheckDatastorePerformance() {

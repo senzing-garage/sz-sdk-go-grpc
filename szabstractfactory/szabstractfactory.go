@@ -23,7 +23,7 @@ type Szabstractfactory struct {
 }
 
 // ----------------------------------------------------------------------------
-// Interface methods
+// senzing.SzAbstractFactory interface methods
 // ----------------------------------------------------------------------------
 
 /*

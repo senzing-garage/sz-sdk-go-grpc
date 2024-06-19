@@ -10,7 +10,7 @@ import (
 	"github.com/senzing-garage/go-logging/logging"
 	"github.com/senzing-garage/sz-sdk-go/senzing"
 	"github.com/senzing-garage/sz-sdk-go/szconfig"
-	"github.com/stretchr/testify/require"
+	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 )
@@ -28,19 +28,19 @@ var (
 )
 
 // ----------------------------------------------------------------------------
-// Interface functions - test
+// Interface methods - test
 // ----------------------------------------------------------------------------
 
 func TestSzAbstractFactory_CreateSzConfig(test *testing.T) {
 	ctx := context.TODO()
 	szAbstractFactory := getTestObject(ctx, test)
 	szConfig, err := szAbstractFactory.CreateSzConfig(ctx)
-	require.NoError(test, err)
-	defer func() { _ = szConfig.Destroy(ctx) }()
+	testError(test, err)
+	defer func() { handleError(szConfig.Destroy(ctx)) }()
 	configHandle, err := szConfig.CreateConfig(ctx)
-	require.NoError(test, err)
+	testError(test, err)
 	dataSources, err := szConfig.GetDataSources(ctx, configHandle)
-	require.NoError(test, err)
+	testError(test, err)
 	printActual(test, dataSources)
 }
 
@@ -48,10 +48,10 @@ func TestSzAbstractFactory_CreateSzConfigManager(test *testing.T) {
 	ctx := context.TODO()
 	szAbstractFactory := getTestObject(ctx, test)
 	szConfigManager, err := szAbstractFactory.CreateSzConfigManager(ctx)
-	require.NoError(test, err)
-	defer func() { _ = szConfigManager.Destroy(ctx) }()
+	testError(test, err)
+	defer func() { handleError(szConfigManager.Destroy(ctx)) }()
 	configList, err := szConfigManager.GetConfigs(ctx)
-	require.NoError(test, err)
+	testError(test, err)
 	printActual(test, configList)
 }
 
@@ -59,10 +59,10 @@ func TestSzAbstractFactory_CreateSzDiagnostic(test *testing.T) {
 	ctx := context.TODO()
 	szAbstractFactory := getTestObject(ctx, test)
 	szDiagnostic, err := szAbstractFactory.CreateSzDiagnostic(ctx)
-	require.NoError(test, err)
-	defer func() { _ = szDiagnostic.Destroy(ctx) }()
+	testError(test, err)
+	defer func() { handleError(szDiagnostic.Destroy(ctx)) }()
 	result, err := szDiagnostic.CheckDatastorePerformance(ctx, 1)
-	require.NoError(test, err)
+	testError(test, err)
 	printActual(test, result)
 }
 
@@ -70,10 +70,10 @@ func TestSzAbstractFactory_CreateSzEngine(test *testing.T) {
 	ctx := context.TODO()
 	szAbstractFactory := getTestObject(ctx, test)
 	szEngine, err := szAbstractFactory.CreateSzEngine(ctx)
-	require.NoError(test, err)
-	defer func() { _ = szEngine.Destroy(ctx) }()
+	testError(test, err)
+	defer func() { handleError(szEngine.Destroy(ctx)) }()
 	stats, err := szEngine.GetStats(ctx)
-	require.NoError(test, err)
+	testError(test, err)
 	printActual(test, stats)
 }
 
@@ -81,10 +81,10 @@ func TestSzAbstractFactory_CreateSzProduct(test *testing.T) {
 	ctx := context.TODO()
 	szAbstractFactory := getTestObject(ctx, test)
 	szProduct, err := szAbstractFactory.CreateSzProduct(ctx)
-	require.NoError(test, err)
-	defer func() { _ = szProduct.Destroy(ctx) }()
+	testError(test, err)
+	defer func() { handleError(szProduct.Destroy(ctx)) }()
 	version, err := szProduct.GetVersion(ctx)
-	require.NoError(test, err)
+	testError(test, err)
 	printActual(test, version)
 }
 
@@ -113,6 +113,12 @@ func getTestObject(ctx context.Context, test *testing.T) senzing.SzAbstractFacto
 	return getSzAbstractFactory(ctx)
 }
 
+func handleError(err error) {
+	if err != nil {
+		panic(err)
+	}
+}
+
 func printActual(test *testing.T, actual interface{}) {
 	printResult(test, "Actual", actual)
 }
@@ -120,6 +126,13 @@ func printActual(test *testing.T, actual interface{}) {
 func printResult(test *testing.T, title string, result interface{}) {
 	if printResults {
 		test.Logf("%s: %v", title, truncate(fmt.Sprintf("%v", result), defaultTruncation))
+	}
+}
+
+func testError(test *testing.T, err error) {
+	if err != nil {
+		test.Log("Error:", err.Error())
+		assert.FailNow(test, err.Error())
 	}
 }
 
