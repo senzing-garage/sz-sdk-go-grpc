@@ -156,36 +156,3 @@ func ExampleSzconfigmanager_GetObserverOrigin() {
 	fmt.Println(result)
 	// Output: Machine: nn; Task: UnitTest
 }
-
-// ----------------------------------------------------------------------------
-// Object creation / destruction
-// ----------------------------------------------------------------------------
-
-func ExampleSzconfigmanager_Initialize() {
-	// TODO: Write ExampleSzconfigmanager_Initialize
-	// // For more information, visit https://github.com/senzing-garage/sz-sdk-go-grpc/blob/main/szconfigmanager/szconfigmanager_examples_test.go
-	// ctx := context.TODO()
-	// grpcConnection := getGrpcConnection()
-	// szConfigManager := &SzConfigManager{
-	// 	GrpcClient: szpb.NewG2ConfigMgrClient(grpcConnection),
-	// }
-	// moduleName := "Test module name"
-	// iniParams := "{}"
-	// verboseLogging := int64(0)
-	// err := szConfigManager.Init(ctx, moduleName, iniParams, verboseLogging)
-	// if err != nil {
-	// 	// This should produce a "senzing-60124002" error.
-	// }
-	// // Output:
-}
-
-func ExampleSzconfigmanager_Destroy() {
-	// For more information, visit https://github.com/senzing-garage/sz-sdk-go-grpc/blob/main/szconfigmanager/szconfigmanager_examples_test.go
-	ctx := context.TODO()
-	szConfigManager := getSzConfigManager(ctx)
-	err := szConfigManager.Destroy(ctx)
-	if err != nil {
-		fmt.Println(err)
-	}
-	// Output:
-}

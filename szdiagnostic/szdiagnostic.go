@@ -26,6 +26,10 @@ type Szdiagnostic struct {
 	observers      subject.Subject
 }
 
+const (
+	baseCallerSkip = 4
+)
+
 // ----------------------------------------------------------------------------
 // sz-sdk-go.SzDiagnostic interface methods
 // ----------------------------------------------------------------------------

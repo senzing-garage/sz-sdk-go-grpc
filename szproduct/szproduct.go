@@ -26,6 +26,10 @@ type Szproduct struct {
 	observers      subject.Subject
 }
 
+const (
+	baseCallerSkip = 4
+)
+
 // ----------------------------------------------------------------------------
 // sz-sdk-go.SzProduct interface methods
 // ----------------------------------------------------------------------------

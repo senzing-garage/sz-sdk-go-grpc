@@ -17,7 +17,6 @@ import (
 	"github.com/senzing-garage/sz-sdk-go-core/helpers"
 	"github.com/senzing-garage/sz-sdk-go-grpc/helper"
 	"github.com/senzing-garage/sz-sdk-go/szconfigmanager"
-	szconfigmanagerapi "github.com/senzing-garage/sz-sdk-go/szconfigmanager"
 	szpb "github.com/senzing-garage/sz-sdk-proto/go/szconfigmanager"
 )
 
@@ -314,7 +313,6 @@ Input
   - observer: The observer to be added.
 */
 func (client *Szconfigmanager) RegisterObserver(ctx context.Context, observer observer.Observer) error {
-	_ = ctx
 	var err error
 	if client.isTrace {
 		entryTime := time.Now()
@@ -422,7 +420,7 @@ func (client *Szconfigmanager) getLogger() logging.Logging {
 		options := []interface{}{
 			&logging.OptionCallerSkip{Value: 4},
 		}
-		client.logger, err = logging.NewSenzingLogger(ComponentID, szconfigmanagerapi.IDMessages, options...)
+		client.logger, err = logging.NewSenzingLogger(ComponentID, szconfigmanager.IDMessages, options...)
 		if err != nil {
 			panic(err)
 		}

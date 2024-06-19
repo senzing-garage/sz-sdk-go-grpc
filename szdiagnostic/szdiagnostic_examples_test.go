@@ -7,6 +7,7 @@ import (
 	"fmt"
 
 	"github.com/senzing-garage/go-logging/logging"
+	"github.com/senzing-garage/sz-sdk-go/senzing"
 )
 
 // ----------------------------------------------------------------------------
@@ -100,6 +101,36 @@ func ExampleSzdiagnostic_GetObserverOrigin() {
 // ----------------------------------------------------------------------------
 // Object creation / destruction
 // ----------------------------------------------------------------------------
+
+func ExampleSzdiagnostic_Initialize() {
+	// For more information, visit https://github.com/senzing-garage/sz-sdk-go-grpc/blob/main/szdiagnostic/szdiagnostic_examples_test.go
+	ctx := context.TODO()
+	szDiagnostic := &Szdiagnostic{}
+	instanceName := "Test name"
+	settings, err := getSettings()
+	if err != nil {
+		fmt.Println(err)
+	}
+	verboseLogging := senzing.SzNoLogging
+	configID := senzing.SzInitializeWithDefaultConfiguration
+	err = szDiagnostic.Initialize(ctx, instanceName, settings, configID, verboseLogging)
+	if err != nil {
+		fmt.Println(err)
+	}
+	// Output:
+}
+
+func ExampleSzdiagnostic_Reinitialize() {
+	// For more information, visit https://github.com/senzing-garage/sz-sdk-go-grpc/blob/main/szdiagnostic/szdiagnostic_examples_test.go
+	ctx := context.TODO()
+	szDiagnostic := getSzDiagnostic(ctx)
+	configID := getDefaultConfigID()
+	err := szDiagnostic.Reinitialize(ctx, configID)
+	if err != nil {
+		fmt.Println(err)
+	}
+	// Output:
+}
 
 func ExampleSzdiagnostic_Destroy() {
 	// For more information, visit https://github.com/senzing-garage/sz-sdk-go-grpc/blob/main/szdiagnostic/szdiagnostic_examples_test.go

@@ -12,9 +12,10 @@ import (
 	truncator "github.com/aquilax/truncate"
 	"github.com/senzing-garage/go-logging/logging"
 	"github.com/senzing-garage/go-observing/observer"
+	"github.com/senzing-garage/sz-sdk-go-core/helpers"
 	"github.com/senzing-garage/sz-sdk-go-grpc/szconfig"
 	"github.com/senzing-garage/sz-sdk-go/senzing"
-	szconfigmanagerapi "github.com/senzing-garage/sz-sdk-go/szconfigmanager"
+	"github.com/senzing-garage/sz-sdk-go/szconfigmanager"
 	"github.com/senzing-garage/sz-sdk-go/szerror"
 	szconfigpb "github.com/senzing-garage/sz-sdk-proto/go/szconfig"
 	szpb "github.com/senzing-garage/sz-sdk-proto/go/szconfigmanager"
@@ -40,16 +41,17 @@ var (
 	grpcAddress       = "localhost:8261"
 	grpcConnection    *grpc.ClientConn
 	logger            logging.Logging
+	logLevel          = "INFO"
 	observerSingleton = &observer.NullObserver{
 		ID:       "Observer 1",
 		IsSilent: true,
 	}
 	szConfigManagerSingleton *Szconfigmanager
-	szConfigSingleton        senzing.SzConfig
+	szConfigSingleton        *szconfig.Szconfig
 )
 
 // ----------------------------------------------------------------------------
-// Interface functions - test
+// Interface methods - test
 // ----------------------------------------------------------------------------
 
 func TestSzconfigmanager_AddConfig(test *testing.T) {
@@ -69,6 +71,18 @@ func TestSzconfigmanager_AddConfig(test *testing.T) {
 	require.NoError(test, err)
 	printActual(test, actual)
 }
+
+func TestSzconfigmanager_AddConfig_badConfigDefinition(test *testing.T) {
+	ctx := context.TODO()
+	szConfigManager := getTestObject(ctx, test)
+	now := time.Now()
+	configComment := fmt.Sprintf("szconfigmanager_test at %s", now.UTC())
+	_, err := szConfigManager.AddConfig(ctx, badConfigDefinition, configComment)
+	require.NoError(test, err) // TODO: TestSzconfigmanager_AddConfig_badConfigDefinition should fail.
+}
+
+// TODO: Implement TestSzconfigmanager_AddConfig_error
+// func TestSzconfigmanager_AddConfig_error(test *testing.T) {}
 
 func TestSzconfigmanager_GetConfig(test *testing.T) {
 	ctx := context.TODO()
@@ -179,10 +193,6 @@ func TestSzconfigmanager_SetDefaultConfigID_badConfigID(test *testing.T) {
 }
 
 // ----------------------------------------------------------------------------
-// Private methods
-// ----------------------------------------------------------------------------
-
-// ----------------------------------------------------------------------------
 // Logging and observing
 // ----------------------------------------------------------------------------
 
@@ -283,11 +293,28 @@ func getSettings() (string, error) {
 }
 
 func getSzConfig(ctx context.Context) senzing.SzConfig {
-	_ = ctx
 	if szConfigSingleton == nil {
 		grpcConnection := getGrpcConnection()
 		szConfigSingleton = &szconfig.Szconfig{
 			GrpcClient: szconfigpb.NewSzConfigClient(grpcConnection),
+		}
+		err := szConfigSingleton.SetLogLevel(ctx, logLevel)
+		if err != nil {
+			fmt.Printf("SetLogLevel() Error: %v\n", err)
+			return nil
+		}
+		if logLevel == "TRACE" {
+			szConfigSingleton.SetObserverOrigin(ctx, observerOrigin)
+			err = szConfigSingleton.RegisterObserver(ctx, observerSingleton)
+			if err != nil {
+				fmt.Printf("RegisterObserver() Error: %v\n", err)
+				return nil
+			}
+			err = szConfigSingleton.SetLogLevel(ctx, logLevel) // Duplicated for coverage testing
+			if err != nil {
+				fmt.Printf("SetLogLevel() Error: %v\n", err)
+				return nil
+			}
 		}
 	}
 	return szConfigSingleton
@@ -300,6 +327,24 @@ func getSzConfigManager(ctx context.Context) *Szconfigmanager {
 		szConfigManagerSingleton = &Szconfigmanager{
 			GrpcClient: szpb.NewSzConfigManagerClient(grpcConnection),
 		}
+		err := szConfigManagerSingleton.SetLogLevel(ctx, logLevel)
+		if err != nil {
+			fmt.Printf("SetLogLevel() Error: %v\n", err)
+			return nil
+		}
+		if logLevel == "TRACE" {
+			szConfigManagerSingleton.SetObserverOrigin(ctx, observerOrigin)
+			err = szConfigManagerSingleton.RegisterObserver(ctx, observerSingleton)
+			if err != nil {
+				fmt.Printf("RegisterObserver() Error: %v\n", err)
+				return nil
+			}
+			err = szConfigManagerSingleton.SetLogLevel(ctx, logLevel) // Duplicated for coverage testing
+			if err != nil {
+				fmt.Printf("SetLogLevel() Error: %v\n", err)
+				return nil
+			}
+		}
 	}
 	return szConfigManagerSingleton
 }
@@ -311,12 +356,6 @@ func getSzConfigManagerAsInterface(ctx context.Context) senzing.SzConfigManager 
 func getTestObject(ctx context.Context, test *testing.T) *Szconfigmanager {
 	_ = test
 	return getSzConfigManager(ctx)
-}
-
-func handleError(err error) {
-	if err != nil {
-		panic(err)
-	}
 }
 
 func printActual(test *testing.T, actual interface{}) {
@@ -360,64 +399,71 @@ func TestMain(m *testing.M) {
 	os.Exit(code)
 }
 
-func setupSenzingConfig(ctx context.Context) error {
+func setup() error {
+	var err error
+	logger = helpers.GetLogger(ComponentID, szconfigmanager.IDMessages, baseCallerSkip)
+	osenvLogLevel := os.Getenv("SENZING_LOG_LEVEL")
+	if len(osenvLogLevel) > 0 {
+		logLevel = osenvLogLevel
+	}
+	err = setupSenzingConfiguration()
+	if err != nil {
+		return createError(5920, err)
+	}
+	return err
+}
+
+func setupSenzingConfiguration() error {
+	ctx := context.TODO()
 	now := time.Now()
 
-	// Create a fresh Senzing configuration.
+	// Create sz objects.
 
 	szConfig := getSzConfig(ctx)
+	szConfigManager := getSzConfigManager(ctx)
+
+	// Create an in memory Senzing configuration.
+
 	configHandle, err := szConfig.CreateConfig(ctx)
 	if err != nil {
-		return createError(5907, err)
+		return createError(5903, err)
 	}
 
-	datasourceNames := []string{"CUSTOMERS", "REFERENCE", "WATCHLIST"}
-	for _, datasourceName := range datasourceNames {
-		_, err := szConfig.AddDataSource(ctx, configHandle, datasourceName)
+	// Add data sources to in-memory Senzing configuration.
+
+	dataSourceCodes := []string{"CUSTOMERS", "REFERENCE", "WATCHLIST"}
+	for _, dataSourceCode := range dataSourceCodes {
+		_, err := szConfig.AddDataSource(ctx, configHandle, dataSourceCode)
 		if err != nil {
-			return createError(5908, err)
+			return createError(5904, err)
 		}
 	}
 
+	// Create a string representation of the in-memory configuration.
+
 	configDefinition, err := szConfig.ExportConfig(ctx, configHandle)
 	if err != nil {
-		return createError(5909, err)
+		return createError(5905, err)
 	}
 
-	// Persist the Senzing configuration to the Senzing repository.
+	// Close szConfig in-memory object.
 
-	szConfigManager := getSzConfigManager(ctx)
+	err = szConfig.CloseConfig(ctx, configHandle)
+	if err != nil {
+		return createError(5906, err)
+	}
+
+	// Persist the Senzing configuration to the Senzing repository as default.
+
 	configComment := fmt.Sprintf("Created by szconfigmanager_test at %s", now.UTC())
 	configID, err := szConfigManager.AddConfig(ctx, configDefinition, configComment)
 	if err != nil {
-		return createError(5913, err)
+		return createError(5908, err)
 	}
 
 	err = szConfigManager.SetDefaultConfigID(ctx, configID)
 	if err != nil {
-		return createError(5914, err)
-	}
-
-	return err
-}
-
-func setup() error {
-	ctx := context.TODO()
-	var err error
-
-	options := []interface{}{
-		&logging.OptionCallerSkip{Value: 4},
-	}
-	logger, err = logging.NewSenzingLogger(ComponentID, szconfigmanagerapi.IDMessages, options...)
-	if err != nil {
-		return createError(5901, err)
-	}
-
-	// Add Data Sources to Senzing configuration.
-
-	err = setupSenzingConfig(ctx)
-	if err != nil {
-		return createError(5920, err)
+		return createError(5909, err)
 	}
 
 	return err

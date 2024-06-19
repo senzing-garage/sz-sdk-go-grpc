@@ -2,13 +2,17 @@ package szconfig
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"os"
 	"testing"
 
 	truncator "github.com/aquilax/truncate"
+	"github.com/senzing-garage/go-logging/logging"
 	"github.com/senzing-garage/go-observing/observer"
+	"github.com/senzing-garage/sz-sdk-go-core/helpers"
 	"github.com/senzing-garage/sz-sdk-go/senzing"
+	"github.com/senzing-garage/sz-sdk-go/szconfig"
 	"github.com/senzing-garage/sz-sdk-go/szerror"
 	szpb "github.com/senzing-garage/sz-sdk-proto/go/szconfig"
 	"github.com/stretchr/testify/assert"
@@ -32,6 +36,8 @@ const (
 var (
 	grpcAddress       = "localhost:8261"
 	grpcConnection    *grpc.ClientConn
+	logger            logging.Logging
+	logLevel          = "INFO"
 	observerSingleton = &observer.NullObserver{
 		ID:       "Observer 1",
 		IsSilent: true,
@@ -81,7 +87,6 @@ func TestSzconfig_AddDataSource_badDataSourceCode(test *testing.T) {
 	configHandle, err := szConfig.CreateConfig(ctx)
 	require.NoError(test, err)
 	actual, err := szConfig.AddDataSource(ctx, configHandle, badDataSourceCode)
-	test.Log(err.Error())
 	require.ErrorIs(test, err, szerror.ErrSzBadInput)
 	printActual(test, actual)
 }
@@ -303,8 +308,42 @@ func TestSzconfig_Initialize(test *testing.T) {
 	require.NoError(test, err)
 }
 
+func TestSzconfig_Initialize_badSettings(test *testing.T) {
+	ctx := context.TODO()
+	szConfig := getTestObject(ctx, test)
+	instanceName := "Test name"
+	verboseLogging := senzing.SzNoLogging
+	err := szConfig.Initialize(ctx, instanceName, badSettings, verboseLogging)
+	assert.NoError(test, err)
+}
+
+// TODO: Implement TestSzconfig_Initialize_error
+// func TestSzconfig_Initialize_error(test *testing.T) {}
+
+func TestSzconfig_Initialize_again(test *testing.T) {
+	ctx := context.TODO()
+	szConfig := getTestObject(ctx, test)
+	instanceName := "Test name"
+	verboseLogging := senzing.SzNoLogging
+	settings, err := getSettings()
+	require.NoError(test, err)
+	err = szConfig.Initialize(ctx, instanceName, settings, verboseLogging)
+	require.NoError(test, err)
+}
+
 func TestSzconfig_Destroy(test *testing.T) {
 	ctx := context.TODO()
+	szConfig := getTestObject(ctx, test)
+	err := szConfig.Destroy(ctx)
+	require.NoError(test, err)
+}
+
+// TODO: Implement TestSzconfig_Destroy_error
+// func TestSzconfig_Destroy_error(test *testing.T) {}
+
+func TestSzconfig_Destroy_withObserver(test *testing.T) {
+	ctx := context.TODO()
+	szConfigSingleton = nil
 	szConfig := getTestObject(ctx, test)
 	err := szConfig.Destroy(ctx)
 	require.NoError(test, err)
@@ -336,6 +375,24 @@ func getSzConfig(ctx context.Context) *Szconfig {
 		grpcConnection := getGrpcConnection()
 		szConfigSingleton = &Szconfig{
 			GrpcClient: szpb.NewSzConfigClient(grpcConnection),
+		}
+		err := szConfigSingleton.SetLogLevel(ctx, logLevel)
+		if err != nil {
+			fmt.Printf("SetLogLevel() Error: %v\n", err)
+			return nil
+		}
+		if logLevel == "TRACE" {
+			szConfigSingleton.SetObserverOrigin(ctx, observerOrigin)
+			err = szConfigSingleton.RegisterObserver(ctx, observerSingleton)
+			if err != nil {
+				fmt.Printf("RegisterObserver() Error: %v\n", err)
+				return nil
+			}
+			err = szConfigSingleton.SetLogLevel(ctx, logLevel) // Duplicated for coverage testing
+			if err != nil {
+				fmt.Printf("SetLogLevel() - 2 Error: %v\n", err)
+				return nil
+			}
 		}
 	}
 	return szConfigSingleton
@@ -371,6 +428,15 @@ func truncate(aString string, length int) string {
 func TestMain(m *testing.M) {
 	err := setup()
 	if err != nil {
+		if errors.Is(err, szerror.ErrSzUnrecoverable) {
+			fmt.Printf("\nUnrecoverable error detected. \n\n")
+		}
+		if errors.Is(err, szerror.ErrSzRetryable) {
+			fmt.Printf("\nRetryable error detected. \n\n")
+		}
+		if errors.Is(err, szerror.ErrSzBadInput) {
+			fmt.Printf("\nBad user input error detected. \n\n")
+		}
 		fmt.Print(err)
 		os.Exit(1)
 	}
@@ -384,10 +450,14 @@ func TestMain(m *testing.M) {
 
 func setup() error {
 	var err error
+	logger = helpers.GetLogger(ComponentID, szconfig.IDMessages, baseCallerSkip)
+	osenvLogLevel := os.Getenv("SENZING_LOG_LEVEL")
+	if len(osenvLogLevel) > 0 {
+		logLevel = osenvLogLevel
+	}
 	return err
 }
 
 func teardown() error {
-	var err error
-	return err
+	return nil
 }
