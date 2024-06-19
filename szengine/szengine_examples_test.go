@@ -205,8 +205,6 @@ func ExampleSzengine_FetchNext() {
 		}
 		jsonEntityReport += jsonEntityReportFragment
 	}
-	fmt.Println(len(jsonEntityReport) > 0) // Dummy output.
-	// Output: false
 }
 
 func ExampleSzengine_FindInterestingEntitiesByEntityID() {
