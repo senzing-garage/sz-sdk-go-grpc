@@ -30,7 +30,10 @@ type Szconfigmanager struct {
 }
 
 const (
-	baseCallerSkip = 4
+	baseCallerSkip       = 4
+	baseTen              = 10
+	initialByteArraySize = 65535
+	noError              = 0
 )
 
 // ----------------------------------------------------------------------------
@@ -56,13 +59,7 @@ func (client *Szconfigmanager) AddConfig(ctx context.Context, configDefinition s
 		client.traceEntry(1, configDefinition, configComment)
 		defer func() { client.traceExit(2, configDefinition, configComment, result, err, time.Since(entryTime)) }()
 	}
-	request := szpb.AddConfigRequest{
-		ConfigDefinition: configDefinition,
-		ConfigComment:    configComment,
-	}
-	response, err := client.GrpcClient.AddConfig(ctx, &request)
-	result = response.GetResult()
-	err = helper.ConvertGrpcError(err)
+	result, err = client.addConfig(ctx, configDefinition, configComment)
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{
@@ -108,7 +105,6 @@ Output
     See the example output.
 */
 func (client *Szconfigmanager) GetConfig(ctx context.Context, configID int64) (string, error) {
-	_ = ctx
 	var err error
 	var result string
 	if client.isTrace {
@@ -116,12 +112,7 @@ func (client *Szconfigmanager) GetConfig(ctx context.Context, configID int64) (s
 		client.traceEntry(7, configID)
 		defer func() { client.traceExit(8, configID, result, err, time.Since(entryTime)) }()
 	}
-	request := szpb.GetConfigRequest{
-		ConfigId: configID,
-	}
-	response, err := client.GrpcClient.GetConfig(ctx, &request)
-	result = response.GetResult()
-	err = helper.ConvertGrpcError(err)
+	result, err = client.getConfig(ctx, configID)
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{}
@@ -149,10 +140,7 @@ func (client *Szconfigmanager) GetConfigs(ctx context.Context) (string, error) {
 		client.traceEntry(9)
 		defer func() { client.traceExit(10, result, err, time.Since(entryTime)) }()
 	}
-	request := szpb.GetConfigsRequest{}
-	response, err := client.GrpcClient.GetConfigs(ctx, &request)
-	result = response.GetResult()
-	err = helper.ConvertGrpcError(err)
+	result, err = client.getConfigs(ctx)
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{}
@@ -179,10 +167,7 @@ func (client *Szconfigmanager) GetDefaultConfigID(ctx context.Context) (int64, e
 		client.traceEntry(11)
 		defer func() { client.traceExit(12, result, err, time.Since(entryTime)) }()
 	}
-	request := szpb.GetDefaultConfigIdRequest{}
-	response, err := client.GrpcClient.GetDefaultConfigId(ctx, &request)
-	result = response.GetResult()
-	err = helper.ConvertGrpcError(err)
+	result, err = client.getDefaultConfigID(ctx)
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{}
@@ -210,16 +195,11 @@ func (client *Szconfigmanager) ReplaceDefaultConfigID(ctx context.Context, curre
 		client.traceEntry(19, currentDefaultConfigID, newDefaultConfigID)
 		defer func() { client.traceExit(20, currentDefaultConfigID, newDefaultConfigID, err, time.Since(entryTime)) }()
 	}
-	request := szpb.ReplaceDefaultConfigIdRequest{
-		CurrentDefaultConfigId: currentDefaultConfigID,
-		NewDefaultConfigId:     newDefaultConfigID,
-	}
-	_, err = client.GrpcClient.ReplaceDefaultConfigId(ctx, &request)
-	err = helper.ConvertGrpcError(err)
+	err = client.replaceDefaultConfigID(ctx, currentDefaultConfigID, newDefaultConfigID)
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{
-				"newDefaultConfigID": strconv.FormatInt(newDefaultConfigID, 10),
+				"newDefaultConfigID": strconv.FormatInt(newDefaultConfigID, baseTen),
 			}
 			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentID, 8007, err, details)
 		}()
@@ -242,15 +222,11 @@ func (client *Szconfigmanager) SetDefaultConfigID(ctx context.Context, configID 
 		client.traceEntry(21, configID)
 		defer func() { client.traceExit(22, configID, err, time.Since(entryTime)) }()
 	}
-	request := szpb.SetDefaultConfigIdRequest{
-		ConfigId: configID,
-	}
-	_, err = client.GrpcClient.SetDefaultConfigId(ctx, &request)
-	err = helper.ConvertGrpcError(err)
+	err = client.setDefaultConfigID(ctx, configID)
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{
-				"configID": strconv.FormatInt(configID, 10),
+				"configID": strconv.FormatInt(configID, baseTen),
 			}
 			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentID, 8008, err, details)
 		}()
@@ -297,7 +273,7 @@ func (client *Szconfigmanager) Initialize(ctx context.Context, instanceName stri
 			details := map[string]string{
 				"instanceName":   instanceName,
 				"settings":       settings,
-				"verboseLogging": strconv.FormatInt(verboseLogging, 10),
+				"verboseLogging": strconv.FormatInt(verboseLogging, baseTen),
 			}
 			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentID, 8006, err, details)
 		}()
@@ -316,8 +292,8 @@ func (client *Szconfigmanager) RegisterObserver(ctx context.Context, observer ob
 	var err error
 	if client.isTrace {
 		entryTime := time.Now()
-		client.traceEntry(25, observer.GetObserverID(ctx))
-		defer func() { client.traceExit(26, observer.GetObserverID(ctx), err, time.Since(entryTime)) }()
+		client.traceEntry(703, observer.GetObserverID(ctx))
+		defer func() { client.traceExit(704, observer.GetObserverID(ctx), err, time.Since(entryTime)) }()
 	}
 	if client.observers == nil {
 		client.observers = &subject.SimpleSubject{}
@@ -328,7 +304,7 @@ func (client *Szconfigmanager) RegisterObserver(ctx context.Context, observer ob
 			details := map[string]string{
 				"observerID": observer.GetObserverID(ctx),
 			}
-			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentID, 8010, err, details)
+			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentID, 8702, err, details)
 		}()
 	}
 	return err
@@ -345,8 +321,8 @@ func (client *Szconfigmanager) SetLogLevel(ctx context.Context, logLevelName str
 	var err error
 	if client.isTrace {
 		entryTime := time.Now()
-		client.traceEntry(23, logLevelName)
-		defer func() { client.traceExit(24, logLevelName, err, time.Since(entryTime)) }()
+		client.traceEntry(705, logLevelName)
+		defer func() { client.traceExit(706, logLevelName, err, time.Since(entryTime)) }()
 	}
 	if !logging.IsValidLogLevelName(logLevelName) {
 		return fmt.Errorf("invalid error level: %s", logLevelName)
@@ -358,7 +334,7 @@ func (client *Szconfigmanager) SetLogLevel(ctx context.Context, logLevelName str
 			details := map[string]string{
 				"logLevelName": logLevelName,
 			}
-			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentID, 8011, err, details)
+			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentID, 8703, err, details)
 		}()
 	}
 	return err
@@ -387,8 +363,8 @@ func (client *Szconfigmanager) UnregisterObserver(ctx context.Context, observer 
 	var err error
 	if client.isTrace {
 		entryTime := time.Now()
-		client.traceEntry(27, observer.GetObserverID(ctx))
-		defer func() { client.traceExit(28, observer.GetObserverID(ctx), err, time.Since(entryTime)) }()
+		client.traceEntry(707, observer.GetObserverID(ctx))
+		defer func() { client.traceExit(708, observer.GetObserverID(ctx), err, time.Since(entryTime)) }()
 	}
 	if client.observers != nil {
 		// Tricky code:
@@ -398,12 +374,72 @@ func (client *Szconfigmanager) UnregisterObserver(ctx context.Context, observer 
 		details := map[string]string{
 			"observerID": observer.GetObserverID(ctx),
 		}
-		notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentID, 8012, err, details)
+		notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentID, 8704, err, details)
 		err = client.observers.UnregisterObserver(ctx, observer)
 		if !client.observers.HasObservers(ctx) {
 			client.observers = nil
 		}
 	}
+	return err
+}
+
+// ----------------------------------------------------------------------------
+// Private methods for gRPC request/response
+// ----------------------------------------------------------------------------
+
+func (client *Szconfigmanager) addConfig(ctx context.Context, configDefinition string, configComment string) (int64, error) {
+	request := szpb.AddConfigRequest{
+		ConfigDefinition: configDefinition,
+		ConfigComment:    configComment,
+	}
+	response, err := client.GrpcClient.AddConfig(ctx, &request)
+	result := response.GetResult()
+	err = helper.ConvertGrpcError(err)
+	return result, err
+}
+
+func (client *Szconfigmanager) getConfig(ctx context.Context, configID int64) (string, error) {
+	request := szpb.GetConfigRequest{
+		ConfigId: configID,
+	}
+	response, err := client.GrpcClient.GetConfig(ctx, &request)
+	result := response.GetResult()
+	err = helper.ConvertGrpcError(err)
+	return result, err
+}
+
+func (client *Szconfigmanager) getConfigs(ctx context.Context) (string, error) {
+	request := szpb.GetConfigsRequest{}
+	response, err := client.GrpcClient.GetConfigs(ctx, &request)
+	result := response.GetResult()
+	err = helper.ConvertGrpcError(err)
+	return result, err
+}
+
+func (client *Szconfigmanager) getDefaultConfigID(ctx context.Context) (int64, error) {
+	request := szpb.GetDefaultConfigIdRequest{}
+	response, err := client.GrpcClient.GetDefaultConfigId(ctx, &request)
+	result := response.GetResult()
+	err = helper.ConvertGrpcError(err)
+	return result, err
+}
+
+func (client *Szconfigmanager) replaceDefaultConfigID(ctx context.Context, currentDefaultConfigID int64, newDefaultConfigID int64) error {
+	request := szpb.ReplaceDefaultConfigIdRequest{
+		CurrentDefaultConfigId: currentDefaultConfigID,
+		NewDefaultConfigId:     newDefaultConfigID,
+	}
+	_, err := client.GrpcClient.ReplaceDefaultConfigId(ctx, &request)
+	err = helper.ConvertGrpcError(err)
+	return err
+}
+
+func (client *Szconfigmanager) setDefaultConfigID(ctx context.Context, configID int64) error {
+	request := szpb.SetDefaultConfigIdRequest{
+		ConfigId: configID,
+	}
+	_, err := client.GrpcClient.SetDefaultConfigId(ctx, &request)
+	err = helper.ConvertGrpcError(err)
 	return err
 }
 
@@ -415,15 +451,8 @@ func (client *Szconfigmanager) UnregisterObserver(ctx context.Context, observer 
 
 // Get the Logger singleton.
 func (client *Szconfigmanager) getLogger() logging.Logging {
-	var err error
 	if client.logger == nil {
-		options := []interface{}{
-			&logging.OptionCallerSkip{Value: 4},
-		}
-		client.logger, err = logging.NewSenzingLogger(ComponentID, szconfigmanager.IDMessages, options...)
-		if err != nil {
-			panic(err)
-		}
+		client.logger = helpers.GetLogger(ComponentID, szconfigmanager.IDMessages, baseCallerSkip)
 	}
 	return client.logger
 }

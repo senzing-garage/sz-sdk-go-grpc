@@ -17,7 +17,7 @@ import (
 	"google.golang.org/grpc"
 )
 
-// Szconfig is the default implementation of the Szconfig interface.
+// Szabstractfactory is an implementation of the senzing.SzAbstractFactory interface.
 type Szabstractfactory struct {
 	GrpcConnection *grpc.ClientConn
 }

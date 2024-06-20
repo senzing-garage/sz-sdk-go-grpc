@@ -10,9 +10,11 @@ import (
 	"time"
 
 	"github.com/senzing-garage/go-logging/logging"
+	"github.com/senzing-garage/go-messaging/messenger"
 	"github.com/senzing-garage/go-observing/notifier"
 	"github.com/senzing-garage/go-observing/observer"
 	"github.com/senzing-garage/go-observing/subject"
+	"github.com/senzing-garage/sz-sdk-go-core/helpers"
 	"github.com/senzing-garage/sz-sdk-go-grpc/helper"
 	szproductapi "github.com/senzing-garage/sz-sdk-go/szproduct"
 	szpb "github.com/senzing-garage/sz-sdk-proto/go/szproduct"
@@ -27,7 +29,9 @@ type Szproduct struct {
 }
 
 const (
-	baseCallerSkip = 4
+	baseCallerSkip       = 4
+	initialByteArraySize = 65535
+	noError              = 0
 )
 
 // ----------------------------------------------------------------------------
@@ -71,13 +75,10 @@ func (client *Szproduct) GetLicense(ctx context.Context) (string, error) {
 	var result string
 	if client.isTrace {
 		entryTime := time.Now()
-		client.traceEntry(11)
-		defer func() { client.traceExit(12, result, err, time.Since(entryTime)) }()
+		client.traceEntry(9)
+		defer func() { client.traceExit(10, result, err, time.Since(entryTime)) }()
 	}
-	request := szpb.GetLicenseRequest{}
-	response, err := client.GrpcClient.GetLicense(ctx, &request)
-	result = response.GetResult()
-	err = helper.ConvertGrpcError(err)
+	result, err = client.getLicense(ctx)
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{}
@@ -102,17 +103,14 @@ func (client *Szproduct) GetVersion(ctx context.Context) (string, error) {
 	var result string
 	if client.isTrace {
 		entryTime := time.Now()
-		client.traceEntry(19)
-		defer func() { client.traceExit(20, result, err, time.Since(entryTime)) }()
+		client.traceEntry(11)
+		defer func() { client.traceExit(12, result, err, time.Since(entryTime)) }()
 	}
-	request := szpb.GetVersionRequest{}
-	response, err := client.GrpcClient.GetVersion(ctx, &request)
-	result = response.GetResult()
-	err = helper.ConvertGrpcError(err)
+	result, err = client.getVersion(ctx)
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{}
-			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentID, 8006, err, details)
+			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentID, 8004, err, details)
 		}()
 	}
 	return result, err
@@ -149,8 +147,8 @@ func (client *Szproduct) Initialize(ctx context.Context, instanceName string, se
 	var err error
 	if client.isTrace {
 		entryTime := time.Now()
-		client.traceEntry(9, instanceName, settings, verboseLogging)
-		defer func() { client.traceExit(10, instanceName, settings, verboseLogging, err, time.Since(entryTime)) }()
+		client.traceEntry(13, instanceName, settings, verboseLogging)
+		defer func() { client.traceExit(14, instanceName, settings, verboseLogging, err, time.Since(entryTime)) }()
 	}
 	if client.observers != nil {
 		go func() {
@@ -176,8 +174,8 @@ func (client *Szproduct) RegisterObserver(ctx context.Context, observer observer
 	var err error
 	if client.isTrace {
 		entryTime := time.Now()
-		client.traceEntry(21, observer.GetObserverID(ctx))
-		defer func() { client.traceExit(22, observer.GetObserverID(ctx), err, time.Since(entryTime)) }()
+		client.traceEntry(703, observer.GetObserverID(ctx))
+		defer func() { client.traceExit(704, observer.GetObserverID(ctx), err, time.Since(entryTime)) }()
 	}
 	if client.observers == nil {
 		client.observers = &subject.SimpleSubject{}
@@ -186,9 +184,9 @@ func (client *Szproduct) RegisterObserver(ctx context.Context, observer observer
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{
-				"observerID": observer.GetObserverID(ctx),
+				"observerId": observer.GetObserverID(ctx),
 			}
-			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentID, 8008, err, details)
+			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentID, 8702, err, details)
 		}()
 	}
 	return err
@@ -205,8 +203,8 @@ func (client *Szproduct) SetLogLevel(ctx context.Context, logLevelName string) e
 	var err error
 	if client.isTrace {
 		entryTime := time.Now()
-		client.traceEntry(13, logLevelName)
-		defer func() { client.traceExit(14, logLevelName, err, time.Since(entryTime)) }()
+		client.traceEntry(705, logLevelName)
+		defer func() { client.traceExit(706, logLevelName, err, time.Since(entryTime)) }()
 	}
 	if !logging.IsValidLogLevelName(logLevelName) {
 		return fmt.Errorf("invalid error level: %s", logLevelName)
@@ -218,7 +216,7 @@ func (client *Szproduct) SetLogLevel(ctx context.Context, logLevelName string) e
 			details := map[string]string{
 				"logLevelName": logLevelName,
 			}
-			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentID, 8009, err, details)
+			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentID, 8703, err, details)
 		}()
 	}
 	return err
@@ -247,8 +245,8 @@ func (client *Szproduct) UnregisterObserver(ctx context.Context, observer observ
 	var err error
 	if client.isTrace {
 		entryTime := time.Now()
-		client.traceEntry(23, observer.GetObserverID(ctx))
-		defer func() { client.traceExit(24, observer.GetObserverID(ctx), err, time.Since(entryTime)) }()
+		client.traceEntry(707, observer.GetObserverID(ctx))
+		defer func() { client.traceExit(708, observer.GetObserverID(ctx), err, time.Since(entryTime)) }()
 	}
 	if client.observers != nil {
 		// Tricky code:
@@ -258,13 +256,33 @@ func (client *Szproduct) UnregisterObserver(ctx context.Context, observer observ
 		details := map[string]string{
 			"observerID": observer.GetObserverID(ctx),
 		}
-		notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentID, 8010, err, details)
+		notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentID, 8704, err, details)
 		err = client.observers.UnregisterObserver(ctx, observer)
 		if !client.observers.HasObservers(ctx) {
 			client.observers = nil
 		}
 	}
 	return err
+}
+
+// ----------------------------------------------------------------------------
+// Private methods for gRPC request/response
+// ----------------------------------------------------------------------------
+
+func (client *Szproduct) getLicense(ctx context.Context) (string, error) {
+	request := szpb.GetLicenseRequest{}
+	response, err := client.GrpcClient.GetLicense(ctx, &request)
+	result := response.GetResult()
+	err = helper.ConvertGrpcError(err)
+	return result, err
+}
+
+func (client *Szproduct) getVersion(ctx context.Context) (string, error) {
+	request := szpb.GetVersionRequest{}
+	response, err := client.GrpcClient.GetVersion(ctx, &request)
+	result := response.GetResult()
+	err = helper.ConvertGrpcError(err)
+	return result, err
 }
 
 // ----------------------------------------------------------------------------
@@ -275,17 +293,18 @@ func (client *Szproduct) UnregisterObserver(ctx context.Context, observer observ
 
 // Get the Logger singleton.
 func (client *Szproduct) getLogger() logging.Logging {
-	var err error
 	if client.logger == nil {
-		options := []interface{}{
-			&logging.OptionCallerSkip{Value: 4},
-		}
-		client.logger, err = logging.NewSenzingLogger(ComponentID, szproductapi.IDMessages, options...)
-		if err != nil {
-			panic(err)
-		}
+		client.logger = helpers.GetLogger(ComponentID, szproductapi.IDMessages, baseCallerSkip)
 	}
 	return client.logger
+}
+
+// Get the Messenger singleton.
+func (client *Szproduct) getMessenger() messenger.Messenger {
+	if client.messenger == nil {
+		client.messenger = helpers.GetMessenger(ComponentID, szproductapi.IDMessages, baseCallerSkip)
+	}
+	return client.messenger
 }
 
 // Trace method entry.

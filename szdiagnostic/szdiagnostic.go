@@ -10,9 +10,11 @@ import (
 	"time"
 
 	"github.com/senzing-garage/go-logging/logging"
+	"github.com/senzing-garage/go-messaging/messenger"
 	"github.com/senzing-garage/go-observing/notifier"
 	"github.com/senzing-garage/go-observing/observer"
 	"github.com/senzing-garage/go-observing/subject"
+	"github.com/senzing-garage/sz-sdk-go-core/helpers"
 	"github.com/senzing-garage/sz-sdk-go-grpc/helper"
 	szdiagnosticapi "github.com/senzing-garage/sz-sdk-go/szdiagnostic"
 	szpb "github.com/senzing-garage/sz-sdk-proto/go/szdiagnostic"
@@ -27,7 +29,10 @@ type Szdiagnostic struct {
 }
 
 const (
-	baseCallerSkip = 4
+	baseCallerSkip       = 4
+	baseTen              = 10
+	initialByteArraySize = 65535
+	noError              = 0
 )
 
 // ----------------------------------------------------------------------------
@@ -54,12 +59,7 @@ func (client *Szdiagnostic) CheckDatastorePerformance(ctx context.Context, secon
 		client.traceEntry(1, secondsToRun)
 		defer func() { client.traceExit(2, secondsToRun, result, err, time.Since(entryTime)) }()
 	}
-	request := szpb.CheckDatastorePerformanceRequest{
-		SecondsToRun: int32(secondsToRun),
-	}
-	response, err := client.GrpcClient.CheckDatastorePerformance(ctx, &request)
-	result = response.GetResult()
-	err = helper.ConvertGrpcError(err)
+	result, err = client.checkDatastorePerformance(ctx, secondsToRun)
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{}
@@ -79,13 +79,13 @@ func (client *Szdiagnostic) Destroy(ctx context.Context) error {
 	var err error
 	if client.isTrace {
 		entryTime := time.Now()
-		client.traceEntry(7)
-		defer func() { client.traceExit(8, err, time.Since(entryTime)) }()
+		client.traceEntry(5)
+		defer func() { client.traceExit(6, err, time.Since(entryTime)) }()
 	}
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{}
-			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentID, 8003, err, details)
+			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentID, 8002, err, details)
 		}()
 	}
 	return err
@@ -106,17 +106,14 @@ func (client *Szdiagnostic) GetDatastoreInfo(ctx context.Context) (string, error
 	var result string
 	if client.isTrace {
 		entryTime := time.Now()
-		client.traceEntry(1)
-		defer func() { client.traceExit(2, result, err, time.Since(entryTime)) }()
+		client.traceEntry(7)
+		defer func() { client.traceExit(8, result, err, time.Since(entryTime)) }()
 	}
-	request := szpb.GetDatastoreInfoRequest{}
-	response, err := client.GrpcClient.GetDatastoreInfo(ctx, &request)
-	result = response.GetResult()
-	err = helper.ConvertGrpcError(err)
+	result, err = client.getDatastoreInfo(ctx)
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{}
-			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentID, 8001, err, details)
+			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentID, 8003, err, details)
 		}()
 	}
 	return result, err
@@ -139,19 +136,16 @@ func (client *Szdiagnostic) GetFeature(ctx context.Context, featureID int64) (st
 	var result string
 	if client.isTrace {
 		entryTime := time.Now()
-		client.traceEntry(99, featureID)
-		defer func() { client.traceExit(99, featureID, result, err, time.Since(entryTime)) }()
+		client.traceEntry(9, featureID)
+		defer func() { client.traceExit(10, featureID, result, err, time.Since(entryTime)) }()
 	}
-	request := szpb.GetFeatureRequest{
-		FeatureId: featureID,
-	}
-	response, err := client.GrpcClient.GetFeature(ctx, &request)
-	result = response.GetResult()
-	err = helper.ConvertGrpcError(err)
+	result, err = client.getFeature(ctx, featureID)
 	if client.observers != nil {
 		go func() {
-			details := map[string]string{}
-			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentID, 8999, err, details)
+			details := map[string]string{
+				"featureID": strconv.FormatInt(featureID, baseTen),
+			}
+			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentID, 8004, err, details)
 		}()
 	}
 	return result, err
@@ -169,16 +163,14 @@ func (client *Szdiagnostic) PurgeRepository(ctx context.Context) error {
 	var err error
 	if client.isTrace {
 		entryTime := time.Now()
-		client.traceEntry(117)
-		defer func() { client.traceExit(118, err, time.Since(entryTime)) }()
+		client.traceEntry(17)
+		defer func() { client.traceExit(18, err, time.Since(entryTime)) }()
 	}
-	request := szpb.PurgeRepositoryRequest{}
-	_, err = client.GrpcClient.PurgeRepository(ctx, &request)
-	err = helper.ConvertGrpcError(err)
+	err = client.purgeRepository(ctx)
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{}
-			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentID, 8056, err, details)
+			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentID, 8007, err, details)
 		}()
 	}
 	return err
@@ -195,15 +187,15 @@ func (client *Szdiagnostic) Reinitialize(ctx context.Context, configID int64) er
 	var err error
 	if client.isTrace {
 		entryTime := time.Now()
-		client.traceEntry(51, configID)
-		defer func() { client.traceExit(52, configID, err, time.Since(entryTime)) }()
+		client.traceEntry(19, configID)
+		defer func() { client.traceExit(20, configID, err, time.Since(entryTime)) }()
 	}
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{
-				"configID": strconv.FormatInt(configID, 10),
+				"configID": strconv.FormatInt(configID, baseTen),
 			}
-			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentID, 8023, err, details)
+			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentID, 8008, err, details)
 		}()
 	}
 	return err
@@ -241,20 +233,20 @@ func (client *Szdiagnostic) Initialize(ctx context.Context, instanceName string,
 	var err error
 	if client.isTrace {
 		entryTime := time.Now()
-		client.traceEntry(49, instanceName, settings, configID, verboseLogging)
+		client.traceEntry(15, instanceName, settings, configID, verboseLogging)
 		defer func() {
-			client.traceExit(50, instanceName, settings, configID, verboseLogging, err, time.Since(entryTime))
+			client.traceExit(16, instanceName, settings, configID, verboseLogging, err, time.Since(entryTime))
 		}()
 	}
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{
-				"settings":       settings,
-				"configID":       strconv.FormatInt(configID, 10),
+				"configID":       strconv.FormatInt(configID, baseTen),
 				"instanceName":   instanceName,
-				"verboseLogging": strconv.FormatInt(verboseLogging, 10),
+				"settings":       settings,
+				"verboseLogging": strconv.FormatInt(verboseLogging, baseTen),
 			}
-			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentID, 8022, err, details)
+			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentID, 8005, err, details)
 		}()
 	}
 	return err
@@ -271,8 +263,8 @@ func (client *Szdiagnostic) RegisterObserver(ctx context.Context, observer obser
 	var err error
 	if client.isTrace {
 		entryTime := time.Now()
-		client.traceEntry(55, observer.GetObserverID(ctx))
-		defer func() { client.traceExit(56, observer.GetObserverID(ctx), err, time.Since(entryTime)) }()
+		client.traceEntry(703, observer.GetObserverID(ctx))
+		defer func() { client.traceExit(704, observer.GetObserverID(ctx), err, time.Since(entryTime)) }()
 	}
 	if client.observers == nil {
 		client.observers = &subject.SimpleSubject{}
@@ -283,7 +275,7 @@ func (client *Szdiagnostic) RegisterObserver(ctx context.Context, observer obser
 			details := map[string]string{
 				"observerID": observer.GetObserverID(ctx),
 			}
-			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentID, 8025, err, details)
+			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentID, 8702, err, details)
 		}()
 	}
 	return err
@@ -300,8 +292,8 @@ func (client *Szdiagnostic) SetLogLevel(ctx context.Context, logLevelName string
 	var err error
 	if client.isTrace {
 		entryTime := time.Now()
-		client.traceEntry(53, logLevelName)
-		defer func() { client.traceExit(54, logLevelName, err, time.Since(entryTime)) }()
+		client.traceEntry(705, logLevelName)
+		defer func() { client.traceExit(706, logLevelName, err, time.Since(entryTime)) }()
 	}
 	if !logging.IsValidLogLevelName(logLevelName) {
 		return fmt.Errorf("invalid error level: %s", logLevelName)
@@ -311,9 +303,9 @@ func (client *Szdiagnostic) SetLogLevel(ctx context.Context, logLevelName string
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{
-				"logLevel": logLevelName,
+				"logLevelName": logLevelName,
 			}
-			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentID, 8026, err, details)
+			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentID, 8703, err, details)
 		}()
 	}
 	return err
@@ -342,8 +334,8 @@ func (client *Szdiagnostic) UnregisterObserver(ctx context.Context, observer obs
 	var err error
 	if client.isTrace {
 		entryTime := time.Now()
-		client.traceEntry(57, observer.GetObserverID(ctx))
-		defer func() { client.traceExit(58, observer.GetObserverID(ctx), err, time.Since(entryTime)) }()
+		client.traceEntry(707, observer.GetObserverID(ctx))
+		defer func() { client.traceExit(708, observer.GetObserverID(ctx), err, time.Since(entryTime)) }()
 	}
 	if client.observers != nil {
 		// Tricky code:
@@ -353,12 +345,51 @@ func (client *Szdiagnostic) UnregisterObserver(ctx context.Context, observer obs
 		details := map[string]string{
 			"observerID": observer.GetObserverID(ctx),
 		}
-		notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentID, 8027, err, details)
+		notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentID, 8704, err, details)
 		err = client.observers.UnregisterObserver(ctx, observer)
 		if !client.observers.HasObservers(ctx) {
 			client.observers = nil
 		}
 	}
+	return err
+}
+
+// ----------------------------------------------------------------------------
+// Private methods for gRPC request/response
+// ----------------------------------------------------------------------------
+
+func (client *Szdiagnostic) checkDatastorePerformance(ctx context.Context, secondsToRun int) (string, error) {
+	request := szpb.CheckDatastorePerformanceRequest{
+		SecondsToRun: int32(secondsToRun),
+	}
+	response, err := client.GrpcClient.CheckDatastorePerformance(ctx, &request)
+	result := response.GetResult()
+	err = helper.ConvertGrpcError(err)
+	return result, err
+}
+
+func (client *Szdiagnostic) getDatastoreInfo(ctx context.Context) (string, error) {
+	request := szpb.GetDatastoreInfoRequest{}
+	response, err := client.GrpcClient.GetDatastoreInfo(ctx, &request)
+	result := response.GetResult()
+	err = helper.ConvertGrpcError(err)
+	return result, err
+}
+
+func (client *Szdiagnostic) getFeature(ctx context.Context, featureID int64) (string, error) {
+	request := szpb.GetFeatureRequest{
+		FeatureId: featureID,
+	}
+	response, err := client.GrpcClient.GetFeature(ctx, &request)
+	result := response.GetResult()
+	err = helper.ConvertGrpcError(err)
+	return result, err
+}
+
+func (client *Szdiagnostic) purgeRepository(ctx context.Context) error {
+	request := szpb.PurgeRepositoryRequest{}
+	_, err := client.GrpcClient.PurgeRepository(ctx, &request)
+	err = helper.ConvertGrpcError(err)
 	return err
 }
 
@@ -370,17 +401,18 @@ func (client *Szdiagnostic) UnregisterObserver(ctx context.Context, observer obs
 
 // Get the Logger singleton.
 func (client *Szdiagnostic) getLogger() logging.Logging {
-	var err error
 	if client.logger == nil {
-		options := []interface{}{
-			&logging.OptionCallerSkip{Value: 4},
-		}
-		client.logger, err = logging.NewSenzingLogger(ComponentID, szdiagnosticapi.IDMessages, options...)
-		if err != nil {
-			panic(err)
-		}
+		client.logger = helpers.GetLogger(ComponentID, szdiagnosticapi.IDMessages, baseCallerSkip)
 	}
 	return client.logger
+}
+
+// Get the Messenger singleton.
+func (client *Szdiagnostic) getMessenger() messenger.Messenger {
+	if client.messenger == nil {
+		client.messenger = helpers.GetMessenger(ComponentID, szdiagnosticapi.IDMessages, baseCallerSkip)
+	}
+	return client.messenger
 }
 
 // Trace method entry.

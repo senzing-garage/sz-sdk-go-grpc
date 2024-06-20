@@ -8,6 +8,7 @@ import (
 
 	truncator "github.com/aquilax/truncate"
 	"github.com/senzing-garage/go-logging/logging"
+	"github.com/senzing-garage/sz-sdk-go-core/helpers"
 	"github.com/senzing-garage/sz-sdk-go/senzing"
 	"github.com/senzing-garage/sz-sdk-go/szconfig"
 	"github.com/stretchr/testify/assert"
@@ -16,6 +17,7 @@ import (
 )
 
 const (
+	baseCallerSkip    = 4
 	defaultTruncation = 76
 	instanceName      = "SzAbstractFactory Test"
 	printResults      = false
@@ -160,10 +162,7 @@ func TestMain(m *testing.M) {
 
 func setup() error {
 	var err error
-	logger, err = logging.NewSenzingLogger(ComponentID, szconfig.IDMessages)
-	if err != nil {
-		return createError(5901, err)
-	}
+	logger = helpers.GetLogger(ComponentID, szconfig.IDMessages, baseCallerSkip)
 	return err
 }
 

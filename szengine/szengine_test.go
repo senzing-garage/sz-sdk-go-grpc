@@ -1980,6 +1980,7 @@ func deleteRecords(ctx context.Context, records []record.Record) error {
 func getDefaultConfigID() int64 {
 	return defaultConfigID
 }
+
 func getEntityID(record record.Record) int64 {
 	return getEntityIDForRecord(record.DataSource, record.ID)
 }

@@ -31,7 +31,9 @@ type Szconfig struct {
 
 const (
 	baseCallerSkip       = 4
+	baseTen              = 10
 	initialByteArraySize = 65535
+	noError              = 0
 )
 
 // ----------------------------------------------------------------------------
@@ -59,13 +61,7 @@ func (client *Szconfig) AddDataSource(ctx context.Context, configHandle uintptr,
 		client.traceEntry(1, configHandle, dataSourceCode)
 		defer func() { client.traceExit(2, configHandle, dataSourceCode, result, err, time.Since(entryTime)) }()
 	}
-	request := szpb.AddDataSourceRequest{
-		ConfigHandle:   int64(configHandle),
-		DataSourceCode: dataSourceCode,
-	}
-	response, err := client.GrpcClient.AddDataSource(ctx, &request)
-	result = response.GetResult()
-	err = helper.ConvertGrpcError(err)
+	result, err = client.addDataSource(ctx, configHandle, dataSourceCode)
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{
@@ -93,11 +89,7 @@ func (client *Szconfig) CloseConfig(ctx context.Context, configHandle uintptr) e
 		client.traceEntry(5, configHandle)
 		defer func() { client.traceExit(6, configHandle, err, time.Since(entryTime)) }()
 	}
-	request := szpb.CloseConfigRequest{
-		ConfigHandle: int64(configHandle),
-	}
-	_, err = client.GrpcClient.CloseConfig(ctx, &request)
-	err = helper.ConvertGrpcError(err)
+	err = client.closeConfig(ctx, configHandle)
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{}
@@ -128,10 +120,7 @@ func (client *Szconfig) CreateConfig(ctx context.Context) (uintptr, error) {
 		client.traceEntry(7)
 		defer func() { client.traceExit(8, result, err, time.Since(entryTime)) }()
 	}
-	request := szpb.CreateConfigRequest{}
-	response, err := client.GrpcClient.CreateConfig(ctx, &request)
-	result = (uintptr)(response.GetResult())
-	err = helper.ConvertGrpcError(err)
+	result, err = client.createConfig(ctx)
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{}
@@ -157,12 +146,7 @@ func (client *Szconfig) DeleteDataSource(ctx context.Context, configHandle uintp
 		client.traceEntry(9, configHandle, dataSourceCode)
 		defer func() { client.traceExit(10, configHandle, dataSourceCode, err, time.Since(entryTime)) }()
 	}
-	request := szpb.DeleteDataSourceRequest{
-		ConfigHandle:   int64(configHandle),
-		DataSourceCode: dataSourceCode,
-	}
-	_, err = client.GrpcClient.DeleteDataSource(ctx, &request)
-	err = helper.ConvertGrpcError(err)
+	err = client.deleteDataSource(ctx, configHandle, dataSourceCode)
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{
@@ -213,19 +197,14 @@ func (client *Szconfig) ExportConfig(ctx context.Context, configHandle uintptr) 
 	var result string
 	if client.isTrace {
 		entryTime := time.Now()
-		client.traceEntry(23, configHandle)
-		defer func() { client.traceExit(24, configHandle, result, err, time.Since(entryTime)) }()
+		client.traceEntry(13, configHandle)
+		defer func() { client.traceExit(14, configHandle, result, err, time.Since(entryTime)) }()
 	}
-	request := szpb.ExportConfigRequest{
-		ConfigHandle: int64(configHandle),
-	}
-	response, err := client.GrpcClient.ExportConfig(ctx, &request)
-	result = response.GetResult()
-	err = helper.ConvertGrpcError(err)
+	result, err = client.exportConfig(ctx, configHandle)
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{}
-			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentID, 8009, err, details)
+			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentID, 8006, err, details)
 		}()
 	}
 	return result, err
@@ -248,19 +227,14 @@ func (client *Szconfig) GetDataSources(ctx context.Context, configHandle uintptr
 	var result string
 	if client.isTrace {
 		entryTime := time.Now()
-		client.traceEntry(19, configHandle)
-		defer func() { client.traceExit(20, configHandle, result, err, time.Since(entryTime)) }()
+		client.traceEntry(15, configHandle)
+		defer func() { client.traceExit(16, configHandle, result, err, time.Since(entryTime)) }()
 	}
-	request := szpb.GetDataSourcesRequest{
-		ConfigHandle: int64(configHandle),
-	}
-	response, err := client.GrpcClient.GetDataSources(ctx, &request)
-	result = response.GetResult()
-	err = helper.ConvertGrpcError(err)
+	result, err = client.getDataSources(ctx, configHandle)
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{}
-			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentID, 8007, err, details)
+			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentID, 8008, err, details)
 		}()
 	}
 	return result, err
@@ -278,21 +252,17 @@ Output
 */
 func (client *Szconfig) ImportConfig(ctx context.Context, configDefinition string) (uintptr, error) {
 	var err error
+	var result uintptr
 	if client.isTrace {
 		entryTime := time.Now()
 		client.traceEntry(21, configDefinition)
-		defer func() { client.traceExit(22, configDefinition, err, time.Since(entryTime)) }()
+		defer func() { client.traceExit(22, configDefinition, result, err, time.Since(entryTime)) }()
 	}
-	request := szpb.ImportConfigRequest{
-		ConfigDefinition: configDefinition,
-	}
-	response, err := client.GrpcClient.ImportConfig(ctx, &request)
-	result := (uintptr)(response.GetResult())
-	err = helper.ConvertGrpcError(err)
+	result, err = client.importConfig(ctx, configDefinition)
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{}
-			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentID, 8008, err, details)
+			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentID, 8009, err, details)
 		}()
 	}
 	return result, err
@@ -329,17 +299,17 @@ func (client *Szconfig) Initialize(ctx context.Context, instanceName string, set
 	var err error
 	if client.isTrace {
 		entryTime := time.Now()
-		client.traceEntry(17, instanceName, settings, verboseLogging)
-		defer func() { client.traceExit(18, instanceName, settings, verboseLogging, err, time.Since(entryTime)) }()
+		client.traceEntry(23, instanceName, settings, verboseLogging)
+		defer func() { client.traceExit(24, instanceName, settings, verboseLogging, err, time.Since(entryTime)) }()
 	}
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{
-				"instancename":   instanceName,
+				"instanceName":   instanceName,
 				"settings":       settings,
-				"verboseLogging": strconv.FormatInt(verboseLogging, 10),
+				"verboseLogging": strconv.FormatInt(verboseLogging, baseTen),
 			}
-			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentID, 8006, err, details)
+			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentID, 8007, err, details)
 		}()
 	}
 	return err
@@ -356,8 +326,8 @@ func (client *Szconfig) RegisterObserver(ctx context.Context, observer observer.
 	var err error
 	if client.isTrace {
 		entryTime := time.Now()
-		client.traceEntry(27, observer.GetObserverID(ctx))
-		defer func() { client.traceExit(28, observer.GetObserverID(ctx), err, time.Since(entryTime)) }()
+		client.traceEntry(703, observer.GetObserverID(ctx))
+		defer func() { client.traceExit(704, observer.GetObserverID(ctx), err, time.Since(entryTime)) }()
 	}
 	if client.observers == nil {
 		client.observers = &subject.SimpleSubject{}
@@ -368,7 +338,7 @@ func (client *Szconfig) RegisterObserver(ctx context.Context, observer observer.
 			details := map[string]string{
 				"observerID": observer.GetObserverID(ctx),
 			}
-			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentID, 8011, err, details)
+			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentID, 8702, err, details)
 		}()
 	}
 	return err
@@ -385,8 +355,8 @@ func (client *Szconfig) SetLogLevel(ctx context.Context, logLevelName string) er
 	var err error
 	if client.isTrace {
 		entryTime := time.Now()
-		client.traceEntry(25, logLevelName)
-		defer func() { client.traceExit(26, logLevelName, err, time.Since(entryTime)) }()
+		client.traceEntry(705, logLevelName)
+		defer func() { client.traceExit(706, logLevelName, err, time.Since(entryTime)) }()
 	}
 	if !logging.IsValidLogLevelName(logLevelName) {
 		return fmt.Errorf("invalid error level: %s", logLevelName)
@@ -398,7 +368,7 @@ func (client *Szconfig) SetLogLevel(ctx context.Context, logLevelName string) er
 			details := map[string]string{
 				"logLevelName": logLevelName,
 			}
-			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentID, 8012, err, details)
+			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentID, 8703, err, details)
 		}()
 	}
 	return err
@@ -427,8 +397,8 @@ func (client *Szconfig) UnregisterObserver(ctx context.Context, observer observe
 	var err error
 	if client.isTrace {
 		entryTime := time.Now()
-		client.traceEntry(29, observer.GetObserverID(ctx))
-		defer func() { client.traceExit(30, observer.GetObserverID(ctx), err, time.Since(entryTime)) }()
+		client.traceEntry(707, observer.GetObserverID(ctx))
+		defer func() { client.traceExit(708, observer.GetObserverID(ctx), err, time.Since(entryTime)) }()
 	}
 	if client.observers != nil {
 		// Tricky code:
@@ -438,13 +408,85 @@ func (client *Szconfig) UnregisterObserver(ctx context.Context, observer observe
 		details := map[string]string{
 			"observerID": observer.GetObserverID(ctx),
 		}
-		notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentID, 8013, err, details)
+		notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentID, 8704, err, details)
 		err = client.observers.UnregisterObserver(ctx, observer)
 		if !client.observers.HasObservers(ctx) {
 			client.observers = nil
 		}
 	}
 	return err
+}
+
+// ----------------------------------------------------------------------------
+// Private methods for gRPC request/response
+// ----------------------------------------------------------------------------
+
+func (client *Szconfig) addDataSource(ctx context.Context, configHandle uintptr, dataSourceCode string) (string, error) {
+	request := szpb.AddDataSourceRequest{
+		ConfigHandle:   int64(configHandle),
+		DataSourceCode: dataSourceCode,
+	}
+	response, err := client.GrpcClient.AddDataSource(ctx, &request)
+	result := response.GetResult()
+	err = helper.ConvertGrpcError(err)
+	return result, err
+}
+
+func (client *Szconfig) closeConfig(ctx context.Context, configHandle uintptr) error {
+	request := szpb.CloseConfigRequest{
+		ConfigHandle: int64(configHandle),
+	}
+	_, err := client.GrpcClient.CloseConfig(ctx, &request)
+	err = helper.ConvertGrpcError(err)
+	return err
+}
+
+func (client *Szconfig) createConfig(ctx context.Context) (uintptr, error) {
+	request := szpb.CreateConfigRequest{}
+	response, err := client.GrpcClient.CreateConfig(ctx, &request)
+	result := (uintptr)(response.GetResult())
+	err = helper.ConvertGrpcError(err)
+	return result, err
+}
+
+func (client *Szconfig) deleteDataSource(ctx context.Context, configHandle uintptr, dataSourceCode string) error {
+	request := szpb.DeleteDataSourceRequest{
+		ConfigHandle:   int64(configHandle),
+		DataSourceCode: dataSourceCode,
+	}
+	_, err := client.GrpcClient.DeleteDataSource(ctx, &request)
+	err = helper.ConvertGrpcError(err)
+	return err
+}
+
+func (client *Szconfig) exportConfig(ctx context.Context, configHandle uintptr) (string, error) {
+	request := szpb.ExportConfigRequest{
+		ConfigHandle: int64(configHandle),
+	}
+	response, err := client.GrpcClient.ExportConfig(ctx, &request)
+	result := response.GetResult()
+	err = helper.ConvertGrpcError(err)
+	return result, err
+}
+
+func (client *Szconfig) getDataSources(ctx context.Context, configHandle uintptr) (string, error) {
+	request := szpb.GetDataSourcesRequest{
+		ConfigHandle: int64(configHandle),
+	}
+	response, err := client.GrpcClient.GetDataSources(ctx, &request)
+	result := response.GetResult()
+	err = helper.ConvertGrpcError(err)
+	return result, err
+}
+
+func (client *Szconfig) importConfig(ctx context.Context, configDefinition string) (uintptr, error) {
+	request := szpb.ImportConfigRequest{
+		ConfigDefinition: configDefinition,
+	}
+	response, err := client.GrpcClient.ImportConfig(ctx, &request)
+	result := (uintptr)(response.GetResult())
+	err = helper.ConvertGrpcError(err)
+	return result, err
 }
 
 // ----------------------------------------------------------------------------
