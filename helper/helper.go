@@ -2,6 +2,7 @@ package helper
 
 import (
 	"encoding/json"
+	"fmt"
 	"reflect"
 	"strconv"
 	"strings"
@@ -66,15 +67,15 @@ func ConvertGrpcError(originalError error) error {
 
 				parsedMessage, err := parser.Parse(senzingErrorMessage)
 				if err != nil {
-					return originalError
+					return fmt.Errorf("parse(%s) error: %w; Original Error: %w", senzingErrorMessage, err, originalError)
 				}
 				reason := parsedMessage.Reason
 				if len(reason) < 10 {
-					return originalError
+					return fmt.Errorf("len(%s) error: %w; Original Error: %w", reason, err, originalError)
 				}
 				senzingErrorCode, err := strconv.Atoi(reason[4:8])
 				if err != nil {
-					return originalError
+					return fmt.Errorf("strconv.Atoi(%s) error %w; Original Error: %w", reason, err, originalError)
 				}
 				result = szerror.New(senzingErrorCode, senzingErrorMessage)
 			}

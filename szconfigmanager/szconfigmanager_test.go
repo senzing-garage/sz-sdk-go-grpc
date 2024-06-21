@@ -290,6 +290,10 @@ func getSettings() (string, error) {
 func getSzConfig(ctx context.Context) (senzing.SzConfig, error) {
 	var err error
 	if szConfigSingleton == nil {
+		settings, err := getSettings()
+		if err != nil {
+			return szConfigSingleton, fmt.Errorf("getSettings() Error: %w", err)
+		}
 		grpcConnection := getGrpcConnection()
 		szConfigSingleton = &szconfig.Szconfig{
 			GrpcClient: szconfigpb.NewSzConfigClient(grpcConnection),
@@ -309,6 +313,10 @@ func getSzConfig(ctx context.Context) (senzing.SzConfig, error) {
 				return szConfigSingleton, fmt.Errorf("SetLogLevel() - 2 Error: %w", err)
 			}
 		}
+		err = szConfigSingleton.Initialize(ctx, instanceName, settings, verboseLogging)
+		if err != nil {
+			return szConfigSingleton, fmt.Errorf("Initialize() Error: %w", err)
+		}
 	}
 	return szConfigSingleton, err
 }
@@ -316,6 +324,10 @@ func getSzConfig(ctx context.Context) (senzing.SzConfig, error) {
 func getSzConfigManager(ctx context.Context) (*Szconfigmanager, error) {
 	var err error
 	if szConfigManagerSingleton == nil {
+		settings, err := getSettings()
+		if err != nil {
+			return szConfigManagerSingleton, fmt.Errorf("getSettings() Error: %w", err)
+		}
 		grpcConnection := getGrpcConnection()
 		szConfigManagerSingleton = &Szconfigmanager{
 			GrpcClient: szpb.NewSzConfigManagerClient(grpcConnection),
@@ -334,6 +346,10 @@ func getSzConfigManager(ctx context.Context) (*Szconfigmanager, error) {
 			if err != nil {
 				return szConfigManagerSingleton, fmt.Errorf("SetLogLevel() - 2 Error: %w", err)
 			}
+		}
+		err = szConfigManagerSingleton.Initialize(ctx, instanceName, settings, verboseLogging)
+		if err != nil {
+			return szConfigManagerSingleton, fmt.Errorf("Initialize() Error: %w", err)
 		}
 	}
 	return szConfigManagerSingleton, err

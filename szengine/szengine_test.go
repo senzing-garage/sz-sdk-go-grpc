@@ -2033,6 +2033,10 @@ func getSettings() (string, error) {
 func getSzConfig(ctx context.Context) (senzing.SzConfig, error) {
 	var err error
 	if szConfigSingleton == nil {
+		settings, err := getSettings()
+		if err != nil {
+			return szConfigSingleton, fmt.Errorf("getSettings() Error: %w", err)
+		}
 		grpcConnection := getGrpcConnection()
 		szConfigSingleton = &szconfig.Szconfig{
 			GrpcClient: szconfigpb.NewSzConfigClient(grpcConnection),
@@ -2052,6 +2056,10 @@ func getSzConfig(ctx context.Context) (senzing.SzConfig, error) {
 				return szConfigSingleton, fmt.Errorf("SetLogLevel() - 2 Error: %w", err)
 			}
 		}
+		err = szConfigSingleton.Initialize(ctx, instanceName, settings, verboseLogging)
+		if err != nil {
+			return szConfigSingleton, fmt.Errorf("Initialize() Error: %w", err)
+		}
 	}
 	return szConfigSingleton, err
 }
@@ -2059,32 +2067,44 @@ func getSzConfig(ctx context.Context) (senzing.SzConfig, error) {
 func getSzConfigManager(ctx context.Context) (senzing.SzConfigManager, error) {
 	var err error
 	if szConfigManagerSingleton == nil {
+		settings, err := getSettings()
+		if err != nil {
+			return szConfigManagerSingleton, fmt.Errorf("getSettings() Error: %w", err)
+		}
 		grpcConnection := getGrpcConnection()
 		szConfigManagerSingleton = &szconfigmanager.Szconfigmanager{
 			GrpcClient: szconfigmanagerpb.NewSzConfigManagerClient(grpcConnection),
 		}
-		err = szConfigSingleton.SetLogLevel(ctx, logLevel)
+		err = szConfigManagerSingleton.SetLogLevel(ctx, logLevel)
 		if err != nil {
 			return szConfigManagerSingleton, fmt.Errorf("SetLogLevel() Error: %w", err)
 		}
 		if logLevel == "TRACE" {
-			szConfigSingleton.SetObserverOrigin(ctx, observerOrigin)
-			err = szConfigSingleton.RegisterObserver(ctx, observerSingleton)
+			szConfigManagerSingleton.SetObserverOrigin(ctx, observerOrigin)
+			err = szConfigManagerSingleton.RegisterObserver(ctx, observerSingleton)
 			if err != nil {
 				return szConfigManagerSingleton, fmt.Errorf("RegisterObserver() Error: %w", err)
 			}
-			err = szConfigSingleton.SetLogLevel(ctx, logLevel) // Duplicated for coverage testing
+			err = szConfigManagerSingleton.SetLogLevel(ctx, logLevel) // Duplicated for coverage testing
 			if err != nil {
 				return szConfigManagerSingleton, fmt.Errorf("SetLogLevel() - 2 Error: %w", err)
 			}
 		}
+		err = szConfigManagerSingleton.Initialize(ctx, instanceName, settings, verboseLogging)
+		if err != nil {
+			return szConfigManagerSingleton, fmt.Errorf("Initialize() Error: %w", err)
+		}
 	}
-	return szConfigManagerSingleton, nil
+	return szConfigManagerSingleton, err
 }
 
 func getSzDiagnostic(ctx context.Context) (senzing.SzDiagnostic, error) {
 	var err error
 	if szDiagnosticSingleton == nil {
+		settings, err := getSettings()
+		if err != nil {
+			return szDiagnosticSingleton, fmt.Errorf("getSettings() Error: %w", err)
+		}
 		grpcConnection := getGrpcConnection()
 		szDiagnosticSingleton = &szdiagnostic.Szdiagnostic{
 			GrpcClient: szdiagnosticpb.NewSzDiagnosticClient(grpcConnection),
@@ -2094,23 +2114,31 @@ func getSzDiagnostic(ctx context.Context) (senzing.SzDiagnostic, error) {
 			return szDiagnosticSingleton, fmt.Errorf("SetLogLevel() Error: %w", err)
 		}
 		if logLevel == "TRACE" {
-			szConfigSingleton.SetObserverOrigin(ctx, observerOrigin)
-			err = szConfigSingleton.RegisterObserver(ctx, observerSingleton)
+			szDiagnosticSingleton.SetObserverOrigin(ctx, observerOrigin)
+			err = szDiagnosticSingleton.RegisterObserver(ctx, observerSingleton)
 			if err != nil {
 				return szDiagnosticSingleton, fmt.Errorf("RegisterObserver() Error: %w", err)
 			}
-			err = szConfigSingleton.SetLogLevel(ctx, logLevel) // Duplicated for coverage testing
+			err = szDiagnosticSingleton.SetLogLevel(ctx, logLevel) // Duplicated for coverage testing
 			if err != nil {
 				return szDiagnosticSingleton, fmt.Errorf("SetLogLevel() - 2 Error: %w", err)
 			}
 		}
+		err = szDiagnosticSingleton.Initialize(ctx, instanceName, settings, getDefaultConfigID(), verboseLogging)
+		if err != nil {
+			return szDiagnosticSingleton, fmt.Errorf("Initialize() Error: %w", err)
+		}
 	}
-	return szDiagnosticSingleton, nil
+	return szDiagnosticSingleton, err
 }
 
 func getSzEngine(ctx context.Context) (*Szengine, error) {
 	var err error
 	if szEngineSingleton == nil {
+		settings, err := getSettings()
+		if err != nil {
+			return szEngineSingleton, fmt.Errorf("getSettings() Error: %w", err)
+		}
 		grpcConnection := getGrpcConnection()
 		szEngineSingleton = &Szengine{
 			GrpcClient: szpb.NewSzEngineClient(grpcConnection),
@@ -2129,6 +2157,10 @@ func getSzEngine(ctx context.Context) (*Szengine, error) {
 			if err != nil {
 				return szEngineSingleton, fmt.Errorf("SetLogLevel() - 2 Error: %w", err)
 			}
+		}
+		err = szEngineSingleton.Initialize(ctx, instanceName, settings, getDefaultConfigID(), verboseLogging)
+		if err != nil {
+			return szEngineSingleton, fmt.Errorf("Initialize() Error: %w", err)
 		}
 	}
 	return szEngineSingleton, err
