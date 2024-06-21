@@ -1,7 +1,6 @@
 package helper
 
 import (
-	"errors"
 	"testing"
 
 	"github.com/senzing-garage/sz-sdk-go/szerror"
@@ -51,7 +50,7 @@ func TestConvertGrpcError(test *testing.T) {
 				require.ErrorIs(test, actual, szerrorTypeID)
 			}
 			for _, szerrorTypeID := range testCase.falseTypes {
-				assert.False(test, errors.Is(actual, szerrorTypeID), szerrorTypeID)
+				assert.NotErrorIs(test, actual, szerrorTypeID)
 			}
 		})
 	}
@@ -59,7 +58,7 @@ func TestConvertGrpcError(test *testing.T) {
 
 func TestConvertGrpcError_nil(test *testing.T) {
 	actual := ConvertGrpcError(nil)
-	require.Nil(test, actual)
+	require.NoError(test, actual)
 }
 
 func TestConvertGrpcError_badParse(test *testing.T) {
