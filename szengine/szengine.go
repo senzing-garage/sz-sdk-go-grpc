@@ -12,11 +12,9 @@ import (
 	"time"
 
 	"github.com/senzing-garage/go-logging/logging"
-	"github.com/senzing-garage/go-messaging/messenger"
 	"github.com/senzing-garage/go-observing/notifier"
 	"github.com/senzing-garage/go-observing/observer"
 	"github.com/senzing-garage/go-observing/subject"
-	"github.com/senzing-garage/sz-sdk-go-core/helpers"
 	"github.com/senzing-garage/sz-sdk-go-grpc/helper"
 	"github.com/senzing-garage/sz-sdk-go/senzing"
 	szengineapi "github.com/senzing-garage/sz-sdk-go/szengine"
@@ -240,7 +238,7 @@ func (client *Szengine) ExportCsvEntityReportIterator(ctx context.Context, csvCo
 		stream, err := client.GrpcClient.StreamExportCsvEntityReport(ctx, &request)
 		if err != nil {
 			stringFragmentChannel <- senzing.StringFragment{
-				Error: err,
+				Error: helper.ConvertGrpcError(err),
 			}
 			return
 		}
@@ -249,7 +247,7 @@ func (client *Szengine) ExportCsvEntityReportIterator(ctx context.Context, csvCo
 			select {
 			case <-ctx.Done():
 				stringFragmentChannel <- senzing.StringFragment{
-					Error: ctx.Err(),
+					Error: helper.ConvertGrpcError(ctx.Err()),
 				}
 				break forLoop
 			default:
@@ -259,7 +257,7 @@ func (client *Szengine) ExportCsvEntityReportIterator(ctx context.Context, csvCo
 						break forLoop
 					}
 					stringFragmentChannel <- senzing.StringFragment{
-						Error: err,
+						Error: helper.ConvertGrpcError(err),
 					}
 					break forLoop
 				}
@@ -337,7 +335,7 @@ func (client *Szengine) ExportJSONEntityReportIterator(ctx context.Context, flag
 		stream, err := client.GrpcClient.StreamExportJsonEntityReport(ctx, &request)
 		if err != nil {
 			stringFragmentChannel <- senzing.StringFragment{
-				Error: err,
+				Error: helper.ConvertGrpcError(err),
 			}
 			return
 		}
@@ -346,7 +344,7 @@ func (client *Szengine) ExportJSONEntityReportIterator(ctx context.Context, flag
 			select {
 			case <-ctx.Done():
 				stringFragmentChannel <- senzing.StringFragment{
-					Error: ctx.Err(),
+					Error: helper.ConvertGrpcError(ctx.Err()),
 				}
 				break forLoop
 			default:
@@ -356,7 +354,7 @@ func (client *Szengine) ExportJSONEntityReportIterator(ctx context.Context, flag
 						break forLoop
 					}
 					stringFragmentChannel <- senzing.StringFragment{
-						Error: err,
+						Error: helper.ConvertGrpcError(err),
 					}
 					break forLoop
 				}
@@ -578,7 +576,7 @@ func (client *Szengine) FindPathByEntityID(ctx context.Context, startEntityID in
 			client.traceExit(32, startEntityID, endEntityID, maxDegrees, avoidEntityIDs, requiredDataSources, flags, result, err, time.Since(entryTime))
 		}()
 	}
-	result, err = client.FindPathByEntityID(ctx, startEntityID, endEntityID, maxDegrees, avoidEntityIDs, requiredDataSources, flags)
+	result, err = client.findPathByEntityID(ctx, startEntityID, endEntityID, maxDegrees, avoidEntityIDs, requiredDataSources, flags)
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{
@@ -1629,6 +1627,7 @@ func (client *Szengine) whyEntities(ctx context.Context, entityID1 int64, entity
 	request := szpb.WhyEntitiesRequest{
 		EntityId1: entityID1,
 		EntityId2: entityID2,
+		Flags:     flags,
 	}
 	response, err := client.GrpcClient.WhyEntities(ctx, &request)
 	result := response.GetResult()
@@ -1654,6 +1653,7 @@ func (client *Szengine) whyRecords(ctx context.Context, dataSourceCode1 string, 
 		DataSourceCode2: dataSourceCode2,
 		RecordId1:       recordID1,
 		RecordId2:       recordID2,
+		Flags:           flags,
 	}
 	response, err := client.GrpcClient.WhyRecords(ctx, &request)
 	result := response.GetResult()
@@ -1670,17 +1670,9 @@ func (client *Szengine) whyRecords(ctx context.Context, dataSourceCode1 string, 
 // Get the Logger singleton.
 func (client *Szengine) getLogger() logging.Logging {
 	if client.logger == nil {
-		client.logger = helpers.GetLogger(ComponentID, szengineapi.IDMessages, baseCallerSkip)
+		client.logger = helper.GetLogger(ComponentID, szengineapi.IDMessages, baseCallerSkip)
 	}
 	return client.logger
-}
-
-// Get the Messenger singleton.
-func (client *Szengine) getMessenger() messenger.Messenger {
-	if client.messenger == nil {
-		client.messenger = helpers.GetMessenger(ComponentID, szengineapi.IDMessages, baseCallerSkip)
-	}
-	return client.messenger
 }
 
 // Trace method entry.

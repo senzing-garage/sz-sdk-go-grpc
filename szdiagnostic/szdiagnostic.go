@@ -10,11 +10,9 @@ import (
 	"time"
 
 	"github.com/senzing-garage/go-logging/logging"
-	"github.com/senzing-garage/go-messaging/messenger"
 	"github.com/senzing-garage/go-observing/notifier"
 	"github.com/senzing-garage/go-observing/observer"
 	"github.com/senzing-garage/go-observing/subject"
-	"github.com/senzing-garage/sz-sdk-go-core/helpers"
 	"github.com/senzing-garage/sz-sdk-go-grpc/helper"
 	szdiagnosticapi "github.com/senzing-garage/sz-sdk-go/szdiagnostic"
 	szpb "github.com/senzing-garage/sz-sdk-proto/go/szdiagnostic"
@@ -402,17 +400,9 @@ func (client *Szdiagnostic) purgeRepository(ctx context.Context) error {
 // Get the Logger singleton.
 func (client *Szdiagnostic) getLogger() logging.Logging {
 	if client.logger == nil {
-		client.logger = helpers.GetLogger(ComponentID, szdiagnosticapi.IDMessages, baseCallerSkip)
+		client.logger = helper.GetLogger(ComponentID, szdiagnosticapi.IDMessages, baseCallerSkip)
 	}
 	return client.logger
-}
-
-// Get the Messenger singleton.
-func (client *Szdiagnostic) getMessenger() messenger.Messenger {
-	if client.messenger == nil {
-		client.messenger = helpers.GetMessenger(ComponentID, szdiagnosticapi.IDMessages, baseCallerSkip)
-	}
-	return client.messenger
 }
 
 // Trace method entry.

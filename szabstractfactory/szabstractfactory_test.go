@@ -8,10 +8,10 @@ import (
 
 	truncator "github.com/aquilax/truncate"
 	"github.com/senzing-garage/go-logging/logging"
-	"github.com/senzing-garage/sz-sdk-go-core/helpers"
+	"github.com/senzing-garage/sz-sdk-go-grpc/helper"
 	"github.com/senzing-garage/sz-sdk-go/senzing"
 	"github.com/senzing-garage/sz-sdk-go/szconfig"
-	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 )
@@ -37,12 +37,12 @@ func TestSzAbstractFactory_CreateSzConfig(test *testing.T) {
 	ctx := context.TODO()
 	szAbstractFactory := getTestObject(ctx, test)
 	szConfig, err := szAbstractFactory.CreateSzConfig(ctx)
-	testError(test, err)
+	require.NoError(test, err)
 	defer func() { handleError(szConfig.Destroy(ctx)) }()
 	configHandle, err := szConfig.CreateConfig(ctx)
-	testError(test, err)
+	require.NoError(test, err)
 	dataSources, err := szConfig.GetDataSources(ctx, configHandle)
-	testError(test, err)
+	require.NoError(test, err)
 	printActual(test, dataSources)
 }
 
@@ -50,10 +50,10 @@ func TestSzAbstractFactory_CreateSzConfigManager(test *testing.T) {
 	ctx := context.TODO()
 	szAbstractFactory := getTestObject(ctx, test)
 	szConfigManager, err := szAbstractFactory.CreateSzConfigManager(ctx)
-	testError(test, err)
+	require.NoError(test, err)
 	defer func() { handleError(szConfigManager.Destroy(ctx)) }()
 	configList, err := szConfigManager.GetConfigs(ctx)
-	testError(test, err)
+	require.NoError(test, err)
 	printActual(test, configList)
 }
 
@@ -61,10 +61,10 @@ func TestSzAbstractFactory_CreateSzDiagnostic(test *testing.T) {
 	ctx := context.TODO()
 	szAbstractFactory := getTestObject(ctx, test)
 	szDiagnostic, err := szAbstractFactory.CreateSzDiagnostic(ctx)
-	testError(test, err)
+	require.NoError(test, err)
 	defer func() { handleError(szDiagnostic.Destroy(ctx)) }()
 	result, err := szDiagnostic.CheckDatastorePerformance(ctx, 1)
-	testError(test, err)
+	require.NoError(test, err)
 	printActual(test, result)
 }
 
@@ -72,10 +72,10 @@ func TestSzAbstractFactory_CreateSzEngine(test *testing.T) {
 	ctx := context.TODO()
 	szAbstractFactory := getTestObject(ctx, test)
 	szEngine, err := szAbstractFactory.CreateSzEngine(ctx)
-	testError(test, err)
+	require.NoError(test, err)
 	defer func() { handleError(szEngine.Destroy(ctx)) }()
 	stats, err := szEngine.GetStats(ctx)
-	testError(test, err)
+	require.NoError(test, err)
 	printActual(test, stats)
 }
 
@@ -83,10 +83,10 @@ func TestSzAbstractFactory_CreateSzProduct(test *testing.T) {
 	ctx := context.TODO()
 	szAbstractFactory := getTestObject(ctx, test)
 	szProduct, err := szAbstractFactory.CreateSzProduct(ctx)
-	testError(test, err)
+	require.NoError(test, err)
 	defer func() { handleError(szProduct.Destroy(ctx)) }()
 	version, err := szProduct.GetVersion(ctx)
-	testError(test, err)
+	require.NoError(test, err)
 	printActual(test, version)
 }
 
@@ -94,25 +94,24 @@ func TestSzAbstractFactory_CreateSzProduct(test *testing.T) {
 // Internal functions
 // ----------------------------------------------------------------------------
 
-func createError(errorID int, err error) error {
-	return logger.NewError(errorID, err)
-}
-
-func getSzAbstractFactory(ctx context.Context) senzing.SzAbstractFactory {
+func getSzAbstractFactory(ctx context.Context) (senzing.SzAbstractFactory, error) {
+	var err error
+	var result senzing.SzAbstractFactory
 	_ = ctx
 	grpcConnection, err := grpc.NewClient(grpcAddress, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
-		panic(err)
+		return result, err
 	}
-	result := &Szabstractfactory{
+	result = &Szabstractfactory{
 		GrpcConnection: grpcConnection,
 	}
-	return result
+	return result, err
 }
 
 func getTestObject(ctx context.Context, test *testing.T) senzing.SzAbstractFactory {
-	_ = test
-	return getSzAbstractFactory(ctx)
+	result, err := getSzAbstractFactory(ctx)
+	require.NoError(test, err)
+	return result
 }
 
 func handleError(err error) {
@@ -128,13 +127,6 @@ func printActual(test *testing.T, actual interface{}) {
 func printResult(test *testing.T, title string, result interface{}) {
 	if printResults {
 		test.Logf("%s: %v", title, truncate(fmt.Sprintf("%v", result), defaultTruncation))
-	}
-}
-
-func testError(test *testing.T, err error) {
-	if err != nil {
-		test.Log("Error:", err.Error())
-		assert.FailNow(test, err.Error())
 	}
 }
 
@@ -162,7 +154,7 @@ func TestMain(m *testing.M) {
 
 func setup() error {
 	var err error
-	logger = helpers.GetLogger(ComponentID, szconfig.IDMessages, baseCallerSkip)
+	logger = helper.GetLogger(ComponentID, szconfig.IDMessages, baseCallerSkip)
 	return err
 }
 

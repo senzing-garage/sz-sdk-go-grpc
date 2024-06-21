@@ -7,8 +7,11 @@ import (
 	"testing"
 
 	truncator "github.com/aquilax/truncate"
+	"github.com/senzing-garage/go-logging/logging"
 	"github.com/senzing-garage/go-observing/observer"
+	"github.com/senzing-garage/sz-sdk-go-grpc/helper"
 	"github.com/senzing-garage/sz-sdk-go/senzing"
+	"github.com/senzing-garage/sz-sdk-go/szproduct"
 	szpb "github.com/senzing-garage/sz-sdk-proto/go/szproduct"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -26,13 +29,15 @@ const (
 )
 
 var (
-	szProductSingleton *Szproduct
-	grpcAddress        = "localhost:8261"
-	grpcConnection     *grpc.ClientConn
-	observerSingleton  = &observer.NullObserver{
+	grpcAddress       = "localhost:8261"
+	grpcConnection    *grpc.ClientConn
+	logger            logging.Logging
+	logLevel          = "INFO"
+	observerSingleton = &observer.NullObserver{
 		ID:       "Observer 1",
 		IsSilent: true,
 	}
+	szProductSingleton *Szproduct
 )
 
 // ----------------------------------------------------------------------------
@@ -102,11 +107,10 @@ func TestSzproduct_AsInterface(test *testing.T) {
 
 func TestSzproduct_Initialize(test *testing.T) {
 	ctx := context.TODO()
-	szProduct := getSzProduct(ctx)
-	instanceName := "Test name"
+	szProduct, err := getSzProduct(ctx)
+	require.NoError(test, err)
 	settings, err := getSettings()
 	require.NoError(test, err)
-	verboseLogging := senzing.SzNoLogging
 	err = szProduct.Initialize(ctx, instanceName, settings, verboseLogging)
 	require.NoError(test, err)
 }
@@ -152,24 +156,44 @@ func getSettings() (string, error) {
 	return "{}", nil
 }
 
-func getSzProduct(ctx context.Context) *Szproduct {
-	_ = ctx
+func getSzProduct(ctx context.Context) (*Szproduct, error) {
+	var err error
 	if szProductSingleton == nil {
 		grpcConnection := getGrpcConnection()
 		szProductSingleton = &Szproduct{
 			GrpcClient: szpb.NewSzProductClient(grpcConnection),
 		}
+		err = szProductSingleton.SetLogLevel(ctx, logLevel)
+		if err != nil {
+			return szProductSingleton, fmt.Errorf("SetLogLevel() Error: %w", err)
+		}
+		if logLevel == "TRACE" {
+			szProductSingleton.SetObserverOrigin(ctx, observerOrigin)
+			err = szProductSingleton.RegisterObserver(ctx, observerSingleton)
+			if err != nil {
+				return szProductSingleton, fmt.Errorf("RegisterObserver() Error: %w", err)
+			}
+			err = szProductSingleton.SetLogLevel(ctx, logLevel) // Duplicated for coverage testing
+			if err != nil {
+				return szProductSingleton, fmt.Errorf("SetLogLevel() - 2 Error: %w", err)
+			}
+		}
 	}
-	return szProductSingleton
+	return szProductSingleton, err
 }
 
 func getSzProductAsInterface(ctx context.Context) senzing.SzProduct {
-	return getSzProduct(ctx)
+	result, err := getSzProduct(ctx)
+	if err != nil {
+		panic(err)
+	}
+	return result
 }
 
 func getTestObject(ctx context.Context, test *testing.T) *Szproduct {
-	_ = test
-	return getSzProduct(ctx)
+	result, err := getSzProduct(ctx)
+	require.NoError(test, err)
+	return result
 }
 
 func printActual(test *testing.T, actual interface{}) {
@@ -206,6 +230,11 @@ func TestMain(m *testing.M) {
 
 func setup() error {
 	var err error
+	logger = helper.GetLogger(ComponentID, szproduct.IDMessages, baseCallerSkip)
+	osenvLogLevel := os.Getenv("SENZING_LOG_LEVEL")
+	if len(osenvLogLevel) > 0 {
+		logLevel = osenvLogLevel
+	}
 	return err
 }
 

@@ -10,7 +10,6 @@ import (
 	"time"
 
 	"github.com/senzing-garage/go-logging/logging"
-	"github.com/senzing-garage/go-messaging/messenger"
 	"github.com/senzing-garage/go-observing/notifier"
 	"github.com/senzing-garage/go-observing/observer"
 	"github.com/senzing-garage/go-observing/subject"
@@ -297,14 +296,6 @@ func (client *Szproduct) getLogger() logging.Logging {
 		client.logger = helpers.GetLogger(ComponentID, szproductapi.IDMessages, baseCallerSkip)
 	}
 	return client.logger
-}
-
-// Get the Messenger singleton.
-func (client *Szproduct) getMessenger() messenger.Messenger {
-	if client.messenger == nil {
-		client.messenger = helpers.GetMessenger(ComponentID, szproductapi.IDMessages, baseCallerSkip)
-	}
-	return client.messenger
 }
 
 // Trace method entry.

@@ -10,7 +10,7 @@ import (
 	truncator "github.com/aquilax/truncate"
 	"github.com/senzing-garage/go-logging/logging"
 	"github.com/senzing-garage/go-observing/observer"
-	"github.com/senzing-garage/sz-sdk-go-core/helpers"
+	"github.com/senzing-garage/sz-sdk-go-grpc/helper"
 	"github.com/senzing-garage/sz-sdk-go/senzing"
 	"github.com/senzing-garage/sz-sdk-go/szconfig"
 	"github.com/senzing-garage/sz-sdk-go/szerror"
@@ -31,6 +31,7 @@ const (
 	instanceName        = "SzConfig Test"
 	observerOrigin      = "SzConfig observer"
 	printResults        = false
+	verboseLogging      = senzing.SzNoLogging
 )
 
 var (
@@ -300,8 +301,6 @@ func TestSzconfig_AsInterface(test *testing.T) {
 func TestSzconfig_Initialize(test *testing.T) {
 	ctx := context.TODO()
 	szConfig := getTestObject(ctx, test)
-	instanceName := "Test name"
-	verboseLogging := senzing.SzNoLogging
 	settings, err := getSettings()
 	require.NoError(test, err)
 	err = szConfig.Initialize(ctx, instanceName, settings, verboseLogging)
@@ -311,8 +310,6 @@ func TestSzconfig_Initialize(test *testing.T) {
 func TestSzconfig_Initialize_badSettings(test *testing.T) {
 	ctx := context.TODO()
 	szConfig := getTestObject(ctx, test)
-	instanceName := "Test name"
-	verboseLogging := senzing.SzNoLogging
 	err := szConfig.Initialize(ctx, instanceName, badSettings, verboseLogging)
 	assert.NoError(test, err)
 }
@@ -323,8 +320,6 @@ func TestSzconfig_Initialize_badSettings(test *testing.T) {
 func TestSzconfig_Initialize_again(test *testing.T) {
 	ctx := context.TODO()
 	szConfig := getTestObject(ctx, test)
-	instanceName := "Test name"
-	verboseLogging := senzing.SzNoLogging
 	settings, err := getSettings()
 	require.NoError(test, err)
 	err = szConfig.Initialize(ctx, instanceName, settings, verboseLogging)
@@ -369,8 +364,8 @@ func getSettings() (string, error) {
 	return "{}", nil
 }
 
-func getSzConfig(ctx context.Context) *Szconfig {
-	_ = ctx
+func getSzConfig(ctx context.Context) (*Szconfig, error) {
+	var err error
 	if szConfigSingleton == nil {
 		grpcConnection := getGrpcConnection()
 		szConfigSingleton = &Szconfig{
@@ -378,33 +373,35 @@ func getSzConfig(ctx context.Context) *Szconfig {
 		}
 		err := szConfigSingleton.SetLogLevel(ctx, logLevel)
 		if err != nil {
-			fmt.Printf("SetLogLevel() Error: %v\n", err)
-			return nil
+			return szConfigSingleton, fmt.Errorf("SetLogLevel() Error: %w", err)
 		}
 		if logLevel == "TRACE" {
 			szConfigSingleton.SetObserverOrigin(ctx, observerOrigin)
 			err = szConfigSingleton.RegisterObserver(ctx, observerSingleton)
 			if err != nil {
-				fmt.Printf("RegisterObserver() Error: %v\n", err)
-				return nil
+				return szConfigSingleton, fmt.Errorf("RegisterObserver() Error: %w", err)
 			}
 			err = szConfigSingleton.SetLogLevel(ctx, logLevel) // Duplicated for coverage testing
 			if err != nil {
-				fmt.Printf("SetLogLevel() - 2 Error: %v\n", err)
-				return nil
+				return szConfigSingleton, fmt.Errorf("SetLogLevel() - 2 Error: %w", err)
 			}
 		}
 	}
-	return szConfigSingleton
+	return szConfigSingleton, err
 }
 
 func getSzConfigAsInterface(ctx context.Context) senzing.SzConfig {
-	return getSzConfig(ctx)
+	result, err := getSzConfig(ctx)
+	if err != nil {
+		panic(err)
+	}
+	return result
 }
 
 func getTestObject(ctx context.Context, test *testing.T) *Szconfig {
-	_ = test
-	return getSzConfig(ctx)
+	result, err := getSzConfig(ctx)
+	require.NoError(test, err)
+	return result
 }
 
 func printActual(test *testing.T, actual interface{}) {
@@ -450,7 +447,7 @@ func TestMain(m *testing.M) {
 
 func setup() error {
 	var err error
-	logger = helpers.GetLogger(ComponentID, szconfig.IDMessages, baseCallerSkip)
+	logger = helper.GetLogger(ComponentID, szconfig.IDMessages, baseCallerSkip)
 	osenvLogLevel := os.Getenv("SENZING_LOG_LEVEL")
 	if len(osenvLogLevel) > 0 {
 		logLevel = osenvLogLevel
