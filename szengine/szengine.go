@@ -493,16 +493,16 @@ func (client *Szengine) FindNetworkByEntityID(ctx context.Context, entityIDs str
 	var result string
 	if client.isTrace {
 		entryTime := time.Now()
-		client.traceEntry(27, entityIDs, maxDegrees, buildOutDegree, maxDegrees, flags)
+		client.traceEntry(27, entityIDs, maxDegrees, buildOutDegree, buildOutMaxEntities, flags)
 		defer func() {
-			client.traceExit(28, entityIDs, maxDegrees, buildOutDegree, maxDegrees, flags, result, err, time.Since(entryTime))
+			client.traceExit(28, entityIDs, maxDegrees, buildOutDegree, buildOutMaxEntities, flags, result, err, time.Since(entryTime))
 		}()
 	}
 	result, err = client.findNetworkByEntityID(ctx, entityIDs, maxDegrees, buildOutDegree, buildOutMaxEntities, flags)
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{
-				"entityList": entityIDs,
+				"entityIDs": entityIDs,
 			}
 			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentID, 8013, err, details)
 		}()
@@ -532,16 +532,16 @@ func (client *Szengine) FindNetworkByRecordID(ctx context.Context, recordKeys st
 	var result string
 	if client.isTrace {
 		entryTime := time.Now()
-		client.traceEntry(39, recordKeys, maxDegrees, buildOutDegree, maxDegrees, flags)
+		client.traceEntry(39, recordKeys, maxDegrees, buildOutDegree, buildOutMaxEntities, flags)
 		defer func() {
-			client.traceExit(40, recordKeys, maxDegrees, buildOutDegree, maxDegrees, flags, result, err, time.Since(entryTime))
+			client.traceExit(40, recordKeys, maxDegrees, buildOutDegree, buildOutMaxEntities, flags, result, err, time.Since(entryTime))
 		}()
 	}
 	result, err = client.findNetworkByRecordID(ctx, recordKeys, maxDegrees, buildOutDegree, buildOutMaxEntities, flags)
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{
-				"recordList": recordKeys,
+				"recordKeys": recordKeys,
 			}
 			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentID, 8014, err, details)
 		}()
@@ -851,7 +851,7 @@ func (client *Szengine) GetVirtualEntityByRecordID(ctx context.Context, recordKe
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{
-				"recordList": recordKeys}
+				"recordKeys": recordKeys}
 			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentID, 8023, err, details)
 		}()
 	}

@@ -1,4 +1,4 @@
-# Makefile for g2-sdk-go-grpc.
+# Makefile for sz-sdk-go-grpc.
 
 # Detect the operating system and architecture.
 
@@ -15,9 +15,6 @@ PROGRAM_NAME := $(shell basename `git rev-parse --show-toplevel`)
 MAKEFILE_PATH := $(abspath $(firstword $(MAKEFILE_LIST)))
 MAKEFILE_DIRECTORY := $(shell dirname $(MAKEFILE_PATH))
 TARGET_DIRECTORY := $(MAKEFILE_DIRECTORY)/target
-DOCKER_CONTAINER_NAME := $(PROGRAM_NAME)
-DOCKER_IMAGE_NAME := senzing/$(PROGRAM_NAME)
-DOCKER_BUILD_IMAGE_NAME := $(DOCKER_IMAGE_NAME)-build
 BUILD_VERSION := $(shell git describe --always --tags --abbrev=0 --dirty  | sed 's/v//')
 BUILD_TAG := $(shell git describe --always --tags --abbrev=0  | sed 's/v//')
 BUILD_ITERATION := $(shell git log $(BUILD_TAG)..HEAD --oneline | wc -l | sed 's/^ *//')
@@ -65,6 +62,7 @@ hello-world: hello-world-osarch-specific
 
 .PHONY: make-dependencies
 make-dependencies:
+	@go install github.com/gotesttools/gotestfmt/v2/cmd/gotestfmt@latest
 	@go install github.com/vladopajic/go-test-coverage/v2@latest
 	@curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(shell go env GOPATH)/bin v1.58.1
 
@@ -88,13 +86,6 @@ $(PLATFORMS):
 
 .PHONY: build
 build: build-osarch-specific
-
-
-.PHONY: build-all $(PLATFORMS)
-build-all: $(PLATFORMS)
-	@mv $(TARGET_DIRECTORY)/windows-amd64/$(PROGRAM_NAME) $(TARGET_DIRECTORY)/windows-amd64/$(PROGRAM_NAME).exe
-	@mv $(TARGET_DIRECTORY)/windows-arm64/$(PROGRAM_NAME) $(TARGET_DIRECTORY)/windows-arm64/$(PROGRAM_NAME).exe
-
 
 # -----------------------------------------------------------------------------
 # Test

@@ -25,6 +25,11 @@ jobs:
         with:
           go-version: ${{ matrix.go }}
 
+      - name: Set up gotestfmt
+        uses: gotesttools/gotestfmt-action@v2
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
       - name: install Docker
         uses: docker-practice/actions-setup-docker@v1
         timeout-minutes: 12
@@ -33,13 +38,21 @@ jobs:
         run: docker run --detach --env SENZING_TOOLS_DATABASE_URL=sqlite3://na:na@/tmp/sqlite/G2C.db --env SENZING_TOOLS_ENABLE_ALL=true --publish 8261:8261 senzing/serve-grpc:latest
 
       - name: run go test
-        run: go test -v -p 1 -coverprofile=./cover.out -covermode=atomic -coverpkg=./... ./...
+        run: go test -json -v -p 1 -coverprofile=./cover.out -covermode=atomic -coverpkg=./... ./...  2>&1 | tee /tmp/gotest.log | gotestfmt
 
       - name: Store coverage file
         uses: actions/upload-artifact@v4
         with:
           name: cover.out
           path: ./cover.out
+
+      - name: Upload test log
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: test-log
+          path: /tmp/gotest.log
+          if-no-files-found: error
 
   coverage:
     name: coverage

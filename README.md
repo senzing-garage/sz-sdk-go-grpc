@@ -1,18 +1,14 @@
-# g2-sdk-go-grpc
+# sz-sdk-go-grpc
 
-If you are beginning your journey with
-[Senzing](https://senzing.com/),
-please start with
-[Senzing Quick Start guides](https://docs.senzing.com/quickstart/).
+If you are beginning your journey with [Senzing],
+please start with [Senzing Quick Start guides].
 
-You are in the
-[Senzing Garage](https://github.com/senzing-garage-garage)
-where projects are "tinkered" on.
+You are in the [Senzing Garage] where projects are "tinkered" on.
 Although this GitHub repository may help you understand an approach to using Senzing,
 it's not considered to be "production ready" and is not considered to be part of the Senzing product.
 Heck, it may not even be appropriate for your application of Senzing!
 
-## :warning: WARNING: g2-sdk-go-grpc is still in development :warning: _
+## :warning: WARNING: sz-sdk-go-grpc is still in development :warning: _
 
 At the moment, this is "work-in-progress" with Semantic Versions of `0.n.x`.
 Although it can be reviewed and commented on,
@@ -20,11 +16,9 @@ the recommendation is not to use it yet.
 
 ## Synopsis
 
-The Senzing `g2-sdk-go-grpc` packages provide a Go Software Development Kit
-adhering to the
-[g2-sdk-go](https://github.com/senzing-garage/g2-sdk-go) interfaces that
-communicates with a
-[Senzing gRPC server](https://github.com/senzing-garage/servegrpc).
+The Senzing `sz-sdk-go-grpc` packages provide a [Go]
+language Software Development Kit adhering to the
+[sz-sdk-go] interfaces that communicates with a [Senzing gRPC server].
 
 [![Go Reference](https://pkg.go.dev/badge/github.com/senzing-garage/g2-sdk-go-grpc.svg)](https://pkg.go.dev/github.com/senzing-garage/g2-sdk-go-grpc)
 [![Go Report Card](https://goreportcard.com/badge/github.com/senzing-garage/g2-sdk-go-grpc)](https://goreportcard.com/report/github.com/senzing-garage/g2-sdk-go-grpc)
@@ -41,27 +35,12 @@ The Senzing `g2-sdk-go-grpc` packages enable Go programs to call Senzing library
 across a network to a
 [Senzing gRPC server](https://github.com/senzing-garage/servegrpc).
 
-`g2-sdk-go-grpc` packages implement the following
-[g2-sdk-go](https://github.com/senzing-garage/g2-sdk-go)
-interfaces:
-
-1. [G2config](https://pkg.go.dev/github.com/senzing-garage/g2-sdk-go/g2api#G2config)
-1. [G2configmgr](https://pkg.go.dev/github.com/senzing-garage/g2-sdk-go/g2api#G2configmgr)
-1. [G2diagnostic](https://pkg.go.dev/github.com/senzing-garage/g2-sdk-go/g2api#G2diagnostic)
-1. [G2engine](https://pkg.go.dev/github.com/senzing-garage/g2-sdk-go/g2api#G2engine)
-1. [G2product](https://pkg.go.dev/github.com/senzing-garage/g2-sdk-go/g2api#G2product)
-
-Other implementations of the
-[g2-sdk-go](https://github.com/senzing-garage/g2-sdk-go)
+Other implementations of the [sz-sdk-go]
 interface include:
 
-- [g2-sdk-go-base](https://github.com/senzing-garage/g2-sdk-go-base) - for
-  calling Senzing SDK APIs natively
-- [g2-sdk-go-mock](https://github.com/senzing-garage/g2-sdk-go-mock) - for
-  unit testing calls to the Senzing Go SDK
-- [go-sdk-abstract-factory](https://github.com/senzing-garage/go-sdk-abstract-factory) - An
-  [abstract factory pattern](https://en.wikipedia.org/wiki/Abstract_factory_pattern)
-  for switching among implementations
+- [g2-sdk-go-core] - for calling Senzing SDK APIs natively
+- [g2-sdk-go-mock] - for unit testing calls to the Senzing Go SDK
+- [go-sdk-abstract-factory] - An [abstract factory pattern] for switching among implementations
 
 ## Use
 
@@ -69,7 +48,24 @@ interface include:
 
 ## References
 
-1. [Development](docs/development.md)
-1. [Errors](docs/errors.md)
-1. [Examples](docs/examples.md)
-1. [Package reference](https://pkg.go.dev/github.com/senzing-garage/g2-sdk-go-grpc)
+1. [Development]
+1. [Errors]
+1. [Examples]
+1. [Package reference]
+
+[abstract factory pattern]: https://en.wikipedia.org/wiki/Abstract_factory_pattern
+[Development]: docs/development.md
+[Errors]: docs/errors.md
+[Examples]: docs/examples.md
+[go-sdk-abstract-factory]: https://github.com/senzing-garage/go-sdk-abstract-factory
+[Go]: https://go.dev/
+[gRPC]: https://grpc.io/
+[Package reference]: https://pkg.go.dev/github.com/senzing-garage/sz-sdk-go-core
+[Senzing Garage]: https://github.com/senzing-garage-garage
+[Senzing gRPC server]: https://github.com/senzing-garage/servegrpc
+[Senzing Quick Start guides]: https://docs.senzing.com/quickstart/
+[Senzing]: https://senzing.com/
+[sz-sdk-go-core]: https://github.com/senzing-garage/sz-sdk-go-core
+[sz-sdk-go-grpc]: https://github.com/senzing-garage/sz-sdk-go-grpc
+[sz-sdk-go-mock]: https://github.com/senzing-garage/sz-sdk-go-mock
+[sz-sdk-go]: https://github.com/senzing-garage/sz-sdk-go

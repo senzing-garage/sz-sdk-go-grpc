@@ -13,7 +13,6 @@ import (
 	"github.com/senzing-garage/go-observing/notifier"
 	"github.com/senzing-garage/go-observing/observer"
 	"github.com/senzing-garage/go-observing/subject"
-	"github.com/senzing-garage/sz-sdk-go-core/helpers"
 	"github.com/senzing-garage/sz-sdk-go-grpc/helper"
 	szproductapi "github.com/senzing-garage/sz-sdk-go/szproduct"
 	szpb "github.com/senzing-garage/sz-sdk-proto/go/szproduct"
@@ -21,7 +20,7 @@ import (
 
 type Szproduct struct {
 	GrpcClient     szpb.SzProductClient
-	isTrace        bool // Performance optimization
+	isTrace        bool
 	logger         logging.Logging
 	observerOrigin string
 	observers      subject.Subject
@@ -183,7 +182,7 @@ func (client *Szproduct) RegisterObserver(ctx context.Context, observer observer
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{
-				"observerId": observer.GetObserverID(ctx),
+				"observerID": observer.GetObserverID(ctx),
 			}
 			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentID, 8702, err, details)
 		}()
@@ -293,7 +292,7 @@ func (client *Szproduct) getVersion(ctx context.Context) (string, error) {
 // Get the Logger singleton.
 func (client *Szproduct) getLogger() logging.Logging {
 	if client.logger == nil {
-		client.logger = helpers.GetLogger(ComponentID, szproductapi.IDMessages, baseCallerSkip)
+		client.logger = helper.GetLogger(ComponentID, szproductapi.IDMessages, baseCallerSkip)
 	}
 	return client.logger
 }

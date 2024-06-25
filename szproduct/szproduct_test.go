@@ -3,15 +3,12 @@ package szproduct
 import (
 	"context"
 	"fmt"
-	"os"
 	"testing"
 
 	truncator "github.com/aquilax/truncate"
-	"github.com/senzing-garage/go-logging/logging"
 	"github.com/senzing-garage/go-observing/observer"
 	"github.com/senzing-garage/sz-sdk-go-grpc/helper"
 	"github.com/senzing-garage/sz-sdk-go/senzing"
-	"github.com/senzing-garage/sz-sdk-go/szproduct"
 	szpb "github.com/senzing-garage/sz-sdk-proto/go/szproduct"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -31,8 +28,7 @@ const (
 var (
 	grpcAddress       = "localhost:8261"
 	grpcConnection    *grpc.ClientConn
-	logger            logging.Logging
-	logLevel          = "INFO"
+	logLevel          = helper.GetEnv("SENZING_LOG_LEVEL", "INFO")
 	observerSingleton = &observer.NullObserver{
 		ID:       "Observer 1",
 		IsSilent: true,
@@ -208,37 +204,4 @@ func printResult(test *testing.T, title string, result interface{}) {
 
 func truncate(aString string, length int) string {
 	return truncator.Truncate(aString, length, "...", truncator.PositionEnd)
-}
-
-// ----------------------------------------------------------------------------
-// Test harness
-// ----------------------------------------------------------------------------
-
-func TestMain(m *testing.M) {
-	err := setup()
-	if err != nil {
-		fmt.Print(err)
-		os.Exit(1)
-	}
-	code := m.Run()
-	err = teardown()
-	if err != nil {
-		fmt.Print(err)
-	}
-	os.Exit(code)
-}
-
-func setup() error {
-	var err error
-	logger = helper.GetLogger(ComponentID, szproduct.IDMessages, baseCallerSkip)
-	osenvLogLevel := os.Getenv("SENZING_LOG_LEVEL")
-	if len(osenvLogLevel) > 0 {
-		logLevel = osenvLogLevel
-	}
-	return err
-}
-
-func teardown() error {
-	var err error
-	return err
 }

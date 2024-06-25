@@ -10,12 +10,10 @@ import (
 	"time"
 
 	truncator "github.com/aquilax/truncate"
-	"github.com/senzing-garage/go-logging/logging"
 	"github.com/senzing-garage/go-observing/observer"
 	"github.com/senzing-garage/sz-sdk-go-grpc/helper"
 	"github.com/senzing-garage/sz-sdk-go-grpc/szconfig"
 	"github.com/senzing-garage/sz-sdk-go/senzing"
-	"github.com/senzing-garage/sz-sdk-go/szconfigmanager"
 	"github.com/senzing-garage/sz-sdk-go/szerror"
 	szconfigpb "github.com/senzing-garage/sz-sdk-proto/go/szconfig"
 	szpb "github.com/senzing-garage/sz-sdk-proto/go/szconfigmanager"
@@ -40,8 +38,7 @@ const (
 var (
 	grpcAddress       = "localhost:8261"
 	grpcConnection    *grpc.ClientConn
-	logger            logging.Logging
-	logLevel          = "INFO"
+	logLevel          = helper.GetEnv("SENZING_LOG_LEVEL", "INFO")
 	observerSingleton = &observer.NullObserver{
 		ID:       "Observer 1",
 		IsSilent: true,
@@ -411,13 +408,7 @@ func TestMain(m *testing.M) {
 }
 
 func setup() error {
-	var err error
-	logger = helper.GetLogger(ComponentID, szconfigmanager.IDMessages, baseCallerSkip)
-	osenvLogLevel := os.Getenv("SENZING_LOG_LEVEL")
-	if len(osenvLogLevel) > 0 {
-		logLevel = osenvLogLevel
-	}
-	err = setupSenzingConfiguration()
+	err := setupSenzingConfiguration()
 	if err != nil {
 		return fmt.Errorf("Failed to set up Senzing configuration. Error: %w", err)
 	}
