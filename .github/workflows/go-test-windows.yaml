@@ -2,6 +2,9 @@ name: go test windows
 
 on: [pull_request, workflow_dispatch]
 
+env:
+  SENZING_LOG_LEVEL: TRACE
+
 permissions:
   contents: read
 
@@ -39,7 +42,7 @@ jobs:
       #   run: docker run --detach --env SENZING_TOOLS_ENABLE_ALL --publish 8261:8261 senzing/serve-grpc:latest
       # - name: Run go test
       #   run: go test -v -p 1 ./...
-      
+
       - name: run go test
         run: |
           go test -json -v -p 1 -coverprofile=cover -covermode=atomic -coverpkg=./... ./... 2>&1 | tee "C:\Temp\gotest.log" | gotestfmt

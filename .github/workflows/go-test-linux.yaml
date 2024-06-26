@@ -2,6 +2,9 @@ name: go test linux
 
 on: [push]
 
+env:
+  SENZING_LOG_LEVEL: TRACE
+
 permissions:
   contents: read
 

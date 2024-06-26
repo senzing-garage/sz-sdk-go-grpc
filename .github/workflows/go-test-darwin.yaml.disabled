@@ -2,6 +2,9 @@ name: go test darwin
 
 on: [pull_request, workflow_dispatch]
 
+env:
+  SENZING_LOG_LEVEL: TRACE
+
 permissions:
   contents: read
 
