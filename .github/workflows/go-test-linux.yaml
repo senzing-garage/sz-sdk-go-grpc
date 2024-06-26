@@ -19,6 +19,7 @@ jobs:
         env:
           SENZING_TOOLS_ENABLE_ALL: true
         image: senzing/serve-grpc
+        options: --user 0
         ports:
           - 8261:8261
 
