@@ -39,7 +39,7 @@ interface include:
 
 - [sz-sdk-go-core] - for calling Senzing SDK APIs natively
 - [sz-sdk-go-mock] - for unit testing calls to the Senzing Go SDK
-- [sz-sdk-abstract-factory] - An [abstract factory pattern] for switching among implementations
+- [go-sdk-abstract-factory] - An [abstract factory pattern] for switching among implementations
 
 ## Use
 
@@ -56,6 +56,7 @@ interface include:
 [Development]: docs/development.md
 [Errors]: docs/errors.md
 [Examples]: docs/examples.md
+[go-sdk-abstract-factory]: https://github.com/senzing-garage/go-sdk-abstract-factory
 [Go]: https://go.dev/
 [Package reference]: https://pkg.go.dev/github.com/senzing-garage/sz-sdk-go-core
 [Senzing Garage]: https://github.com/senzing-garage-garage
