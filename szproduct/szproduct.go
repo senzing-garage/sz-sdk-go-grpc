@@ -28,6 +28,7 @@ type Szproduct struct {
 
 const (
 	baseCallerSkip       = 4
+	baseTen              = 10
 	initialByteArraySize = 65535
 	noError              = 0
 )
@@ -153,7 +154,7 @@ func (client *Szproduct) Initialize(ctx context.Context, instanceName string, se
 			details := map[string]string{
 				"instanceName":   instanceName,
 				"settings":       settings,
-				"verboseLogging": strconv.FormatInt(verboseLogging, 10),
+				"verboseLogging": strconv.FormatInt(verboseLogging, baseTen),
 			}
 			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentID, 8002, err, details)
 		}()

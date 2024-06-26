@@ -1,5 +1,5 @@
 /*
-Package main implements a client for the service.
+Package szdiagnostic implements a client for the service.
 */
 package szdiagnostic
 
