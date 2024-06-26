@@ -3,14 +3,10 @@ package szabstractfactory
 import (
 	"context"
 	"fmt"
-	"os"
 	"testing"
 
 	truncator "github.com/aquilax/truncate"
-	"github.com/senzing-garage/go-logging/logging"
-	"github.com/senzing-garage/sz-sdk-go-grpc/helper"
 	"github.com/senzing-garage/sz-sdk-go/senzing"
-	"github.com/senzing-garage/sz-sdk-go/szconfig"
 	"github.com/stretchr/testify/require"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
@@ -26,7 +22,6 @@ const (
 
 var (
 	grpcAddress = "localhost:8261"
-	logger      logging.Logging
 )
 
 // ----------------------------------------------------------------------------
@@ -132,32 +127,4 @@ func printResult(test *testing.T, title string, result interface{}) {
 
 func truncate(aString string, length int) string {
 	return truncator.Truncate(aString, length, "...", truncator.PositionEnd)
-}
-
-// ----------------------------------------------------------------------------
-// Test harness
-// ----------------------------------------------------------------------------
-
-func TestMain(m *testing.M) {
-	err := setup()
-	if err != nil {
-		fmt.Print(err)
-		os.Exit(1)
-	}
-	code := m.Run()
-	err = teardown()
-	if err != nil {
-		fmt.Print(err)
-	}
-	os.Exit(code)
-}
-
-func setup() error {
-	var err error
-	logger = helper.GetLogger(ComponentID, szconfig.IDMessages, baseCallerSkip)
-	return err
-}
-
-func teardown() error {
-	return nil
 }

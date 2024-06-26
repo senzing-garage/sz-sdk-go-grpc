@@ -14,7 +14,7 @@ import (
 	"github.com/senzing-garage/go-observing/observer"
 	"github.com/senzing-garage/go-observing/subject"
 	"github.com/senzing-garage/sz-sdk-go-grpc/helper"
-	szdiagnosticapi "github.com/senzing-garage/sz-sdk-go/szdiagnostic"
+	"github.com/senzing-garage/sz-sdk-go/szdiagnostic"
 	szpb "github.com/senzing-garage/sz-sdk-proto/go/szdiagnostic"
 )
 
@@ -400,7 +400,7 @@ func (client *Szdiagnostic) purgeRepository(ctx context.Context) error {
 // Get the Logger singleton.
 func (client *Szdiagnostic) getLogger() logging.Logging {
 	if client.logger == nil {
-		client.logger = helper.GetLogger(ComponentID, szdiagnosticapi.IDMessages, baseCallerSkip)
+		client.logger = helper.GetLogger(ComponentID, szdiagnostic.IDMessages, baseCallerSkip)
 	}
 	return client.logger
 }

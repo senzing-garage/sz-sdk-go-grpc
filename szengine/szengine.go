@@ -17,7 +17,7 @@ import (
 	"github.com/senzing-garage/go-observing/subject"
 	"github.com/senzing-garage/sz-sdk-go-grpc/helper"
 	"github.com/senzing-garage/sz-sdk-go/senzing"
-	szengineapi "github.com/senzing-garage/sz-sdk-go/szengine"
+	"github.com/senzing-garage/sz-sdk-go/szengine"
 	szpb "github.com/senzing-garage/sz-sdk-proto/go/szengine"
 )
 
@@ -1670,7 +1670,7 @@ func (client *Szengine) whyRecords(ctx context.Context, dataSourceCode1 string, 
 // Get the Logger singleton.
 func (client *Szengine) getLogger() logging.Logging {
 	if client.logger == nil {
-		client.logger = helper.GetLogger(ComponentID, szengineapi.IDMessages, baseCallerSkip)
+		client.logger = helper.GetLogger(ComponentID, szengine.IDMessages, baseCallerSkip)
 	}
 	return client.logger
 }

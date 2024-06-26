@@ -155,6 +155,10 @@ func getSettings() (string, error) {
 func getSzProduct(ctx context.Context) (*Szproduct, error) {
 	var err error
 	if szProductSingleton == nil {
+		settings, err := getSettings()
+		if err != nil {
+			return szProductSingleton, fmt.Errorf("getSettings() Error: %w", err)
+		}
 		grpcConnection := getGrpcConnection()
 		szProductSingleton = &Szproduct{
 			GrpcClient: szpb.NewSzProductClient(grpcConnection),
@@ -173,6 +177,10 @@ func getSzProduct(ctx context.Context) (*Szproduct, error) {
 			if err != nil {
 				return szProductSingleton, fmt.Errorf("SetLogLevel() - 2 Error: %w", err)
 			}
+		}
+		err = szProductSingleton.Initialize(ctx, instanceName, settings, verboseLogging)
+		if err != nil {
+			return szProductSingleton, fmt.Errorf("Initialize() Error: %w", err)
 		}
 	}
 	return szProductSingleton, err
