@@ -9,22 +9,24 @@ import (
 	"github.com/senzing-garage/go-helpers/jsonutil"
 	"github.com/senzing-garage/go-helpers/truthset"
 	"github.com/senzing-garage/go-logging/logging"
-	"github.com/senzing-garage/sz-sdk-go/sz"
+	"github.com/senzing-garage/sz-sdk-go/senzing"
 )
 
 // ----------------------------------------------------------------------------
-// Interface functions - Examples for godoc documentation
+// Interface methods - Examples for godoc documentation
 // ----------------------------------------------------------------------------
+
+func ExampleSzengine() {}
 
 func ExampleSzengine_AddRecord() {
 	// For more information, visit https://github.com/senzing-garage/sz-sdk-go-grpc/blob/main/szengine/szengine_examples_test.go
 	ctx := context.TODO()
-	szEngine := getSzEngine(ctx)
+	szEngine := getSzEngineExample(ctx)
 	dataSourceCode := "CUSTOMERS"
-	recordId := "1001"
+	recordID := "1001"
 	recordDefinition := `{"DATA_SOURCE": "CUSTOMERS", "RECORD_ID": "1001", "RECORD_TYPE": "PERSON", "PRIMARY_NAME_LAST": "Smith", "PRIMARY_NAME_FIRST": "Robert", "DATE_OF_BIRTH": "12/11/1978", "ADDR_TYPE": "MAILING", "ADDR_LINE1": "123 Main Street, Las Vegas NV 89132", "PHONE_TYPE": "HOME", "PHONE_NUMBER": "702-919-1300", "EMAIL_ADDRESS": "bsmith@work.com", "DATE": "1/2/18", "STATUS": "Active", "AMOUNT": "100"}`
-	flags := sz.SZ_WITHOUT_INFO
-	result, err := szEngine.AddRecord(ctx, dataSourceCode, recordId, recordDefinition, flags)
+	flags := senzing.SzWithoutInfo
+	result, err := szEngine.AddRecord(ctx, dataSourceCode, recordID, recordDefinition, flags)
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -35,12 +37,12 @@ func ExampleSzengine_AddRecord() {
 func ExampleSzengine_AddRecord_secondRecord() {
 	// For more information, visit https://github.com/senzing-garage/sz-sdk-go-grpc/blob/main/szengine/szengine_examples_test.go
 	ctx := context.TODO()
-	szEngine := getSzEngine(ctx)
+	szEngine := getSzEngineExample(ctx)
 	dataSourceCode := "CUSTOMERS"
-	recordId := "1002"
+	recordID := "1002"
 	recordDefinition := `{"DATA_SOURCE": "CUSTOMERS", "RECORD_ID": "1002", "RECORD_TYPE": "PERSON", "PRIMARY_NAME_LAST": "Smith", "PRIMARY_NAME_FIRST": "Bob", "DATE_OF_BIRTH": "11/12/1978", "ADDR_TYPE": "HOME", "ADDR_LINE1": "1515 Adela Lane", "ADDR_CITY": "Las Vegas", "ADDR_STATE": "NV", "ADDR_POSTAL_CODE": "89111", "PHONE_TYPE": "MOBILE", "PHONE_NUMBER": "702-919-1300", "DATE": "3/10/17", "STATUS": "Inactive", "AMOUNT": "200"}`
-	flags := sz.SZ_WITHOUT_INFO
-	result, err := szEngine.AddRecord(ctx, dataSourceCode, recordId, recordDefinition, flags)
+	flags := senzing.SzWithoutInfo
+	result, err := szEngine.AddRecord(ctx, dataSourceCode, recordID, recordDefinition, flags)
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -51,52 +53,55 @@ func ExampleSzengine_AddRecord_secondRecord() {
 func ExampleSzengine_AddRecord_withInfo() {
 	// For more information, visit https://github.com/senzing-garage/sz-sdk-go-grpc/blob/main/szengine/szengine_examples_test.go
 	ctx := context.TODO()
-	szEngine := getSzEngine(ctx)
+	szEngine := getSzEngineExample(ctx)
 	dataSourceCode := "CUSTOMERS"
-	recordId := "1003"
+	recordID := "1003"
 	recordDefinition := `{"DATA_SOURCE": "CUSTOMERS", "RECORD_ID": "1003", "RECORD_TYPE": "PERSON", "PRIMARY_NAME_LAST": "Smith", "PRIMARY_NAME_FIRST": "Bob", "PRIMARY_NAME_MIDDLE": "J", "DATE_OF_BIRTH": "12/11/1978", "EMAIL_ADDRESS": "bsmith@work.com", "DATE": "4/9/16", "STATUS": "Inactive", "AMOUNT": "300"}`
-	flags := sz.SZ_WITH_INFO
-	result, err := szEngine.AddRecord(ctx, dataSourceCode, recordId, recordDefinition, flags)
+	flags := senzing.SzWithInfo
+	result, err := szEngine.AddRecord(ctx, dataSourceCode, recordID, recordDefinition, flags)
 	if err != nil {
 		fmt.Println(err)
 	}
 	fmt.Println(result)
-	// Output: {"DATA_SOURCE":"CUSTOMERS","RECORD_ID":"1003","AFFECTED_ENTITIES":[],"INTERESTING_ENTITIES":{"ENTITIES":[]}}
+	// Output: {"DATA_SOURCE":"CUSTOMERS","RECORD_ID":"1003","AFFECTED_ENTITIES":[{"ENTITY_ID":149}],"INTERESTING_ENTITIES":{"ENTITIES":[]}}
 }
 
 func ExampleSzengine_CloseExport() {
 	// For more information, visit https://github.com/senzing-garage/sz-sdk-go-grpc/blob/main/szengine/szengine_examples_test.go
 	ctx := context.TODO()
-	szEngine := getSzEngine(ctx)
-	flags := sz.SZ_NO_FLAGS
-	exportHandle, err := szEngine.ExportJsonEntityReport(ctx, flags)
+	szEngine := getSzEngineExample(ctx)
+	flags := senzing.SzNoFlags
+	exportHandle, err := szEngine.ExportJSONEntityReport(ctx, flags)
 	if err != nil {
 		fmt.Println(err)
 	}
-	szEngine.CloseExport(ctx, exportHandle)
+	err = szEngine.CloseExport(ctx, exportHandle)
+	if err != nil {
+		fmt.Println(err)
+	}
 	// Output:
 }
 
 func ExampleSzengine_CountRedoRecords() {
 	// For more information, visit https://github.com/senzing-garage/sz-sdk-go-grpc/blob/main/szengine/szengine_examples_test.go
 	ctx := context.TODO()
-	szEngine := getSzEngine(ctx)
+	szEngine := getSzEngineExample(ctx)
 	result, err := szEngine.CountRedoRecords(ctx)
 	if err != nil {
 		fmt.Println(err)
 	}
 	fmt.Println(result)
-	// Output: 0
+	// Output: 4
 }
 
 func ExampleSzengine_DeleteRecord() {
 	// For more information, visit https://github.com/senzing-garage/sz-sdk-go-grpc/blob/main/szengine/szengine_examples_test.go
 	ctx := context.TODO()
-	szEngine := getSzEngine(ctx)
+	szEngine := getSzEngineExample(ctx)
 	dataSourceCode := "CUSTOMERS"
-	recordId := "1003"
-	flags := sz.SZ_WITHOUT_INFO
-	result, err := szEngine.DeleteRecord(ctx, dataSourceCode, recordId, flags)
+	recordID := "1003"
+	flags := senzing.SzWithoutInfo
+	result, err := szEngine.DeleteRecord(ctx, dataSourceCode, recordID, flags)
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -107,11 +112,11 @@ func ExampleSzengine_DeleteRecord() {
 func ExampleSzengine_DeleteRecord_withInfo() {
 	// For more information, visit https://github.com/senzing-garage/sz-sdk-go-grpc/blob/main/szengine/szengine_examples_test.go
 	ctx := context.TODO()
-	szEngine := getSzEngine(ctx)
+	szEngine := getSzEngineExample(ctx)
 	dataSourceCode := "CUSTOMERS"
-	recordId := "1003"
-	flags := sz.SZ_WITH_INFO
-	result, err := szEngine.DeleteRecord(ctx, dataSourceCode, recordId, flags)
+	recordID := "1003"
+	flags := senzing.SzWithInfo
+	result, err := szEngine.DeleteRecord(ctx, dataSourceCode, recordID, flags)
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -122,9 +127,9 @@ func ExampleSzengine_DeleteRecord_withInfo() {
 func ExampleSzengine_ExportCsvEntityReport() {
 	// For more information, visit https://github.com/senzing-garage/sz-sdk-go-grpc/blob/main/szengine/szengine_examples_test.go
 	ctx := context.TODO()
-	szEngine := getSzEngine(ctx)
+	szEngine := getSzEngineExample(ctx)
 	csvColumnList := ""
-	flags := sz.SZ_NO_FLAGS
+	flags := senzing.SzNoFlags
 	exportHandle, err := szEngine.ExportCsvEntityReport(ctx, csvColumnList, flags)
 	if err != nil {
 		fmt.Println(err)
@@ -136,9 +141,9 @@ func ExampleSzengine_ExportCsvEntityReport() {
 func ExampleSzengine_ExportCsvEntityReportIterator() {
 	// For more information, visit https://github.com/senzing-garage/sz-sdk-go-grpc/blob/main/szengine/szengine_examples_test.go
 	ctx := context.TODO()
-	szEngine := getSzEngine(ctx)
+	szEngine := getSzEngineExample(ctx)
 	csvColumnList := ""
-	flags := sz.SZ_NO_FLAGS
+	flags := senzing.SzNoFlags
 	for result := range szEngine.ExportCsvEntityReportIterator(ctx, csvColumnList, flags) {
 		if result.Error != nil {
 			fmt.Println(result.Error)
@@ -149,12 +154,12 @@ func ExampleSzengine_ExportCsvEntityReportIterator() {
 	// Output: RESOLVED_ENTITY_ID,RELATED_ENTITY_ID,MATCH_LEVEL_CODE,MATCH_KEY,DATA_SOURCE,RECORD_ID
 }
 
-func ExampleSzengine_ExportJsonEntityReport() {
+func ExampleSzengine_ExportJSONEntityReport() {
 	// For more information, visit https://github.com/senzing-garage/sz-sdk-go-grpc/blob/main/szengine/szengine_examples_test.go
 	ctx := context.TODO()
-	szEngine := getSzEngine(ctx)
-	flags := sz.SZ_NO_FLAGS
-	exportHandle, err := szEngine.ExportJsonEntityReport(ctx, flags)
+	szEngine := getSzEngineExample(ctx)
+	flags := senzing.SzNoFlags
+	exportHandle, err := szEngine.ExportJSONEntityReport(ctx, flags)
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -162,12 +167,12 @@ func ExampleSzengine_ExportJsonEntityReport() {
 	// Output: true
 }
 
-func ExampleSzengine_ExportJsonEntityReportIterator() {
+func ExampleSzengine_ExportJSONEntityReportIterator() {
 	// For more information, visit https://github.com/senzing-garage/sz-sdk-go-grpc/blob/main/szengine/szengine_examples_test.go
 	ctx := context.TODO()
-	szEngine := getSzEngine(ctx)
-	flags := sz.SZ_NO_FLAGS
-	for result := range szEngine.ExportJsonEntityReportIterator(ctx, flags) {
+	szEngine := getSzEngineExample(ctx)
+	flags := senzing.SzNoFlags
+	for result := range szEngine.ExportJSONEntityReportIterator(ctx, flags) {
 		if result.Error != nil {
 			fmt.Println(result.Error)
 			break
@@ -180,9 +185,9 @@ func ExampleSzengine_ExportJsonEntityReportIterator() {
 func ExampleSzengine_FetchNext() {
 	// For more information, visit https://github.com/senzing-garage/sz-sdk-go-grpc/blob/main/szengine/szengine_examples_test.go
 	ctx := context.TODO()
-	szEngine := getSzEngine(ctx)
-	flags := sz.SZ_NO_FLAGS
-	exportHandle, err := szEngine.ExportJsonEntityReport(ctx, flags)
+	szEngine := getSzEngineExample(ctx)
+	flags := senzing.SzNoFlags
+	exportHandle, err := szEngine.ExportJSONEntityReport(ctx, flags)
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -200,17 +205,15 @@ func ExampleSzengine_FetchNext() {
 		}
 		jsonEntityReport += jsonEntityReportFragment
 	}
-	fmt.Println(len(jsonEntityReport) >= 0) // Dummy output.
-	// Output: true
 }
 
-func ExampleSzengine_FindInterestingEntitiesByEntityId() {
+func ExampleSzengine_FindInterestingEntitiesByEntityID() {
 	// For more information, visit https://github.com/senzing-garage/sz-sdk-go-grpc/blob/main/szengine/szengine_examples_test.go
 	ctx := context.TODO()
-	szEngine := getSzEngine(ctx)
-	entityId := getEntityIdForRecord("CUSTOMERS", "1001")
-	flags := sz.SZ_NO_FLAGS
-	result, err := szEngine.FindInterestingEntitiesByEntityId(ctx, entityId, flags)
+	szEngine := getSzEngineExample(ctx)
+	entityID := getEntityIDForRecord("CUSTOMERS", "1001")
+	flags := senzing.SzNoFlags
+	result, err := szEngine.FindInterestingEntitiesByEntityID(ctx, entityID, flags)
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -218,14 +221,14 @@ func ExampleSzengine_FindInterestingEntitiesByEntityId() {
 	// Output: {"INTERESTING_ENTITIES":{"ENTITIES":[]}}
 }
 
-func ExampleSzengine_FindInterestingEntitiesByRecordId() {
+func ExampleSzengine_FindInterestingEntitiesByRecordID() {
 	// For more information, visit https://github.com/senzing-garage/sz-sdk-go-grpc/blob/main/szengine/szengine_examples_test.go
 	ctx := context.TODO()
-	szEngine := getSzEngine(ctx)
+	szEngine := getSzEngineExample(ctx)
 	dataSourceCode := "CUSTOMERS"
-	recordId := "1001"
-	flags := sz.SZ_NO_FLAGS
-	result, err := szEngine.FindInterestingEntitiesByRecordId(ctx, dataSourceCode, recordId, flags)
+	recordID := "1001"
+	flags := senzing.SzNoFlags
+	result, err := szEngine.FindInterestingEntitiesByRecordID(ctx, dataSourceCode, recordID, flags)
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -233,70 +236,70 @@ func ExampleSzengine_FindInterestingEntitiesByRecordId() {
 	// Output: {"INTERESTING_ENTITIES":{"ENTITIES":[]}}
 }
 
-func ExampleSzengine_FindNetworkByEntityId() {
+func ExampleSzengine_FindNetworkByEntityID() {
 	// For more information, visit https://github.com/senzing-garage/sz-sdk-go-grpc/blob/main/szengine/szengine_examples_test.go
 	ctx := context.TODO()
-	szEngine := getSzEngine(ctx)
-	entityList := `{"ENTITIES": [{"ENTITY_ID": ` + getEntityIdStringForRecord("CUSTOMERS", "1001") + `}, {"ENTITY_ID": ` + getEntityIdStringForRecord("CUSTOMERS", "1002") + `}]}`
+	szEngine := getSzEngineExample(ctx)
+	entityList := `{"ENTITIES": [{"ENTITY_ID": ` + getEntityIDStringForRecord("CUSTOMERS", "1001") + `}, {"ENTITY_ID": ` + getEntityIDStringForRecord("CUSTOMERS", "1002") + `}]}`
 	maxDegrees := int64(2)
 	buildOutDegree := int64(1)
 	maxEntities := int64(10)
-	flags := sz.SZ_NO_FLAGS
-	result, err := szEngine.FindNetworkByEntityId(ctx, entityList, maxDegrees, buildOutDegree, maxEntities, flags)
+	flags := senzing.SzNoFlags
+	result, err := szEngine.FindNetworkByEntityID(ctx, entityList, maxDegrees, buildOutDegree, maxEntities, flags)
 	if err != nil {
 		fmt.Println(err)
 	}
 	fmt.Println(result)
-	// Output: {"ENTITY_PATHS":[],"ENTITIES":[{"RESOLVED_ENTITY":{"ENTITY_ID":1}}]}
+	// Output: {"ENTITY_PATHS":[],"ENTITIES":[{"RESOLVED_ENTITY":{"ENTITY_ID":149}}]}
 }
 
-func ExampleSzengine_FindNetworkByRecordId() {
+func ExampleSzengine_FindNetworkByRecordID() {
 	// For more information, visit https://github.com/senzing-garage/sz-sdk-go-grpc/blob/main/szengine/szengine_examples_test.go
 	ctx := context.TODO()
-	szEngine := getSzEngine(ctx)
+	szEngine := getSzEngineExample(ctx)
 	recordList := `{"RECORDS": [{"DATA_SOURCE": "CUSTOMERS", "RECORD_ID": "1001"}, {"DATA_SOURCE": "CUSTOMERS", "RECORD_ID": "1002"}]}`
 	maxDegrees := int64(1)
 	buildOutDegree := int64(2)
 	maxEntities := int64(10)
-	flags := sz.SZ_NO_FLAGS
-	result, err := szEngine.FindNetworkByRecordId(ctx, recordList, maxDegrees, buildOutDegree, maxEntities, flags)
+	flags := senzing.SzNoFlags
+	result, err := szEngine.FindNetworkByRecordID(ctx, recordList, maxDegrees, buildOutDegree, maxEntities, flags)
 	if err != nil {
 		fmt.Println(err)
 	}
 	fmt.Println(result)
-	// Output: {"ENTITY_PATHS":[],"ENTITIES":[{"RESOLVED_ENTITY":{"ENTITY_ID":1}}]}
+	// Output: {"ENTITY_PATHS":[],"ENTITIES":[{"RESOLVED_ENTITY":{"ENTITY_ID":149}}]}
 }
 
-func ExampleSzengine_FindPathByEntityId() {
+func ExampleSzengine_FindPathByEntityID() {
 	// For more information, visit https://github.com/senzing-garage/sz-sdk-go-grpc/blob/main/szengine/szengine_examples_test.go
 	ctx := context.TODO()
-	szEngine := getSzEngine(ctx)
-	startEntityId := getEntityIdForRecord("CUSTOMERS", "1001")
-	endEntityId := getEntityIdForRecord("CUSTOMERS", "1002")
+	szEngine := getSzEngineExample(ctx)
+	startEntityID := getEntityIDForRecord("CUSTOMERS", "1001")
+	endEntityID := getEntityIDForRecord("CUSTOMERS", "1002")
 	maxDegrees := int64(1)
 	exclusions := ""
 	requiredDataSources := ""
-	flags := sz.SZ_NO_FLAGS
-	result, err := szEngine.FindPathByEntityId(ctx, startEntityId, endEntityId, maxDegrees, exclusions, requiredDataSources, flags)
+	flags := senzing.SzNoFlags
+	result, err := szEngine.FindPathByEntityID(ctx, startEntityID, endEntityID, maxDegrees, exclusions, requiredDataSources, flags)
 	if err != nil {
 		fmt.Println(err)
 	}
 	fmt.Println(truncate(result, 107))
-	// Output: {"ENTITY_PATHS":[{"START_ENTITY_ID":1,"END_ENTITY_ID":1,"ENTITIES":[1]}],"ENTITIES":[{"RESOLVED_ENTITY":...
+	// Output: {"ENTITY_PATHS":[{"START_ENTITY_ID":149,"END_ENTITY_ID":149,"ENTITIES":[149]}],"ENTITIES":[{"RESOLVED_EN...
 }
 
-func ExampleSzengine_FindPathByEntityId_excluding() {
-	// TODO: Implement ExampleSzEngine_FindPathByEntityId_excluding
+func ExampleSzengine_FindPathByEntityID_excluding() {
+	// TODO: Implement ExampleSzEngine_FindPathByEntityID_excluding
 	// // For more information, visit https://github.com/senzing-garage/sz-sdk-go-grpc/blob/main/szengine/szengine_examples_test.go
 	// ctx := context.TODO()
-	// szEngine := getSzEngine(ctx)
-	// startEntityId := getEntityIdForRecord("CUSTOMERS", "1001")
-	// endEntityId := getEntityIdForRecord("CUSTOMERS", "1002")
+	// szEngine := getSzEngineExample(ctx)
+	// startEntityID := getEntityIDForRecord("CUSTOMERS", "1001")
+	// endEntityID := getEntityIDForRecord("CUSTOMERS", "1002")
 	// maxDegrees := int64(1)
-	// exclusions := `{"ENTITIES": [{"ENTITY_ID": ` + getEntityIdStringForRecord("CUSTOMERS", "1003") + `}]}`
+	// exclusions := `{"ENTITIES": [{"ENTITY_ID": ` + getEntityIDStringForRecord("CUSTOMERS", "1003") + `}]}`
 	// requiredDataSources := ""
-	// flags := sz.SZ_NO_FLAGS
-	// result, err := szEngine.FindPathByEntityId(ctx, startEntityId, endEntityId, maxDegrees, exclusions, requiredDataSources, flags)
+	// flags := senzing.SzNoFlags
+	// result, err := szEngine.FindPathByEntityID(ctx, startEntityID, endEntityID, maxDegrees, exclusions, requiredDataSources, flags)
 	// if err != nil {
 	// 	fmt.Println(err)
 	// }
@@ -304,22 +307,22 @@ func ExampleSzengine_FindPathByEntityId_excluding() {
 	// // Output: {"ENTITY_PATHS":[{"START_ENTITY_ID":1,"END_ENTITY_ID":1,"ENTITIES":[1]}],"ENTITIES":[{"RESOLVED_ENTITY":...
 }
 
-func ExampleSzEngine_FindPathByEntityId_excludingAndIncluding() {
-	// TODO: Implement ExampleSzEngine_FindPathByEntityId_excludingAndIncluding
+func ExampleSzEngine_FindPathByEntityID_excludingAndIncluding() {
+	// TODO: Implement ExampleSzEngine_FindPathByEntityID_excludingAndIncluding
 }
 
-func ExampleSzengine_FindPathByEntityId_including() {
-	// TODO: Implement ExampleSzEngine_FindPathByEntityId_including
+func ExampleSzengine_FindPathByEntityID_including() {
+	// TODO: Implement ExampleSzEngine_FindPathByEntityID_including
 	// // For more information, visit https://github.com/senzing-garage/sz-sdk-go-grpc/blob/main/szengine/szengine_examples_test.go
 	// ctx := context.TODO()
-	// szEngine := getSzEngine(ctx)
-	// startEntityId := getEntityIdForRecord("CUSTOMERS", "1001")
-	// endEntityId := getEntityIdForRecord("CUSTOMERS", "1002")
+	// szEngine := getSzEngineExample(ctx)
+	// startEntityID := getEntityIDForRecord("CUSTOMERS", "1001")
+	// endEntityID := getEntityIDForRecord("CUSTOMERS", "1002")
 	// maxDegree := int64(1)
-	// exclusions := `{"ENTITIES": [{"ENTITY_ID": ` + getEntityIdStringForRecord("CUSTOMERS", "1003") + `}]}`
+	// exclusions := `{"ENTITIES": [{"ENTITY_ID": ` + getEntityIDStringForRecord("CUSTOMERS", "1003") + `}]}`
 	// requiredDataSources := `{"DATA_SOURCES": ["CUSTOMERS"]}`
-	// flags := sz.SZ_NO_FLAGS
-	// result, err := szEngine.FindPathByEntityId(ctx, startEntityId, endEntityId, maxDegree, exclusions, requiredDataSources, flags)
+	// flags := senzing.SzNoFlags
+	// result, err := szEngine.FindPathByEntityID(ctx, startEntityID, endEntityID, maxDegree, exclusions, requiredDataSources, flags)
 	// if err != nil {
 	// 	fmt.Println(err)
 	// }
@@ -327,40 +330,40 @@ func ExampleSzengine_FindPathByEntityId_including() {
 	// // Output: {"ENTITY_PATHS":[{"START_ENTITY_ID":1,"END_ENTITY_ID":1,"ENTITIES":[]}],"ENTITIES":[{"RESOLVED_ENTITY":...
 }
 
-func ExampleSzengine_FindPathByRecordId() {
+func ExampleSzengine_FindPathByRecordID() {
 	// For more information, visit https://github.com/senzing-garage/sz-sdk-go-grpc/blob/main/szengine/szengine_examples_test.go
 	ctx := context.TODO()
-	szEngine := getSzEngine(ctx)
+	szEngine := getSzEngineExample(ctx)
 	startDataSourceCode := "CUSTOMERS"
-	startRecordId := "1001"
+	startRecordID := "1001"
 	endDataSourceCode := "CUSTOMERS"
-	endRecordId := "1002"
+	endRecordID := "1002"
 	maxDegrees := int64(1)
 	exclusions := ""
 	requiredDataSources := ""
-	flags := sz.SZ_NO_FLAGS
-	result, err := szEngine.FindPathByRecordId(ctx, startDataSourceCode, startRecordId, endDataSourceCode, endRecordId, maxDegrees, exclusions, requiredDataSources, flags)
+	flags := senzing.SzNoFlags
+	result, err := szEngine.FindPathByRecordID(ctx, startDataSourceCode, startRecordID, endDataSourceCode, endRecordID, maxDegrees, exclusions, requiredDataSources, flags)
 	if err != nil {
 		fmt.Println(err)
 	}
 	fmt.Println(truncate(result, 87))
-	// Output: {"ENTITY_PATHS":[{"START_ENTITY_ID":1,"END_ENTITY_ID":1,"ENTITIES":[1]}],"ENTITIES":...
+	// Output: {"ENTITY_PATHS":[{"START_ENTITY_ID":149,"END_ENTITY_ID":149,"ENTITIES":[149]}],"ENTI...
 }
 
-func ExampleSzengine_FindPathByRecordId_excluding() {
-	// TODO: Implement ExampleSzEngine_FindPathByRecordId_excluding
+func ExampleSzengine_FindPathByRecordID_excluding() {
+	// TODO: Implement ExampleSzEngine_FindPathByRecordID_excluding
 	// // For more information, visit https://github.com/senzing-garage/sz-sdk-go-grpc/blob/main/szengine/szengine_examples_test.go
 	// ctx := context.TODO()
-	// szEngine := getSzEngine(ctx)
+	// szEngine := getSzEngineExample(ctx)
 	// startDataSourceCode := "CUSTOMERS"
-	// startRecordId := "1001"
+	// startRecordID := "1001"
 	// endDataSourceCode := "CUSTOMERS"
-	// endRecordId := "1002"
+	// endRecordID := "1002"
 	// maxDegree := int64(1)
 	// exclusions := `{"RECORDS": [{ "DATA_SOURCE": "CUSTOMERS", "RECORD_ID": "1003"}]}`
 	// requiredDataSources := ""
-	// flags := sz.SZ_NO_FLAGS
-	// result, err := szEngine.FindPathByRecordId(ctx, startDataSourceCode, startRecordId, endDataSourceCode, endRecordId, maxDegree, exclusions, requiredDataSources, flags)
+	// flags := senzing.SzNoFlags
+	// result, err := szEngine.FindPathByRecordID(ctx, startDataSourceCode, startRecordID, endDataSourceCode, endRecordID, maxDegree, exclusions, requiredDataSources, flags)
 	// if err != nil {
 	// 	fmt.Println(err)
 	// }
@@ -368,24 +371,24 @@ func ExampleSzengine_FindPathByRecordId_excluding() {
 	// // Output: {"ENTITY_PATHS":[{"START_ENTITY_ID":1,"END_ENTITY_ID":1,"ENTITIES":[1]}],"ENTITIES":[{"RESOLVED_ENTITY":...
 }
 
-func ExampleSzEngine_FindPathByRecordId_excludingAndIncluding() {
-	// TODO: Implement ExampleSzEngine_FindPathByRecordId_excludingAndIncluding
+func ExampleSzEngine_FindPathByRecordID_excludingAndIncluding() {
+	// TODO: Implement ExampleSzEngine_FindPathByRecordID_excludingAndIncluding
 }
 
-func ExampleSzengine_FindPathByRecordId_including() {
-	// TODO: Implement ExampleSzEngine_FindPathByRecordId_including
+func ExampleSzengine_FindPathByRecordID_including() {
+	// TODO: Implement ExampleSzEngine_FindPathByRecordID_including
 	// // For more information, visit https://github.com/senzing-garage/sz-sdk-go-grpc/blob/main/szengine/szengine_examples_test.go
 	// ctx := context.TODO()
-	// szEngine := getSzEngine(ctx)
+	// szEngine := getSzEngineExample(ctx)
 	// startDataSourceCode := "CUSTOMERS"
-	// startRecordId := "1001"
+	// startRecordID := "1001"
 	// endDataSourceCode := "CUSTOMERS"
-	// endRecordId := "1002"
+	// endRecordID := "1002"
 	// maxDegrees := int64(1)
-	// exclusions := `{"ENTITIES": [{"ENTITY_ID": ` + getEntityIdStringForRecord("CUSTOMERS", "1003") + `}]}`
+	// exclusions := `{"ENTITIES": [{"ENTITY_ID": ` + getEntityIDStringForRecord("CUSTOMERS", "1003") + `}]}`
 	// requiredDataSources := `{"DATA_SOURCES": ["CUSTOMERS"]}`
-	// flags := sz.SZ_NO_FLAGS
-	// result, err := szEngine.FindPathByRecordId(ctx, startDataSourceCode, startRecordId, endDataSourceCode, endRecordId, maxDegrees, exclusions, requiredDataSources, flags)
+	// flags := senzing.SzNoFlags
+	// result, err := szEngine.FindPathByRecordID(ctx, startDataSourceCode, startRecordID, endDataSourceCode, endRecordID, maxDegrees, exclusions, requiredDataSources, flags)
 	// if err != nil {
 	// 	fmt.Println(err)
 	// }
@@ -393,11 +396,11 @@ func ExampleSzengine_FindPathByRecordId_including() {
 	// // Output: {"ENTITY_PATHS":[{"START_ENTITY_ID":1,"END_ENTITY_ID":1,"ENTITIES":[]}],"ENTITIES":[{"RESOLVED_ENTITY":{"ENTITY_ID":...
 }
 
-func ExampleSzengine_GetActiveConfigId() {
+func ExampleSzengine_GetActiveConfigID() {
 	// For more information, visit https://github.com/senzing-garage/sz-sdk-go-grpc/blob/main/szengine/szengine_examples_test.go
 	ctx := context.TODO()
-	szEngine := getSzEngine(ctx)
-	result, err := szEngine.GetActiveConfigId(ctx)
+	szEngine := getSzEngineExample(ctx)
+	result, err := szEngine.GetActiveConfigID(ctx)
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -405,43 +408,43 @@ func ExampleSzengine_GetActiveConfigId() {
 	// Output: true
 }
 
-func ExampleSzengine_GetEntityByEntityId() {
+func ExampleSzengine_GetEntityByEntityID() {
 	// For more information, visit https://github.com/senzing-garage/sz-sdk-go-grpc/blob/main/szengine/szengine_examples_test.go
 	ctx := context.TODO()
-	szEngine := getSzEngine(ctx)
-	entityId := getEntityIdForRecord("CUSTOMERS", "1001")
-	flags := sz.SZ_NO_FLAGS
-	result, err := szEngine.GetEntityByEntityId(ctx, entityId, flags)
+	szEngine := getSzEngineExample(ctx)
+	entityID := getEntityIDForRecord("CUSTOMERS", "1001")
+	flags := senzing.SzNoFlags
+	result, err := szEngine.GetEntityByEntityID(ctx, entityID, flags)
 	if err != nil {
 		fmt.Println(err)
 	}
 	fmt.Println(result)
-	// Output: {"RESOLVED_ENTITY":{"ENTITY_ID":1}}
+	// Output: {"RESOLVED_ENTITY":{"ENTITY_ID":149}}
 }
 
-func ExampleSzengine_GetEntityByRecordId() {
+func ExampleSzengine_GetEntityByRecordID() {
 	// For more information, visit https://github.com/senzing-garage/sz-sdk-go-grpc/blob/main/szengine/szengine_examples_test.go
 	ctx := context.TODO()
-	szEngine := getSzEngine(ctx)
+	szEngine := getSzEngineExample(ctx)
 	dataSourceCode := "CUSTOMERS"
-	recordId := "1001"
-	flags := sz.SZ_NO_FLAGS
-	result, err := szEngine.GetEntityByRecordId(ctx, dataSourceCode, recordId, flags)
+	recordID := "1001"
+	flags := senzing.SzNoFlags
+	result, err := szEngine.GetEntityByRecordID(ctx, dataSourceCode, recordID, flags)
 	if err != nil {
 		fmt.Println(err)
 	}
 	fmt.Println(result)
-	// Output: {"RESOLVED_ENTITY":{"ENTITY_ID":1}}
+	// Output: {"RESOLVED_ENTITY":{"ENTITY_ID":149}}
 }
 
 func ExampleSzengine_GetRecord() {
 	// For more information, visit https://github.com/senzing-garage/sz-sdk-go-grpc/blob/main/szengine/szengine_examples_test.go
 	ctx := context.TODO()
-	szEngine := getSzEngine(ctx)
+	szEngine := getSzEngineExample(ctx)
 	dataSourceCode := "CUSTOMERS"
-	recordId := "1001"
-	flags := sz.SZ_NO_FLAGS
-	result, err := szEngine.GetRecord(ctx, dataSourceCode, recordId, flags)
+	recordID := "1001"
+	flags := senzing.SzNoFlags
+	result, err := szEngine.GetRecord(ctx, dataSourceCode, recordID, flags)
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -452,19 +455,19 @@ func ExampleSzengine_GetRecord() {
 func ExampleSzengine_GetRedoRecord() {
 	// For more information, visit https://github.com/senzing-garage/sz-sdk-go-grpc/blob/main/szengine/szengine_examples_test.go
 	ctx := context.TODO()
-	szEngine := getSzEngine(ctx)
+	szEngine := getSzEngineExample(ctx)
 	result, err := szEngine.GetRedoRecord(ctx)
 	if err != nil {
 		fmt.Println(err)
 	}
-	fmt.Println(result)
-	// Output: {"REASON":"deferred delete","DATA_SOURCE":"CUSTOMERS","RECORD_ID":"1001","DSRC_ACTION":"X"}
+	fmt.Println(truncate(result, 69))
+	// Output: {"REASON":"deferred delete","DATA_SOURCE":"CUSTOMERS","RECORD_ID":...
 }
 
 func ExampleSzengine_GetStats() {
 	// For more information, visit https://github.com/senzing-garage/sz-sdk-go-grpc/blob/main/szengine/szengine_examples_test.go
 	ctx := context.TODO()
-	szEngine := getSzEngine(ctx)
+	szEngine := getSzEngineExample(ctx)
 	result, err := szEngine.GetStats(ctx)
 	if err != nil {
 		fmt.Println(err)
@@ -473,38 +476,38 @@ func ExampleSzengine_GetStats() {
 	// Output: { "workload":...
 }
 
-func ExampleSzengine_GetVirtualEntityByRecordId() {
+func ExampleSzengine_GetVirtualEntityByRecordID() {
 	// For more information, visit https://github.com/senzing-garage/sz-sdk-go-grpc/blob/main/szengine/szengine_examples_test.go
 	ctx := context.TODO()
-	szEngine := getSzEngine(ctx)
+	szEngine := getSzEngineExample(ctx)
 	recordList := `{"RECORDS": [{"DATA_SOURCE": "CUSTOMERS","RECORD_ID": "1001"},{"DATA_SOURCE": "CUSTOMERS","RECORD_ID": "1002"}]}`
-	flags := sz.SZ_NO_FLAGS
-	result, err := szEngine.GetVirtualEntityByRecordId(ctx, recordList, flags)
+	flags := senzing.SzNoFlags
+	result, err := szEngine.GetVirtualEntityByRecordID(ctx, recordList, flags)
 	if err != nil {
 		fmt.Println(err)
 	}
 	fmt.Println(result)
-	// Output: {"RESOLVED_ENTITY":{"ENTITY_ID":1}}
+	// Output: {"RESOLVED_ENTITY":{"ENTITY_ID":149}}
 }
 
-func ExampleSzengine_HowEntityByEntityId() {
+func ExampleSzengine_HowEntityByEntityID() {
 	// For more information, visit https://github.com/senzing-garage/sz-sdk-go-grpc/blob/main/szengine/szengine_examples_test.go
 	ctx := context.TODO()
-	szEngine := getSzEngine(ctx)
-	entityId := getEntityIdForRecord("CUSTOMERS", "1001")
-	flags := sz.SZ_NO_FLAGS
-	result, err := szEngine.HowEntityByEntityId(ctx, entityId, flags)
+	szEngine := getSzEngineExample(ctx)
+	entityID := getEntityIDForRecord("CUSTOMERS", "1001")
+	flags := senzing.SzNoFlags
+	result, err := szEngine.HowEntityByEntityID(ctx, entityID, flags)
 	if err != nil {
 		fmt.Println(err)
 	}
 	fmt.Println(jsonutil.Flatten(jsonutil.NormalizeAndSort(jsonutil.Flatten(jsonutil.Redact(result, "RECORD_ID", "INBOUND_FEAT_USAGE_TYPE")))))
-	// Output: {"HOW_RESULTS":{"FINAL_STATE":{"NEED_REEVALUATION":0,"VIRTUAL_ENTITIES":[{"MEMBER_RECORDS":[{"INTERNAL_ID":1,"RECORDS":[{"DATA_SOURCE":"CUSTOMERS","RECORD_ID":null}]},{"INTERNAL_ID":2,"RECORDS":[{"DATA_SOURCE":"CUSTOMERS","RECORD_ID":null}]}],"VIRTUAL_ENTITY_ID":"V1-S1"}]},"RESOLUTION_STEPS":[{"INBOUND_VIRTUAL_ENTITY_ID":"V2","MATCH_INFO":{"ERRULE_CODE":"CNAME_CFF_CEXCL","MATCH_KEY":"+NAME+DOB+PHONE"},"RESULT_VIRTUAL_ENTITY_ID":"V1-S1","STEP":1,"VIRTUAL_ENTITY_1":{"MEMBER_RECORDS":[{"INTERNAL_ID":1,"RECORDS":[{"DATA_SOURCE":"CUSTOMERS","RECORD_ID":null}]}],"VIRTUAL_ENTITY_ID":"V1"},"VIRTUAL_ENTITY_2":{"MEMBER_RECORDS":[{"INTERNAL_ID":2,"RECORDS":[{"DATA_SOURCE":"CUSTOMERS","RECORD_ID":null}]}],"VIRTUAL_ENTITY_ID":"V2"}}]}}
+	// Output: {"HOW_RESULTS":{"FINAL_STATE":{"NEED_REEVALUATION":0,"VIRTUAL_ENTITIES":[{"MEMBER_RECORDS":[{"INTERNAL_ID":149,"RECORDS":[{"DATA_SOURCE":"CUSTOMERS","RECORD_ID":null}]},{"INTERNAL_ID":150,"RECORDS":[{"DATA_SOURCE":"CUSTOMERS","RECORD_ID":null}]}],"VIRTUAL_ENTITY_ID":"V149-S1"}]},"RESOLUTION_STEPS":[{"INBOUND_VIRTUAL_ENTITY_ID":"V150","MATCH_INFO":{"ERRULE_CODE":"CNAME_CFF_CEXCL","MATCH_KEY":"+NAME+DOB+PHONE"},"RESULT_VIRTUAL_ENTITY_ID":"V149-S1","STEP":1,"VIRTUAL_ENTITY_1":{"MEMBER_RECORDS":[{"INTERNAL_ID":149,"RECORDS":[{"DATA_SOURCE":"CUSTOMERS","RECORD_ID":null}]}],"VIRTUAL_ENTITY_ID":"V149"},"VIRTUAL_ENTITY_2":{"MEMBER_RECORDS":[{"INTERNAL_ID":150,"RECORDS":[{"DATA_SOURCE":"CUSTOMERS","RECORD_ID":null}]}],"VIRTUAL_ENTITY_ID":"V150"}}]}}
 }
 
 func ExampleSzengine_PrimeEngine() {
 	// For more information, visit https://github.com/senzing-garage/sz-sdk-go-grpc/blob/main/szengine/szengine_examples_test.go
 	ctx := context.TODO()
-	szEngine := getSzEngine(ctx)
+	szEngine := getSzEngineExample(ctx)
 	err := szEngine.PrimeEngine(ctx)
 	if err != nil {
 		fmt.Println(err)
@@ -516,12 +519,12 @@ func ExampleSzEngine_ProcessRedoRecord() {
 	// TODO: Uncomment after it has been implemented.
 	// // For more information, visit https://github.com/senzing-garage/sz-sdk-go-grpc/blob/main/szengine/szengine_examples_test.go
 	// ctx := context.TODO()
-	// szEngine := getSzEngine(ctx)
+	// szEngine := getSzEngineExample(ctx)
 	// redoRecord, err := szEngine.GetRedoRecord(ctx)
 	// if err != nil {
 	// 	fmt.Println(err)
 	// }
-	// flags := sz.SZ_WITHOUT_INFO
+	// flags := senzing.SzWithoutInfo
 	// result, err := szEngine.ProcessRedoRecord(ctx, redoRecord, flags)
 	// if err != nil {
 	// 	fmt.Println(err)
@@ -534,12 +537,12 @@ func ExampleSzEngine_ProcessRedoRecord_withInfo() {
 	// TODO: Uncomment after it has been implemented.
 	// For more information, visit https://github.com/senzing-garage/sz-sdk-go-grpc/blob/main/szengine/szengine_examples_test.go
 	// ctx := context.TODO()
-	// szEngine := getSzEngine(ctx)
+	// szEngine := getSzEngineExample(ctx)
 	// redoRecord, err := szEngine.GetRedoRecord(ctx)
 	// if err != nil {
 	// 	fmt.Println(err)
 	// }
-	// flags := sz.SZ_WITH_INFO
+	// flags := senzing.SzWithInfo
 	// result, err := szEngine.ProcessRedoRecord(ctx, redoRecord, flags)
 	// if err != nil {
 	// 	fmt.Println(err)
@@ -551,10 +554,10 @@ func ExampleSzEngine_ProcessRedoRecord_withInfo() {
 func ExampleSzengine_ReevaluateEntity() {
 	// For more information, visit https://github.com/senzing-garage/sz-sdk-go-grpc/blob/main/szengine/szengine_examples_test.go
 	ctx := context.TODO()
-	szEngine := getSzEngine(ctx)
-	entityId := getEntityIdForRecord("CUSTOMERS", "1001")
-	flags := sz.SZ_WITHOUT_INFO
-	result, err := szEngine.ReevaluateEntity(ctx, entityId, flags)
+	szEngine := getSzEngineExample(ctx)
+	entityID := getEntityIDForRecord("CUSTOMERS", "1001")
+	flags := senzing.SzWithoutInfo
+	result, err := szEngine.ReevaluateEntity(ctx, entityID, flags)
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -565,25 +568,25 @@ func ExampleSzengine_ReevaluateEntity() {
 func ExampleSzengine_ReevaluateEntity_withInfo() {
 	// For more information, visit https://github.com/senzing-garage/sz-sdk-go-grpc/blob/main/szengine/szengine_examples_test.go
 	ctx := context.TODO()
-	szEngine := getSzEngine(ctx)
-	entityId := getEntityIdForRecord("CUSTOMERS", "1001")
-	flags := sz.SZ_WITH_INFO
-	result, err := szEngine.ReevaluateEntity(ctx, entityId, flags)
+	szEngine := getSzEngineExample(ctx)
+	entityID := getEntityIDForRecord("CUSTOMERS", "1001")
+	flags := senzing.SzWithInfo
+	result, err := szEngine.ReevaluateEntity(ctx, entityID, flags)
 	if err != nil {
 		fmt.Println(err)
 	}
 	fmt.Println(result)
-	// Output: {"DATA_SOURCE":"CUSTOMERS","RECORD_ID":"1001","AFFECTED_ENTITIES":[{"ENTITY_ID":1}],"INTERESTING_ENTITIES":{"ENTITIES":[]}}
+	// Output: {"DATA_SOURCE":"CUSTOMERS","RECORD_ID":"1001","AFFECTED_ENTITIES":[{"ENTITY_ID":149}],"INTERESTING_ENTITIES":{"ENTITIES":[]}}
 }
 
 func ExampleSzengine_ReevaluateRecord() {
 	// For more information, visit https://github.com/senzing-garage/sz-sdk-go-grpc/blob/main/szengine/szengine_examples_test.go
 	ctx := context.TODO()
-	szEngine := getSzEngine(ctx)
+	szEngine := getSzEngineExample(ctx)
 	dataSourceCode := "CUSTOMERS"
-	recordId := "1001"
-	flags := sz.SZ_WITHOUT_INFO
-	result, err := szEngine.ReevaluateRecord(ctx, dataSourceCode, recordId, flags)
+	recordID := "1001"
+	flags := senzing.SzWithoutInfo
+	result, err := szEngine.ReevaluateRecord(ctx, dataSourceCode, recordID, flags)
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -594,31 +597,31 @@ func ExampleSzengine_ReevaluateRecord() {
 func ExampleSzengine_ReevaluateRecord_withInfo() {
 	// For more information, visit https://github.com/senzing-garage/sz-sdk-go-grpc/blob/main/szengine/szengine_examples_test.go
 	ctx := context.TODO()
-	szEngine := getSzEngine(ctx)
+	szEngine := getSzEngineExample(ctx)
 	dataSourceCode := "CUSTOMERS"
-	recordId := "1001"
-	flags := sz.SZ_WITH_INFO
-	result, err := szEngine.ReevaluateRecord(ctx, dataSourceCode, recordId, flags)
+	recordID := "1001"
+	flags := senzing.SzWithInfo
+	result, err := szEngine.ReevaluateRecord(ctx, dataSourceCode, recordID, flags)
 	if err != nil {
 		fmt.Println(err)
 	}
 	fmt.Println(result)
-	// Output: {"DATA_SOURCE":"CUSTOMERS","RECORD_ID":"1001","AFFECTED_ENTITIES":[{"ENTITY_ID":1}],"INTERESTING_ENTITIES":{"ENTITIES":[]}}
+	// Output: {"DATA_SOURCE":"CUSTOMERS","RECORD_ID":"1001","AFFECTED_ENTITIES":[{"ENTITY_ID":149}],"INTERESTING_ENTITIES":{"ENTITIES":[]}}
 }
 
 func ExampleSzengine_SearchByAttributes() {
 	// For more information, visit https://github.com/senzing-garage/sz-sdk-go-grpc/blob/main/szengine/szengine_examples_test.go
 	ctx := context.TODO()
-	szEngine := getSzEngine(ctx)
+	szEngine := getSzEngineExample(ctx)
 	attributes := `{"NAMES": [{"NAME_TYPE": "PRIMARY", "NAME_LAST": "Smith"}], "EMAIL_ADDRESS": "bsmith@work.com"}`
 	searchProfile := ""
-	flags := sz.SZ_NO_FLAGS
+	flags := senzing.SzNoFlags
 	result, err := szEngine.SearchByAttributes(ctx, attributes, searchProfile, flags)
 	if err != nil {
 		fmt.Println(err)
 	}
 	fmt.Println(jsonutil.Flatten(jsonutil.Redact(jsonutil.Flatten(jsonutil.NormalizeAndSort(result)), "FIRST_SEEN_DT", "LAST_SEEN_DT")))
-	// Output: {"RESOLVED_ENTITIES":[{"ENTITY":{"RESOLVED_ENTITY":{"ENTITY_ID":1}},"MATCH_INFO":{"ERRULE_CODE":"SF1","MATCH_KEY":"+PNAME+EMAIL","MATCH_LEVEL_CODE":"POSSIBLY_RELATED"}}]}
+	// Output: {"RESOLVED_ENTITIES":[{"ENTITY":{"RESOLVED_ENTITY":{"ENTITY_ID":149}},"MATCH_INFO":{"ERRULE_CODE":"SF1","MATCH_KEY":"+PNAME+EMAIL","MATCH_LEVEL_CODE":"POSSIBLY_RELATED"}}]}
 }
 
 func ExampleSzEngine_SearchByAttributes_searchProfile() {
@@ -628,48 +631,48 @@ func ExampleSzEngine_SearchByAttributes_searchProfile() {
 func ExampleSzengine_WhyEntities() {
 	// For more information, visit https://github.com/senzing-garage/sz-sdk-go-grpc/blob/main/szengine/szengine_examples_test.go
 	ctx := context.TODO()
-	szEngine := getSzEngine(ctx)
-	entityId1 := getEntityId(truthset.CustomerRecords["1001"])
-	entityId2 := getEntityId(truthset.CustomerRecords["1002"])
-	flags := sz.SZ_NO_FLAGS
-	result, err := szEngine.WhyEntities(ctx, entityId1, entityId2, flags)
+	szEngine := getSzEngineExample(ctx)
+	entityID1 := getEntityID(truthset.CustomerRecords["1001"])
+	entityID2 := getEntityID(truthset.CustomerRecords["1002"])
+	flags := senzing.SzNoFlags
+	result, err := szEngine.WhyEntities(ctx, entityID1, entityID2, flags)
 	if err != nil {
 		fmt.Println(err)
 	}
 	fmt.Println(truncate(result, 74))
-	// Output: {"WHY_RESULTS":[{"ENTITY_ID":1,"ENTITY_ID_2":1,"MATCH_INFO":{"WHY_KEY":...
+	// Output: {"WHY_RESULTS":[{"ENTITY_ID":149,"ENTITY_ID_2":149,"MATCH_INFO":{"WHY_K...
 }
 
 func ExampleSzengine_WhyRecordInEntity() {
 	// For more information, visit https://github.com/senzing-garage/sz-sdk-go-grpc/blob/main/szengine/szengine_examples_test.go
 	ctx := context.TODO()
-	szEngine := getSzEngine(ctx)
+	szEngine := getSzEngineExample(ctx)
 	dataSourceCode := "CUSTOMERS"
-	recordId := "1001"
-	flags := sz.SZ_NO_FLAGS
-	result, err := szEngine.WhyRecordInEntity(ctx, dataSourceCode, recordId, flags)
+	recordID := "1001"
+	flags := senzing.SzNoFlags
+	result, err := szEngine.WhyRecordInEntity(ctx, dataSourceCode, recordID, flags)
 	if err != nil {
 		fmt.Println(err)
 	}
 	fmt.Println(result)
-	// Output:
+	// Output: {"WHY_RESULTS":[{"INTERNAL_ID":149,"ENTITY_ID":149,"FOCUS_RECORDS":[{"DATA_SOURCE":"CUSTOMERS","RECORD_ID":"1001"}],"MATCH_INFO":{"WHY_KEY":"+NAME+DOB+PHONE","WHY_ERRULE_CODE":"CNAME_CFF_CEXCL","MATCH_LEVEL_CODE":"RESOLVED"}}],"ENTITIES":[{"RESOLVED_ENTITY":{"ENTITY_ID":149}}]}
 }
 
 func ExampleSzengine_WhyRecords() {
 	// For more information, visit https://github.com/senzing-garage/sz-sdk-go-grpc/blob/main/szengine/szengine_examples_test.go
 	ctx := context.TODO()
-	szEngine := getSzEngine(ctx)
+	szEngine := getSzEngineExample(ctx)
 	dataSourceCode1 := "CUSTOMERS"
-	recordId1 := "1001"
+	recordID1 := "1001"
 	dataSourceCode2 := "CUSTOMERS"
-	recordId2 := "1002"
-	flags := sz.SZ_NO_FLAGS
-	result, err := szEngine.WhyRecords(ctx, dataSourceCode1, recordId1, dataSourceCode2, recordId2, flags)
+	recordID2 := "1002"
+	flags := senzing.SzNoFlags
+	result, err := szEngine.WhyRecords(ctx, dataSourceCode1, recordID1, dataSourceCode2, recordID2, flags)
 	if err != nil {
 		fmt.Println(err)
 	}
 	fmt.Println(truncate(result, 115))
-	// Output: {"WHY_RESULTS":[{"INTERNAL_ID":1,"ENTITY_ID":1,"FOCUS_RECORDS":[{"DATA_SOURCE":"CUSTOMERS","RECORD_ID":"1001"}],...
+	// Output: {"WHY_RESULTS":[{"INTERNAL_ID":149,"ENTITY_ID":149,"FOCUS_RECORDS":[{"DATA_SOURCE":"CUSTOMERS","RECORD_ID":"1001...
 }
 
 // ----------------------------------------------------------------------------
@@ -679,8 +682,11 @@ func ExampleSzengine_WhyRecords() {
 func ExampleSzengine_SetLogLevel() {
 	// For more information, visit https://github.com/senzing-garage/sz-sdk-go-grpc/blob/main/szenzing/szengine_test.go
 	ctx := context.TODO()
-	szEngine := getSzEngine(ctx)
-	err := szEngine.SetLogLevel(ctx, logging.LevelInfoName)
+	szEngine, err := getSzEngine(ctx)
+	if err != nil {
+		fmt.Println(err)
+	}
+	err = szEngine.SetLogLevel(ctx, logging.LevelInfoName)
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -690,7 +696,10 @@ func ExampleSzengine_SetLogLevel() {
 func ExampleSzengine_SetObserverOrigin() {
 	// For more information, visit https://github.com/senzing-garage/sz-sdk-go-grpc/blob/main/szengine/szengine_examples_test.go
 	ctx := context.TODO()
-	szEngine := getSzEngine(ctx)
+	szEngine, err := getSzEngine(ctx)
+	if err != nil {
+		fmt.Println(err)
+	}
 	origin := "Machine: nn; Task: UnitTest"
 	szEngine.SetObserverOrigin(ctx, origin)
 	// Output:
@@ -699,7 +708,10 @@ func ExampleSzengine_SetObserverOrigin() {
 func ExampleSzengine_GetObserverOrigin() {
 	// For more information, visit https://github.com/senzing-garage/sz-sdk-go-grpc/blob/main/szenzing/szengine_test.go
 	ctx := context.TODO()
-	szEngine := getSzEngine(ctx)
+	szEngine, err := getSzEngine(ctx)
+	if err != nil {
+		fmt.Println(err)
+	}
 	origin := "Machine: nn; Task: UnitTest"
 	szEngine.SetObserverOrigin(ctx, origin)
 	result := szEngine.GetObserverOrigin(ctx)
@@ -714,14 +726,18 @@ func ExampleSzengine_GetObserverOrigin() {
 func ExampleSzengine_Initialize() {
 	// For more information, visit https://github.com/senzing-garage/sz-sdk-go-grpc/blob/main/szengine/szengine_examples_test.go
 	ctx := context.TODO()
-	szEngine := getSzEngine(ctx)
+	szEngine, err := getSzEngine(ctx)
+	if err != nil {
+		fmt.Println(err)
+	}
 	instanceName := "Test module name"
 	settings := "{}"
-	verboseLogging := sz.SZ_NO_LOGGING
-	configId := sz.SZ_INITIALIZE_WITH_DEFAULT_CONFIGURATION
-	err := szEngine.Initialize(ctx, instanceName, settings, configId, verboseLogging)
+	verboseLogging := senzing.SzNoLogging
+	configID := senzing.SzInitializeWithDefaultConfiguration
+	err = szEngine.Initialize(ctx, instanceName, settings, configID, verboseLogging)
 	if err != nil {
 		// This should produce a "senzing-60144002" error.
+		fmt.Println(err)
 	}
 	// Output:
 }
@@ -729,9 +745,9 @@ func ExampleSzengine_Initialize() {
 func ExampleSzengine_Reinitialize() {
 	// For more information, visit https://github.com/senzing-garage/sz-sdk-go-grpc/blob/main/szengine/szengine_examples_test.go
 	ctx := context.TODO()
-	szEngine := getSzEngine(ctx)
-	configId, _ := szEngine.GetActiveConfigId(ctx)
-	err := szEngine.Reinitialize(ctx, configId)
+	szEngine := getSzEngineExample(ctx)
+	configID, _ := szEngine.GetActiveConfigID(ctx)
+	err := szEngine.Reinitialize(ctx, configID)
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -741,10 +757,22 @@ func ExampleSzengine_Reinitialize() {
 func ExampleSzengine_Destroy() {
 	// For more information, visit https://github.com/senzing-garage/sz-sdk-go-grpc/blob/main/szengine/szengine_examples_test.go
 	ctx := context.TODO()
-	szEngine := getSzEngine(ctx)
+	szEngine := getSzEngineExample(ctx)
 	err := szEngine.Destroy(ctx)
 	if err != nil {
 		fmt.Println(err)
 	}
 	// Output:
+}
+
+// ----------------------------------------------------------------------------
+// Helper functions
+// ----------------------------------------------------------------------------
+
+func getSzEngineExample(ctx context.Context) senzing.SzEngine {
+	result, err := getSzEngine(ctx)
+	if err != nil {
+		panic(err)
+	}
+	return result
 }

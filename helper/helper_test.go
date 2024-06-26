@@ -1,96 +1,39 @@
 package helper
 
 import (
-	"fmt"
-	"os"
 	"testing"
 
 	"github.com/senzing-garage/sz-sdk-go/szerror"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
 
 var testCases = []struct {
 	expectedType        error
-	expectedTypes       []szerror.SzErrorTypeIds
-	falseTypes          []szerror.SzErrorTypeIds
-	gRpcCode            codes.Code
+	expectedTypes       []error
+	falseTypes          []error
+	gRPCCode            codes.Code
 	senzingErrorMessage string
 	name                string
 }{
 	{
 		name:          "helper-szerror-0023",
-		expectedType:  szerror.SzBadInputError{},
-		expectedTypes: []szerror.SzErrorTypeIds{szerror.SzBadInput},
-		falseTypes:    []szerror.SzErrorTypeIds{szerror.SzRetryable},
-		gRpcCode:      codes.Unknown,
+		expectedType:  szerror.ErrSzBadInput,
+		expectedTypes: []error{szerror.ErrSzBadInput},
+		falseTypes:    []error{szerror.ErrSzRetryable},
+		gRPCCode:      codes.Unknown,
 		senzingErrorMessage: `{
-			"date": "2023-03-27",
-			"time": "20:34:11.451202917",
+			"time": "2023-03-27T20:34:11.451202917Z",
 			"level": "ERROR",
 			"id": "senzing-60044001",
 			"text": "Call to G2_addRecord(CUSTOMERS, 1002, {\"DATA_SOURCE\": \"BOB\", \"RECORD_ID\": \"1002\", \"RECORD_TYPE\": \"PERSON\", \"PRIMARY_NAME_LAST\": \"Smith\", \"PRIMARY_NAME_FIRST\": \"Bob\", \"DATE_OF_BIRTH\": \"11/12/1978\", \"ADDR_TYPE\": \"HOME\", \"ADDR_LINE1\": \"1515 Adela Lane\", \"ADDR_CITY\": \"Las Vegas\", \"ADDR_STATE\": \"NV\", \"ADDR_POSTAL_CODE\": \"89111\", \"PHONE_TYPE\": \"MOBILE\", \"PHONE_NUMBER\": \"702-919-1300\", \"DATE\": \"3/10/17\", \"STATUS\": \"Inactive\", \"AMOUNT\": \"200\"}, G2Engine_test) failed. Return code: -2",
+			"reason": "SENZ0023E|Conflicting DATA_SOURCE values 'CUSTOMERS' and 'BOB'",
 			"duration": 518591,
-			"location": "In AddRecord() at g2engineserver.go:66",
-			"errors": [{
-				"text": "0023E|Conflicting DATA_SOURCE values 'CUSTOMERS' and 'BOB'"
-			}],
-			"details": {
-				"1": "CUSTOMERS",
-				"2": 1002,
-				"3": {
-					"DATA_SOURCE": "BOB",
-					"RECORD_ID": "1002",
-					"RECORD_TYPE": "PERSON",
-					"PRIMARY_NAME_LAST": "Smith",
-					"PRIMARY_NAME_FIRST": "Bob",
-					"DATE_OF_BIRTH": "11/12/1978",
-					"ADDR_TYPE": "HOME",
-					"ADDR_LINE1": "1515 Adela Lane",
-					"ADDR_CITY": "Las Vegas",
-					"ADDR_STATE": "NV",
-					"ADDR_POSTAL_CODE": "89111",
-					"PHONE_TYPE": "MOBILE",
-					"PHONE_NUMBER": "702-919-1300",
-					"DATE": "3/10/17",
-					"STATUS": "Inactive",
-					"AMOUNT": "200"
-				},
-				"4": "G2Engine_test",
-				"5": -2,
-				"6": 518591
-			}
+			"location": "In AddRecord() at g2engineserver.go:66"
 		}`,
 	},
-}
-
-// ----------------------------------------------------------------------------
-// Test harness
-// ----------------------------------------------------------------------------
-
-func TestMain(m *testing.M) {
-	err := setup()
-	if err != nil {
-		fmt.Print(err)
-		os.Exit(1)
-	}
-	code := m.Run()
-	err = teardown()
-	if err != nil {
-		fmt.Print(err)
-	}
-	os.Exit(code)
-}
-
-func setup() error {
-	var err error = nil
-	return err
-}
-
-func teardown() error {
-	var err error = nil
-	return err
 }
 
 // ----------------------------------------------------------------------------
@@ -98,45 +41,43 @@ func teardown() error {
 // ----------------------------------------------------------------------------
 
 func TestConvertGrpcError(test *testing.T) {
-
 	for _, testCase := range testCases {
 		test.Run(testCase.name, func(test *testing.T) {
-			originalError := status.Error(testCase.gRpcCode, testCase.senzingErrorMessage)
+			originalError := status.Error(testCase.gRPCCode, testCase.senzingErrorMessage)
 			actual := ConvertGrpcError(originalError)
-			assert.NotNil(test, actual)
-			assert.IsType(test, testCase.expectedType, actual)
-			for _, szerrorTypeId := range testCase.expectedTypes {
-				assert.True(test, szerror.Is(actual, szerrorTypeId), szerrorTypeId)
+			require.ErrorIs(test, actual, testCase.expectedType)
+			for _, szerrorTypeID := range testCase.expectedTypes {
+				require.ErrorIs(test, actual, szerrorTypeID)
 			}
-			for _, szerrorTypeId := range testCase.falseTypes {
-				assert.False(test, szerror.Is(actual, szerrorTypeId), szerrorTypeId)
+			for _, szerrorTypeID := range testCase.falseTypes {
+				assert.NotErrorIs(test, actual, szerrorTypeID)
 			}
 		})
 	}
-
 }
 
-// ----------------------------------------------------------------------------
-// Examples for godoc documentation
-// ----------------------------------------------------------------------------
+func TestConvertGrpcError_nil(test *testing.T) {
+	actual := ConvertGrpcError(nil)
+	require.NoError(test, actual)
+}
 
-func ExampleConvertGrpcError() {
-	// For more information, visit https://github.com/senzing-garage/sz-sdk-go-grpc/blob/main/helper/helper_test.go
-	senzingErrorMessage := "27E|Test message"                           // Example message from Senzing G2 engine.
-	grpcStatusError := status.Error(codes.Unknown, senzingErrorMessage) // Create a gRPC *status.Error
-	err := ConvertGrpcError(grpcStatusError)
-	if err != nil {
-		if szerror.Is(err, szerror.SzBadInput) {
-			fmt.Println("Is a SzBadInputError")
-		}
-		if szerror.Is(err, szerror.SzUnknownDataSource) {
-			fmt.Println("Is a SzUnknownDataSourceError")
-		}
-		if szerror.Is(err, szerror.SzRetryable) {
-			fmt.Println("Is a SzRetryableError.")
-		}
-	}
-	// Output:
-	// Is a SzBadInputError
-	// Is a SzUnknownDataSourceError
+func TestConvertGrpcError_badParse(test *testing.T) {
+	jsonMessage := `{"time": 12345}`
+	gRPCError := status.Error(codes.Unknown, jsonMessage)
+	actual := ConvertGrpcError(gRPCError)
+	require.Error(test, actual)
+}
+
+func TestConvertGrpcError_badReason(test *testing.T) {
+	jsonMessage := `{"reason": "bad"}`
+	gRPCError := status.Error(codes.Unknown, jsonMessage)
+	actual := ConvertGrpcError(gRPCError)
+	require.Error(test, actual)
+}
+
+func TestConvertGrpcError_badReasonCode(test *testing.T) {
+	jsonMessage := `{"reason": "SENZabcd | bad text"}`
+	gRPCError := status.Error(codes.Unknown, jsonMessage)
+	actual := ConvertGrpcError(gRPCError)
+	require.Error(test, actual)
 }

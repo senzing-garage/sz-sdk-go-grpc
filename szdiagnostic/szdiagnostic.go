@@ -1,5 +1,5 @@
 /*
-Package main implements a client for the service.
+Package szdiagnostic implements a client for the service.
 */
 package szdiagnostic
 
@@ -14,17 +14,24 @@ import (
 	"github.com/senzing-garage/go-observing/observer"
 	"github.com/senzing-garage/go-observing/subject"
 	"github.com/senzing-garage/sz-sdk-go-grpc/helper"
-	szdiagnosticapi "github.com/senzing-garage/sz-sdk-go/szdiagnostic"
+	"github.com/senzing-garage/sz-sdk-go/szdiagnostic"
 	szpb "github.com/senzing-garage/sz-sdk-proto/go/szdiagnostic"
 )
 
 type Szdiagnostic struct {
 	GrpcClient     szpb.SzDiagnosticClient
 	isTrace        bool
-	logger         logging.LoggingInterface
+	logger         logging.Logging
 	observerOrigin string
 	observers      subject.Subject
 }
+
+const (
+	baseCallerSkip       = 4
+	baseTen              = 10
+	initialByteArraySize = 65535
+	noError              = 0
+)
 
 // ----------------------------------------------------------------------------
 // sz-sdk-go.SzDiagnostic interface methods
@@ -43,23 +50,18 @@ Output
     Example: `{"numRecordsInserted":0,"insertTime":0}`
 */
 func (client *Szdiagnostic) CheckDatastorePerformance(ctx context.Context, secondsToRun int) (string, error) {
-	var err error = nil
-	var result string = ""
+	var err error
+	var result string
 	if client.isTrace {
 		entryTime := time.Now()
 		client.traceEntry(1, secondsToRun)
 		defer func() { client.traceExit(2, secondsToRun, result, err, time.Since(entryTime)) }()
 	}
-	request := szpb.CheckDatastorePerformanceRequest{
-		SecondsToRun: int32(secondsToRun),
-	}
-	response, err := client.GrpcClient.CheckDatastorePerformance(ctx, &request)
-	result = response.GetResult()
-	err = helper.ConvertGrpcError(err)
+	result, err = client.checkDatastorePerformance(ctx, secondsToRun)
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{}
-			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentId, 8001, err, details)
+			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentID, 8001, err, details)
 		}()
 	}
 	return result, err
@@ -72,23 +74,23 @@ Input
   - ctx: A context to control lifecycle.
 */
 func (client *Szdiagnostic) Destroy(ctx context.Context) error {
-	var err error = nil
+	var err error
 	if client.isTrace {
 		entryTime := time.Now()
-		client.traceEntry(7)
-		defer func() { client.traceExit(8, err, time.Since(entryTime)) }()
+		client.traceEntry(5)
+		defer func() { client.traceExit(6, err, time.Since(entryTime)) }()
 	}
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{}
-			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentId, 8003, err, details)
+			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentID, 8002, err, details)
 		}()
 	}
 	return err
 }
 
 /*
-The GetDatastoreInfo method retrieves information about the underlying datastore.
+The GetDatastoreInfo method returns information about the state of the datastore.
 
 Input
   - ctx: A context to control lifecycle.
@@ -98,21 +100,18 @@ Output
   - A string containing a JSON document.
 */
 func (client *Szdiagnostic) GetDatastoreInfo(ctx context.Context) (string, error) {
-	var err error = nil
-	var result string = ""
+	var err error
+	var result string
 	if client.isTrace {
 		entryTime := time.Now()
-		client.traceEntry(1)
-		defer func() { client.traceExit(2, result, err, time.Since(entryTime)) }()
+		client.traceEntry(7)
+		defer func() { client.traceExit(8, result, err, time.Since(entryTime)) }()
 	}
-	request := szpb.GetDatastoreInfoRequest{}
-	response, err := client.GrpcClient.GetDatastoreInfo(ctx, &request)
-	result = response.GetResult()
-	err = helper.ConvertGrpcError(err)
+	result, err = client.getDatastoreInfo(ctx)
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{}
-			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentId, 8001, err, details)
+			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentID, 8003, err, details)
 		}()
 	}
 	return result, err
@@ -124,30 +123,27 @@ The GetFeature method...
 
 Input
   - ctx: A context to control lifecycle.
-  - featureId: The identifier of the feature to describe.
+  - featureID: The identifier of the feature to describe.
 
 Output
 
   - A string containing a JSON document.
 */
-func (client *Szdiagnostic) GetFeature(ctx context.Context, featureId int64) (string, error) {
-	var err error = nil
-	var result string = ""
+func (client *Szdiagnostic) GetFeature(ctx context.Context, featureID int64) (string, error) {
+	var err error
+	var result string
 	if client.isTrace {
 		entryTime := time.Now()
-		client.traceEntry(99, featureId)
-		defer func() { client.traceExit(99, featureId, result, err, time.Since(entryTime)) }()
+		client.traceEntry(9, featureID)
+		defer func() { client.traceExit(10, featureID, result, err, time.Since(entryTime)) }()
 	}
-	request := szpb.GetFeatureRequest{
-		FeatureId: featureId,
-	}
-	response, err := client.GrpcClient.GetFeature(ctx, &request)
-	result = response.GetResult()
-	err = helper.ConvertGrpcError(err)
+	result, err = client.getFeature(ctx, featureID)
 	if client.observers != nil {
 		go func() {
-			details := map[string]string{}
-			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentId, 8999, err, details)
+			details := map[string]string{
+				"featureID": strconv.FormatInt(featureID, baseTen),
+			}
+			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentID, 8004, err, details)
 		}()
 	}
 	return result, err
@@ -162,19 +158,17 @@ Input
   - ctx: A context to control lifecycle.
 */
 func (client *Szdiagnostic) PurgeRepository(ctx context.Context) error {
-	var err error = nil
+	var err error
 	if client.isTrace {
 		entryTime := time.Now()
-		client.traceEntry(117)
-		defer func() { client.traceExit(118, err, time.Since(entryTime)) }()
+		client.traceEntry(17)
+		defer func() { client.traceExit(18, err, time.Since(entryTime)) }()
 	}
-	request := szpb.PurgeRepositoryRequest{}
-	_, err = client.GrpcClient.PurgeRepository(ctx, &request)
-	err = helper.ConvertGrpcError(err)
+	err = client.purgeRepository(ctx)
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{}
-			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentId, 8056, err, details)
+			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentID, 8007, err, details)
 		}()
 	}
 	return err
@@ -185,21 +179,21 @@ The Reinitialize method is a Null function for sz-sdk-go-grpc.
 
 Input
   - ctx: A context to control lifecycle.
-  - configId: The configuration ID used for the initialization.
+  - configID: The configuration ID used for the initialization.
 */
-func (client *Szdiagnostic) Reinitialize(ctx context.Context, configId int64) error {
-	var err error = nil
+func (client *Szdiagnostic) Reinitialize(ctx context.Context, configID int64) error {
+	var err error
 	if client.isTrace {
 		entryTime := time.Now()
-		client.traceEntry(51, configId)
-		defer func() { client.traceExit(52, configId, err, time.Since(entryTime)) }()
+		client.traceEntry(19, configID)
+		defer func() { client.traceExit(20, configID, err, time.Since(entryTime)) }()
 	}
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{
-				"configId": strconv.FormatInt(configId, 10),
+				"configID": strconv.FormatInt(configID, baseTen),
 			}
-			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentId, 8023, err, details)
+			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentID, 8008, err, details)
 		}()
 	}
 	return err
@@ -219,31 +213,8 @@ Output
   - The value sent in the Observer's "origin" key/value pair.
 */
 func (client *Szdiagnostic) GetObserverOrigin(ctx context.Context) string {
+	_ = ctx
 	return client.observerOrigin
-}
-
-/*
-The GetSdkId method returns the identifier of this particular Software Development Kit (SDK).
-It is handy when working with multiple implementations of the same SzDiagnostic interface.
-For this implementation, "grpc" is returned.
-
-Input
-  - ctx: A context to control lifecycle.
-*/
-func (client *Szdiagnostic) GetSdkId(ctx context.Context) string {
-	var err error = nil
-	if client.isTrace {
-		entryTime := time.Now()
-		client.traceEntry(59)
-		defer func() { client.traceExit(60, err, time.Since(entryTime)) }()
-	}
-	if client.observers != nil {
-		go func() {
-			details := map[string]string{}
-			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentId, 8024, err, details)
-		}()
-	}
-	return "grpc"
 }
 
 /*
@@ -253,27 +224,27 @@ Input
   - ctx: A context to control lifecycle.
   - instanceName: A name for the auditing node, to help identify it within system logs.
   - settings: A JSON string containing configuration parameters.
-  - configId: The configuration ID used for the initialization.  0 for current default configuration.
+  - configID: The configuration ID used for the initialization.  0 for current default configuration.
   - verboseLogging: A flag to enable deeper logging of the G2 processing. 0 for no Senzing logging; 1 for logging.
 */
-func (client *Szdiagnostic) Initialize(ctx context.Context, instanceName string, settings string, configId int64, verboseLogging int64) error {
-	var err error = nil
+func (client *Szdiagnostic) Initialize(ctx context.Context, instanceName string, settings string, configID int64, verboseLogging int64) error {
+	var err error
 	if client.isTrace {
 		entryTime := time.Now()
-		client.traceEntry(49, instanceName, settings, configId, verboseLogging)
+		client.traceEntry(15, instanceName, settings, configID, verboseLogging)
 		defer func() {
-			client.traceExit(50, instanceName, settings, configId, verboseLogging, err, time.Since(entryTime))
+			client.traceExit(16, instanceName, settings, configID, verboseLogging, err, time.Since(entryTime))
 		}()
 	}
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{
-				"settings":       settings,
-				"configId":       strconv.FormatInt(configId, 10),
+				"configID":       strconv.FormatInt(configID, baseTen),
 				"instanceName":   instanceName,
-				"verboseLogging": strconv.FormatInt(verboseLogging, 10),
+				"settings":       settings,
+				"verboseLogging": strconv.FormatInt(verboseLogging, baseTen),
 			}
-			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentId, 8022, err, details)
+			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentID, 8005, err, details)
 		}()
 	}
 	return err
@@ -287,22 +258,22 @@ Input
   - observer: The observer to be added.
 */
 func (client *Szdiagnostic) RegisterObserver(ctx context.Context, observer observer.Observer) error {
-	var err error = nil
+	var err error
 	if client.isTrace {
 		entryTime := time.Now()
-		client.traceEntry(55, observer.GetObserverId(ctx))
-		defer func() { client.traceExit(56, observer.GetObserverId(ctx), err, time.Since(entryTime)) }()
+		client.traceEntry(703, observer.GetObserverID(ctx))
+		defer func() { client.traceExit(704, observer.GetObserverID(ctx), err, time.Since(entryTime)) }()
 	}
 	if client.observers == nil {
-		client.observers = &subject.SubjectImpl{}
+		client.observers = &subject.SimpleSubject{}
 	}
 	err = client.observers.RegisterObserver(ctx, observer)
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{
-				"observerId": observer.GetObserverId(ctx),
+				"observerID": observer.GetObserverID(ctx),
 			}
-			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentId, 8025, err, details)
+			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentID, 8702, err, details)
 		}()
 	}
 	return err
@@ -316,11 +287,11 @@ Input
   - logLevelName: The desired log level. TRACE, DEBUG, INFO, WARN, ERROR, FATAL or PANIC.
 */
 func (client *Szdiagnostic) SetLogLevel(ctx context.Context, logLevelName string) error {
-	var err error = nil
+	var err error
 	if client.isTrace {
 		entryTime := time.Now()
-		client.traceEntry(53, logLevelName)
-		defer func() { client.traceExit(54, logLevelName, err, time.Since(entryTime)) }()
+		client.traceEntry(705, logLevelName)
+		defer func() { client.traceExit(706, logLevelName, err, time.Since(entryTime)) }()
 	}
 	if !logging.IsValidLogLevelName(logLevelName) {
 		return fmt.Errorf("invalid error level: %s", logLevelName)
@@ -330,9 +301,9 @@ func (client *Szdiagnostic) SetLogLevel(ctx context.Context, logLevelName string
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{
-				"logLevel": logLevelName,
+				"logLevelName": logLevelName,
 			}
-			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentId, 8026, err, details)
+			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentID, 8703, err, details)
 		}()
 	}
 	return err
@@ -346,6 +317,7 @@ Input
   - origin: The value sent in the Observer's "origin" key/value pair.
 */
 func (client *Szdiagnostic) SetObserverOrigin(ctx context.Context, origin string) {
+	_ = ctx
 	client.observerOrigin = origin
 }
 
@@ -357,11 +329,11 @@ Input
   - observer: The observer to be added.
 */
 func (client *Szdiagnostic) UnregisterObserver(ctx context.Context, observer observer.Observer) error {
-	var err error = nil
+	var err error
 	if client.isTrace {
 		entryTime := time.Now()
-		client.traceEntry(57, observer.GetObserverId(ctx))
-		defer func() { client.traceExit(58, observer.GetObserverId(ctx), err, time.Since(entryTime)) }()
+		client.traceEntry(707, observer.GetObserverID(ctx))
+		defer func() { client.traceExit(708, observer.GetObserverID(ctx), err, time.Since(entryTime)) }()
 	}
 	if client.observers != nil {
 		// Tricky code:
@@ -369,14 +341,53 @@ func (client *Szdiagnostic) UnregisterObserver(ctx context.Context, observer obs
 		// In client.notify, each observer will get notified in a goroutine.
 		// Then client.observers may be set to nil, but observer goroutines will be OK.
 		details := map[string]string{
-			"observerId": observer.GetObserverId(ctx),
+			"observerID": observer.GetObserverID(ctx),
 		}
-		notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentId, 8027, err, details)
+		notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentID, 8704, err, details)
+		err = client.observers.UnregisterObserver(ctx, observer)
+		if !client.observers.HasObservers(ctx) {
+			client.observers = nil
+		}
 	}
-	err = client.observers.UnregisterObserver(ctx, observer)
-	if !client.observers.HasObservers(ctx) {
-		client.observers = nil
+	return err
+}
+
+// ----------------------------------------------------------------------------
+// Private methods for gRPC request/response
+// ----------------------------------------------------------------------------
+
+func (client *Szdiagnostic) checkDatastorePerformance(ctx context.Context, secondsToRun int) (string, error) {
+	request := szpb.CheckDatastorePerformanceRequest{
+		SecondsToRun: int32(secondsToRun),
 	}
+	response, err := client.GrpcClient.CheckDatastorePerformance(ctx, &request)
+	result := response.GetResult()
+	err = helper.ConvertGrpcError(err)
+	return result, err
+}
+
+func (client *Szdiagnostic) getDatastoreInfo(ctx context.Context) (string, error) {
+	request := szpb.GetDatastoreInfoRequest{}
+	response, err := client.GrpcClient.GetDatastoreInfo(ctx, &request)
+	result := response.GetResult()
+	err = helper.ConvertGrpcError(err)
+	return result, err
+}
+
+func (client *Szdiagnostic) getFeature(ctx context.Context, featureID int64) (string, error) {
+	request := szpb.GetFeatureRequest{
+		FeatureId: featureID,
+	}
+	response, err := client.GrpcClient.GetFeature(ctx, &request)
+	result := response.GetResult()
+	err = helper.ConvertGrpcError(err)
+	return result, err
+}
+
+func (client *Szdiagnostic) purgeRepository(ctx context.Context) error {
+	request := szpb.PurgeRepositoryRequest{}
+	_, err := client.GrpcClient.PurgeRepository(ctx, &request)
+	err = helper.ConvertGrpcError(err)
 	return err
 }
 
@@ -387,16 +398,9 @@ func (client *Szdiagnostic) UnregisterObserver(ctx context.Context, observer obs
 // --- Logging ----------------------------------------------------------------
 
 // Get the Logger singleton.
-func (client *Szdiagnostic) getLogger() logging.LoggingInterface {
-	var err error = nil
+func (client *Szdiagnostic) getLogger() logging.Logging {
 	if client.logger == nil {
-		options := []interface{}{
-			&logging.OptionCallerSkip{Value: 4},
-		}
-		client.logger, err = logging.NewSenzingSdkLogger(ComponentId, szdiagnosticapi.IdMessages, options...)
-		if err != nil {
-			panic(err)
-		}
+		client.logger = helper.GetLogger(ComponentID, szdiagnostic.IDMessages, baseCallerSkip)
 	}
 	return client.logger
 }

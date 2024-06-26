@@ -5,4 +5,4 @@ package szconfigmanager
 // ----------------------------------------------------------------------------
 
 // Identfier of the szconfigmanager package found messages having the format "senzing-6022xxxx".
-const ComponentId = 6022
+const ComponentID = 6022

@@ -5,4 +5,4 @@ package szdiagnostic
 // ----------------------------------------------------------------------------
 
 // Identfier of the szdiagnostic package found messages having the format "senzing-6023xxxx".
-const ComponentId = 6023
+const ComponentID = 6023

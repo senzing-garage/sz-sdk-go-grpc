@@ -7,29 +7,29 @@ import (
 	"fmt"
 
 	"github.com/senzing-garage/go-logging/logging"
-	"github.com/senzing-garage/sz-sdk-go/sz"
+	"github.com/senzing-garage/sz-sdk-go/senzing"
 )
 
 // ----------------------------------------------------------------------------
-// Interface functions - Examples for godoc documentation
+// Interface methods - Examples for godoc documentation
 // ----------------------------------------------------------------------------
 
 func ExampleSzproduct_GetLicense() {
 	// For more information, visit https://github.com/senzing-garage/sz-sdk-go-grpc/blob/main/szproduct/szproduct_examples_test.go
 	ctx := context.TODO()
-	szProduct := getSzProduct(ctx)
+	szProduct := getSzProductExample(ctx)
 	result, err := szProduct.GetLicense(ctx)
 	if err != nil {
 		fmt.Println(err)
 	}
 	fmt.Println(result)
-	// Output: {"customer":"","contract":"","issueDate":"2024-05-03","licenseType":"EVAL (Solely for non-productive use)","licenseLevel":"","billing":"","expireDate":"2025-05-04","recordLimit":100000}
+	// Output: {"customer":"","contract":"","issueDate":"2024-06-10","licenseType":"EVAL (Solely for non-productive use)","licenseLevel":"","billing":"","expireDate":"2025-06-11","recordLimit":100000}
 }
 
 func ExampleSzproduct_GetVersion() {
 	// For more information, visit https://github.com/senzing-garage/sz-sdk-go-grpc/blob/main/szproduct/szproduct_examples_test.go
 	ctx := context.TODO()
-	szProduct := getSzProduct(ctx)
+	szProduct := getSzProductExample(ctx)
 	result, err := szProduct.GetVersion(ctx)
 	if err != nil {
 		fmt.Println(err)
@@ -45,8 +45,11 @@ func ExampleSzproduct_GetVersion() {
 func ExampleSzproduct_SetLogLevel() {
 	// For more information, visit https://github.com/senzing-garage/sz-sdk-go-grpc/blob/main/szproduct/szproduct_examples_test.go
 	ctx := context.TODO()
-	szProduct := getSzProduct(ctx)
-	err := szProduct.SetLogLevel(ctx, logging.LevelInfoName)
+	szProduct, err := getSzProduct(ctx)
+	if err != nil {
+		fmt.Println(err)
+	}
+	err = szProduct.SetLogLevel(ctx, logging.LevelInfoName)
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -56,7 +59,10 @@ func ExampleSzproduct_SetLogLevel() {
 func ExampleSzproduct_SetObserverOrigin() {
 	// For more information, visit https://github.com/senzing-garage/sz-sdk-go-grpc/blob/main/szproduct/szproduct_examples_test.go
 	ctx := context.TODO()
-	szProduct := getSzProduct(ctx)
+	szProduct, err := getSzProduct(ctx)
+	if err != nil {
+		fmt.Println(err)
+	}
 	origin := "Machine: nn; Task: UnitTest"
 	szProduct.SetObserverOrigin(ctx, origin)
 	// Output:
@@ -65,7 +71,10 @@ func ExampleSzproduct_SetObserverOrigin() {
 func ExampleSzproduct_GetObserverOrigin() {
 	// For more information, visit https://github.com/senzing-garage/sz-sdk-go-grpc/blob/main/szproduct/szproduct_examples_test.go
 	ctx := context.TODO()
-	szProduct := getSzProduct(ctx)
+	szProduct, err := getSzProduct(ctx)
+	if err != nil {
+		fmt.Println(err)
+	}
 	origin := "Machine: nn; Task: UnitTest"
 	szProduct.SetObserverOrigin(ctx, origin)
 	result := szProduct.GetObserverOrigin(ctx)
@@ -80,24 +89,42 @@ func ExampleSzproduct_GetObserverOrigin() {
 func ExampleSzproduct_Initialize() {
 	// For more information, visit https://github.com/senzing-garage/sz-sdk-go-grpc/blob/main/szproduct/szproduct_examples_test.go
 	ctx := context.TODO()
-	szProduct := getSzProduct(ctx)
+	szProduct, err := getSzProduct(ctx)
+	if err != nil {
+		fmt.Println(err)
+	}
 	instanceName := "Test name"
 	settings, err := getSettings()
 	if err != nil {
 		fmt.Println(err)
 	}
-	verboseLogging := sz.SZ_NO_LOGGING
-	szProduct.Initialize(ctx, instanceName, settings, verboseLogging)
+	verboseLogging := senzing.SzNoLogging
+	err = szProduct.Initialize(ctx, instanceName, settings, verboseLogging)
+	if err != nil {
+		fmt.Println(err)
+	}
 	// Output:
 }
 
 func ExampleSzproduct_Destroy() {
 	// For more information, visit https://github.com/senzing-garage/sz-sdk-go-grpc/blob/main/szproduct/szproduct_examples_test.go
 	ctx := context.TODO()
-	szProduct := getSzProduct(ctx)
+	szProduct := getSzProductExample(ctx)
 	err := szProduct.Destroy(ctx)
 	if err != nil {
 		fmt.Println(err)
 	}
 	// Output:
+}
+
+// ----------------------------------------------------------------------------
+// Helper functions
+// ----------------------------------------------------------------------------
+
+func getSzProductExample(ctx context.Context) senzing.SzProduct {
+	result, err := getSzProduct(ctx)
+	if err != nil {
+		panic(err)
+	}
+	return result
 }

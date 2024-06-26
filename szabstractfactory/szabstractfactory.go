@@ -8,7 +8,7 @@ import (
 	"github.com/senzing-garage/sz-sdk-go-grpc/szdiagnostic"
 	"github.com/senzing-garage/sz-sdk-go-grpc/szengine"
 	"github.com/senzing-garage/sz-sdk-go-grpc/szproduct"
-	"github.com/senzing-garage/sz-sdk-go/sz"
+	"github.com/senzing-garage/sz-sdk-go/senzing"
 	szconfigpb "github.com/senzing-garage/sz-sdk-proto/go/szconfig"
 	szconfigmanagerpb "github.com/senzing-garage/sz-sdk-proto/go/szconfigmanager"
 	szdiagnosticpb "github.com/senzing-garage/sz-sdk-proto/go/szdiagnostic"
@@ -17,13 +17,13 @@ import (
 	"google.golang.org/grpc"
 )
 
-// Szconfig is the default implementation of the Szconfig interface.
+// Szabstractfactory is an implementation of the senzing.SzAbstractFactory interface.
 type Szabstractfactory struct {
 	GrpcConnection *grpc.ClientConn
 }
 
 // ----------------------------------------------------------------------------
-// Interface methods
+// senzing.SzAbstractFactory interface methods
 // ----------------------------------------------------------------------------
 
 /*
@@ -34,10 +34,11 @@ Input
   - ctx: A context to control lifecycle.
 
 Output
-  - An sz.SzConfig object.
+  - An senzing.SzConfig object.
     See the example output.
 */
-func (factory *Szabstractfactory) CreateSzConfig(ctx context.Context) (sz.SzConfig, error) {
+func (factory *Szabstractfactory) CreateSzConfig(ctx context.Context) (senzing.SzConfig, error) {
+	_ = ctx
 	result := &szconfig.Szconfig{
 		GrpcClient: szconfigpb.NewSzConfigClient(factory.GrpcConnection),
 	}
@@ -52,10 +53,11 @@ Input
   - ctx: A context to control lifecycle.
 
 Output
-  - An sz.CreateConfigManager object.
+  - An senzing.CreateConfigManager object.
     See the example output.
 */
-func (factory *Szabstractfactory) CreateSzConfigManager(ctx context.Context) (sz.SzConfigManager, error) {
+func (factory *Szabstractfactory) CreateSzConfigManager(ctx context.Context) (senzing.SzConfigManager, error) {
+	_ = ctx
 	result := &szconfigmanager.Szconfigmanager{
 		GrpcClient: szconfigmanagerpb.NewSzConfigManagerClient(factory.GrpcConnection),
 	}
@@ -70,10 +72,11 @@ Input
   - ctx: A context to control lifecycle.
 
 Output
-  - An sz.SzDiagnostic object.
+  - An senzing.SzDiagnostic object.
     See the example output.
 */
-func (factory *Szabstractfactory) CreateSzDiagnostic(ctx context.Context) (sz.SzDiagnostic, error) {
+func (factory *Szabstractfactory) CreateSzDiagnostic(ctx context.Context) (senzing.SzDiagnostic, error) {
+	_ = ctx
 	result := &szdiagnostic.Szdiagnostic{
 		GrpcClient: szdiagnosticpb.NewSzDiagnosticClient(factory.GrpcConnection),
 	}
@@ -88,10 +91,11 @@ Input
   - ctx: A context to control lifecycle.
 
 Output
-  - An sz.SzEngine object.
+  - An senzing.SzEngine object.
     See the example output.
 */
-func (factory *Szabstractfactory) CreateSzEngine(ctx context.Context) (sz.SzEngine, error) {
+func (factory *Szabstractfactory) CreateSzEngine(ctx context.Context) (senzing.SzEngine, error) {
+	_ = ctx
 	result := &szengine.Szengine{
 		GrpcClient: szenginepb.NewSzEngineClient(factory.GrpcConnection),
 	}
@@ -106,10 +110,11 @@ Input
   - ctx: A context to control lifecycle.
 
 Output
-  - An sz.SzProduct object.
+  - An senzing.SzProduct object.
     See the example output.
 */
-func (factory *Szabstractfactory) CreateSzProduct(ctx context.Context) (sz.SzProduct, error) {
+func (factory *Szabstractfactory) CreateSzProduct(ctx context.Context) (senzing.SzProduct, error) {
+	_ = ctx
 	result := &szproduct.Szproduct{
 		GrpcClient: szproductpb.NewSzProductClient(factory.GrpcConnection),
 	}
