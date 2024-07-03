@@ -11,7 +11,7 @@ require (
 	github.com/senzing-garage/sz-sdk-go v0.13.5
 	github.com/senzing-garage/sz-sdk-proto v0.7.6
 	github.com/stretchr/testify v1.9.0
-	google.golang.org/grpc v1.64.0
+	google.golang.org/grpc v1.65.0
 )
 
 require (
