@@ -32,4 +32,6 @@ go.work
 target/
 
 .coverage
+cover.out
 coverage.html
+coverage.out

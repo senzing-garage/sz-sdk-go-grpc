@@ -1,4 +1,4 @@
-name: go test windows
+name: Go test windows
 
 on: [pull_request, workflow_dispatch]
 
@@ -10,7 +10,7 @@ permissions:
 
 jobs:
   go-test-windows:
-    name: "go test with OS: ${{ matrix.os }}; Go: ${{ matrix.go }}"
+    name: "Go test with OS: ${{ matrix.os }}; Go: ${{ matrix.go }}"
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
@@ -18,12 +18,12 @@ jobs:
         os: [windows-latest]
 
     steps:
-      - name: checkout repository
+      - name: Checkout repository
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: setup go
+      - name: Setup go
         uses: actions/setup-go@v5
         with:
           go-version: ${{ matrix.go }}
@@ -37,10 +37,10 @@ jobs:
         uses: docker-practice/actions-setup-docker@master
         timeout-minutes: 12
 
-      - name: gRPC service
+      - name: Run gRPC service
         run: docker run --detach --env SENZING_TOOLS_ENABLE_ALL --publish 8261:8261 senzing/serve-grpc:latest
 
-      - name: run go test
+      - name: Run go test
         run: |
           go test -json -v -p 1 -coverprofile=cover -covermode=atomic -coverpkg=./... ./... 2>&1 | tee "C:\Temp\gotest.log" | gotestfmt
           cp cover cover.out
@@ -60,6 +60,8 @@ jobs:
           if-no-files-found: error
 
   coverage:
-    name: coverage
+    name: Coverage
     needs: go-test-windows
     uses: senzing-factory/build-resources/.github/workflows/go-coverage.yaml@v2
+    with:
+      coverage-config: ./.github/coverage/testcoverage.yaml
