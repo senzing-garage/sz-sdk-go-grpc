@@ -22,7 +22,7 @@ These are "one-time tasks" which may already have been completed.
 
     ```console
     export GIT_ACCOUNT=senzing-garage
-    export GIT_REPOSITORY=template-go
+    export GIT_REPOSITORY=sz-sdk-go-grpc
     export GIT_ACCOUNT_DIR=~/${GIT_ACCOUNT}.git
     export GIT_REPOSITORY_DIR="${GIT_ACCOUNT_DIR}/${GIT_REPOSITORY}"
 
