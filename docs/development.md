@@ -62,33 +62,6 @@ These are "one-time tasks" which may already have been completed.
 
     ```
     
-## Run a Senzing gRPC server
-
-To run a Senzing gRPC server, visit
-[Senzing/servegrpc](https://github.com/senzing-garage/servegrpc).
-
-A simple method using `senzing-tools`.
-
-```console
-export LD_LIBRARY_PATH=/opt/senzing/g2/lib/
-export SENZING_TOOLS_DATABASE_URL=sqlite3://na:na@/tmp/sqlite/G2C.db
-senzing-tools init-database
-senzing-tools serve-grpc
-
-```
-
-A simple method using `senzing/senzing-tools` Docker image.
-
-```console
-docker run \
-    --env SENZING_TOOLS_DATABASE_URL=sqlite3://na:na@/tmp/sqlite/G2C.db \
-    --publish 8261:8261 \
-    --rm \
-    senzing/senzing-tools serve-grpc --enable-all
-
-```
-
-
 ## Test
 
 1. Run tests.

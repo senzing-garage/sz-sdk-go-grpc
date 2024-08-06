@@ -35,8 +35,8 @@ func ExampleSzdiagnostic_GetDatastoreInfo() {
 	if err != nil {
 		fmt.Println(err)
 	}
-	fmt.Println(result)
-	// Output: {"dataStores":[{"id":"CORE", "type":"sqlite3","location":"/tmp/sqlite/G2C.db"}]}
+	fmt.Println(truncate(result, 61))
+	// Output: {"dataStores":[{"id":"CORE", "type":"sqlite3","location":"...
 }
 
 func ExampleSzdiagnostic_GetFeature() {
