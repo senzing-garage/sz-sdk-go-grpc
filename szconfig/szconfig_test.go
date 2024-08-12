@@ -100,7 +100,6 @@ func TestSzconfig_CloseConfig_badConfigHandle(test *testing.T) {
 	ctx := context.TODO()
 	szConfig := getTestObject(ctx, test)
 	err := szConfig.CloseConfig(ctx, badConfigHandle)
-	// require.NoError(test, err) // TODO: Is this the correct behavior?
 	require.ErrorIs(test, err, szerror.ErrSzBase) // TODO: Update to correct error once sz-sdk-go/szerror/ is updated.
 }
 
