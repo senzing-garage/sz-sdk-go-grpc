@@ -57,11 +57,7 @@ func ConvertGrpcError(originalError error) error {
 			indexOfDesc := strings.Index(errorMessage, " desc = ")
 			senzingErrorMessage := errorMessage[indexOfDesc+8:] // Implicitly safe from "0+8" because of "rpc error:" prefix.
 
-			fmt.Printf(">>>>> senzingErrorMessage = %s\n", senzingErrorMessage)
-
 			if isJSON(senzingErrorMessage) {
-
-				fmt.Printf(">>>>>>>>>> isJSON\n")
 
 				// TODO: Add information about any gRPC error.
 				// Status: https://pkg.go.dev/google.golang.org/grpc/status
@@ -81,8 +77,6 @@ func ConvertGrpcError(originalError error) error {
 				if err != nil {
 					return fmt.Errorf("strconv.Atoi(%s) error %w; Original Error: %w", reason, err, originalError)
 				}
-				fmt.Printf(">>>>>>>>>> Error: = %d; %s\n", senzingErrorCode, senzingErrorMessage)
-
 				result = szerror.New(senzingErrorCode, senzingErrorMessage)
 			}
 		}
