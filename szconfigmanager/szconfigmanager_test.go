@@ -76,8 +76,8 @@ func TestSzconfigmanager_AddConfig_badConfigDefinition(test *testing.T) {
 	now := time.Now()
 	configComment := fmt.Sprintf("szconfigmanager_test at %s", now.UTC())
 	_, err := szConfigManager.AddConfig(ctx, badConfigDefinition, configComment)
-	require.NoError(test, err) // TODO: Is this the correct behavior?
-	// require.ErrorIs(test, err, szerror.ErrSzConfiguration)
+	// require.NoError(test, err) // TODO: Is this the correct behavior?
+	require.ErrorIs(test, err, szerror.ErrSzConfiguration)
 }
 
 // TODO: Implement TestSzconfigmanager_AddConfig_error

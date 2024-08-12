@@ -617,8 +617,8 @@ func TestSzengine_FindNetworkByEntityID_badMaxDegrees(test *testing.T) {
 	buildOutMaxEntities := int64(10)
 	flags := senzing.SzFindNetworkDefaultFlags
 	actual, err := szEngine.FindNetworkByEntityID(ctx, entityIDs, badMaxDegrees, buildOutDegree, buildOutMaxEntities, flags)
-	require.NoError(test, err) // TODO: Is this the correct behavior?
-	// require.ErrorIs(test, err, szerror.ErrSzBase)
+	// require.NoError(test, err) // TODO: Is this the correct behavior?
+	require.ErrorIs(test, err, szerror.ErrSzBase)
 	printActual(test, actual)
 }
 
@@ -643,8 +643,8 @@ func TestSzengine_FindNetworkByEntityID_badBuildOutDegree(test *testing.T) {
 	buildOutMaxEntities := int64(10)
 	flags := senzing.SzFindNetworkDefaultFlags
 	actual, err := szEngine.FindNetworkByEntityID(ctx, entityIDs, maxDegrees, badBuildOutDegree, buildOutMaxEntities, flags)
-	require.NoError(test, err) // TODO: Is this the correct behavior?
-	// require.ErrorIs(test, err, szerror.ErrSzBase)
+	// require.NoError(test, err) // TODO: Is this the correct behavior?
+	require.ErrorIs(test, err, szerror.ErrSzBase)
 	printActual(test, actual)
 }
 
@@ -669,8 +669,8 @@ func TestSzengine_FindNetworkByEntityID_badBuildOutMaxEntities(test *testing.T) 
 	buildOutDegree := int64(1)
 	flags := senzing.SzFindNetworkDefaultFlags
 	actual, err := szEngine.FindNetworkByEntityID(ctx, entityIDs, maxDegrees, buildOutDegree, badBuildOutMaxEntities, flags)
-	require.NoError(test, err) // TODO: Is this the correct behavior?
-	// require.ErrorIs(test, err, szerror.ErrSzBase)
+	// require.NoError(test, err) // TODO: Is this the correct behavior?
+	require.ErrorIs(test, err, szerror.ErrSzBase)
 	printActual(test, actual)
 }
 
@@ -831,8 +831,8 @@ func TestSzengine_FindPathByEntityID_badMaxDegrees(test *testing.T) {
 	requiredDataSources := senzing.SzNoRequiredDatasources
 	flags := senzing.SzNoFlags
 	actual, err := szEngine.FindPathByEntityID(ctx, startEntityID, endEntityID, badMaxDegrees, exclusions, requiredDataSources, flags)
-	require.NoError(test, err) // TODO: Is this the correct behavior?
-	// require.ErrorIs(test, err, szerror.ErrSzBase)
+	// require.NoError(test, err) // TODO: Is this the correct behavior?
+	require.ErrorIs(test, err, szerror.ErrSzBase)
 	printActual(test, actual)
 }
 
@@ -1673,8 +1673,8 @@ func TestSzengine_SearchByAttributes_badAttributes(test *testing.T) {
 	searchProfile := senzing.SzNoSearchProfile
 	flags := senzing.SzNoFlags
 	actual, err := szEngine.SearchByAttributes(ctx, badAttributes, searchProfile, flags)
-	require.NoError(test, err) // TODO: Is this the correct behavior?
-	// require.ErrorIs(test, err, szerror.ErrSzBase)s
+	// require.NoError(test, err) // TODO: Is this the correct behavior?
+	require.ErrorIs(test, err, szerror.ErrSzBase)
 	printActual(test, actual)
 }
 
