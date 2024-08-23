@@ -15,7 +15,7 @@ import (
 
 func ExampleConvertGrpcError() {
 	// For more information, visit https://github.com/senzing-garage/sz-sdk-go-grpc/blob/main/helper/helper_test.go
-	senzingErrorMessage := `{"reason": "SENZ0033|Test message"}`        // Example message from Senzing G2 engine.
+	senzingErrorMessage := `{"reason": "SENZ0033|Test message"}`        // Example message from Senzing Sz engine.
 	grpcStatusError := status.Error(codes.Unknown, senzingErrorMessage) // Create a gRPC *status.Error
 	err := ConvertGrpcError(grpcStatusError)
 	if err != nil {

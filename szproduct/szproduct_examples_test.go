@@ -23,7 +23,7 @@ func ExampleSzproduct_GetLicense() {
 		fmt.Println(err)
 	}
 	fmt.Println(result)
-	// Output: {"customer":"","contract":"","issueDate":"2024-07-29","licenseType":"EVAL (Solely for non-productive use)","licenseLevel":"","billing":"","expireDate":"2025-07-30","recordLimit":100000}
+	// Output: {"customer":"","contract":"","issueDate":"2024-08-13","licenseType":"EVAL (Solely for non-productive use)","licenseLevel":"","billing":"","expireDate":"2025-08-14","recordLimit":100000}
 }
 
 func ExampleSzproduct_GetVersion() {

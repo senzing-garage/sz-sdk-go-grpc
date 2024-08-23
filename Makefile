@@ -33,7 +33,7 @@ GO_ARCH = $(word 2, $(GO_OSARCH))
 
 # Conditional assignment. ('?=')
 # Can be overridden with "export"
-# Example: "export LD_LIBRARY_PATH=/path/to/my/senzing/g2/lib"
+# Example: "export LD_LIBRARY_PATH=/path/to/my/senzing/er/lib"
 
 GOBIN ?= $(shell go env GOPATH)/bin
 
@@ -163,7 +163,7 @@ help:
 print-make-variables:
 	@$(foreach V,$(sort $(.VARIABLES)), \
 		$(if $(filter-out environment% default automatic, \
-		$(origin $V)),$(warning $V=$($V) ($(value $V)))))
+		$(origin $V)),$(info $V=$($V) ($(value $V)))))
 
 
 .PHONY: update-pkg-cache
