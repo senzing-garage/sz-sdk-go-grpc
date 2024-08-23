@@ -356,9 +356,8 @@ func (client *Szdiagnostic) UnregisterObserver(ctx context.Context, observer obs
 // ----------------------------------------------------------------------------
 
 func (client *Szdiagnostic) checkDatastorePerformance(ctx context.Context, secondsToRun int) (string, error) {
-	unlintedSecondsToRun := int32(secondsToRun) //nolint:gosec
 	request := szpb.CheckDatastorePerformanceRequest{
-		SecondsToRun: unlintedSecondsToRun,
+		SecondsToRun: int32(secondsToRun), //nolint:gosec
 	}
 	response, err := client.GrpcClient.CheckDatastorePerformance(ctx, &request)
 	result := response.GetResult()

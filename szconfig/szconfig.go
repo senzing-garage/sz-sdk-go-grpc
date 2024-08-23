@@ -420,9 +420,8 @@ func (client *Szconfig) UnregisterObserver(ctx context.Context, observer observe
 // ----------------------------------------------------------------------------
 
 func (client *Szconfig) addDataSource(ctx context.Context, configHandle uintptr, dataSourceCode string) (string, error) {
-	unlintedConfigHandle := int64(configHandle) //nolint:gosec
 	request := szpb.AddDataSourceRequest{
-		ConfigHandle:   unlintedConfigHandle,
+		ConfigHandle:   int64(configHandle), //nolint:gosec
 		DataSourceCode: dataSourceCode,
 	}
 	response, err := client.GrpcClient.AddDataSource(ctx, &request)
@@ -432,9 +431,8 @@ func (client *Szconfig) addDataSource(ctx context.Context, configHandle uintptr,
 }
 
 func (client *Szconfig) closeConfig(ctx context.Context, configHandle uintptr) error {
-	unlintedConfigHandle := int64(configHandle) //nolint:gosec
 	request := szpb.CloseConfigRequest{
-		ConfigHandle: unlintedConfigHandle,
+		ConfigHandle: int64(configHandle), //nolint:gosec
 	}
 	_, err := client.GrpcClient.CloseConfig(ctx, &request)
 	err = helper.ConvertGrpcError(err)
@@ -450,9 +448,8 @@ func (client *Szconfig) createConfig(ctx context.Context) (uintptr, error) {
 }
 
 func (client *Szconfig) deleteDataSource(ctx context.Context, configHandle uintptr, dataSourceCode string) error {
-	unlintedConfigHandle := int64(configHandle) //nolint:gosec
 	request := szpb.DeleteDataSourceRequest{
-		ConfigHandle:   unlintedConfigHandle,
+		ConfigHandle:   int64(configHandle), //nolint:gosec
 		DataSourceCode: dataSourceCode,
 	}
 	_, err := client.GrpcClient.DeleteDataSource(ctx, &request)
@@ -462,7 +459,7 @@ func (client *Szconfig) deleteDataSource(ctx context.Context, configHandle uintp
 
 func (client *Szconfig) exportConfig(ctx context.Context, configHandle uintptr) (string, error) {
 	request := szpb.ExportConfigRequest{
-		ConfigHandle: int64(configHandle),
+		ConfigHandle: int64(configHandle), //nolint:gosec
 	}
 	response, err := client.GrpcClient.ExportConfig(ctx, &request)
 	result := response.GetResult()
@@ -472,7 +469,7 @@ func (client *Szconfig) exportConfig(ctx context.Context, configHandle uintptr) 
 
 func (client *Szconfig) getDataSources(ctx context.Context, configHandle uintptr) (string, error) {
 	request := szpb.GetDataSourcesRequest{
-		ConfigHandle: int64(configHandle),
+		ConfigHandle: int64(configHandle), //nolint:gosec
 	}
 	response, err := client.GrpcClient.GetDataSources(ctx, &request)
 	result := response.GetResult()
