@@ -892,8 +892,8 @@ func (client *Szengine) HowEntityByEntityID(ctx context.Context, entityID int64,
 }
 
 /*
-The PrimeEngine method pre-initializes some of the heavier weight internal resources of the G2 engine.
-The G2 Engine uses "lazy initialization".
+The PrimeEngine method pre-initializes some of the heavier weight internal resources of the Sz engine.
+The Sz Engine uses "lazy initialization".
 PrimeEngine() forces initialization.
 
 Input
@@ -1202,7 +1202,7 @@ Input
   - instanceName: A name for the auditing node, to help identify it within system logs.
   - settings: A JSON string containing configuration parameters.
   - configID: The configuration ID used for the initialization.  0 for current default configuration.
-  - verboseLogging: A flag to enable deeper logging of the G2 processing. 0 for no Senzing logging; 1 for logging.
+  - verboseLogging: A flag to enable deeper logging of the Sz processing. 0 for no Senzing logging; 1 for logging.
 */
 func (client *Szengine) Initialize(ctx context.Context, instanceName string, settings string, configID int64, verboseLogging int64) error {
 	var err error

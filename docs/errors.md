@@ -1,1 +1,1 @@
-## Errors
+# sz-sdk-go-grpc errors

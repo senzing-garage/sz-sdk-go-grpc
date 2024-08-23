@@ -31,7 +31,7 @@ language Software Development Kit adhering to the
 
 ## Overview
 
-The Senzing `g2-sdk-go-grpc` packages enable Go programs to call Senzing library functions
+The Senzing `sz-sdk-go-grpc` packages enable Go programs to call Senzing library functions
 across a network to a
 [Senzing gRPC server](https://github.com/senzing-garage/servegrpc).
 

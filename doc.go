@@ -1,5 +1,5 @@
 /*
-The Senzing sz-sdk-go-grpc packages communicate over a network using gRPC to the Senzing's C-based library.
+Module sz-sdk-go-grpc communicate over a network using gRPC to the Senzing's C-based library.
 
 # Overview
 
