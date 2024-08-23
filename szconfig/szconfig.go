@@ -420,8 +420,9 @@ func (client *Szconfig) UnregisterObserver(ctx context.Context, observer observe
 // ----------------------------------------------------------------------------
 
 func (client *Szconfig) addDataSource(ctx context.Context, configHandle uintptr, dataSourceCode string) (string, error) {
+	unlintedConfigHandle := int64(configHandle) //nolint:gosec
 	request := szpb.AddDataSourceRequest{
-		ConfigHandle:   int64(configHandle),
+		ConfigHandle:   unlintedConfigHandle,
 		DataSourceCode: dataSourceCode,
 	}
 	response, err := client.GrpcClient.AddDataSource(ctx, &request)
@@ -431,8 +432,9 @@ func (client *Szconfig) addDataSource(ctx context.Context, configHandle uintptr,
 }
 
 func (client *Szconfig) closeConfig(ctx context.Context, configHandle uintptr) error {
+	unlintedConfigHandle := int64(configHandle) //nolint:gosec
 	request := szpb.CloseConfigRequest{
-		ConfigHandle: int64(configHandle),
+		ConfigHandle: unlintedConfigHandle,
 	}
 	_, err := client.GrpcClient.CloseConfig(ctx, &request)
 	err = helper.ConvertGrpcError(err)
@@ -448,8 +450,9 @@ func (client *Szconfig) createConfig(ctx context.Context) (uintptr, error) {
 }
 
 func (client *Szconfig) deleteDataSource(ctx context.Context, configHandle uintptr, dataSourceCode string) error {
+	unlintedConfigHandle := int64(configHandle) //nolint:gosec
 	request := szpb.DeleteDataSourceRequest{
-		ConfigHandle:   int64(configHandle),
+		ConfigHandle:   unlintedConfigHandle,
 		DataSourceCode: dataSourceCode,
 	}
 	_, err := client.GrpcClient.DeleteDataSource(ctx, &request)
