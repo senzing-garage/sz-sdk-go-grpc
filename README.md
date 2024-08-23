@@ -57,21 +57,21 @@ interface include:
 [Development]: docs/development.md
 [Errors]: docs/errors.md
 [Examples]: docs/examples.md
-[Go Reference Badge]: https://pkg.go.dev/badge/github.com/senzing-garage/template-go.svg
-[Go Report Card Badge]: https://goreportcard.com/badge/github.com/senzing-garage/template-go
-[Go Report Card]: https://goreportcard.com/report/github.com/senzing-garage/template-go
+[Go Reference Badge]: https://pkg.go.dev/badge/github.com/senzing-garage/sz-sdk-go-grpc.svg
+[Go Report Card Badge]: https://goreportcard.com/badge/github.com/senzing-garage/sz-sdk-go-grpc
+[Go Report Card]: https://goreportcard.com/report/github.com/senzing-garage/sz-sdk-go-grpc
 [go-sdk-abstract-factory]: https://github.com/senzing-garage/go-sdk-abstract-factory
-[go-test-darwin.yaml Badge]: https://github.com/senzing-garage/template-go/actions/workflows/go-test-darwin.yaml/badge.svg
-[go-test-darwin.yaml]: https://github.com/senzing-garage/template-go/actions/workflows/go-test-darwin.yaml
-[go-test-linux.yaml Badge]: https://github.com/senzing-garage/template-go/actions/workflows/go-test-linux.yaml/badge.svg
-[go-test-linux.yaml]: https://github.com/senzing-garage/template-go/actions/workflows/go-test-linux.yaml
-[go-test-windows.yaml Badge]: https://github.com/senzing-garage/template-go/actions/workflows/go-test-windows.yaml/badge.svg
-[go-test-windows.yaml]: https://github.com/senzing-garage/template-go/actions/workflows/go-test-windows.yaml
+[go-test-darwin.yaml Badge]: https://github.com/senzing-garage/sz-sdk-go-grpc/actions/workflows/go-test-darwin.yaml/badge.svg
+[go-test-darwin.yaml]: https://github.com/senzing-garage/sz-sdk-go-grpc/actions/workflows/go-test-darwin.yaml
+[go-test-linux.yaml Badge]: https://github.com/senzing-garage/sz-sdk-go-grpc/actions/workflows/go-test-linux.yaml/badge.svg
+[go-test-linux.yaml]: https://github.com/senzing-garage/sz-sdk-go-grpc/actions/workflows/go-test-linux.yaml
+[go-test-windows.yaml Badge]: https://github.com/senzing-garage/sz-sdk-go-grpc/actions/workflows/go-test-windows.yaml/badge.svg
+[go-test-windows.yaml]: https://github.com/senzing-garage/sz-sdk-go-grpc/actions/workflows/go-test-windows.yaml
 [Go]: https://go.dev/
-[golangci-lint.yaml Badge]: https://github.com/senzing-garage/template-go/actions/workflows/golangci-lint.yaml/badge.svg
-[golangci-lint.yaml]: https://github.com/senzing-garage/template-go/actions/workflows/golangci-lint.yaml
+[golangci-lint.yaml Badge]: https://github.com/senzing-garage/sz-sdk-go-grpc/actions/workflows/golangci-lint.yaml/badge.svg
+[golangci-lint.yaml]: https://github.com/senzing-garage/sz-sdk-go-grpc/actions/workflows/golangci-lint.yaml
 [License Badge]: https://img.shields.io/badge/License-Apache2-brightgreen.svg
-[License]: https://github.com/senzing-garage/template-go/blob/main/LICENSE
+[License]: https://github.com/senzing-garage/sz-sdk-go-grpc/blob/main/LICENSE
 [Package reference]: https://pkg.go.dev/github.com/senzing-garage/sz-sdk-go-core
 [Senzing Garage]: https://github.com/senzing-garage
 [Senzing gRPC server]: https://github.com/senzing-garage/servegrpc

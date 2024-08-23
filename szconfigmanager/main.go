@@ -4,5 +4,8 @@ package szconfigmanager
 // Constants
 // ----------------------------------------------------------------------------
 
-// Identfier of the szconfigmanager package found messages having the format "senzing-6022xxxx".
+/*
+ComponentID is the identifier of the szconfigmanager package.
+szconfigmanager package messages will have the format "SZSDK6022eeee" where "eeee" is the error identifier.
+*/
 const ComponentID = 6022

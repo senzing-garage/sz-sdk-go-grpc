@@ -4,5 +4,8 @@ package szabstractfactory
 // Constants
 // ----------------------------------------------------------------------------
 
-// Identfier of the szabstractfactory package found messages having the format "senzing-6020xxxx".
+/*
+ComponentID is the identifier of the szabstractfactory package.
+abstractfactory package messages will have the format "SZSDK6020eeee" where "eeee" is the error identifier.
+*/
 const ComponentID = 6020

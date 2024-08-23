@@ -1,4 +1,4 @@
 /*
-The helper package has miscellaneous function that can be used by the szxxxxxxxx packages.
+Package helper is not intended for public use.
 */
 package helper
