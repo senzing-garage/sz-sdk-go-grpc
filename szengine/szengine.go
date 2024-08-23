@@ -1377,7 +1377,7 @@ func (client *Szengine) addRecord(ctx context.Context, dataSourceCode string, re
 
 func (client *Szengine) closeExport(ctx context.Context, exportHandle uintptr) error {
 	request := szpb.CloseExportRequest{
-		ExportHandle: int64(exportHandle),
+		ExportHandle: int64(exportHandle), //nolint:gosec
 	}
 	_, err := client.GrpcClient.CloseExport(ctx, &request)
 	err = helper.ConvertGrpcError(err)
@@ -1427,7 +1427,7 @@ func (client *Szengine) exportJSONEntityReport(ctx context.Context, flags int64)
 
 func (client *Szengine) fetchNext(ctx context.Context, exportHandle uintptr) (string, error) {
 	request := szpb.FetchNextRequest{
-		ExportHandle: int64(exportHandle),
+		ExportHandle: int64(exportHandle), //nolint:gosec
 	}
 	response, err := client.GrpcClient.FetchNext(ctx, &request)
 	result := response.GetResult()
