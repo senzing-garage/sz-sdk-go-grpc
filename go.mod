@@ -9,7 +9,7 @@ require (
 	github.com/senzing-garage/go-messaging v1.5.2
 	github.com/senzing-garage/go-observing v0.3.3
 	github.com/senzing-garage/sz-sdk-go v0.14.0
-	github.com/senzing-garage/sz-sdk-proto v0.7.6
+	github.com/senzing-garage/sz-sdk-proto v0.7.7
 	github.com/stretchr/testify v1.9.0
 	google.golang.org/grpc v1.66.1
 )
