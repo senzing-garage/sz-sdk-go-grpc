@@ -1460,7 +1460,7 @@ func (client *Szengine) findInterestingEntitiesByRecordID(ctx context.Context, d
 
 func (client *Szengine) findNetworkByEntityID(ctx context.Context, entityIDs string, maxDegrees int64, buildOutDegree int64, buildOutMaxEntities int64, flags int64) (string, error) {
 	request := szpb.FindNetworkByEntityIdRequest{
-		BuildOutDegree:      buildOutDegree,
+		BuildOutDegrees:     buildOutDegree,
 		BuildOutMaxEntities: buildOutMaxEntities,
 		EntityIds:           entityIDs,
 		Flags:               flags,
@@ -1474,7 +1474,7 @@ func (client *Szengine) findNetworkByEntityID(ctx context.Context, entityIDs str
 
 func (client *Szengine) findNetworkByRecordID(ctx context.Context, recordKeys string, maxDegrees int64, buildOutDegree int64, buildOutMaxEntities int64, flags int64) (string, error) {
 	request := szpb.FindNetworkByRecordIdRequest{
-		BuildOutDegree:      buildOutDegree,
+		BuildOutDegrees:     buildOutDegree,
 		BuildOutMaxEntities: buildOutMaxEntities,
 		Flags:               flags,
 		MaxDegrees:          maxDegrees,
