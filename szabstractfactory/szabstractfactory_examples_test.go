@@ -13,8 +13,8 @@ import (
 // Interface methods - Examples for godoc documentation
 // ----------------------------------------------------------------------------
 
-func ExampleSzAbstractFactory_CreateSzConfig() {
-	// For more information, visit https://github.com/senzing-garage/sz-sdk-go-core/blob/main/szabstractfactory/szabstractfactory_examples_test.go
+func ExampleSzabstractfactory_CreateSzConfig() {
+	// For more information, visit https://github.com/senzing-garage/sz-sdk-go-grpc/blob/main/szabstractfactory/szabstractfactory_examples_test.go
 	ctx := context.TODO()
 	szAbstractFactory := getSzAbstractFactoryExample(ctx)
 	szConfig, err := szAbstractFactory.CreateSzConfig(ctx)
@@ -25,8 +25,8 @@ func ExampleSzAbstractFactory_CreateSzConfig() {
 	// Output:
 }
 
-func ExampleSzAbstractFactory_CreateSzConfigManager() {
-	// For more information, visit https://github.com/senzing-garage/sz-sdk-go-core/blob/main/szabstractfactory/szabstractfactory_examples_test.go
+func ExampleSzabstractfactory_CreateSzConfigManager() {
+	// For more information, visit https://github.com/senzing-garage/sz-sdk-go-grpc/blob/main/szabstractfactory/szabstractfactory_examples_test.go
 	ctx := context.TODO()
 	szAbstractFactory := getSzAbstractFactoryExample(ctx)
 	szConfigManager, err := szAbstractFactory.CreateSzConfigManager(ctx)
@@ -37,8 +37,8 @@ func ExampleSzAbstractFactory_CreateSzConfigManager() {
 	// Output:
 }
 
-func ExampleSzAbstractFactory_CreateSzDiagnostic() {
-	// For more information, visit https://github.com/senzing-garage/sz-sdk-go-core/blob/main/szabstractfactory/szabstractfactory_examples_test.go
+func ExampleSzabstractfactory_CreateSzDiagnostic() {
+	// For more information, visit https://github.com/senzing-garage/sz-sdk-go-grpc/blob/main/szabstractfactory/szabstractfactory_examples_test.go
 	ctx := context.TODO()
 	szAbstractFactory := getSzAbstractFactoryExample(ctx)
 	szDiagnostic, err := szAbstractFactory.CreateSzDiagnostic(ctx)
@@ -49,8 +49,8 @@ func ExampleSzAbstractFactory_CreateSzDiagnostic() {
 	// Output:
 }
 
-func ExampleSzAbstractFactory_CreateSzEngine() {
-	// For more information, visit https://github.com/senzing-garage/sz-sdk-go-core/blob/main/szabstractfactory/szabstractfactory_examples_test.go
+func ExampleSzabstractfactory_CreateSzEngine() {
+	// For more information, visit https://github.com/senzing-garage/sz-sdk-go-grpc/blob/main/szabstractfactory/szabstractfactory_examples_test.go
 	ctx := context.TODO()
 	szAbstractFactory := getSzAbstractFactoryExample(ctx)
 	szEngine, err := szAbstractFactory.CreateSzEngine(ctx)
@@ -61,8 +61,8 @@ func ExampleSzAbstractFactory_CreateSzEngine() {
 	// Output:
 }
 
-func ExampleSzAbstractFactory_CreateSzProduct() {
-	// For more information, visit https://github.com/senzing-garage/sz-sdk-go-core/blob/main/szabstractfactory/szabstractfactory_examples_test.go
+func ExampleSzabstractfactory_CreateSzProduct() {
+	// For more information, visit https://github.com/senzing-garage/sz-sdk-go-grpc/blob/main/szabstractfactory/szabstractfactory_examples_test.go
 	ctx := context.TODO()
 	szAbstractFactory := getSzAbstractFactoryExample(ctx)
 	szProduct, err := szAbstractFactory.CreateSzProduct(ctx)

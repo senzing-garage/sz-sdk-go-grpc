@@ -17,12 +17,17 @@ import (
 )
 
 const (
-	badLogLevelName   = "BadLogLevelName"
 	defaultTruncation = 76
 	instanceName      = "SzProduct Test"
 	observerOrigin    = "SzProduct observer"
 	printResults      = false
 	verboseLogging    = senzing.SzNoLogging
+)
+
+// Bad parameters
+
+const (
+	badLogLevelName = "BadLogLevelName"
 )
 
 var (

@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning].
 ### Changed in 0.8.2
 
 - Update dependencies
+- Added test cases.
 
 ## [0.8.1] - 2024-08-27
 

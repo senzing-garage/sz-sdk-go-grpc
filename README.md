@@ -72,7 +72,7 @@ interface include:
 [golangci-lint.yaml]: https://github.com/senzing-garage/sz-sdk-go-grpc/actions/workflows/golangci-lint.yaml
 [License Badge]: https://img.shields.io/badge/License-Apache2-brightgreen.svg
 [License]: https://github.com/senzing-garage/sz-sdk-go-grpc/blob/main/LICENSE
-[Package reference]: https://pkg.go.dev/github.com/senzing-garage/sz-sdk-go-core
+[Package reference]: https://pkg.go.dev/github.com/senzing-garage/sz-sdk-go-grpc
 [Senzing Garage]: https://github.com/senzing-garage
 [Senzing gRPC server]: https://github.com/senzing-garage/servegrpc
 [Senzing Quick Start guides]: https://docs.senzing.com/quickstart/
