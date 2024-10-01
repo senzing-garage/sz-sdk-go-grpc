@@ -39,7 +39,7 @@ const (
 // ----------------------------------------------------------------------------
 
 /*
-The AddRecord method adds a record into the Senzing datastore.
+Method AddRecord adds a record into the Senzing datastore.
 The unique identifier of a record is the [dataSourceCode, recordID] compound key.
 If the unique identifier does not exist in the Senzing datastore, a new record definition is created in the Senzing datastore.
 If the unique identifier already exists, the new record definition will replace the old record definition.
@@ -79,7 +79,7 @@ func (client *Szengine) AddRecord(ctx context.Context, dataSourceCode string, re
 }
 
 /*
-The CloseExport method closes the exported document created by [Szengine.ExportJSONEntityReport] or [Szengine.ExportCsvEntityReport].
+Method CloseExport closes the exported document created by [Szengine.ExportJSONEntityReport] or [Szengine.ExportCsvEntityReport].
 It is part of the ExportXxxEntityReport(), [Szengine.FetchNext], CloseExport lifecycle of a list of entities to export.
 CloseExport is idempotent; an exportHandle may be closed multiple times.
 
@@ -105,7 +105,7 @@ func (client *Szengine) CloseExport(ctx context.Context, exportHandle uintptr) e
 }
 
 /*
-The CountRedoRecords method returns the number of records needing re-evaluation.
+Method CountRedoRecords returns the number of records needing re-evaluation.
 These are often called "redo records".
 
 Input
@@ -133,7 +133,7 @@ func (client *Szengine) CountRedoRecords(ctx context.Context) (int64, error) {
 }
 
 /*
-The DeleteRecord method deletes a record from the Senzing datastore.
+Method DeleteRecord deletes a record from the Senzing datastore.
 The unique identifier of a record is the [dataSourceCode, recordID] compound key.
 DeleteRecord() is idempotent.
 Multiple calls to delete the same unique identifier will all succeed,
@@ -170,7 +170,7 @@ func (client *Szengine) DeleteRecord(ctx context.Context, dataSourceCode string,
 }
 
 /*
-The Destroy method is a Null function for sz-sdk-go-grpc.
+Method Destroy is a Null function for sz-sdk-go-grpc.
 
 Input
   - ctx: A context to control lifecycle.
@@ -192,7 +192,7 @@ func (client *Szengine) Destroy(ctx context.Context) error {
 }
 
 /*
-The ExportCsvEntityReport method initializes a cursor over a CSV document of exported entities.
+Method ExportCsvEntityReport initializes a cursor over a CSV document of exported entities.
 It is part of the ExportCsvEntityReport, [Szengine.FetchNext], [Szengine.CloseExport] lifecycle of a list of entities to export.
 The first exported line is the CSV header.
 Each subsequent line contains metadata for a single entity.
@@ -224,7 +224,7 @@ func (client *Szengine) ExportCsvEntityReport(ctx context.Context, csvColumnList
 }
 
 /*
-The ExportCsvEntityReportIterator method creates an Iterator that can be used in a for-loop
+Method ExportCsvEntityReportIterator creates an Iterator that can be used in a for-loop
 to scroll through a CSV document of exported entities.
 It is a convenience method for the [Szenzine.ExportCsvEntityReport], [Szengine.FetchNext], [Szengine.CloseExport]
 lifecycle of a list of entities to export.
@@ -293,7 +293,7 @@ func (client *Szengine) ExportCsvEntityReportIterator(ctx context.Context, csvCo
 }
 
 /*
-The ExportJSONEntityReport method initializes a cursor over a JSON document of exported entities.
+Method ExportJSONEntityReport initializes a cursor over a JSON document of exported entities.
 It is part of the ExportJSONEntityReport, [Szengine.FetchNext], [Szengine.CloseExport] lifecycle of a list of entities to export.
 
 Input
@@ -322,7 +322,7 @@ func (client *Szengine) ExportJSONEntityReport(ctx context.Context, flags int64)
 }
 
 /*
-The ExportJSONEntityReportIterator method creates an Iterator that can be used in a for-loop
+Method ExportJSONEntityReportIterator creates an Iterator that can be used in a for-loop
 to scroll through a JSON document of exported entities.
 It is a convenience method for the [Szengine.ExportJSONEntityReport], [Szengine.FetchNext], [Szengine.CloseExport]
 lifecycle of a list of entities to export.
@@ -389,7 +389,7 @@ func (client *Szengine) ExportJSONEntityReportIterator(ctx context.Context, flag
 }
 
 /*
-The FetchNext method is used to scroll through an exported JSON or CSV document.
+Method FetchNext is used to scroll through an exported JSON or CSV document.
 It is part of the [Szengine.ExportJSONEntityReport] or [Szengine.ExportCsvEntityReport], FetchNext, [Szengine.CloseExport]
 lifecycle of a list of exported entities.
 
@@ -419,8 +419,8 @@ func (client *Szengine) FetchNext(ctx context.Context, exportHandle uintptr) (st
 }
 
 /*
-TODO: Document FindInterestingEntitiesByEntityID
-The FindInterestingEntitiesByEntityID method...
+Method FindInterestingEntitiesByEntityID is an experimental method.
+Not recommended for use.
 
 Input
   - ctx: A context to control lifecycle.
@@ -451,8 +451,8 @@ func (client *Szengine) FindInterestingEntitiesByEntityID(ctx context.Context, e
 }
 
 /*
-TODO: Document FindInterestingEntitiesByRecordID
-The FindInterestingEntitiesByRecordID method...
+Method FindInterestingEntitiesByRecordID is an experimental method.
+Not recommended for use.
 
 Input
   - ctx: A context to control lifecycle.
@@ -485,7 +485,7 @@ func (client *Szengine) FindInterestingEntitiesByRecordID(ctx context.Context, d
 }
 
 /*
-The FindNetworkByEntityID method finds a network of entities surrounding a requested set of entities.
+Method FindNetworkByEntityID finds a network of entities surrounding a requested set of entities.
 This includes the requested entities, paths between them, and relations to other nearby entities.
 The size and character of the returned network can be modified by input parameters.
 
@@ -494,7 +494,7 @@ Input
   - entityIDs: A JSON document listing entities.
     Example: `{"ENTITIES": [{"ENTITY_ID": 1}, {"ENTITY_ID": 2}, {"ENTITY_ID": 3}]}`
   - maxDegrees: The maximum number of degrees in paths between entityIDs.
-  - buildOutDegree: The number of degrees of relationships to show around each search entity. Zero (0) prevents buildout.
+  - buildOutDegrees: The number of degrees of relationships to show around each search entity. Zero (0) prevents buildout.
   - buildOutMaxEntities: The maximum number of entities to build out in the returned network.
   - flags: Flags used to control information returned.
 
@@ -503,17 +503,17 @@ Output
     TODO: Make example output a twistie example.
     Example: `{"ENTITY_PATHS":[{"START_ENTITY_ID":1,"END_ENTITY_ID":2,"ENTITIES":[1,2]}],"ENTITIES":[{"RESOLVED_ENTITY":{"ENTITY_ID":1,"ENTITY_NAME":"SEAMAN","RECORD_SUMMARY":[{"DATA_SOURCE":"TEST","RECORD_COUNT":2,"FIRST_SEEN_DT":"2022-11-29 22:25:18.997","LAST_SEEN_DT":"2022-11-29 22:25:19.005"}],"LAST_SEEN_DT":"2022-11-29 22:25:19.005"},"RELATED_ENTITIES":[{"ENTITY_ID":2,"MATCH_LEVEL":3,"MATCH_LEVEL_CODE":"POSSIBLY_RELATED","MATCH_KEY":"+PHONE+ACCT_NUM-DOB-SSN","ERRULE_CODE":"SF1","IS_DISCLOSED":0,"IS_AMBIGUOUS":0}]},{"RESOLVED_ENTITY":{"ENTITY_ID":2,"ENTITY_NAME":"Smith","RECORD_SUMMARY":[{"DATA_SOURCE":"TEST","RECORD_COUNT":1,"FIRST_SEEN_DT":"2022-11-29 22:25:19.009","LAST_SEEN_DT":"2022-11-29 22:25:19.009"}],"LAST_SEEN_DT":"2022-11-29 22:25:19.009"},"RELATED_ENTITIES":[{"ENTITY_ID":1,"MATCH_LEVEL":3,"MATCH_LEVEL_CODE":"POSSIBLY_RELATED","MATCH_KEY":"+PHONE+ACCT_NUM-DOB-SSN","ERRULE_CODE":"SF1","IS_DISCLOSED":0,"IS_AMBIGUOUS":0}]}]}`
 */
-func (client *Szengine) FindNetworkByEntityID(ctx context.Context, entityIDs string, maxDegrees int64, buildOutDegree int64, buildOutMaxEntities int64, flags int64) (string, error) {
+func (client *Szengine) FindNetworkByEntityID(ctx context.Context, entityIDs string, maxDegrees int64, buildOutDegrees int64, buildOutMaxEntities int64, flags int64) (string, error) {
 	var err error
 	var result string
 	if client.isTrace {
 		entryTime := time.Now()
-		client.traceEntry(27, entityIDs, maxDegrees, buildOutDegree, buildOutMaxEntities, flags)
+		client.traceEntry(27, entityIDs, maxDegrees, buildOutDegrees, buildOutMaxEntities, flags)
 		defer func() {
-			client.traceExit(28, entityIDs, maxDegrees, buildOutDegree, buildOutMaxEntities, flags, result, err, time.Since(entryTime))
+			client.traceExit(28, entityIDs, maxDegrees, buildOutDegrees, buildOutMaxEntities, flags, result, err, time.Since(entryTime))
 		}()
 	}
-	result, err = client.findNetworkByEntityID(ctx, entityIDs, maxDegrees, buildOutDegree, buildOutMaxEntities, flags)
+	result, err = client.findNetworkByEntityID(ctx, entityIDs, maxDegrees, buildOutDegrees, buildOutMaxEntities, flags)
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{
@@ -526,7 +526,7 @@ func (client *Szengine) FindNetworkByEntityID(ctx context.Context, entityIDs str
 }
 
 /*
-The FindNetworkByRecordID method finds a network of entities surrounding a requested set of entities identified by record keys.
+Method FindNetworkByRecordID finds a network of entities surrounding a requested set of entities identified by record keys.
 This includes the requested entities, paths between them, and relations to other nearby entities.
 The size and character of the returned network can be modified by input parameters.
 
@@ -535,7 +535,7 @@ Input
   - recordKeys: A JSON document listing records.
     Example: `{"RECORDS": [{"DATA_SOURCE": "CUSTOMERS", "RECORD_ID": "1001"}]}`
   - maxDegrees: The maximum number of degrees in paths between entities identified by the recordKeys.
-  - buildOutDegree: The number of degrees of relationships to show around each search entity. Zero (0) prevents buildout.
+  - buildOutDegrees: The number of degrees of relationships to show around each search entity. Zero (0) prevents buildout.
   - buildOutMaxEntities: The maximum number of entities to build out in the returned network.
   - flags: Flags used to control information returned.
 
@@ -544,17 +544,17 @@ Output
     TODO: Make example output a twistie example.
     Example: `{"ENTITY_PATHS":[{"START_ENTITY_ID":1,"END_ENTITY_ID":2,"ENTITIES":[1,2]}],"ENTITIES":[{"RESOLVED_ENTITY":{"ENTITY_ID":1,"ENTITY_NAME":"JOHNSON","RECORD_SUMMARY":[{"DATA_SOURCE":"TEST","RECORD_COUNT":2,"FIRST_SEEN_DT":"2022-12-06 14:40:34.285","LAST_SEEN_DT":"2022-12-06 14:40:34.420"}],"LAST_SEEN_DT":"2022-12-06 14:40:34.420"},"RELATED_ENTITIES":[{"ENTITY_ID":2,"MATCH_LEVEL":3,"MATCH_LEVEL_CODE":"POSSIBLY_RELATED","MATCH_KEY":"+PHONE+ACCT_NUM-SSN","ERRULE_CODE":"SF1","IS_DISCLOSED":0,"IS_AMBIGUOUS":0},{"ENTITY_ID":3,"MATCH_LEVEL":3,"MATCH_LEVEL_CODE":"POSSIBLY_RELATED","MATCH_KEY":"+PHONE+ACCT_NUM-DOB-SSN","ERRULE_CODE":"SF1","IS_DISCLOSED":0,"IS_AMBIGUOUS":0}]},{"RESOLVED_ENTITY":{"ENTITY_ID":2,"ENTITY_NAME":"OCEANGUY","RECORD_SUMMARY":[{"DATA_SOURCE":"TEST","RECORD_COUNT":1,"FIRST_SEEN_DT":"2022-12-06 14:40:34.359","LAST_SEEN_DT":"2022-12-06 14:40:34.359"}],"LAST_SEEN_DT":"2022-12-06 14:40:34.359"},"RELATED_ENTITIES":[{"ENTITY_ID":1,"MATCH_LEVEL":3,"MATCH_LEVEL_CODE":"POSSIBLY_RELATED","MATCH_KEY":"+PHONE+ACCT_NUM-SSN","ERRULE_CODE":"SF1","IS_DISCLOSED":0,"IS_AMBIGUOUS":0},{"ENTITY_ID":3,"MATCH_LEVEL":3,"MATCH_LEVEL_CODE":"POSSIBLY_RELATED","MATCH_KEY":"+ADDRESS+PHONE+ACCT_NUM-DOB-SSN","ERRULE_CODE":"SF1","IS_DISCLOSED":0,"IS_AMBIGUOUS":0}]},{"RESOLVED_ENTITY":{"ENTITY_ID":3,"ENTITY_NAME":"Smith","RECORD_SUMMARY":[{"DATA_SOURCE":"TEST","RECORD_COUNT":1,"FIRST_SEEN_DT":"2022-12-06 14:40:34.424","LAST_SEEN_DT":"2022-12-06 14:40:34.424"}],"LAST_SEEN_DT":"2022-12-06 14:40:34.424"},"RELATED_ENTITIES":[{"ENTITY_ID":1,"MATCH_LEVEL":3,"MATCH_LEVEL_CODE":"POSSIBLY_RELATED","MATCH_KEY":"+PHONE+ACCT_NUM-DOB-SSN","ERRULE_CODE":"SF1","IS_DISCLOSED":0,"IS_AMBIGUOUS":0},{"ENTITY_ID":2,"MATCH_LEVEL":3,"MATCH_LEVEL_CODE":"POSSIBLY_RELATED","MATCH_KEY":"+ADDRESS+PHONE+ACCT_NUM-DOB-SSN","ERRULE_CODE":"SF1","IS_DISCLOSED":0,"IS_AMBIGUOUS":0}]}]}`
 */
-func (client *Szengine) FindNetworkByRecordID(ctx context.Context, recordKeys string, maxDegrees int64, buildOutDegree int64, buildOutMaxEntities int64, flags int64) (string, error) {
+func (client *Szengine) FindNetworkByRecordID(ctx context.Context, recordKeys string, maxDegrees int64, buildOutDegrees int64, buildOutMaxEntities int64, flags int64) (string, error) {
 	var err error
 	var result string
 	if client.isTrace {
 		entryTime := time.Now()
-		client.traceEntry(39, recordKeys, maxDegrees, buildOutDegree, buildOutMaxEntities, flags)
+		client.traceEntry(39, recordKeys, maxDegrees, buildOutDegrees, buildOutMaxEntities, flags)
 		defer func() {
-			client.traceExit(40, recordKeys, maxDegrees, buildOutDegree, buildOutMaxEntities, flags, result, err, time.Since(entryTime))
+			client.traceExit(40, recordKeys, maxDegrees, buildOutDegrees, buildOutMaxEntities, flags, result, err, time.Since(entryTime))
 		}()
 	}
-	result, err = client.findNetworkByRecordID(ctx, recordKeys, maxDegrees, buildOutDegree, buildOutMaxEntities, flags)
+	result, err = client.findNetworkByRecordID(ctx, recordKeys, maxDegrees, buildOutDegrees, buildOutMaxEntities, flags)
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{
@@ -567,7 +567,7 @@ func (client *Szengine) FindNetworkByRecordID(ctx context.Context, recordKeys st
 }
 
 /*
-The FindPathByEntityID method finds a relationship path between two entities.
+Method FindPathByEntityID finds a relationship path between two entities.
 Paths are found using known relationships with other entities.
 The path can be modified by input parameters.
 
@@ -615,7 +615,7 @@ func (client *Szengine) FindPathByEntityID(ctx context.Context, startEntityID in
 }
 
 /*
-The FindPathByRecordID method finds a relationship path between two entities identified by record keys.
+Method FindPathByRecordID finds a relationship path between two entities identified by record keys.
 Paths are found using known relationships with other entities.
 The path can be modified by input parameters.
 
@@ -667,7 +667,7 @@ func (client *Szengine) FindPathByRecordID(ctx context.Context, startDataSourceC
 }
 
 /*
-The GetActiveConfigID method returns the Senzing configuration JSON document identifier.
+Method GetActiveConfigID returns the Senzing configuration JSON document identifier.
 
 Input
   - ctx: A context to control lifecycle.
@@ -694,7 +694,7 @@ func (client *Szengine) GetActiveConfigID(ctx context.Context) (int64, error) {
 }
 
 /*
-The GetEntityByEntityID method returns information about a resolved identity.
+Method GetEntityByEntityID returns information about a resolved identity.
 
 Input
   - ctx: A context to control lifecycle.
@@ -728,7 +728,7 @@ func (client *Szengine) GetEntityByEntityID(ctx context.Context, entityID int64,
 }
 
 /*
-The GetEntityByRecordID method returns information about a resolved entity identified by a record which is a member of the entity.
+Method GetEntityByRecordID returns information about a resolved entity identified by a record which is a member of the entity.
 
 Input
   - ctx: A context to control lifecycle.
@@ -763,7 +763,7 @@ func (client *Szengine) GetEntityByRecordID(ctx context.Context, dataSourceCode 
 }
 
 /*
-The GetRecord method returns a JSON document containing a single record from the Senzing datastore.
+Method GetRecord returns a JSON document containing a single record from the Senzing datastore.
 
 Input
   - ctx: A context to control lifecycle.
@@ -796,7 +796,7 @@ func (client *Szengine) GetRecord(ctx context.Context, dataSourceCode string, re
 }
 
 /*
-The GetRedoRecord method returns the next maintenance record from the Senzing datastore.
+Method GetRedoRecord returns the next maintenance record from the Senzing datastore.
 Usually, [Szengine.ProcessRedoRecord] is called to process the maintenance record retrieved by GetRedoRecord.
 
 Input
@@ -824,7 +824,7 @@ func (client *Szengine) GetRedoRecord(ctx context.Context) (string, error) {
 }
 
 /*
-The GetStats method retrieves workload statistics for the current process.
+Method GetStats retrieves workload statistics for the current process.
 These statistics are automatically reset after each call.
 
 Input
@@ -854,7 +854,7 @@ func (client *Szengine) GetStats(ctx context.Context) (string, error) {
 }
 
 /*
-The GetVirtualEntityByRecordID method describes a hypothetical entity based on a list of records.
+Method GetVirtualEntityByRecordID describes a hypothetical entity based on a list of records.
 
 Input
   - ctx: A context to control lifecycle.
@@ -887,7 +887,7 @@ func (client *Szengine) GetVirtualEntityByRecordID(ctx context.Context, recordKe
 }
 
 /*
-The HowEntityByEntityID method explains how an entity was constructed from its constituent records.
+Method HowEntityByEntityID explains how an entity was constructed from its constituent records.
 
 Input
   - ctx: A context to control lifecycle.
@@ -918,7 +918,38 @@ func (client *Szengine) HowEntityByEntityID(ctx context.Context, entityID int64,
 }
 
 /*
-The PrimeEngine method pre-initializes some of the heavier weight internal resources of the Senzing engine.
+Method PreprocessRecord tests adding a record into the Senzing datastore.
+
+Input
+  - ctx: A context to control lifecycle.
+  - recordDefinition: A JSON document containing the record to be tested against the Senzing datastore.
+  - flags: Flags used to control information returned.
+
+Output
+  - A JSON document containing metadata as specified by the flags.
+*/
+func (client *Szengine) PreprocessRecord(ctx context.Context, recordDefinition string, flags int64) (string, error) {
+	var err error
+	var result string
+	if client.isTrace {
+		entryTime := time.Now()
+		client.traceEntry(77, recordDefinition, flags)
+		defer func() {
+			client.traceExit(78, recordDefinition, flags, result, err, time.Since(entryTime))
+		}()
+	}
+	result, err = client.preprocessRecord(ctx, recordDefinition, flags)
+	if client.observers != nil {
+		go func() {
+			details := map[string]string{}
+			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentID, 8035, err, details)
+		}()
+	}
+	return result, err
+}
+
+/*
+Method PrimeEngine pre-initializes some of the heavier weight internal resources of the Senzing engine.
 
 Input
   - ctx: A context to control lifecycle.
@@ -941,7 +972,7 @@ func (client *Szengine) PrimeEngine(ctx context.Context) error {
 }
 
 /*
-The ProcessRedoRecord method processes a redo record retrieved by [Szengine.GetRedoRecord].
+Method ProcessRedoRecord processes a redo record retrieved by [Szengine.GetRedoRecord].
 Calling ProcessRedoRecord has the potential to create more redo records in certain situations.
 
 Input
@@ -969,7 +1000,7 @@ func (client *Szengine) ProcessRedoRecord(ctx context.Context, redoRecord string
 }
 
 /*
-The ReevaluateEntity method verifies that the entity is consistent with its records.
+Method ReevaluateEntity verifies that the entity is consistent with its records.
 If inconsistent, ReevaluateEntity() adjusts the entity definition, splits entities, and/or merges entities.
 Usually, the ReevaluateEntity method is called after a Senzing configuration change to impact
 entities immediately.
@@ -1000,7 +1031,7 @@ func (client *Szengine) ReevaluateEntity(ctx context.Context, entityID int64, fl
 }
 
 /*
-The ReevaluateRecord method verifies that a record is consistent with the entity to which it belongs.
+Method ReevaluateRecord verifies that a record is consistent with the entity to which it belongs.
 If inconsistent, ReevaluateRecord() adjusts the entity definition, splits entities, and/or merges entities.
 Usually, the ReevaluateRecord method is called after a Senzing configuration change to impact
 the record immediately.
@@ -1033,7 +1064,7 @@ func (client *Szengine) ReevaluateRecord(ctx context.Context, dataSourceCode str
 }
 
 /*
-The Reinitialize method re-initializes the Senzing engine with a specific Senzing configuration JSON document identifier.
+Method Reinitialize re-initializes the Senzing engine with a specific Senzing configuration JSON document identifier.
 
 Input
   - ctx: A context to control lifecycle.
@@ -1058,7 +1089,7 @@ func (client *Szengine) Reinitialize(ctx context.Context, configID int64) error 
 }
 
 /*
-The SearchByAttributes method retrieves entity data based on entity attributes
+Method SearchByAttributes retrieves entity data based on entity attributes
 and an optional search profile.
 
 Input
@@ -1097,7 +1128,7 @@ func (client *Szengine) SearchByAttributes(ctx context.Context, attributes strin
 }
 
 /*
-The WhyEntities method explains the ways in which two entities are related to each other.
+Method WhyEntities explains the ways in which two entities are related to each other.
 
 Input
   - ctx: A context to control lifecycle.
@@ -1132,7 +1163,7 @@ func (client *Szengine) WhyEntities(ctx context.Context, entityID1 int64, entity
 }
 
 /*
-The WhyRecordInEntity method explains why a record belongs to its resolved entitiy.
+Method WhyRecordInEntity explains why a record belongs to its resolved entitiy.
 
 Input
   - ctx: A context to control lifecycle.
@@ -1165,7 +1196,7 @@ func (client *Szengine) WhyRecordInEntity(ctx context.Context, dataSourceCode st
 }
 
 /*
-The WhyRecords method describes ways in which two records are related to each other.
+Method WhyRecords describes ways in which two records are related to each other.
 
 Input
   - ctx: A context to control lifecycle.
@@ -1210,7 +1241,7 @@ func (client *Szengine) WhyRecords(ctx context.Context, dataSourceCode1 string, 
 // ----------------------------------------------------------------------------
 
 /*
-The GetObserverOrigin method returns the "origin" value of past Observer messages.
+Method GetObserverOrigin returns the "origin" value of past Observer messages.
 
 Input
   - ctx: A context to control lifecycle.
@@ -1224,7 +1255,7 @@ func (client *Szengine) GetObserverOrigin(ctx context.Context) string {
 }
 
 /*
-The Initialize method is a Null function for sz-sdk-go-grpc.
+Method Initialize is a Null function for sz-sdk-go-grpc.
 
 Input
   - ctx: A context to control lifecycle.
@@ -1257,7 +1288,7 @@ func (client *Szengine) Initialize(ctx context.Context, instanceName string, set
 }
 
 /*
-The RegisterObserver method adds the observer to the list of observers notified.
+Method RegisterObserver adds the observer to the list of observers notified.
 
 Input
   - ctx: A context to control lifecycle.
@@ -1286,7 +1317,7 @@ func (client *Szengine) RegisterObserver(ctx context.Context, observer observer.
 }
 
 /*
-The SetLogLevel method sets the level of logging.
+Method SetLogLevel sets the level of logging.
 
 Input
   - ctx: A context to control lifecycle.
@@ -1316,7 +1347,7 @@ func (client *Szengine) SetLogLevel(ctx context.Context, logLevelName string) er
 }
 
 /*
-The SetObserverOrigin method sets the "origin" value in future Observer messages.
+Method SetObserverOrigin sets the "origin" value in future Observer messages.
 
 Input
   - ctx: A context to control lifecycle.
@@ -1328,7 +1359,7 @@ func (client *Szengine) SetObserverOrigin(ctx context.Context, origin string) {
 }
 
 /*
-The UnregisterObserver method removes the observer to the list of observers notified.
+Method UnregisterObserver removes the observer to the list of observers notified.
 
 Input
   - ctx: A context to control lifecycle.
@@ -1594,6 +1625,17 @@ func (client *Szengine) howEntityByEntityID(ctx context.Context, entityID int64,
 		Flags:    flags,
 	}
 	response, err := client.GrpcClient.HowEntityByEntityId(ctx, &request)
+	result := response.GetResult()
+	err = helper.ConvertGrpcError(err)
+	return result, err
+}
+
+func (client *Szengine) preprocessRecord(ctx context.Context, recordDefinition string, flags int64) (string, error) {
+	request := szpb.PreprocessRecordRequest{
+		Flags:            flags,
+		RecordDefinition: recordDefinition,
+	}
+	response, err := client.GrpcClient.PreprocessRecord(ctx, &request)
 	result := response.GetResult()
 	err = helper.ConvertGrpcError(err)
 	return result, err
