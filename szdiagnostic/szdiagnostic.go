@@ -38,7 +38,7 @@ const (
 // ----------------------------------------------------------------------------
 
 /*
-The CheckDatastorePerformance method runs performance tests on the Senzing datastore.
+Method CheckDatastorePerformance runs performance tests on the Senzing datastore.
 
 Input
   - ctx: A context to control lifecycle.
@@ -68,7 +68,7 @@ func (client *Szdiagnostic) CheckDatastorePerformance(ctx context.Context, secon
 }
 
 /*
-The Destroy method is a Null function for sz-sdk-go-grpc.
+Method Destroy is a Null function for sz-sdk-go-grpc.
 
 Input
   - ctx: A context to control lifecycle.
@@ -90,7 +90,7 @@ func (client *Szdiagnostic) Destroy(ctx context.Context) error {
 }
 
 /*
-The GetDatastoreInfo method returns information about the Senzing datastore.
+Method GetDatastoreInfo returns information about the Senzing datastore.
 
 Input
   - ctx: A context to control lifecycle.
@@ -118,7 +118,8 @@ func (client *Szdiagnostic) GetDatastoreInfo(ctx context.Context) (string, error
 }
 
 /*
-The GetFeature method is an experimental method that returns diagnostic information of a feature.
+Method GetFeature is an experimental method that returns diagnostic information of a feature.
+Not recommended for use.
 
 Input
   - ctx: A context to control lifecycle.
@@ -149,7 +150,7 @@ func (client *Szdiagnostic) GetFeature(ctx context.Context, featureID int64) (st
 }
 
 /*
-WARNING: The PurgeRepository method removes every record in the Senzing datastore.
+WARNING: Method PurgeRepository removes every record in the Senzing datastore.
 This is a destructive method that cannot be undone.
 Before calling purgeRepository(), all programs using Senzing MUST be terminated.
 
@@ -174,7 +175,7 @@ func (client *Szdiagnostic) PurgeRepository(ctx context.Context) error {
 }
 
 /*
-The Reinitialize method re-initializes the Senzing SzDiagnostic object.
+Method Reinitialize re-initializes the Senzing SzDiagnostic object.
 
 Input
   - ctx: A context to control lifecycle.
@@ -203,7 +204,7 @@ func (client *Szdiagnostic) Reinitialize(ctx context.Context, configID int64) er
 // ----------------------------------------------------------------------------
 
 /*
-The GetObserverOrigin method returns the "origin" value of past Observer messages.
+Method GetObserverOrigin returns the "origin" value of past Observer messages.
 
 Input
   - ctx: A context to control lifecycle.
@@ -217,7 +218,7 @@ func (client *Szdiagnostic) GetObserverOrigin(ctx context.Context) string {
 }
 
 /*
-The Initialize method is a Null function for sz-sdk-go-grpc.
+Method Initialize is a Null function for sz-sdk-go-grpc.
 
 Input
   - ctx: A context to control lifecycle.
@@ -250,7 +251,7 @@ func (client *Szdiagnostic) Initialize(ctx context.Context, instanceName string,
 }
 
 /*
-The RegisterObserver method adds the observer to the list of observers notified.
+Method RegisterObserver adds the observer to the list of observers notified.
 
 Input
   - ctx: A context to control lifecycle.
@@ -279,7 +280,7 @@ func (client *Szdiagnostic) RegisterObserver(ctx context.Context, observer obser
 }
 
 /*
-The SetLogLevel method sets the level of logging.
+Method SetLogLevel sets the level of logging.
 
 Input
   - ctx: A context to control lifecycle.
@@ -309,7 +310,7 @@ func (client *Szdiagnostic) SetLogLevel(ctx context.Context, logLevelName string
 }
 
 /*
-The SetObserverOrigin method sets the "origin" value in future Observer messages.
+Method SetObserverOrigin sets the "origin" value in future Observer messages.
 
 Input
   - ctx: A context to control lifecycle.
@@ -321,7 +322,7 @@ func (client *Szdiagnostic) SetObserverOrigin(ctx context.Context, origin string
 }
 
 /*
-The UnregisterObserver method removes the observer to the list of observers notified.
+Method UnregisterObserver removes the observer to the list of observers notified.
 
 Input
   - ctx: A context to control lifecycle.
