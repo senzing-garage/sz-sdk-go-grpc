@@ -17,15 +17,6 @@ jobs:
         go: ["1.21"]
         os: [windows-latest]
 
-    services:
-      servegrpc:
-        env:
-          SENZING_TOOLS_ENABLE_ALL: true
-        image: senzing/serve-grpc
-        options: --user 0
-        ports:
-          - 8261:8261
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -46,8 +37,11 @@ jobs:
       #   uses: docker-practice/actions-setup-docker@master
       #   timeout-minutes: 12
 
-      # - name: Run gRPC service
-      #   run: docker run --detach --env SENZING_TOOLS_ENABLE_ALL --publish 8261:8261 senzing/serve-grpc:latest
+      - name: Install Docker
+        uses: crazy-max/ghaction-setup-docker@v3
+
+      - name: Run gRPC service
+        run: docker run --detach --env SENZING_TOOLS_ENABLE_ALL --publish 8261:8261 senzing/serve-grpc:latest
 
       - name: Run go test
         run: |
