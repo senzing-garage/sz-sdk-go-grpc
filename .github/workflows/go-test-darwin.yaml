@@ -38,7 +38,9 @@ jobs:
       #   timeout-minutes: 12
 
       - name: Setup docker (missing on MacOS)
-        run: brew install docker
+        run: |
+          brew install colima docker
+          colima start
 
       - name: Run gRPC service
         run: docker run --detach --env SENZING_TOOLS_DATABASE_URL=sqlite3://na:na@/tmp/sqlite/G2C.db --env SENZING_TOOLS_ENABLE_ALL=true --publish 8261:8261 senzing/serve-grpc:latest
