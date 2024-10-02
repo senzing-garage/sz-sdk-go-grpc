@@ -15,7 +15,16 @@ jobs:
     strategy:
       matrix:
         go: ["1.21"]
-        os: [macos-13]
+        os: [macos-latest]
+
+    services:
+      servegrpc:
+        env:
+          SENZING_TOOLS_ENABLE_ALL: true
+        image: senzing/serve-grpc
+        options: --user 0
+        ports:
+          - 8261:8261
 
     steps:
       - name: Checkout repository
@@ -33,12 +42,12 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Install Docker
-        uses: docker-practice/actions-setup-docker@v1
-        timeout-minutes: 12
+      # - name: Install Docker
+      #   uses: docker-practice/actions-setup-docker@v1
+      #   timeout-minutes: 12
 
-      - name: Run gRPC service
-        run: docker run --detach --env SENZING_TOOLS_DATABASE_URL=sqlite3://na:na@/tmp/sqlite/G2C.db --env SENZING_TOOLS_ENABLE_ALL=true --publish 8261:8261 senzing/serve-grpc:latest
+      # - name: Run gRPC service
+      #   run: docker run --detach --env SENZING_TOOLS_DATABASE_URL=sqlite3://na:na@/tmp/sqlite/G2C.db --env SENZING_TOOLS_ENABLE_ALL=true --publish 8261:8261 senzing/serve-grpc:latest
 
       - name: Run go test
         run: go test -json -v -p 1 -coverprofile=./cover.out -covermode=atomic -coverpkg=./... ./...  2>&1 | tee /tmp/gotest.log | gotestfmt
