@@ -33,9 +33,12 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
 
+      # - name: Install Docker
+      #   uses: docker-practice/actions-setup-docker@master
+      #   timeout-minutes: 12
+
       - name: Install Docker
-        uses: docker-practice/actions-setup-docker@master
-        timeout-minutes: 12
+        uses: crazy-max/ghaction-setup-docker@v3
 
       - name: Run gRPC service
         run: docker run --detach --env SENZING_TOOLS_ENABLE_ALL --publish 8261:8261 senzing/serve-grpc:latest
