@@ -119,3 +119,42 @@ func (factory *Szabstractfactory) CreateSzProduct(ctx context.Context) (senzing.
 	}
 	return result, nil
 }
+
+/*
+Method Destroy will destroy and perform cleanup for the Senzing objects created by the AbstractFactory.
+It should be called after all other calls are complete.
+
+Input
+  - ctx: A context to control lifecycle.
+*/
+func (factory *Szabstractfactory) Destroy(ctx context.Context) error {
+	var err error
+	return err
+}
+
+/*
+Method Reinitialize re-initializes the Senzing objects created by the AbstractFactory with a specific Senzing configuration JSON document identifier.
+
+Input
+  - ctx: A context to control lifecycle.
+  - configID: The Senzing configuration JSON document identifier used for the initialization.
+*/
+func (factory *Szabstractfactory) Reinitialize(ctx context.Context, configID int64) error {
+	var err error
+	factory.ConfigID = configID
+	if factory.isSzdiagnosticInitialized {
+		szDiagnostic := &szdiagnostic.Szdiagnostic{}
+		err = szDiagnostic.Reinitialize(ctx, configID)
+		if err != nil {
+			return err
+		}
+	}
+	if factory.isSzengineInitialized {
+		szEngine := &szengine.Szengine{}
+		err = szEngine.Reinitialize(ctx, configID)
+		if err != nil {
+			return err
+		}
+	}
+	return err
+}
