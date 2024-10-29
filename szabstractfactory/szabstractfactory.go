@@ -129,7 +129,6 @@ Input
 */
 func (factory *Szabstractfactory) Destroy(ctx context.Context) error {
 	var err error
-
 	szConfig := &szconfig.Szconfig{
 		GrpcClient: szconfigpb.NewSzConfigClient(factory.GrpcConnection),
 	}
@@ -137,7 +136,6 @@ func (factory *Szabstractfactory) Destroy(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
-
 	szConfigmanager := &szconfigmanager.Szconfigmanager{
 		GrpcClient: szconfigmanagerpb.NewSzConfigManagerClient(factory.GrpcConnection),
 	}
@@ -145,7 +143,6 @@ func (factory *Szabstractfactory) Destroy(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
-
 	szDiagnostic := &szdiagnostic.Szdiagnostic{
 		GrpcClient: szdiagnosticpb.NewSzDiagnosticClient(factory.GrpcConnection),
 	}
@@ -153,7 +150,6 @@ func (factory *Szabstractfactory) Destroy(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
-
 	szEngine := &szengine.Szengine{
 		GrpcClient: szenginepb.NewSzEngineClient(factory.GrpcConnection),
 	}
@@ -161,7 +157,6 @@ func (factory *Szabstractfactory) Destroy(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
-
 	szProduct := &szproduct.Szproduct{
 		GrpcClient: szproductpb.NewSzProductClient(factory.GrpcConnection),
 	}
@@ -169,7 +164,6 @@ func (factory *Szabstractfactory) Destroy(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
-
 	return err
 }
 
@@ -182,7 +176,6 @@ Input
 */
 func (factory *Szabstractfactory) Reinitialize(ctx context.Context, configID int64) error {
 	var err error
-
 	szDiagnostic := &szdiagnostic.Szdiagnostic{
 		GrpcClient: szdiagnosticpb.NewSzDiagnosticClient(factory.GrpcConnection),
 	}
@@ -190,7 +183,6 @@ func (factory *Szabstractfactory) Reinitialize(ctx context.Context, configID int
 	if err != nil {
 		return err
 	}
-
 	szEngine := &szengine.Szengine{
 		GrpcClient: szenginepb.NewSzEngineClient(factory.GrpcConnection),
 	}
@@ -198,6 +190,5 @@ func (factory *Szabstractfactory) Reinitialize(ctx context.Context, configID int
 	if err != nil {
 		return err
 	}
-
 	return err
 }
