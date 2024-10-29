@@ -83,30 +83,6 @@ func ExampleSzproduct_GetObserverOrigin() {
 }
 
 // ----------------------------------------------------------------------------
-// Object creation / destruction
-// ----------------------------------------------------------------------------
-
-func ExampleSzproduct_Initialize() {
-	// For more information, visit https://github.com/senzing-garage/sz-sdk-go-grpc/blob/main/szproduct/szproduct_examples_test.go
-	ctx := context.TODO()
-	szProduct, err := getSzProduct(ctx)
-	if err != nil {
-		fmt.Println(err)
-	}
-	instanceName := "Test name"
-	settings, err := getSettings()
-	if err != nil {
-		fmt.Println(err)
-	}
-	verboseLogging := senzing.SzNoLogging
-	err = szProduct.Initialize(ctx, instanceName, settings, verboseLogging)
-	if err != nil {
-		fmt.Println(err)
-	}
-	// Output:
-}
-
-// ----------------------------------------------------------------------------
 // Helper functions
 // ----------------------------------------------------------------------------
 
