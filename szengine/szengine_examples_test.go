@@ -791,29 +791,6 @@ func ExampleSzengine_Initialize() {
 	// Output:
 }
 
-func ExampleSzengine_Reinitialize() {
-	// For more information, visit https://github.com/senzing-garage/sz-sdk-go-grpc/blob/main/szengine/szengine_examples_test.go
-	ctx := context.TODO()
-	szEngine := getSzEngineExample(ctx)
-	configID, _ := szEngine.GetActiveConfigID(ctx)
-	err := szEngine.Reinitialize(ctx, configID)
-	if err != nil {
-		fmt.Println(err)
-	}
-	// Output:
-}
-
-func ExampleSzengine_Destroy() {
-	// For more information, visit https://github.com/senzing-garage/sz-sdk-go-grpc/blob/main/szengine/szengine_examples_test.go
-	ctx := context.TODO()
-	szEngine := getSzEngineExample(ctx)
-	err := szEngine.Destroy(ctx)
-	if err != nil {
-		fmt.Println(err)
-	}
-	// Output:
-}
-
 // ----------------------------------------------------------------------------
 // Helper functions
 // ----------------------------------------------------------------------------

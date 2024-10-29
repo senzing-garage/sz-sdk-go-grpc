@@ -17,6 +17,7 @@ func ExampleSzabstractfactory_CreateSzConfig() {
 	// For more information, visit https://github.com/senzing-garage/sz-sdk-go-grpc/blob/main/szabstractfactory/szabstractfactory_examples_test.go
 	ctx := context.TODO()
 	szAbstractFactory := getSzAbstractFactoryExample(ctx)
+	defer func() { handleError(szAbstractFactory.Destroy(ctx)) }()
 	szConfig, err := szAbstractFactory.CreateSzConfig(ctx)
 	if err != nil {
 		fmt.Println(err)
@@ -29,6 +30,7 @@ func ExampleSzabstractfactory_CreateSzConfigManager() {
 	// For more information, visit https://github.com/senzing-garage/sz-sdk-go-grpc/blob/main/szabstractfactory/szabstractfactory_examples_test.go
 	ctx := context.TODO()
 	szAbstractFactory := getSzAbstractFactoryExample(ctx)
+	defer func() { handleError(szAbstractFactory.Destroy(ctx)) }()
 	szConfigManager, err := szAbstractFactory.CreateSzConfigManager(ctx)
 	if err != nil {
 		fmt.Println(err)
@@ -41,6 +43,7 @@ func ExampleSzabstractfactory_CreateSzDiagnostic() {
 	// For more information, visit https://github.com/senzing-garage/sz-sdk-go-grpc/blob/main/szabstractfactory/szabstractfactory_examples_test.go
 	ctx := context.TODO()
 	szAbstractFactory := getSzAbstractFactoryExample(ctx)
+	defer func() { handleError(szAbstractFactory.Destroy(ctx)) }()
 	szDiagnostic, err := szAbstractFactory.CreateSzDiagnostic(ctx)
 	if err != nil {
 		fmt.Println(err)
@@ -53,6 +56,7 @@ func ExampleSzabstractfactory_CreateSzEngine() {
 	// For more information, visit https://github.com/senzing-garage/sz-sdk-go-grpc/blob/main/szabstractfactory/szabstractfactory_examples_test.go
 	ctx := context.TODO()
 	szAbstractFactory := getSzAbstractFactoryExample(ctx)
+	defer func() { handleError(szAbstractFactory.Destroy(ctx)) }()
 	szEngine, err := szAbstractFactory.CreateSzEngine(ctx)
 	if err != nil {
 		fmt.Println(err)
@@ -65,6 +69,7 @@ func ExampleSzabstractfactory_CreateSzProduct() {
 	// For more information, visit https://github.com/senzing-garage/sz-sdk-go-grpc/blob/main/szabstractfactory/szabstractfactory_examples_test.go
 	ctx := context.TODO()
 	szAbstractFactory := getSzAbstractFactoryExample(ctx)
+	defer func() { handleError(szAbstractFactory.Destroy(ctx)) }()
 	szProduct, err := szAbstractFactory.CreateSzProduct(ctx)
 	if err != nil {
 		fmt.Println(err)
