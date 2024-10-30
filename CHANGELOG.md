@@ -9,6 +9,13 @@ and this project adheres to [Semantic Versioning].
 
 -
 
+## [0.8.4] - 2024-10-30
+
+### Changed in 0.8.4
+
+- Add `Reinitialize()` and `Destroy` to `SzAbstractFactory`
+- Update dependencies
+
 ## [0.8.3] - 2024-10-01
 
 ### Added in 0.8.3

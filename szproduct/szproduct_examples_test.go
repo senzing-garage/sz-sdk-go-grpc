@@ -23,7 +23,7 @@ func ExampleSzproduct_GetLicense() {
 		fmt.Println(err)
 	}
 	fmt.Println(result)
-	// Output: {"customer":"","contract":"","issueDate":"2024-09-26","licenseType":"EVAL (Solely for non-productive use)","licenseLevel":"","billing":"","expireDate":"2025-09-27","recordLimit":500}
+	// Output: {"customer":"","contract":"","issueDate":"2024-10-23","licenseType":"EVAL (Solely for non-productive use)","licenseLevel":"","billing":"","expireDate":"2025-10-24","recordLimit":500}
 }
 
 func ExampleSzproduct_GetVersion() {
@@ -80,41 +80,6 @@ func ExampleSzproduct_GetObserverOrigin() {
 	result := szProduct.GetObserverOrigin(ctx)
 	fmt.Println(result)
 	// Output: Machine: nn; Task: UnitTest
-}
-
-// ----------------------------------------------------------------------------
-// Object creation / destruction
-// ----------------------------------------------------------------------------
-
-func ExampleSzproduct_Initialize() {
-	// For more information, visit https://github.com/senzing-garage/sz-sdk-go-grpc/blob/main/szproduct/szproduct_examples_test.go
-	ctx := context.TODO()
-	szProduct, err := getSzProduct(ctx)
-	if err != nil {
-		fmt.Println(err)
-	}
-	instanceName := "Test name"
-	settings, err := getSettings()
-	if err != nil {
-		fmt.Println(err)
-	}
-	verboseLogging := senzing.SzNoLogging
-	err = szProduct.Initialize(ctx, instanceName, settings, verboseLogging)
-	if err != nil {
-		fmt.Println(err)
-	}
-	// Output:
-}
-
-func ExampleSzproduct_Destroy() {
-	// For more information, visit https://github.com/senzing-garage/sz-sdk-go-grpc/blob/main/szproduct/szproduct_examples_test.go
-	ctx := context.TODO()
-	szProduct := getSzProductExample(ctx)
-	err := szProduct.Destroy(ctx)
-	if err != nil {
-		fmt.Println(err)
-	}
-	// Output:
 }
 
 // ----------------------------------------------------------------------------

@@ -769,52 +769,6 @@ func ExampleSzengine_GetObserverOrigin() {
 }
 
 // ----------------------------------------------------------------------------
-// Object creation / destruction
-// ----------------------------------------------------------------------------
-
-func ExampleSzengine_Initialize() {
-	// For more information, visit https://github.com/senzing-garage/sz-sdk-go-grpc/blob/main/szengine/szengine_examples_test.go
-	ctx := context.TODO()
-	szEngine, err := getSzEngine(ctx)
-	if err != nil {
-		fmt.Println(err)
-	}
-	instanceName := "Test module name"
-	settings := "{}"
-	verboseLogging := senzing.SzNoLogging
-	configID := senzing.SzInitializeWithDefaultConfiguration
-	err = szEngine.Initialize(ctx, instanceName, settings, configID, verboseLogging)
-	if err != nil {
-		// This should produce a "senzing-60144002" error.
-		fmt.Println(err)
-	}
-	// Output:
-}
-
-func ExampleSzengine_Reinitialize() {
-	// For more information, visit https://github.com/senzing-garage/sz-sdk-go-grpc/blob/main/szengine/szengine_examples_test.go
-	ctx := context.TODO()
-	szEngine := getSzEngineExample(ctx)
-	configID, _ := szEngine.GetActiveConfigID(ctx)
-	err := szEngine.Reinitialize(ctx, configID)
-	if err != nil {
-		fmt.Println(err)
-	}
-	// Output:
-}
-
-func ExampleSzengine_Destroy() {
-	// For more information, visit https://github.com/senzing-garage/sz-sdk-go-grpc/blob/main/szengine/szengine_examples_test.go
-	ctx := context.TODO()
-	szEngine := getSzEngineExample(ctx)
-	err := szEngine.Destroy(ctx)
-	if err != nil {
-		fmt.Println(err)
-	}
-	// Output:
-}
-
-// ----------------------------------------------------------------------------
 // Helper functions
 // ----------------------------------------------------------------------------
 
