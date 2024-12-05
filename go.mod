@@ -13,7 +13,7 @@ require (
 	github.com/senzing-garage/sz-sdk-go v0.14.3
 	github.com/senzing-garage/sz-sdk-proto v0.7.10
 	github.com/stretchr/testify v1.10.0
-	google.golang.org/grpc v1.68.0
+	google.golang.org/grpc v1.68.1
 )
 
 require (
