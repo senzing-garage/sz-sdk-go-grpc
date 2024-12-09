@@ -38,7 +38,7 @@ jobs:
       #   timeout-minutes: 12
 
       - name: Install Docker
-        uses: crazy-max/ghaction-setup-docker@v3
+        uses: crazy-max/ghaction-setup-docker@v4
 
       - name: Run gRPC service
         run: docker run --detach --env SENZING_TOOLS_ENABLE_ALL --publish 8261:8261 senzing/serve-grpc:latest
