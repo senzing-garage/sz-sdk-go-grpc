@@ -57,7 +57,6 @@ run-osarch-specific:
 setup-osarch-specific:
 	@docker run \
 		--detach \
-		--env SENZING_TOOLS_DATABASE_URL=sqlite3://na:na@/tmp/sqlite/G2C.db \
 		--env SENZING_TOOLS_ENABLE_ALL=true \
 		--name senzing-serve-grpc \
 		--publish 8261:8261 \
