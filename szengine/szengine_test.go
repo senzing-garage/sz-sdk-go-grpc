@@ -1925,7 +1925,7 @@ func TestSzengine_PreprocessRecord_badRecordDefinition(test *testing.T) {
 	szEngine := getTestObject(ctx, test)
 	flags := senzing.SzWithoutInfo
 	actual, err := szEngine.PreprocessRecord(ctx, badRecordDefinition, flags)
-	require.NoError(test, err)
+	require.ErrorIs(test, err, szerror.ErrSzBadInput)
 	printActual(test, actual)
 }
 
