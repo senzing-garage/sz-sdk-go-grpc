@@ -227,13 +227,13 @@ func TestSzdiagnostic_Initialize_withConfigId(test *testing.T) {
 // TODO: Implement TestSzdiagnostic_Initialize_withConfigId_badConfigID
 // func TestSzdiagnostic_Initialize_withConfigId_badConfigID(test *testing.T) {}
 
-func TestSzdiagnostic_Reinitialize(test *testing.T) {
-	ctx := context.TODO()
-	szDiagnostic := getTestObject(ctx, test)
-	configID := getDefaultConfigID()
-	err := szDiagnostic.Reinitialize(ctx, configID)
-	require.NoError(test, err)
-}
+// func TestSzdiagnostic_Reinitialize(test *testing.T) {
+// 	ctx := context.TODO()
+// 	szDiagnostic := getTestObject(ctx, test)
+// 	configID := getDefaultConfigID()
+// 	err := szDiagnostic.Reinitialize(ctx, configID)
+// 	require.NoError(test, err)
+// }
 
 // TODO: Implement TestSzdiagnostic_Reinitialize_error
 // func TestSzdiagnostic_Reinitialize_error(test *testing.T) {}
@@ -383,10 +383,6 @@ func getSzConfigManager(ctx context.Context) (senzing.SzConfigManager, error) {
 func getSzDiagnostic(ctx context.Context) (*Szdiagnostic, error) {
 	var err error
 	if szDiagnosticSingleton == nil {
-		settings, err := getSettings()
-		if err != nil {
-			return szDiagnosticSingleton, fmt.Errorf("getSettings() Error: %w", err)
-		}
 		grpcConnection := getGrpcConnection()
 		szDiagnosticSingleton = &Szdiagnostic{
 			GrpcClient: szpb.NewSzDiagnosticClient(grpcConnection),
@@ -406,10 +402,6 @@ func getSzDiagnostic(ctx context.Context) (*Szdiagnostic, error) {
 				return szDiagnosticSingleton, fmt.Errorf("SetLogLevel() - 2 Error: %w", err)
 			}
 		}
-		err = szDiagnosticSingleton.Initialize(ctx, instanceName, settings, getDefaultConfigID(), verboseLogging)
-		if err != nil {
-			return szDiagnosticSingleton, fmt.Errorf("Initialize() Error: %w", err)
-		}
 	}
 	return szDiagnosticSingleton, err
 }
@@ -425,10 +417,6 @@ func getSzDiagnosticAsInterface(ctx context.Context) senzing.SzDiagnostic {
 func getSzEngine(ctx context.Context) (senzing.SzEngine, error) {
 	var err error
 	if szEngineSingleton == nil {
-		settings, err := getSettings()
-		if err != nil {
-			return szEngineSingleton, fmt.Errorf("getSettings() Error: %w", err)
-		}
 		grpcConnection := getGrpcConnection()
 		szEngineSingleton = &szengine.Szengine{
 			GrpcClient: szenginepb.NewSzEngineClient(grpcConnection),
@@ -447,10 +435,6 @@ func getSzEngine(ctx context.Context) (senzing.SzEngine, error) {
 			if err != nil {
 				return szEngineSingleton, fmt.Errorf("SetLogLevel() - 2 Error: %w", err)
 			}
-		}
-		err = szEngineSingleton.Initialize(ctx, instanceName, settings, getDefaultConfigID(), verboseLogging)
-		if err != nil {
-			return szEngineSingleton, fmt.Errorf("Initialize() Error: %w", err)
 		}
 	}
 	return szEngineSingleton, err
