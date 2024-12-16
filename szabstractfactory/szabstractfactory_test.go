@@ -103,6 +103,49 @@ func TestSzAbstractFactory_Reinitialize(test *testing.T) {
 	require.NoError(test, err)
 }
 
+func TestSzAbstractFactory_Reinitialize_extended(test *testing.T) {
+	ctx := context.TODO()
+	newDataSourceName := "BOB"
+	newRecordID := "9999"
+	newRecord := `{}`
+	szAbstractFactory := getTestObject(ctx, test)
+	defer func() { handleError(szAbstractFactory.Destroy(ctx)) }()
+	szConfigManager, err := szAbstractFactory.CreateConfigManager(ctx)
+	require.NoError(test, err)
+	szConfig, err := szAbstractFactory.CreateConfig(ctx)
+	require.NoError(test, err)
+	szEngine, err := szAbstractFactory.CreateEngine(ctx)
+	require.NoError(test, err)
+
+	oldConfigID, err := szConfigManager.GetDefaultConfigID(ctx)
+	require.NoError(test, err)
+
+	oldJSONConfig, err := szConfigManager.GetConfig(ctx, oldConfigID)
+	require.NoError(test, err)
+
+	configHandle, err := szConfig.ImportConfig(ctx, oldJSONConfig)
+	require.NoError(test, err)
+
+	_, err = szConfig.AddDataSource(ctx, configHandle, newDataSourceName)
+	require.NoError(test, err)
+
+	newJSONConfig, err := szConfig.ExportConfig(ctx, configHandle)
+	require.NoError(test, err)
+
+	newConfigID, err := szConfigManager.AddConfig(ctx, newJSONConfig, "Add TruthSet datasources")
+	require.NoError(test, err)
+
+	err = szConfigManager.ReplaceDefaultConfigID(ctx, oldConfigID, newConfigID)
+	require.NoError(test, err)
+
+	err = szAbstractFactory.Reinitialize(ctx, newConfigID)
+	require.NoError(test, err)
+
+	_, err = szEngine.AddRecord(ctx, newDataSourceName, newRecordID, string(newRecord), senzing.SzWithInfo)
+	require.NoError(test, err)
+
+}
+
 // ----------------------------------------------------------------------------
 // Internal functions
 // ----------------------------------------------------------------------------
