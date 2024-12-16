@@ -103,57 +103,65 @@ func TestSzAbstractFactory_Reinitialize(test *testing.T) {
 	require.NoError(test, err)
 }
 
-// func manual_TestSzAbstractFactory_Reinitialize_extended(test *testing.T) {
-// 	ctx := context.TODO()
-// 	newDataSourceName := "BOB"
-// 	newRecordID := "9999"
-// 	newRecord := `{"DATA_SOURCE": "BOB", "RECORD_ID": "9999", "RECORD_TYPE": "PERSON", "PRIMARY_NAME_LAST": "Smith", "PRIMARY_NAME_FIRST": "Bob", "DATE_OF_BIRTH": "11/12/1978", "ADDR_TYPE": "HOME", "ADDR_LINE1": "1515 Adela Lane", "ADDR_CITY": "Las Vegas", "ADDR_STATE": "NV", "ADDR_POSTAL_CODE": "89111", "PHONE_TYPE": "MOBILE", "PHONE_NUMBER": "702-919-1300", "DATE": "3/10/17", "STATUS": "Inactive", "AMOUNT": "200"}`
+func TestSzAbstractFactory_Reinitialize_extended(test *testing.T) {
+	ctx := context.TODO()
+	newDataSourceName := "BOB"
+	newRecordID := "9999"
+	newRecord := `{"DATA_SOURCE": "BOB", "RECORD_ID": "9999", "RECORD_TYPE": "PERSON", "PRIMARY_NAME_LAST": "Smith", "PRIMARY_NAME_FIRST": "Bob", "DATE_OF_BIRTH": "11/12/1978", "ADDR_TYPE": "HOME", "ADDR_LINE1": "1515 Adela Lane", "ADDR_CITY": "Las Vegas", "ADDR_STATE": "NV", "ADDR_POSTAL_CODE": "89111", "PHONE_TYPE": "MOBILE", "PHONE_NUMBER": "702-919-1300", "DATE": "3/10/17", "STATUS": "Inactive", "AMOUNT": "200"}`
 
-// 	szAbstractFactory := getTestObject(ctx, test)
-// 	defer func() { handleError(szAbstractFactory.Destroy(ctx)) }()
-// 	szConfigManager, err := szAbstractFactory.CreateConfigManager(ctx)
-// 	require.NoError(test, err)
-// 	szConfig, err := szAbstractFactory.CreateConfig(ctx)
-// 	require.NoError(test, err)
-// 	szEngine, err := szAbstractFactory.CreateEngine(ctx)
-// 	require.NoError(test, err)
+	szAbstractFactory := getTestObject(ctx, test)
+	defer func() { handleError(szAbstractFactory.Destroy(ctx)) }()
+	szConfigManager, err := szAbstractFactory.CreateConfigManager(ctx)
+	require.NoError(test, err)
+	szConfig, err := szAbstractFactory.CreateConfig(ctx)
+	require.NoError(test, err)
+	szDiagnostic, err := szAbstractFactory.CreateDiagnostic(ctx)
+	require.NoError(test, err)
+	szEngine, err := szAbstractFactory.CreateEngine(ctx)
+	require.NoError(test, err)
 
-// 	oldConfigID, err := szConfigManager.GetDefaultConfigID(ctx)
-// 	require.NoError(test, err)
+	oldConfigID, err := szConfigManager.GetDefaultConfigID(ctx)
+	require.NoError(test, err)
 
-// 	oldJSONConfig, err := szConfigManager.GetConfig(ctx, oldConfigID)
-// 	require.NoError(test, err)
+	oldJSONConfig, err := szConfigManager.GetConfig(ctx, oldConfigID)
+	require.NoError(test, err)
 
-// 	configHandle, err := szConfig.ImportConfig(ctx, oldJSONConfig)
-// 	require.NoError(test, err)
+	configHandle, err := szConfig.ImportConfig(ctx, oldJSONConfig)
+	require.NoError(test, err)
 
-// 	_, err = szConfig.AddDataSource(ctx, configHandle, newDataSourceName)
-// 	require.NoError(test, err)
+	_, err = szConfig.AddDataSource(ctx, configHandle, newDataSourceName)
+	require.NoError(test, err)
 
-// 	newJSONConfig, err := szConfig.ExportConfig(ctx, configHandle)
-// 	require.NoError(test, err)
+	newJSONConfig, err := szConfig.ExportConfig(ctx, configHandle)
+	require.NoError(test, err)
 
-// 	newConfigID, err := szConfigManager.AddConfig(ctx, newJSONConfig, "Add TruthSet datasources")
-// 	require.NoError(test, err)
+	newConfigID, err := szConfigManager.AddConfig(ctx, newJSONConfig, "Add TruthSet datasources")
+	require.NoError(test, err)
 
-// 	err = szConfigManager.ReplaceDefaultConfigID(ctx, oldConfigID, newConfigID)
-// 	require.NoError(test, err)
+	err = szConfigManager.ReplaceDefaultConfigID(ctx, oldConfigID, newConfigID)
+	require.NoError(test, err)
 
-// 	err = szAbstractFactory.Reinitialize(ctx, newConfigID)
-// 	require.NoError(test, err)
+	err = szAbstractFactory.Reinitialize(ctx, newConfigID)
+	require.NoError(test, err)
 
-// 	_, err = szEngine.AddRecord(ctx, newDataSourceName, newRecordID, string(newRecord), senzing.SzWithInfo)
-// 	require.NoError(test, err)
+	_, err = szEngine.AddRecord(ctx, newDataSourceName, newRecordID, string(newRecord), senzing.SzWithInfo)
+	require.NoError(test, err)
 
-// 	_, err = szEngine.DeleteRecord(ctx, newDataSourceName, newRecordID, senzing.SzWithInfo)
-// 	require.NoError(test, err)
+	_, err = szEngine.DeleteRecord(ctx, newDataSourceName, newRecordID, senzing.SzWithInfo)
+	require.NoError(test, err)
 
-// 	err = szConfigManager.ReplaceDefaultConfigID(ctx, newConfigID, oldConfigID)
-// 	require.NoError(test, err)
+	err = szDiagnostic.PurgeRepository(ctx)
+	require.NoError(test, err)
 
-// 	err = szAbstractFactory.Reinitialize(ctx, oldConfigID)
-// 	require.NoError(test, err)
-// }
+	err = szConfigManager.ReplaceDefaultConfigID(ctx, newConfigID, oldConfigID)
+	require.NoError(test, err)
+
+	err = szAbstractFactory.Reinitialize(ctx, oldConfigID)
+	require.NoError(test, err)
+
+	_, err = szDiagnostic.CheckDatastorePerformance(ctx, 1)
+	require.NoError(test, err)
+}
 
 // ----------------------------------------------------------------------------
 // Internal functions
