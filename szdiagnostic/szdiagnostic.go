@@ -188,7 +188,7 @@ func (client *Szdiagnostic) Reinitialize(ctx context.Context, configID int64) er
 		client.traceEntry(19, configID)
 		defer func() { client.traceExit(20, configID, err, time.Since(entryTime)) }()
 	}
-	client.reinitialize(ctx, configID)
+	err = client.reinitialize(ctx, configID)
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{
