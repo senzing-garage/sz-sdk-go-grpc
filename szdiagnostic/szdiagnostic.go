@@ -188,6 +188,7 @@ func (client *Szdiagnostic) Reinitialize(ctx context.Context, configID int64) er
 		client.traceEntry(19, configID)
 		defer func() { client.traceExit(20, configID, err, time.Since(entryTime)) }()
 	}
+	err = client.reinitialize(ctx, configID)
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{
@@ -387,6 +388,15 @@ func (client *Szdiagnostic) getFeature(ctx context.Context, featureID int64) (st
 func (client *Szdiagnostic) purgeRepository(ctx context.Context) error {
 	request := szpb.PurgeRepositoryRequest{}
 	_, err := client.GrpcClient.PurgeRepository(ctx, &request)
+	err = helper.ConvertGrpcError(err)
+	return err
+}
+
+func (client *Szdiagnostic) reinitialize(ctx context.Context, configID int64) error {
+	request := szpb.ReinitializeRequest{
+		ConfigId: configID,
+	}
+	_, err := client.GrpcClient.Reinitialize(ctx, &request)
 	err = helper.ConvertGrpcError(err)
 	return err
 }

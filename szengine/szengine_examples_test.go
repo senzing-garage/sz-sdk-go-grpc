@@ -63,7 +63,7 @@ func ExampleSzengine_AddRecord_withInfo() {
 		fmt.Println(err)
 	}
 	fmt.Println(result)
-	// Output: {"DATA_SOURCE":"CUSTOMERS","RECORD_ID":"1003","AFFECTED_ENTITIES":[{"ENTITY_ID":213}],"INTERESTING_ENTITIES":{"ENTITIES":[]}}
+	// Output: {"DATA_SOURCE":"CUSTOMERS","RECORD_ID":"1003","AFFECTED_ENTITIES":[{"ENTITY_ID":100001}],"INTERESTING_ENTITIES":{"ENTITIES":[]}}
 }
 
 func ExampleSzengine_CloseExport() {
@@ -261,7 +261,7 @@ func ExampleSzengine_FindNetworkByEntityID() {
 		fmt.Println(err)
 	}
 	fmt.Println(result)
-	// Output: {"ENTITY_PATHS":[],"ENTITIES":[{"RESOLVED_ENTITY":{"ENTITY_ID":213}}]}
+	// Output: {"ENTITY_PATHS":[],"ENTITIES":[{"RESOLVED_ENTITY":{"ENTITY_ID":100001}}]}
 }
 
 func ExampleSzengine_FindNetworkByRecordID() {
@@ -278,7 +278,7 @@ func ExampleSzengine_FindNetworkByRecordID() {
 		fmt.Println(err)
 	}
 	fmt.Println(result)
-	// Output: {"ENTITY_PATHS":[],"ENTITIES":[{"RESOLVED_ENTITY":{"ENTITY_ID":213}}]}
+	// Output: {"ENTITY_PATHS":[],"ENTITIES":[{"RESOLVED_ENTITY":{"ENTITY_ID":100001}}]}
 }
 
 func ExampleSzengine_FindPathByEntityID() {
@@ -301,8 +301,8 @@ func ExampleSzengine_FindPathByEntityID() {
 	if err != nil {
 		fmt.Println(err)
 	}
-	fmt.Println(truncate(result, 107))
-	// Output: {"ENTITY_PATHS":[{"START_ENTITY_ID":213,"END_ENTITY_ID":213,"ENTITIES":[213]}],"ENTITIES":[{"RESOLVED_EN...
+	fmt.Println(truncate(result, 116))
+	// Output: {"ENTITY_PATHS":[{"START_ENTITY_ID":100001,"END_ENTITY_ID":100001,"ENTITIES":[100001]}],"ENTITIES":[{"RESOLVED_EN...
 }
 
 func ExampleSzengine_FindPathByEntityID_avoiding() {
@@ -363,8 +363,8 @@ func ExampleSzengine_FindPathByRecordID() {
 	if err != nil {
 		fmt.Println(err)
 	}
-	fmt.Println(truncate(result, 87))
-	// Output: {"ENTITY_PATHS":[{"START_ENTITY_ID":213,"END_ENTITY_ID":213,"ENTITIES":[213]}],"ENTI...
+	fmt.Println(truncate(result, 96))
+	// Output: {"ENTITY_PATHS":[{"START_ENTITY_ID":100001,"END_ENTITY_ID":100001,"ENTITIES":[100001]}],"ENTI...
 }
 
 func ExampleSzengine_FindPathByRecordID_avoiding() {
@@ -439,7 +439,7 @@ func ExampleSzengine_GetEntityByEntityID() {
 		fmt.Println(err)
 	}
 	fmt.Println(result)
-	// Output: {"RESOLVED_ENTITY":{"ENTITY_ID":213}}
+	// Output: {"RESOLVED_ENTITY":{"ENTITY_ID":100001}}
 }
 
 func ExampleSzengine_GetEntityByRecordID() {
@@ -454,7 +454,7 @@ func ExampleSzengine_GetEntityByRecordID() {
 		fmt.Println(err)
 	}
 	fmt.Println(result)
-	// Output: {"RESOLVED_ENTITY":{"ENTITY_ID":213}}
+	// Output: {"RESOLVED_ENTITY":{"ENTITY_ID":100001}}
 }
 
 func ExampleSzengine_GetRecord() {
@@ -507,7 +507,7 @@ func ExampleSzengine_GetVirtualEntityByRecordID() {
 		fmt.Println(err)
 	}
 	fmt.Println(result)
-	// Output: {"RESOLVED_ENTITY":{"ENTITY_ID":213}}
+	// Output: {"RESOLVED_ENTITY":{"ENTITY_ID":100001}}
 }
 
 func ExampleSzengine_HowEntityByEntityID() {
@@ -524,7 +524,7 @@ func ExampleSzengine_HowEntityByEntityID() {
 		fmt.Println(err)
 	}
 	fmt.Println(jsonutil.Flatten(jsonutil.NormalizeAndSort(jsonutil.Flatten(jsonutil.Redact(result, "RECORD_ID", "INBOUND_FEAT_USAGE_TYPE")))))
-	// Output: {"HOW_RESULTS":{"FINAL_STATE":{"NEED_REEVALUATION":0,"VIRTUAL_ENTITIES":[{"MEMBER_RECORDS":[{"INTERNAL_ID":213,"RECORDS":[{"DATA_SOURCE":"CUSTOMERS","RECORD_ID":null}]},{"INTERNAL_ID":214,"RECORDS":[{"DATA_SOURCE":"CUSTOMERS","RECORD_ID":null}]}],"VIRTUAL_ENTITY_ID":"V213-S1"}]},"RESOLUTION_STEPS":[{"INBOUND_VIRTUAL_ENTITY_ID":"V214","MATCH_INFO":{"ERRULE_CODE":"CNAME_CFF_CEXCL","MATCH_KEY":"+NAME+DOB+PHONE"},"RESULT_VIRTUAL_ENTITY_ID":"V213-S1","STEP":1,"VIRTUAL_ENTITY_1":{"MEMBER_RECORDS":[{"INTERNAL_ID":213,"RECORDS":[{"DATA_SOURCE":"CUSTOMERS","RECORD_ID":null}]}],"VIRTUAL_ENTITY_ID":"V213"},"VIRTUAL_ENTITY_2":{"MEMBER_RECORDS":[{"INTERNAL_ID":214,"RECORDS":[{"DATA_SOURCE":"CUSTOMERS","RECORD_ID":null}]}],"VIRTUAL_ENTITY_ID":"V214"}}]}}
+	// Output: {"HOW_RESULTS":{"FINAL_STATE":{"NEED_REEVALUATION":0,"VIRTUAL_ENTITIES":[{"MEMBER_RECORDS":[{"INTERNAL_ID":100001,"RECORDS":[{"DATA_SOURCE":"CUSTOMERS","RECORD_ID":null}]},{"INTERNAL_ID":100002,"RECORDS":[{"DATA_SOURCE":"CUSTOMERS","RECORD_ID":null}]}],"VIRTUAL_ENTITY_ID":"V100001-S1"}]},"RESOLUTION_STEPS":[{"INBOUND_VIRTUAL_ENTITY_ID":"V100002","MATCH_INFO":{"ERRULE_CODE":"CNAME_CFF_CEXCL","MATCH_KEY":"+NAME+DOB+PHONE"},"RESULT_VIRTUAL_ENTITY_ID":"V100001-S1","STEP":1,"VIRTUAL_ENTITY_1":{"MEMBER_RECORDS":[{"INTERNAL_ID":100001,"RECORDS":[{"DATA_SOURCE":"CUSTOMERS","RECORD_ID":null}]}],"VIRTUAL_ENTITY_ID":"V100001"},"VIRTUAL_ENTITY_2":{"MEMBER_RECORDS":[{"INTERNAL_ID":100002,"RECORDS":[{"DATA_SOURCE":"CUSTOMERS","RECORD_ID":null}]}],"VIRTUAL_ENTITY_ID":"V100002"}}]}}
 }
 
 func ExampleSzengine_PreprocessRecord() {
@@ -619,7 +619,7 @@ func ExampleSzengine_ReevaluateEntity_withInfo() {
 		fmt.Println(err)
 	}
 	fmt.Println(result)
-	// Output: {"DATA_SOURCE":"CUSTOMERS","RECORD_ID":"1001","AFFECTED_ENTITIES":[{"ENTITY_ID":213}],"INTERESTING_ENTITIES":{"ENTITIES":[]}}
+	// Output: {"DATA_SOURCE":"CUSTOMERS","RECORD_ID":"1001","AFFECTED_ENTITIES":[{"ENTITY_ID":100001}],"INTERESTING_ENTITIES":{"ENTITIES":[]}}
 }
 
 func ExampleSzengine_ReevaluateRecord() {
@@ -649,7 +649,7 @@ func ExampleSzengine_ReevaluateRecord_withInfo() {
 		fmt.Println(err)
 	}
 	fmt.Println(result)
-	// Output: {"DATA_SOURCE":"CUSTOMERS","RECORD_ID":"1001","AFFECTED_ENTITIES":[{"ENTITY_ID":213}],"INTERESTING_ENTITIES":{"ENTITIES":[]}}
+	// Output: {"DATA_SOURCE":"CUSTOMERS","RECORD_ID":"1001","AFFECTED_ENTITIES":[{"ENTITY_ID":100001}],"INTERESTING_ENTITIES":{"ENTITIES":[]}}
 }
 
 func ExampleSzengine_SearchByAttributes() {
@@ -664,7 +664,7 @@ func ExampleSzengine_SearchByAttributes() {
 		fmt.Println(err)
 	}
 	fmt.Println(jsonutil.Flatten(jsonutil.Redact(jsonutil.Flatten(jsonutil.NormalizeAndSort(result)), "FIRST_SEEN_DT", "LAST_SEEN_DT")))
-	// Output: {"RESOLVED_ENTITIES":[{"ENTITY":{"RESOLVED_ENTITY":{"ENTITY_ID":213}},"MATCH_INFO":{"ERRULE_CODE":"SF1","MATCH_KEY":"+PNAME+EMAIL","MATCH_LEVEL_CODE":"POSSIBLY_RELATED"}}]}
+	// Output: {"RESOLVED_ENTITIES":[{"ENTITY":{"RESOLVED_ENTITY":{"ENTITY_ID":100001}},"MATCH_INFO":{"ERRULE_CODE":"SF1","MATCH_KEY":"+PNAME+EMAIL","MATCH_LEVEL_CODE":"POSSIBLY_RELATED"}}]}
 }
 
 func ExampleSzEngine_SearchByAttributes_searchProfile() {
@@ -688,8 +688,8 @@ func ExampleSzengine_WhyEntities() {
 	if err != nil {
 		fmt.Println(err)
 	}
-	fmt.Println(truncate(result, 74))
-	// Output: {"WHY_RESULTS":[{"ENTITY_ID":213,"ENTITY_ID_2":213,"MATCH_INFO":{"WHY_K...
+	fmt.Println(truncate(result, 80))
+	// Output: {"WHY_RESULTS":[{"ENTITY_ID":100001,"ENTITY_ID_2":100001,"MATCH_INFO":{"WHY_K...
 }
 
 func ExampleSzengine_WhyRecordInEntity() {
@@ -704,7 +704,7 @@ func ExampleSzengine_WhyRecordInEntity() {
 		fmt.Println(err)
 	}
 	fmt.Println(result)
-	// Output: {"WHY_RESULTS":[{"INTERNAL_ID":213,"ENTITY_ID":213,"FOCUS_RECORDS":[{"DATA_SOURCE":"CUSTOMERS","RECORD_ID":"1001"}],"MATCH_INFO":{"WHY_KEY":"+NAME+DOB+PHONE","WHY_ERRULE_CODE":"CNAME_CFF_CEXCL","MATCH_LEVEL_CODE":"RESOLVED"}}],"ENTITIES":[{"RESOLVED_ENTITY":{"ENTITY_ID":213}}]}
+	// Output: {"WHY_RESULTS":[{"INTERNAL_ID":100001,"ENTITY_ID":100001,"FOCUS_RECORDS":[{"DATA_SOURCE":"CUSTOMERS","RECORD_ID":"1001"}],"MATCH_INFO":{"WHY_KEY":"+NAME+DOB+PHONE","WHY_ERRULE_CODE":"CNAME_CFF_CEXCL","MATCH_LEVEL_CODE":"RESOLVED"}}],"ENTITIES":[{"RESOLVED_ENTITY":{"ENTITY_ID":100001}}]}
 }
 
 func ExampleSzengine_WhyRecords() {
@@ -720,8 +720,8 @@ func ExampleSzengine_WhyRecords() {
 	if err != nil {
 		fmt.Println(err)
 	}
-	fmt.Println(truncate(result, 115))
-	// Output: {"WHY_RESULTS":[{"INTERNAL_ID":213,"ENTITY_ID":213,"FOCUS_RECORDS":[{"DATA_SOURCE":"CUSTOMERS","RECORD_ID":"1001...
+	fmt.Println(truncate(result, 121))
+	// Output: {"WHY_RESULTS":[{"INTERNAL_ID":100001,"ENTITY_ID":100001,"FOCUS_RECORDS":[{"DATA_SOURCE":"CUSTOMERS","RECORD_ID":"1001...
 }
 
 // ----------------------------------------------------------------------------

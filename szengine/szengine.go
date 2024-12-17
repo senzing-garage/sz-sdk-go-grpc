@@ -1077,6 +1077,7 @@ func (client *Szengine) Reinitialize(ctx context.Context, configID int64) error 
 		client.traceEntry(65, configID)
 		defer func() { client.traceExit(66, configID, err, time.Since(entryTime)) }()
 	}
+	err = client.reinitialize(ctx, configID)
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{
@@ -1680,6 +1681,15 @@ func (client *Szengine) reevaluateRecord(ctx context.Context, dataSourceCode str
 	result := response.GetResult()
 	err = helper.ConvertGrpcError(err)
 	return result, err
+}
+
+func (client *Szengine) reinitialize(ctx context.Context, configID int64) error {
+	request := szpb.ReinitializeRequest{
+		ConfigId: configID,
+	}
+	_, err := client.GrpcClient.Reinitialize(ctx, &request)
+	err = helper.ConvertGrpcError(err)
+	return err
 }
 
 func (client *Szengine) searchByAttributes(ctx context.Context, attributes string, searchProfile string, flags int64) (string, error) {
