@@ -57,7 +57,7 @@ func ExampleSzengine_AddRecord() {
 		handleError(err)
 	}
 	fmt.Println(result)
-	// Output: {}
+	// Output:
 }
 
 func ExampleSzengine_AddRecord_secondRecord() {
@@ -77,7 +77,7 @@ func ExampleSzengine_AddRecord_secondRecord() {
 		handleError(err)
 	}
 	fmt.Println(result)
-	// Output: {}
+	// Output:
 }
 
 func ExampleSzengine_AddRecord_withInfo() {
@@ -152,7 +152,7 @@ func ExampleSzengine_DeleteRecord() {
 		handleError(err)
 	}
 	fmt.Println(result)
-	// Output: {}
+	// Output:
 }
 
 func ExampleSzengine_DeleteRecord_withInfo() {
@@ -668,7 +668,7 @@ func ExampleSzengine_PreprocessRecord() {
 		handleError(err)
 	}
 	fmt.Println(result)
-	// Output: {}
+	// Output:
 }
 
 func ExampleSzengine_PrimeEngine() {
@@ -701,7 +701,7 @@ func ExampleSzEngine_ProcessRedoRecord() {
 	// 	handleError(err)
 	// }
 	// fmt.Println(result)
-	// // Output: {}
+	// // Output:
 }
 
 func ExampleSzEngine_ProcessRedoRecord_withInfo() {
@@ -740,7 +740,7 @@ func ExampleSzengine_ReevaluateEntity() {
 		handleError(err)
 	}
 	fmt.Println(result)
-	// Output: {}
+	// Output:
 }
 
 func ExampleSzengine_ReevaluateEntity_withInfo() {
@@ -780,7 +780,7 @@ func ExampleSzengine_ReevaluateRecord() {
 		handleError(err)
 	}
 	fmt.Println(result)
-	// Output: {}
+	// Output:
 }
 
 func ExampleSzengine_ReevaluateRecord_withInfo() {
