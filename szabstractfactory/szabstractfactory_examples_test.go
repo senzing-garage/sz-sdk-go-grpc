@@ -135,5 +135,7 @@ func getSzAbstractFactory(ctx context.Context) senzing.SzAbstractFactory {
 }
 
 func handleError(err error) {
-	fmt.Println(err)
+	if err != nil {
+		fmt.Println("Error:", err)
+	}
 }

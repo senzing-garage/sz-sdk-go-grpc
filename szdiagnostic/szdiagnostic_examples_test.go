@@ -1,13 +1,23 @@
 //go:build linux
 
-package szdiagnostic
+package szdiagnostic_test
 
 import (
 	"context"
 	"fmt"
 
+	"github.com/senzing-garage/go-helpers/jsonutil"
 	"github.com/senzing-garage/go-logging/logging"
+	"github.com/senzing-garage/sz-sdk-go-grpc/szabstractfactory"
+	"github.com/senzing-garage/sz-sdk-go-grpc/szdiagnostic"
 	"github.com/senzing-garage/sz-sdk-go/senzing"
+	szdiagnosticpb "github.com/senzing-garage/sz-sdk-proto/go/szdiagnostic"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
+)
+
+var (
+	grpcAddress = "localhost:8261"
 )
 
 // ----------------------------------------------------------------------------
@@ -17,36 +27,48 @@ import (
 func ExampleSzdiagnostic_CheckDatastorePerformance() {
 	// For more information, visit https://github.com/senzing-garage/sz-sdk-go-grpc/blob/main/szdiagnostic/szdiagnostic_examples_test.go
 	ctx := context.TODO()
-	szDiagnostic := getSzDiagnosticExample(ctx)
+	szAbstractFactory := getSzAbstractFactory(ctx)
+	szDiagnostic, err := szAbstractFactory.CreateDiagnostic(ctx)
+	if err != nil {
+		handleError(err)
+	}
 	secondsToRun := 1
 	result, err := szDiagnostic.CheckDatastorePerformance(ctx, secondsToRun)
 	if err != nil {
-		fmt.Println(err)
+		handleError(err)
 	}
-	fmt.Println(truncate(result, 25))
-	// Output: {"numRecordsInserted":...
+	fmt.Println(jsonutil.Truncate(result, 2))
+	// Output: {"insertTime":1000,...
 }
 
 func ExampleSzdiagnostic_GetDatastoreInfo() {
 	// For more information, visit https://github.com/senzing-garage/sz-sdk-go-grpc/blob/main/szdiagnostic/szdiagnostic_examples_test.go
 	ctx := context.TODO()
-	szDiagnostic := getSzDiagnosticExample(ctx)
+	szAbstractFactory := getSzAbstractFactory(ctx)
+	szDiagnostic, err := szAbstractFactory.CreateDiagnostic(ctx)
+	if err != nil {
+		handleError(err)
+	}
 	result, err := szDiagnostic.GetDatastoreInfo(ctx)
 	if err != nil {
-		fmt.Println(err)
+		handleError(err)
 	}
-	fmt.Println(truncate(result, 61))
-	// Output: {"dataStores":[{"id":"CORE","type":"sqlite3","location":"n...
+	fmt.Println(result)
+	// Output: {"dataStores":[{"id":"CORE","type":"sqlite3","location":"nowhere"}]}
 }
 
 func ExampleSzdiagnostic_GetFeature() {
 	// For more information, visit https://github.com/senzing-garage/sz-sdk-go-grpc/blob/main/szdiagnostic/szdiagnostic_examples_test.go
 	ctx := context.TODO()
-	szDiagnostic := getSzDiagnosticExample(ctx)
+	szAbstractFactory := getSzAbstractFactory(ctx)
+	szDiagnostic, err := szAbstractFactory.CreateDiagnostic(ctx)
+	if err != nil {
+		handleError(err)
+	}
 	featureID := int64(1)
 	result, err := szDiagnostic.GetFeature(ctx, featureID)
 	if err != nil {
-		fmt.Println(err)
+		handleError(err)
 	}
 	fmt.Println(result)
 	// Output: {"LIB_FEAT_ID":1,"FTYPE_CODE":"NAME","ELEMENTS":[{"FELEM_CODE":"FULL_NAME","FELEM_VALUE":"Robert Smith"},{"FELEM_CODE":"SUR_NAME","FELEM_VALUE":"Smith"},{"FELEM_CODE":"GIVEN_NAME","FELEM_VALUE":"Robert"},{"FELEM_CODE":"CULTURE","FELEM_VALUE":"ANGLO"},{"FELEM_CODE":"CATEGORY","FELEM_VALUE":"PERSON"},{"FELEM_CODE":"TOKENIZED_NM","FELEM_VALUE":"ROBERT|SMITH"}]}
@@ -55,10 +77,14 @@ func ExampleSzdiagnostic_GetFeature() {
 func ExampleSzdiagnostic_PurgeRepository() {
 	// For more information, visit https://github.com/senzing-garage/sz-sdk-go-grpc/blob/main/szdiagnostic/szdiagnostic_examples_test.go
 	ctx := context.TODO()
-	szDiagnostic := getSzDiagnosticExample(ctx)
-	err := szDiagnostic.PurgeRepository(ctx)
+	szAbstractFactory := getSzAbstractFactory(ctx)
+	szDiagnostic, err := szAbstractFactory.CreateDiagnostic(ctx)
 	if err != nil {
-		fmt.Println(err)
+		handleError(err)
+	}
+	err = szDiagnostic.PurgeRepository(ctx)
+	if err != nil {
+		handleError(err)
 	}
 	// Output:
 }
@@ -70,13 +96,10 @@ func ExampleSzdiagnostic_PurgeRepository() {
 func ExampleSzdiagnostic_SetLogLevel() {
 	// For more information, visit https://github.com/senzing-garage/sz-sdk-go-grpc/blob/main/szdiagnostic/szdiagnostic_examples_test.go
 	ctx := context.TODO()
-	szDiagnostic, err := getSzDiagnostic(ctx)
+	szDiagnostic := getSzDiagnostic(ctx)
+	err := szDiagnostic.SetLogLevel(ctx, logging.LevelInfoName)
 	if err != nil {
-		fmt.Println(err)
-	}
-	err = szDiagnostic.SetLogLevel(ctx, logging.LevelInfoName)
-	if err != nil {
-		fmt.Println(err)
+		handleError(err)
 	}
 	// Output:
 }
@@ -84,10 +107,7 @@ func ExampleSzdiagnostic_SetLogLevel() {
 func ExampleSzdiagnostic_SetObserverOrigin() {
 	// For more information, visit https://github.com/senzing-garage/sz-sdk-go-grpc/blob/main/szdiagnostic/szdiagnostic_examples_test.go
 	ctx := context.TODO()
-	szDiagnostic, err := getSzDiagnostic(ctx)
-	if err != nil {
-		fmt.Println(err)
-	}
+	szDiagnostic := getSzDiagnostic(ctx)
 	origin := "Machine: nn; Task: UnitTest"
 	szDiagnostic.SetObserverOrigin(ctx, origin)
 	// Output:
@@ -96,10 +116,7 @@ func ExampleSzdiagnostic_SetObserverOrigin() {
 func ExampleSzdiagnostic_GetObserverOrigin() {
 	// For more information, visit https://github.com/senzing-garage/sz-sdk-go-grpc/blob/main/szdiagnostic/szdiagnostic_examples_test.go
 	ctx := context.TODO()
-	szDiagnostic, err := getSzDiagnostic(ctx)
-	if err != nil {
-		fmt.Println(err)
-	}
+	szDiagnostic := getSzDiagnostic(ctx)
 	origin := "Machine: nn; Task: UnitTest"
 	szDiagnostic.SetObserverOrigin(ctx, origin)
 	result := szDiagnostic.GetObserverOrigin(ctx)
@@ -111,10 +128,34 @@ func ExampleSzdiagnostic_GetObserverOrigin() {
 // Helper functions
 // ----------------------------------------------------------------------------
 
-func getSzDiagnosticExample(ctx context.Context) senzing.SzDiagnostic {
-	result, err := getSzDiagnostic(ctx)
+func getSzAbstractFactory(ctx context.Context) senzing.SzAbstractFactory {
+	var err error
+	var result senzing.SzAbstractFactory
+	_ = ctx
+	grpcConnection, err := grpc.NewClient(grpcAddress, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		panic(err)
 	}
+	result = &szabstractfactory.Szabstractfactory{
+		GrpcConnection: grpcConnection,
+	}
 	return result
+}
+
+func getSzDiagnostic(ctx context.Context) *szdiagnostic.Szdiagnostic {
+	_ = ctx
+	grpcConnection, err := grpc.NewClient(grpcAddress, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	if err != nil {
+		panic(err)
+	}
+	result := &szdiagnostic.Szdiagnostic{
+		GrpcClient: szdiagnosticpb.NewSzDiagnosticClient(grpcConnection),
+	}
+	return result
+}
+
+func handleError(err error) {
+	if err != nil {
+		fmt.Println("Error:", err)
+	}
 }

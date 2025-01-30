@@ -226,5 +226,7 @@ func getSzConfigManager(ctx context.Context) *szconfigmanager.Szconfigmanager {
 }
 
 func handleError(err error) {
-	fmt.Println(err)
+	if err != nil {
+		fmt.Println("Error:", err)
+	}
 }

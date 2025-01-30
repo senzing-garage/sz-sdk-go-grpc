@@ -230,5 +230,7 @@ func getSzConfig(ctx context.Context) *szconfig.Szconfig {
 }
 
 func handleError(err error) {
-	fmt.Println(err)
+	if err != nil {
+		fmt.Println("Error:", err)
+	}
 }
