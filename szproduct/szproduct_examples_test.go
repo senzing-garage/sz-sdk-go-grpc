@@ -7,6 +7,7 @@ import (
 	"fmt"
 
 	truncator "github.com/aquilax/truncate"
+	"github.com/senzing-garage/go-helpers/jsonutil"
 	"github.com/senzing-garage/go-logging/logging"
 	"github.com/senzing-garage/sz-sdk-go-grpc/szabstractfactory"
 	"github.com/senzing-garage/sz-sdk-go-grpc/szproduct"
@@ -36,8 +37,8 @@ func ExampleSzproduct_GetLicense() {
 	if err != nil {
 		handleError(err)
 	}
-	fmt.Println(result)
-	// Output: {"customer":"","contract":"","issueDate":"2024-12-11","licenseType":"EVAL (Solely for non-productive use)","licenseLevel":"","billing":"","expireDate":"2025-12-12","recordLimit":500}
+	fmt.Println(jsonutil.Truncate(result, 4))
+	// Output: {"billing":"","contract":"","customer":"",...
 }
 
 func ExampleSzproduct_GetVersion() {

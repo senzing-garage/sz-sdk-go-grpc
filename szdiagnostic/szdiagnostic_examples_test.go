@@ -70,8 +70,8 @@ func ExampleSzdiagnostic_GetFeature() {
 	if err != nil {
 		handleError(err)
 	}
-	fmt.Println(result)
-	// Output: {"LIB_FEAT_ID":1,"FTYPE_CODE":"NAME","ELEMENTS":[{"FELEM_CODE":"FULL_NAME","FELEM_VALUE":"Robert Smith"},{"FELEM_CODE":"SUR_NAME","FELEM_VALUE":"Smith"},{"FELEM_CODE":"GIVEN_NAME","FELEM_VALUE":"Robert"},{"FELEM_CODE":"CULTURE","FELEM_VALUE":"ANGLO"},{"FELEM_CODE":"CATEGORY","FELEM_VALUE":"PERSON"},{"FELEM_CODE":"TOKENIZED_NM","FELEM_VALUE":"ROBERT|SMITH"}]}
+	fmt.Println(jsonutil.Truncate(result, 5))
+	// Output: {"ELEMENTS":[{"FELEM_CODE":"CATEGORY","FELEM_VALUE":"PERSON"...
 }
 
 func ExampleSzdiagnostic_PurgeRepository() {

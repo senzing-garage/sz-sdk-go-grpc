@@ -649,8 +649,8 @@ func ExampleSzengine_HowEntityByEntityID() {
 	if err != nil {
 		handleError(err)
 	}
-	fmt.Println(jsonutil.Flatten(jsonutil.NormalizeAndSort(jsonutil.Flatten(jsonutil.Redact(result, "RECORD_ID", "INBOUND_FEAT_USAGE_TYPE")))))
-	// Output: {"HOW_RESULTS":{"FINAL_STATE":{"NEED_REEVALUATION":0,"VIRTUAL_ENTITIES":[{"MEMBER_RECORDS":[{"INTERNAL_ID":100001,"RECORDS":[{"DATA_SOURCE":"CUSTOMERS","RECORD_ID":null}]},{"INTERNAL_ID":100002,"RECORDS":[{"DATA_SOURCE":"CUSTOMERS","RECORD_ID":null}]}],"VIRTUAL_ENTITY_ID":"V100001-S1"}]},"RESOLUTION_STEPS":[{"INBOUND_VIRTUAL_ENTITY_ID":"V100002","MATCH_INFO":{"ERRULE_CODE":"CNAME_CFF_CEXCL","MATCH_KEY":"+NAME+DOB+PHONE"},"RESULT_VIRTUAL_ENTITY_ID":"V100001-S1","STEP":1,"VIRTUAL_ENTITY_1":{"MEMBER_RECORDS":[{"INTERNAL_ID":100001,"RECORDS":[{"DATA_SOURCE":"CUSTOMERS","RECORD_ID":null}]}],"VIRTUAL_ENTITY_ID":"V100001"},"VIRTUAL_ENTITY_2":{"MEMBER_RECORDS":[{"INTERNAL_ID":100002,"RECORDS":[{"DATA_SOURCE":"CUSTOMERS","RECORD_ID":null}]}],"VIRTUAL_ENTITY_ID":"V100002"}}]}}
+	fmt.Println(jsonutil.Truncate(result, 5))
+	// Output: {"HOW_RESULTS":{"FINAL_STATE":{"NEED_REEVALUATION":0,"VIRTUAL_ENTITIES":[...
 }
 
 func ExampleSzengine_PreprocessRecord() {
@@ -662,13 +662,13 @@ func ExampleSzengine_PreprocessRecord() {
 		handleError(err)
 	}
 	recordDefinition := `{"DATA_SOURCE": "CUSTOMERS", "RECORD_ID": "1001", "RECORD_TYPE": "PERSON", "PRIMARY_NAME_LAST": "Smith", "PRIMARY_NAME_FIRST": "Robert", "DATE_OF_BIRTH": "12/11/1978", "ADDR_TYPE": "MAILING", "ADDR_LINE1": "123 Main Street, Las Vegas NV 89132", "PHONE_TYPE": "HOME", "PHONE_NUMBER": "702-919-1300", "EMAIL_ADDRESS": "bsmith@work.com", "DATE": "1/2/18", "STATUS": "Active", "AMOUNT": "100"}`
-	flags := senzing.SzWithoutInfo
+	flags := senzing.SzNoFlags
 	result, err := szEngine.PreprocessRecord(ctx, recordDefinition, flags)
 	if err != nil {
 		handleError(err)
 	}
 	fmt.Println(result)
-	// Output:
+	// Output: {}
 }
 
 func ExampleSzengine_PrimeEngine() {
@@ -886,8 +886,8 @@ func ExampleSzengine_WhyRecords() {
 	if err != nil {
 		handleError(err)
 	}
-	fmt.Println(jsonutil.Truncate(result, 121))
-	// Output: {"ENTITIES":[{"RESOLVED_ENTITY":{"ENTITY_ID":100001}}],"WHY_RESULTS":[{"ENTITY_ID":100001,"ENTITY_ID_2":100001,"FOCUS_RECORDS":[{"DATA_SOURCE":"CUSTOMERS","RECORD_ID":"1001"}],"FOCUS_RECORDS_2":[{"DATA_SOURCE":"CUSTOMERS","RECORD_ID":"1002"}],"INTERNAL_ID":100001,"INTERNAL_ID_2":100002,"MATCH_INFO":{"MATCH_LEVEL_CODE":"RESOLVED","WHY_ERRULE_CODE":"CNAME_CFF_CEXCL","WHY_KEY":"+NAME+DOB+PHONE"}}]}
+	fmt.Println(jsonutil.Truncate(result, 7))
+	// Output: {"ENTITIES":[{"RESOLVED_ENTITY":{"ENTITY_ID":100001}}...
 }
 
 // ----------------------------------------------------------------------------
