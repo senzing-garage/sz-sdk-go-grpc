@@ -9,9 +9,15 @@ and this project adheres to [Semantic Versioning].
 
 -
 
-## [0.8.6] - 2024-12-17
+## [0.8.7] - 2025-01-31
 
 ### Changed in 0.8.7
+
+- Update dependencies
+
+## [0.8.6] - 2024-12-17
+
+### Changed in 0.8.6
 
 - Fixed `Reinitialize()`
 
