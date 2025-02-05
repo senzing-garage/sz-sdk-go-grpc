@@ -67,7 +67,7 @@ interface include:
 [go-test-linux.yaml]: https://github.com/senzing-garage/sz-sdk-go-grpc/actions/workflows/go-test-linux.yaml
 [go-test-windows.yaml Badge]: https://github.com/senzing-garage/sz-sdk-go-grpc/actions/workflows/go-test-windows.yaml/badge.svg
 [go-test-windows.yaml]: https://github.com/senzing-garage/sz-sdk-go-grpc/actions/workflows/go-test-windows.yaml
-[Go]: https://go.dev/
+[Go]: https://github.com/senzing-garage/knowledge-base/blob/main/WHATIS/go.md
 [golangci-lint.yaml Badge]: https://github.com/senzing-garage/sz-sdk-go-grpc/actions/workflows/golangci-lint.yaml/badge.svg
 [golangci-lint.yaml]: https://github.com/senzing-garage/sz-sdk-go-grpc/actions/workflows/golangci-lint.yaml
 [License Badge]: https://img.shields.io/badge/License-Apache2-brightgreen.svg
