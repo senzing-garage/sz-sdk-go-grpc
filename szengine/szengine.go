@@ -1685,9 +1685,9 @@ func (client *Szengine) searchByAttributes(ctx context.Context, attributes strin
 
 func (client *Szengine) whyEntities(ctx context.Context, entityID1 int64, entityID2 int64, flags int64) (string, error) {
 	request := szpb.WhyEntitiesRequest{
-		EntityId1: entityID1,
-		EntityId2: entityID2,
-		Flags:     flags,
+		EntityId_1: entityID1,
+		EntityId_2: entityID2,
+		Flags:      flags,
 	}
 	response, err := client.GrpcClient.WhyEntities(ctx, &request)
 	result := response.GetResult()
@@ -1709,11 +1709,11 @@ func (client *Szengine) whyRecordInEntity(ctx context.Context, dataSourceCode st
 
 func (client *Szengine) whyRecords(ctx context.Context, dataSourceCode1 string, recordID1 string, dataSourceCode2 string, recordID2 string, flags int64) (string, error) {
 	request := szpb.WhyRecordsRequest{
-		DataSourceCode1: dataSourceCode1,
-		DataSourceCode2: dataSourceCode2,
-		RecordId1:       recordID1,
-		RecordId2:       recordID2,
-		Flags:           flags,
+		DataSourceCode_1: dataSourceCode1,
+		DataSourceCode_2: dataSourceCode2,
+		RecordId_1:       recordID1,
+		RecordId_2:       recordID2,
+		Flags:            flags,
 	}
 	response, err := client.GrpcClient.WhyRecords(ctx, &request)
 	result := response.GetResult()
