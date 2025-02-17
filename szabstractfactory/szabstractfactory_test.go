@@ -175,7 +175,12 @@ func getSzAbstractFactory(ctx context.Context) (senzing.SzAbstractFactory, error
 	var err error
 	var result senzing.SzAbstractFactory
 	_ = ctx
-	grpcConnection, err := grpc.NewClient(grpcAddress, grpc.WithTransportCredentials(insecure.NewCredentials()))
+
+	var dialOptions []grpc.DialOption
+
+	dialOptions = append(dialOptions, grpc.WithTransportCredentials(insecure.NewCredentials()))
+
+	grpcConnection, err := grpc.NewClient(grpcAddress, dialOptions...)
 	if err != nil {
 		return result, err
 	}

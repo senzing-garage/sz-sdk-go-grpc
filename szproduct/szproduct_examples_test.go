@@ -38,7 +38,7 @@ func ExampleSzproduct_GetLicense() {
 		handleError(err)
 	}
 	fmt.Println(jsonutil.Truncate(result, 4))
-	// Output: {"billing":"","contract":"","customer":"",...
+	// Output: {"billing":"YEARLY","contract":"Senzing Public Test License","customer":"Senzing Public Test License",...
 }
 
 func ExampleSzproduct_GetVersion() {
@@ -54,7 +54,7 @@ func ExampleSzproduct_GetVersion() {
 		handleError(err)
 	}
 	fmt.Println(truncate(result, 43))
-	// Output: {"PRODUCT_NAME":"Senzing API","VERSION":...
+	// Output: {"PRODUCT_NAME":"Senzing SDK","VERSION":...
 }
 
 // ----------------------------------------------------------------------------
