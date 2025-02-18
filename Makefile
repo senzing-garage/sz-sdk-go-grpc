@@ -117,6 +117,10 @@ run: run-osarch-specific
 .PHONY: test
 test: test-osarch-specific
 
+
+.PHONY: test-server-side-tls
+test-server-side-tls: test-server-side-tls-osarch-specific
+
 # -----------------------------------------------------------------------------
 # Coverage
 # -----------------------------------------------------------------------------

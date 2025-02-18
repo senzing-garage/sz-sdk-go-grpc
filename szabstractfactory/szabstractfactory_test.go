@@ -6,10 +6,10 @@ import (
 	"testing"
 
 	truncator "github.com/aquilax/truncate"
+	"github.com/senzing-garage/sz-sdk-go-grpc/helper"
 	"github.com/senzing-garage/sz-sdk-go/senzing"
 	"github.com/stretchr/testify/require"
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials/insecure"
 )
 
 const (
@@ -176,12 +176,19 @@ func getSzAbstractFactory(ctx context.Context) (senzing.SzAbstractFactory, error
 	var result senzing.SzAbstractFactory
 	_ = ctx
 
-	var dialOptions []grpc.DialOption
+	transportCredentials, err := helper.GetGrpcTransportCredentials()
+	if err != nil {
 
-	dialOptions = append(dialOptions, grpc.WithTransportCredentials(insecure.NewCredentials()))
-
+		fmt.Println(">>>>>>> 1")
+		return result, err
+	}
+	dialOptions := []grpc.DialOption{
+		grpc.WithTransportCredentials(transportCredentials),
+	}
 	grpcConnection, err := grpc.NewClient(grpcAddress, dialOptions...)
 	if err != nil {
+		fmt.Println(">>>>>>> 2")
+
 		return result, err
 	}
 	result = &Szabstractfactory{
