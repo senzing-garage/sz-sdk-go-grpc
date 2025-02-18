@@ -25,7 +25,7 @@ func GetGrpcTransportCredentials() (credentials.TransportCredentials, error) {
 
 	certFile, isSet := os.LookupEnv("SENZING_TOOLS_CA_CERTIFICATE_PATH")
 	if isSet {
-		fmt.Println(">>>>>> Ssecure")
+		fmt.Println(">>>>>> Secure")
 
 		pemServerCA, err := os.ReadFile(certFile)
 		if err != nil {
