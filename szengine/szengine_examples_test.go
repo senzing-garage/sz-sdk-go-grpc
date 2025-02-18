@@ -12,12 +12,12 @@ import (
 	"github.com/senzing-garage/go-helpers/record"
 	"github.com/senzing-garage/go-helpers/truthset"
 	"github.com/senzing-garage/go-logging/logging"
+	"github.com/senzing-garage/sz-sdk-go-grpc/helper"
 	"github.com/senzing-garage/sz-sdk-go-grpc/szabstractfactory"
 	"github.com/senzing-garage/sz-sdk-go-grpc/szengine"
 	"github.com/senzing-garage/sz-sdk-go/senzing"
 	szenginepb "github.com/senzing-garage/sz-sdk-proto/go/szengine"
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials/insecure"
 )
 
 type GetEntityByRecordIDResponse struct {
@@ -32,7 +32,8 @@ const (
 )
 
 var (
-	grpcAddress = "localhost:8261"
+	grpcAddress    = "0.0.0.0:8261"
+	grpcConnection *grpc.ClientConn
 )
 
 // ----------------------------------------------------------------------------
@@ -6521,30 +6522,35 @@ func getEntityIDStringForRecord(datasource string, id string) (string, error) {
 	return result, err
 }
 
+func getGrpcConnection() *grpc.ClientConn {
+	if grpcConnection == nil {
+		transportCredentials, err := helper.GetGrpcTransportCredentials()
+		if err != nil {
+			panic(err)
+		}
+		dialOptions := []grpc.DialOption{
+			grpc.WithTransportCredentials(transportCredentials),
+		}
+		grpcConnection, err = grpc.NewClient(grpcAddress, dialOptions...)
+		if err != nil {
+			panic(err)
+		}
+	}
+	return grpcConnection
+}
+
 func getSzAbstractFactory(ctx context.Context) senzing.SzAbstractFactory {
-	var err error
-	var result senzing.SzAbstractFactory
 	_ = ctx
-	grpcConnection, err := grpc.NewClient(grpcAddress, grpc.WithTransportCredentials(insecure.NewCredentials()))
-	if err != nil {
-		panic(err)
+	return &szabstractfactory.Szabstractfactory{
+		GrpcConnection: getGrpcConnection(),
 	}
-	result = &szabstractfactory.Szabstractfactory{
-		GrpcConnection: grpcConnection,
-	}
-	return result
 }
 
 func getSzEngine(ctx context.Context) *szengine.Szengine {
 	_ = ctx
-	grpcConnection, err := grpc.NewClient(grpcAddress, grpc.WithTransportCredentials(insecure.NewCredentials()))
-	if err != nil {
-		panic(err)
+	return &szengine.Szengine{
+		GrpcClient: szenginepb.NewSzEngineClient(getGrpcConnection()),
 	}
-	result := &szengine.Szengine{
-		GrpcClient: szenginepb.NewSzEngineClient(grpcConnection),
-	}
-	return result
 }
 
 func handleError(err error) {

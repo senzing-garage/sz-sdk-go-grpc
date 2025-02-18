@@ -8,16 +8,17 @@ import (
 
 	"github.com/senzing-garage/go-helpers/jsonutil"
 	"github.com/senzing-garage/go-logging/logging"
+	"github.com/senzing-garage/sz-sdk-go-grpc/helper"
 	"github.com/senzing-garage/sz-sdk-go-grpc/szabstractfactory"
 	"github.com/senzing-garage/sz-sdk-go-grpc/szdiagnostic"
 	"github.com/senzing-garage/sz-sdk-go/senzing"
 	szdiagnosticpb "github.com/senzing-garage/sz-sdk-proto/go/szdiagnostic"
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials/insecure"
 )
 
 var (
-	grpcAddress = "localhost:8261"
+	grpcAddress    = "0.0.0.0:8261"
+	grpcConnection *grpc.ClientConn
 )
 
 // ----------------------------------------------------------------------------
@@ -128,30 +129,35 @@ func ExampleSzdiagnostic_GetObserverOrigin() {
 // Helper functions
 // ----------------------------------------------------------------------------
 
+func getGrpcConnection() *grpc.ClientConn {
+	if grpcConnection == nil {
+		transportCredentials, err := helper.GetGrpcTransportCredentials()
+		if err != nil {
+			panic(err)
+		}
+		dialOptions := []grpc.DialOption{
+			grpc.WithTransportCredentials(transportCredentials),
+		}
+		grpcConnection, err = grpc.NewClient(grpcAddress, dialOptions...)
+		if err != nil {
+			panic(err)
+		}
+	}
+	return grpcConnection
+}
+
 func getSzAbstractFactory(ctx context.Context) senzing.SzAbstractFactory {
-	var err error
-	var result senzing.SzAbstractFactory
 	_ = ctx
-	grpcConnection, err := grpc.NewClient(grpcAddress, grpc.WithTransportCredentials(insecure.NewCredentials()))
-	if err != nil {
-		panic(err)
+	return &szabstractfactory.Szabstractfactory{
+		GrpcConnection: getGrpcConnection(),
 	}
-	result = &szabstractfactory.Szabstractfactory{
-		GrpcConnection: grpcConnection,
-	}
-	return result
 }
 
 func getSzDiagnostic(ctx context.Context) *szdiagnostic.Szdiagnostic {
 	_ = ctx
-	grpcConnection, err := grpc.NewClient(grpcAddress, grpc.WithTransportCredentials(insecure.NewCredentials()))
-	if err != nil {
-		panic(err)
+	return &szdiagnostic.Szdiagnostic{
+		GrpcClient: szdiagnosticpb.NewSzDiagnosticClient(getGrpcConnection()),
 	}
-	result := &szdiagnostic.Szdiagnostic{
-		GrpcClient: szdiagnosticpb.NewSzDiagnosticClient(grpcConnection),
-	}
-	return result
 }
 
 func handleError(err error) {

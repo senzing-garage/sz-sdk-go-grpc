@@ -20,7 +20,6 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials/insecure"
 )
 
 const (
@@ -52,7 +51,7 @@ var (
 )
 
 var (
-	grpcAddress       = "localhost:8261"
+	grpcAddress       = "0.0.0.0:8261"
 	grpcConnection    *grpc.ClientConn
 	logLevel          = helper.GetEnv("SENZING_LOG_LEVEL", "INFO")
 	observerSingleton = &observer.NullObserver{
@@ -342,11 +341,17 @@ func TestSzconfigmanager_Destroy_withObserver(test *testing.T) {
 // ----------------------------------------------------------------------------
 
 func getGrpcConnection() *grpc.ClientConn {
-	var err error
 	if grpcConnection == nil {
-		grpcConnection, err = grpc.NewClient(grpcAddress, grpc.WithTransportCredentials(insecure.NewCredentials()))
+		transportCredentials, err := helper.GetGrpcTransportCredentials()
 		if err != nil {
-			fmt.Printf("Did not connect: %v\n", err)
+			panic(err)
+		}
+		dialOptions := []grpc.DialOption{
+			grpc.WithTransportCredentials(transportCredentials),
+		}
+		grpcConnection, err = grpc.NewClient(grpcAddress, dialOptions...)
+		if err != nil {
+			panic(err)
 		}
 	}
 	return grpcConnection
