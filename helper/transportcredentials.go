@@ -31,7 +31,9 @@ func GetGrpcTransportCredentials() (credentials.TransportCredentials, error) {
 			return result, fmt.Errorf("failed to add server CA's certificate")
 		}
 		config := &tls.Config{
-			RootCAs: certPool,
+			RootCAs:    certPool,
+			MinVersion: tls.VersionTLS12, // See https://pkg.go.dev/crypto/tls#pkg-constants
+			MaxVersion: tls.VersionTLS13,
 		}
 		result = credentials.NewTLS(config)
 	} else {
