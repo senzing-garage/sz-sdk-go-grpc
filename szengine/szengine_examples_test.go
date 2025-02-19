@@ -2716,7 +2716,7 @@ func ExampleSzengine_ReevaluateEntity_withInfo() {
 		handleError(err)
 	}
 	fmt.Println(result)
-	// Output:{"AFFECTED_ENTITIES":[{"ENTITY_ID":100001}],"INTERESTING_ENTITIES":{"ENTITIES":[]}}
+	// Output: {"DATA_SOURCE":"CUSTOMERS","RECORD_ID":"1001","AFFECTED_ENTITIES":[{"ENTITY_ID":100001}],"INTERESTING_ENTITIES":{"ENTITIES":[]}}
 }
 
 func ExampleSzengine_ReevaluateRecord() {
