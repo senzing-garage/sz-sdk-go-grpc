@@ -49,6 +49,11 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Find location
+        run: |
+          pwd
+          ls -la
+
       - name: Run go test
         env:
           SENZING_TOOLS_CA_CERTIFICATE_PATH: /home/runner/work/sz-sdk-go-grpc/testdata/certificates/certificate-authority/certificate.pem
