@@ -23,8 +23,9 @@ jobs:
           password: ${{ secrets.DOCKERHUB_ACCESS_TOKEN }}
           username: ${{ secrets.DOCKERHUB_USERNAME }}
         env:
-          SENZING_TOOLS_CA_CERTIFICATE_PATH: /testdata/certificates/certificate-authority/certificate.pem
           SENZING_TOOLS_ENABLE_ALL: true
+          SENZING_TOOLS_SERVER_CERTIFICATE_PATH: /testdata/certificates/server/certificate.pem
+          SENZING_TOOLS_SERVER_KEY_PATH: /testdata/certificates/server/private_key.pem
         image: senzing/serve-grpc
         options: --user 0
         ports:
@@ -49,6 +50,8 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Run go test
+        env:
+          SENZING_TOOLS_CA_CERTIFICATE_PATH: /testdata/certificates/certificate-authority/certificate.pem
         run: go test -json -v -p 1 -coverprofile=./cover.out -covermode=atomic -coverpkg=./... ./...  2>&1 | tee /tmp/gotest.log | gotestfmt
 
       - name: Store coverage file
