@@ -31,7 +31,7 @@ jobs:
         ports:
           - 8261:8261
         volumes:
-          - /testdata:/testdata
+          - /home/runner/work/sz-sdk-go-grpc/sz-sdk-go-grpc/testdata:/testdata
 
     steps:
       - name: Checkout repository
@@ -48,11 +48,6 @@ jobs:
         uses: gotesttools/gotestfmt-action@v2
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Find location
-        run: |
-          pwd
-          ls -la
 
       - name: Run go test
         env:
