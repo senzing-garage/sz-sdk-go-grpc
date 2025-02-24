@@ -31,7 +31,7 @@ jobs:
         ports:
           - 8261:8261
         volumes:
-          - ${{ github.workspace }/testdata:/testdata
+          - ${{ github.workspace }}/testdata:/testdata
 
     steps:
       - name: Checkout repository
@@ -51,7 +51,7 @@ jobs:
 
       - name: Run go test
         env:
-          SENZING_TOOLS_CA_CERTIFICATE_PATH: ${{ github.workspace }/testdata/certificates/certificate-authority/certificate.pem
+          SENZING_TOOLS_CA_CERTIFICATE_PATH: ${{ github.workspace }}/testdata/certificates/certificate-authority/certificate.pem
         run: go test -json -v -p 1 -coverprofile=./cover.out -covermode=atomic -coverpkg=./... ./...  2>&1 | tee /tmp/gotest.log | gotestfmt
 
       - name: Store coverage file
