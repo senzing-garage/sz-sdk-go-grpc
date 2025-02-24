@@ -42,9 +42,7 @@ jobs:
 
       - name: Docker run
         run: |
-          docker login \
-            --password {{ secrets.DOCKERHUB_ACCESS_TOKEN }} \
-            --username ${{ secrets.DOCKERHUB_USERNAME }}; \
+          docker login --password {{ secrets.DOCKERHUB_ACCESS_TOKEN }} --username ${{ secrets.DOCKERHUB_USERNAME }}
           docker run \
             --detach \
             --env SENZING_TOOLS_ENABLE_ALL=true \
