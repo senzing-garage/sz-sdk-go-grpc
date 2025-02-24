@@ -42,19 +42,20 @@ jobs:
 
       - name: Docker run
         run: |
-          docker login --password ${{ secrets.DOCKERHUB_ACCESS_TOKEN }} --username ${{ secrets.DOCKERHUB_USERNAME }} docker.io
+          echo ${{ secrets.DOCKERHUB_ACCESS_TOKEN }} | docker login --password-stdin --username ${{ secrets.DOCKERHUB_USERNAME }} docker.io
           docker run \
             --detach \
             --env SENZING_TOOLS_ENABLE_ALL=true \
             --env SENZING_TOOLS_SERVER_CERTIFICATE_PATH=/testdata/certificates/server/certificate.pem \
             --env SENZING_TOOLS_SERVER_KEY_PATH=/testdata/certificates/server/private_key.pem \
             --name servegrpc \
-            --network ${{ job.container.network }} \
             --publish 8261:8261 \
             --rm \
             --user 0 \
             --volume ${{ github.workspace }}/testdata:/testdata \
             senzing/serve-grpc
+
+      # --network ${{ job.container.network }} \
 
       - name: Setup go
         uses: actions/setup-go@v5
