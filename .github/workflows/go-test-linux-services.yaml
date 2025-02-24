@@ -26,7 +26,7 @@ jobs:
         image: senzing/serve-grpc
         options: --user 0
         ports:
-          - 8261:8261
+          - 8299:8261
         volumes:
           # - ${{ github.workspace }}/testdata:/testdata
           - ./testdata:/testdata
@@ -37,15 +37,27 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Docker run
+        run: |
+          docker run \
+            --name servegrpc \
+            -rm \
+            -d \
+            -p 8261:8261 \
+            --network ${{ job.container.network }} \
+            --user 0 \
+            -v ${{ github.workspace }}/testdata:/testdata \
+            senzing/serve-grpc
+
       - name: Docker ps
         uses: docker://docker
         with:
           args: docker ps
 
-      - name: Copy testdata into docker container
-        uses: docker://docker
-        with:
-          args: docker container exec servegrpc cp -a ${{ github.workspace }}/testdata /
+      # - name: Copy testdata into docker container
+      #   uses: docker://docker
+      #   with:
+      #     args: docker container exec servegrpc cp -a ${{ github.workspace }}/testdata /
 
       - name: Restart docker container
         uses: docker://docker
