@@ -31,7 +31,8 @@ jobs:
         ports:
           - 8261:8261
         volumes:
-          - ${{ github.workspace }}/testdata:/testdata
+          # - ${{ github.workspace }}/testdata:/testdata
+          - ./testdata:/testdata
 
     steps:
       - name: Checkout repository
