@@ -31,7 +31,7 @@ jobs:
         ports:
           - 8261:8261
         volumes:
-          - /home/runner/work/sz-sdk-go-grpc/sz-sdk-go-grpc/testdata:/testdata
+          - /testdata:/testdata
 
     steps:
       - name: Checkout repository
