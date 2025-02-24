@@ -39,6 +39,16 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Copy testdata into docker container
+        uses: docker://docker
+        with:
+          args: docker container exec mockup cp -a ${{ github.workspace }}/testdata /
+
+      - name: Restart docker container
+        uses: docker://docker
+        with:
+          args: docker restart servegrpc
+
       - name: Setup go
         uses: actions/setup-go@v5
         with:
