@@ -8,16 +8,17 @@ import (
 
 	"github.com/senzing-garage/go-helpers/jsonutil"
 	"github.com/senzing-garage/go-logging/logging"
+	"github.com/senzing-garage/sz-sdk-go-grpc/helper"
 	"github.com/senzing-garage/sz-sdk-go-grpc/szabstractfactory"
 	"github.com/senzing-garage/sz-sdk-go-grpc/szconfig"
 	"github.com/senzing-garage/sz-sdk-go/senzing"
 	szconfigpb "github.com/senzing-garage/sz-sdk-proto/go/szconfig"
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials/insecure"
 )
 
 var (
-	grpcAddress = "localhost:8261"
+	grpcAddress    = "0.0.0.0:8261"
+	grpcConnection *grpc.ClientConn
 )
 
 // ----------------------------------------------------------------------------
@@ -203,30 +204,35 @@ func ExampleSzconfig_GetObserverOrigin() {
 // Helper functions
 // ----------------------------------------------------------------------------
 
+func getGrpcConnection() *grpc.ClientConn {
+	if grpcConnection == nil {
+		transportCredentials, err := helper.GetGrpcTransportCredentials()
+		if err != nil {
+			panic(err)
+		}
+		dialOptions := []grpc.DialOption{
+			grpc.WithTransportCredentials(transportCredentials),
+		}
+		grpcConnection, err = grpc.NewClient(grpcAddress, dialOptions...)
+		if err != nil {
+			panic(err)
+		}
+	}
+	return grpcConnection
+}
+
 func getSzAbstractFactory(ctx context.Context) senzing.SzAbstractFactory {
-	var err error
-	var result senzing.SzAbstractFactory
 	_ = ctx
-	grpcConnection, err := grpc.NewClient(grpcAddress, grpc.WithTransportCredentials(insecure.NewCredentials()))
-	if err != nil {
-		panic(err)
+	return &szabstractfactory.Szabstractfactory{
+		GrpcConnection: getGrpcConnection(),
 	}
-	result = &szabstractfactory.Szabstractfactory{
-		GrpcConnection: grpcConnection,
-	}
-	return result
 }
 
 func getSzConfig(ctx context.Context) *szconfig.Szconfig {
 	_ = ctx
-	grpcConnection, err := grpc.NewClient(grpcAddress, grpc.WithTransportCredentials(insecure.NewCredentials()))
-	if err != nil {
-		panic(err)
+	return &szconfig.Szconfig{
+		GrpcClient: szconfigpb.NewSzConfigClient(getGrpcConnection()),
 	}
-	result := &szconfig.Szconfig{
-		GrpcClient: szconfigpb.NewSzConfigClient(grpcConnection),
-	}
-	return result
 }
 
 func handleError(err error) {

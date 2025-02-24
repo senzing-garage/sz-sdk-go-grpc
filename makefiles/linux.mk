@@ -69,6 +69,12 @@ setup-osarch-specific:
 test-osarch-specific:
 	@go test -json -v -p 1 ./... 2>&1 | tee /tmp/gotest.log | gotestfmt
 
+
+.PHONY: test-server-side-tls-osarch-specific
+test-server-side-tls-osarch-specific: export SENZING_TOOLS_CA_CERTIFICATE_PATH=$(MAKEFILE_DIRECTORY)/testdata/certificates/certificate-authority/certificate.pem
+test-server-side-tls-osarch-specific:
+	@go test -json -v -p 1 ./... 2>&1 | tee /tmp/gotest.log | gotestfmt
+
 # -----------------------------------------------------------------------------
 # Makefile targets supported only by this platform.
 # -----------------------------------------------------------------------------
