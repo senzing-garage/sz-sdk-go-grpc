@@ -17,23 +17,6 @@ jobs:
         go: ["1.21"]
         os: [ubuntu-latest]
 
-    # services:
-    #   servegrpc:
-    #     credentials:
-    #       password: ${{ secrets.DOCKERHUB_ACCESS_TOKEN }}
-    #       username: ${{ secrets.DOCKERHUB_USERNAME }}
-    #     env:
-    #       SENZING_TOOLS_ENABLE_ALL: true
-    # SENZING_TOOLS_SERVER_CERTIFICATE_PATH: /testdata/certificates/server/certificate.pem
-    # SENZING_TOOLS_SERVER_KEY_PATH: /testdata/certificates/server/private_key.pem
-    # image: senzing/serve-grpc
-    # options: --user 0
-    # ports:
-    #   - 8299:8261
-    # volumes:
-    # - ${{ github.workspace }}/testdata:/testdata
-    # - ./testdata:/testdata
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -54,8 +37,6 @@ jobs:
             --user 0 \
             --volume ${{ github.workspace }}/testdata:/testdata \
             senzing/serve-grpc
-
-      # --network ${{ job.container.network }} \
 
       - name: Setup go
         uses: actions/setup-go@v5
