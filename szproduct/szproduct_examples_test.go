@@ -55,7 +55,7 @@ func ExampleSzproduct_GetVersion() {
 		handleError(err)
 	}
 	fmt.Println(truncate(result, 43))
-	// Output: {"PRODUCT_NAME":"Senzing API","VERSION":...
+	// Output: {"PRODUCT_NAME":"Senzing SDK","VERSION":...
 }
 
 // ----------------------------------------------------------------------------
