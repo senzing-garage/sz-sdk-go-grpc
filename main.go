@@ -10,6 +10,7 @@ import (
 
 	"github.com/senzing-garage/go-helpers/truthset"
 	"github.com/senzing-garage/go-logging/logging"
+	"github.com/senzing-garage/sz-sdk-go-grpc/helper"
 	"github.com/senzing-garage/sz-sdk-go-grpc/szconfig"
 	"github.com/senzing-garage/sz-sdk-go-grpc/szconfigmanager"
 	"github.com/senzing-garage/sz-sdk-go-grpc/szengine"
@@ -20,7 +21,6 @@ import (
 	szenginepb "github.com/senzing-garage/sz-sdk-proto/go/szengine"
 	szproductpb "github.com/senzing-garage/sz-sdk-proto/go/szproduct"
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials/insecure"
 )
 
 // ----------------------------------------------------------------------------
@@ -48,7 +48,7 @@ var Messages = map[int]string{
 var (
 	buildIteration = "0"
 	buildVersion   = "0.0.0"
-	grpcAddress    = "localhost:8261"
+	grpcAddress    = "0.0.0.0:8261"
 	grpcConnection *grpc.ClientConn
 	logger         logging.Logging
 	programName    = "unknown"
@@ -88,7 +88,7 @@ func main() {
 	// 	Id: "Observer 2",
 	// }
 
-	// grpcConnection, err := grpc.Dial("localhost:8261", grpc.WithTransportCredentials(insecure.NewCredentials()))
+	// grpcConnection, err := grpc.Dial("0.0.0.0:8261", grpc.WithTransportCredentials(insecure.NewCredentials()))
 	// if err != nil {
 	// 	fmt.Printf("Did not connect: %v\n", err)
 	// }
@@ -246,20 +246,29 @@ func failOnError(msgID int, err error) {
 }
 
 func getGrpcConnection() *grpc.ClientConn {
-	var err error
 	if grpcConnection == nil {
-		grpcConnection, err = grpc.NewClient(grpcAddress, grpc.WithTransportCredentials(insecure.NewCredentials()))
+		transportCredentials, err := helper.GetGrpcTransportCredentials()
 		if err != nil {
-			fmt.Printf("Did not connect: %v\n", err)
+			panic(err)
 		}
-		//		defer grpcConnection.Close()
+		dialOptions := []grpc.DialOption{
+			grpc.WithTransportCredentials(transportCredentials),
+		}
+		grpcConnection, err = grpc.NewClient(grpcAddress, dialOptions...)
+		if err != nil {
+			panic(err)
+		}
 	}
 	return grpcConnection
 }
 
 func getLogger(ctx context.Context) (logging.Logging, error) {
 	_ = ctx
-	logger, err := logging.NewSenzingLogger(9999, Messages)
+	loggerOptions := []interface{}{
+		logging.OptionMessageFields{Value: []string{"id", "text", "reason", "errors", "details"}},
+	}
+
+	logger, err := logging.NewSenzingLogger(9999, Messages, loggerOptions...)
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -270,9 +279,8 @@ func getLogger(ctx context.Context) (logging.Logging, error) {
 func getSzConfig(ctx context.Context) (senzing.SzConfig, error) {
 	_ = ctx
 	var err error
-	grpcConnection := getGrpcConnection()
 	result := &szconfig.Szconfig{
-		GrpcClient: szconfigpb.NewSzConfigClient(grpcConnection),
+		GrpcClient: szconfigpb.NewSzConfigClient(getGrpcConnection()),
 	}
 	return result, err
 }
@@ -280,9 +288,8 @@ func getSzConfig(ctx context.Context) (senzing.SzConfig, error) {
 func getSzConfigManager(ctx context.Context) (senzing.SzConfigManager, error) {
 	_ = ctx
 	var err error
-	grpcConnection := getGrpcConnection()
 	result := &szconfigmanager.Szconfigmanager{
-		GrpcClient: szconfigmanagerpb.NewSzConfigManagerClient(grpcConnection),
+		GrpcClient: szconfigmanagerpb.NewSzConfigManagerClient(getGrpcConnection()),
 	}
 	return result, err
 }
@@ -290,9 +297,8 @@ func getSzConfigManager(ctx context.Context) (senzing.SzConfigManager, error) {
 func getSzEngine(ctx context.Context) (senzing.SzEngine, error) {
 	_ = ctx
 	var err error
-	grpcConnection := getGrpcConnection()
 	result := &szengine.Szengine{
-		GrpcClient: szenginepb.NewSzEngineClient(grpcConnection),
+		GrpcClient: szenginepb.NewSzEngineClient(getGrpcConnection()),
 	}
 	return result, err
 }
@@ -300,9 +306,8 @@ func getSzEngine(ctx context.Context) (senzing.SzEngine, error) {
 func getSzProduct(ctx context.Context) (senzing.SzProduct, error) {
 	_ = ctx
 	var err error
-	grpcConnection := getGrpcConnection()
 	result := &szproduct.Szproduct{
-		GrpcClient: szproductpb.NewSzProductClient(grpcConnection),
+		GrpcClient: szproductpb.NewSzProductClient(getGrpcConnection()),
 	}
 	return result, err
 }

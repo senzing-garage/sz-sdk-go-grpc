@@ -9,16 +9,17 @@ import (
 	truncator "github.com/aquilax/truncate"
 	"github.com/senzing-garage/go-helpers/jsonutil"
 	"github.com/senzing-garage/go-logging/logging"
+	"github.com/senzing-garage/sz-sdk-go-grpc/helper"
 	"github.com/senzing-garage/sz-sdk-go-grpc/szabstractfactory"
 	"github.com/senzing-garage/sz-sdk-go-grpc/szproduct"
 	"github.com/senzing-garage/sz-sdk-go/senzing"
 	szproductpb "github.com/senzing-garage/sz-sdk-proto/go/szproduct"
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials/insecure"
 )
 
 var (
-	grpcAddress = "localhost:8261"
+	grpcAddress    = "0.0.0.0:8261"
+	grpcConnection *grpc.ClientConn
 )
 
 // ----------------------------------------------------------------------------
@@ -54,7 +55,7 @@ func ExampleSzproduct_GetVersion() {
 		handleError(err)
 	}
 	fmt.Println(truncate(result, 43))
-	// Output: {"PRODUCT_NAME":"Senzing API","VERSION":...
+	// Output: {"PRODUCT_NAME":"Senzing SDK","VERSION":...
 }
 
 // ----------------------------------------------------------------------------
@@ -96,30 +97,35 @@ func ExampleSzproduct_GetObserverOrigin() {
 // Helper functions
 // ----------------------------------------------------------------------------
 
+func getGrpcConnection() *grpc.ClientConn {
+	if grpcConnection == nil {
+		transportCredentials, err := helper.GetGrpcTransportCredentials()
+		if err != nil {
+			panic(err)
+		}
+		dialOptions := []grpc.DialOption{
+			grpc.WithTransportCredentials(transportCredentials),
+		}
+		grpcConnection, err = grpc.NewClient(grpcAddress, dialOptions...)
+		if err != nil {
+			panic(err)
+		}
+	}
+	return grpcConnection
+}
+
 func getSzAbstractFactory(ctx context.Context) senzing.SzAbstractFactory {
-	var err error
-	var result senzing.SzAbstractFactory
 	_ = ctx
-	grpcConnection, err := grpc.NewClient(grpcAddress, grpc.WithTransportCredentials(insecure.NewCredentials()))
-	if err != nil {
-		panic(err)
+	return &szabstractfactory.Szabstractfactory{
+		GrpcConnection: getGrpcConnection(),
 	}
-	result = &szabstractfactory.Szabstractfactory{
-		GrpcConnection: grpcConnection,
-	}
-	return result
 }
 
 func getSzProduct(ctx context.Context) *szproduct.Szproduct {
 	_ = ctx
-	grpcConnection, err := grpc.NewClient(grpcAddress, grpc.WithTransportCredentials(insecure.NewCredentials()))
-	if err != nil {
-		panic(err)
+	return &szproduct.Szproduct{
+		GrpcClient: szproductpb.NewSzProductClient(getGrpcConnection()),
 	}
-	result := &szproduct.Szproduct{
-		GrpcClient: szproductpb.NewSzProductClient(grpcConnection),
-	}
-	return result
 }
 
 func handleError(err error) {
