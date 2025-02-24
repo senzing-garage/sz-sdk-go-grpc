@@ -41,7 +41,7 @@ jobs:
         run: |
           docker run \
             --name servegrpc \
-            -rm \
+            --rm \
             -d \
             -p 8261:8261 \
             --network ${{ job.container.network }} \
