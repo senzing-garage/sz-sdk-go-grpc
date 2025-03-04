@@ -42,6 +42,12 @@ jobs:
           brew install colima docker
           colima start
 
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_ACCESS_TOKEN }}
+
       - name: Run gRPC service
         run: docker run --detach --env SENZING_TOOLS_ENABLE_ALL=true --publish 8261:8261 senzing/serve-grpc:latest
 
