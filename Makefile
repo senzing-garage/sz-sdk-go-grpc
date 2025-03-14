@@ -83,6 +83,14 @@ dependencies:
 .PHONY: setup
 setup: setup-osarch-specific
 
+
+.PHONY: setup-mutual-tls
+setup-mutual-tls: setup-mutual-tls-osarch-specific
+
+
+.PHONY: setup-server-side-tls
+setup-server-side-tls: setup-server-side-tls-osarch-specific
+
 # -----------------------------------------------------------------------------
 # Lint
 # -----------------------------------------------------------------------------
@@ -116,6 +124,10 @@ run: run-osarch-specific
 
 .PHONY: test
 test: test-osarch-specific
+
+
+.PHONY: test-mutual-tls
+test-mutual-tls: test-mutual-tls-osarch-specific
 
 
 .PHONY: test-server-side-tls
