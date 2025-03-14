@@ -56,7 +56,7 @@ jobs:
       - name: DEBUG - Install grpcurl
         run: |
           wget grpcurl.deb https://github.com/fullstorydev/grpcurl/releases/download/v1.9.3/grpcurl_1.9.3_linux_amd64.deb
-          sudo apt-get install -y grpcurl_1.9.3_linux_amd64.deb
+          sudo apt-get install -y ./grpcurl_1.9.3_linux_amd64.deb
           grpcurl -version
 
       - name: DEBUG - Use grpcurl
