@@ -1,4 +1,4 @@
-name: Go test linux - server-side TLS
+name: Go test linux - mutual TLS
 
 on: [push, workflow_dispatch]
 
