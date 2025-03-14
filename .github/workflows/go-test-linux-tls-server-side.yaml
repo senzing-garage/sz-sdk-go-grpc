@@ -29,6 +29,17 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_ACCESS_TOKEN }}
 
+      - name: DEBUG - Install dependencies
+        run: |
+          sudo apt-get install -y \
+            tree \
+            wget
+
+      - name: DEBUG - Show files
+        run: |
+          ls -la ${{ github.workspace }}
+          tree ${{ github.workspace }}
+
       - name: Docker run
         run: |
           docker run \
@@ -41,6 +52,21 @@ jobs:
             --rm \
             --volume ${{ github.workspace }}/testdata:/testdata \
             senzing/serve-grpc
+
+      - name: DEBUG - Install grpcurl
+        run: |
+          wget grpcurl.deb https://github.com/fullstorydev/grpcurl/releases/download/v1.9.3/grpcurl_1.9.3_linux_amd64.deb
+          sudo apt-get install -y grpcurl_1.9.3_linux_amd64.deb
+          grpcurl -version
+
+      - name: DEBUG - Use grpcurl
+        run: |
+          grpcurl \
+            -authority bob.senzing.com \
+            -cacert ${{ github.workspace }}/testdata/certificates/certificate-authority/certificate.pem \
+            -format text \
+            localhost:8261 \
+              szproduct.SzProduct.GetVersion
 
       - name: Setup go
         uses: actions/setup-go@v5
