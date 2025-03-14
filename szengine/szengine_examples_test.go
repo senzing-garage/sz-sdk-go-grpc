@@ -99,7 +99,7 @@ func ExampleSzengine_AddRecord_withInfo() {
 		handleError(err)
 	}
 	fmt.Println(result)
-	// Output: {"DATA_SOURCE":"CUSTOMERS","RECORD_ID":"1001","AFFECTED_ENTITIES":[{"ENTITY_ID":100001}]}
+	// Output: {"DATA_SOURCE":"CUSTOMERS","RECORD_ID":"1003","AFFECTED_ENTITIES":[{"ENTITY_ID":100001}]}
 }
 
 func ExampleSzengine_CloseExport() {

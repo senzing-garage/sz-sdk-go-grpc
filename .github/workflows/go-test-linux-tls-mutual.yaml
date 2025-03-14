@@ -40,7 +40,6 @@ jobs:
             --name servegrpc \
             --publish 8261:8261 \
             --rm \
-            --user 0 \
             --volume ${{ github.workspace }}/testdata:/testdata \
             senzing/serve-grpc
 

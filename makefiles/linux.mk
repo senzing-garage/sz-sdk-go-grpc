@@ -78,7 +78,7 @@ setup-mutual-tls-osarch-specific:
 		--rm \
 		--volume $(MAKEFILE_DIRECTORY)/testdata:/testdata \
 		senzing/serve-grpc
-	$(info senzing/serve-grpc running in background.)
+	$(info senzing/serve-grpc with Mutual TLS running in background.)
 
 
 .PHONY: setup-server-side-tls-osarch-specific
@@ -93,7 +93,7 @@ setup-server-side-tls-osarch-specific:
 		--rm \
 		--volume $(MAKEFILE_DIRECTORY)/testdata:/testdata \
 		senzing/serve-grpc
-	$(info senzing/serve-grpc running in background.)
+	$(info senzing/serve-grpc with Server-Side TLS running in background.)
 
 
 .PHONY: test-osarch-specific
