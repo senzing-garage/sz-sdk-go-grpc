@@ -33,8 +33,6 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
 
-
-
       - name: Setup docker (missing on MacOS)
         run: |
           brew install colima docker
