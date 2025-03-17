@@ -50,7 +50,7 @@ jobs:
             --env SENZING_TOOLS_SERVER_KEY_PATH=/testdata/certificates/server/private_key.pem \
             --name servegrpc \
             --publish 8261:8261 \
-            --entrypoint cat /testdata/certificates/server/certificate.pem \
+            --entrypoint "cat /testdata/certificates/server/certificate.pem" \
             --rm \
             --volume ${{ github.workspace }}/testdata:/testdata \
             senzing/serve-grpc
