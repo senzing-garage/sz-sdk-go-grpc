@@ -4,6 +4,7 @@ on: [push, workflow_dispatch]
 
 env:
   SENZING_LOG_LEVEL: TRACE
+  OUTPUT_PATH: /certificates
 
 permissions:
   contents: read
@@ -23,6 +24,114 @@ jobs:
         with:
           fetch-depth: 0
 
+      # -----------------------------------------------------------------------------
+      # --- <begin> Create certificates - With luck this can be a GitHub Action
+      #
+      # - name: Create certificates
+      #   uses: senzing/github-action-create-tls-certificates
+      #   with:
+      #     output-path: ${{ github.workspace }}/certificates
+      # -----------------------------------------------------------------------------
+
+      - name: Create directories
+        run: |
+          sudo mkdir ${OUTPUT_PATH}
+          sudo mkdir ${OUTPUT_PATH}/certificate-authority
+          sudo mkdir ${OUTPUT_PATH}/client
+          sudo mkdir ${OUTPUT_PATH}/server
+          sudo chmod -R 777 ${OUTPUT_PATH}
+          ls -la ${OUTPUT_PATH}
+
+      # -----------------------------------------------------------------------------
+      # --- Self-Signed Certificate Authority
+      # -----------------------------------------------------------------------------
+
+      - name: Generate self-signed Certificate Authority
+        run: |
+          openssl req \
+              -days 365 \
+              -keyout ${OUTPUT_PATH}/certificate-authority/private_key.pem \
+              -newkey rsa:4096 \
+              -noenc \
+              -out ${OUTPUT_PATH}/certificate-authority/certificate.pem \
+              -subj "/C=US/ST=FL/L=West Palm Beach/O=Dockter/OU=Test CA/CN=dockter.com" \
+              -x509
+
+      - name: View self-signed Certificate Authority
+        run: |
+          openssl x509 \
+              -in ${OUTPUT_PATH}/certificate-authority/certificate.pem \
+              -noout \
+              -text
+
+      # -----------------------------------------------------------------------------
+      # --- Server certificate
+      # -----------------------------------------------------------------------------
+
+      - name: Generate server certificate
+        run: |
+          openssl req \
+              -keyout ${OUTPUT_PATH}/server/private_key.pem \
+              -newkey rsa:4096 \
+              -noenc \
+              -out ${OUTPUT_PATH}/server/certificate_request.pem \
+              -subj "/C=US/ST=FL/L=West Palm Beach/O=Dockter/OU=Test Server/CN=dockter.com" \
+
+      - name: Sign server certificate
+        run: |
+          openssl x509 \
+              -CA ${OUTPUT_PATH}/certificate-authority/certificate.pem \
+              -CAcreateserial \
+              -CAkey ${OUTPUT_PATH}/certificate-authority/private_key.pem \
+              -days 360 \
+              -extfile ${{ github.workspace }}/testdata/certificates/server/ext.cnf \
+              -in ${OUTPUT_PATH}/server/certificate_request.pem \
+              -out ${OUTPUT_PATH}/server/certificate.pem \
+              -req
+
+      - name: View server certificate
+        run: |
+          openssl x509 \
+              -in ${OUTPUT_PATH}/server/certificate.pem \
+              -noout \
+              -text
+
+      # -----------------------------------------------------------------------------
+      # --- Client certificate
+      # -----------------------------------------------------------------------------
+
+      - name: Generate client certificate
+        run: |
+          openssl req \
+              -keyout ${OUTPUT_PATH}/client/private_key.pem \
+              -newkey rsa:4096 \
+              -noenc \
+              -out ${OUTPUT_PATH}/client/certificate_request.pem \
+              -subj "/C=US/ST=FL/L=West Palm Beach/O=Dockter/OU=Test Client/CN=dockter.com" \
+
+      - name: Sign client certificate
+        run: |
+          openssl x509 \
+              -CA ${OUTPUT_PATH}/certificate-authority/certificate.pem \
+              -CAcreateserial \
+              -CAkey ${OUTPUT_PATH}/certificate-authority/private_key.pem \
+              -days 360 \
+              -extfile ${{ github.workspace }}/testdata/certificates/client/ext.cnf \
+              -in ${OUTPUT_PATH}/client/certificate_request.pem \
+              -out ${OUTPUT_PATH}/client/certificate.pem \
+              -req
+
+      - name: View client certificate
+        run: |
+          openssl x509 \
+              -in ${OUTPUT_PATH}/client/certificate.pem \
+              -noout \
+              -text
+
+      # -----------------------------------------------------------------------------
+      # --- <end> Create certificates
+      # -----------------------------------------------------------------------------
+
       - name: Login to Docker Hub
         uses: docker/login-action@v3
         with:
@@ -33,14 +142,14 @@ jobs:
         run: |
           docker run \
             --detach \
-            --env SENZING_TOOLS_CLIENT_CA_CERTIFICATE_PATH=/testdata/certificates/certificate-authority/certificate.pem \
+            --env SENZING_TOOLS_CLIENT_CA_CERTIFICATE_PATH=${OUTPUT_PATH}/certificate-authority/certificate.pem \
             --env SENZING_TOOLS_ENABLE_ALL=true \
-            --env SENZING_TOOLS_SERVER_CERTIFICATE_PATH=/testdata/certificates/server/certificate.pem \
-            --env SENZING_TOOLS_SERVER_KEY_PATH=/testdata/certificates/server/private_key.pem \
+            --env SENZING_TOOLS_SERVER_CERTIFICATE_PATH=${OUTPUT_PATH}/server/certificate.pem \
+            --env SENZING_TOOLS_SERVER_KEY_PATH=${OUTPUT_PATH}/server/private_key.pem \
             --name servegrpc \
             --publish 8261:8261 \
             --rm \
-            --volume ${{ github.workspace }}/testdata:/testdata \
+            --volume ${OUTPUT_PATH}:${OUTPUT_PATH} \
             senzing/serve-grpc
 
       - name: Install grpcurl
@@ -53,10 +162,10 @@ jobs:
         run: |
           grpcurl \
             -authority www.senzing.com \
-            -cacert ${{ github.workspace }}/testdata/certificates/certificate-authority/certificate.pem \
-            -cert ${{ github.workspace }}/testdata/certificates/client/certificate.pem \
+            -cacert ${OUTPUT_PATH}/certificate-authority/certificate.pem \
+            -cert ${OUTPUT_PATH}/client/certificate.pem \
             -format text \
-            -key ${{ github.workspace }}/testdata/certificates/client/private_key.pem \
+            -key ${OUTPUT_PATH}/client/private_key.pem \
             localhost:8261 \
               szproduct.SzProduct.GetVersion
 
@@ -72,9 +181,9 @@ jobs:
 
       - name: Run go test
         env:
-          SENZING_TOOLS_CLIENT_CA_CERTIFICATE_PATH: ${{ github.workspace }}/testdata/certificates/certificate-authority/certificate.pem
-          SENZING_TOOLS_CLIENT_CERTIFICATE_PATH: ${{ github.workspace }}/testdata/certificates/client/certificate.pem
-          SENZING_TOOLS_CLIENT_KEY_PATH: ${{ github.workspace }}/testdata/certificates/client/private_key.pem
+          SENZING_TOOLS_CLIENT_CA_CERTIFICATE_PATH: ${OUTPUT_PATH}/certificate-authority/certificate.pem
+          SENZING_TOOLS_CLIENT_CERTIFICATE_PATH: ${OUTPUT_PATH}/client/certificate.pem
+          SENZING_TOOLS_CLIENT_KEY_PATH: ${OUTPUT_PATH}/client/private_key.pem
         run: go test -json -v -p 1 -coverprofile=./cover.out -covermode=atomic -coverpkg=./... ./...  2>&1 | tee /tmp/gotest.log | gotestfmt
 
       - name: Store coverage file

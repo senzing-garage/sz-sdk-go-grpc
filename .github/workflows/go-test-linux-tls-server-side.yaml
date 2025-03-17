@@ -62,6 +62,13 @@ jobs:
         with:
           go-version: ${{ matrix.go }}
 
+      # https://github.com/FiloSottile/mkcert
+      - name: Install mkcert
+        run: |
+          curl -JLO "https://dl.filippo.io/mkcert/latest?for=linux/amd64"
+          chmod +x mkcert-v*-linux-amd64
+          sudo cp mkcert-v*-linux-amd64 /usr/local/bin/mkcert
+
       - name: Set up gotestfmt
         uses: gotesttools/gotestfmt-action@v2
         with:
