@@ -17,71 +17,30 @@ jobs:
         go: ["1.21"]
         os: [ubuntu-latest]
 
-    services:
-      servegrpc:
-        credentials:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_ACCESS_TOKEN }}
-        env:
-          SENZING_TOOLS_ENABLE_ALL: true
-          SENZING_TOOLS_SERVER_CERTIFICATE_PATH: /testdata/certificates/server/certificate.pem
-          SENZING_TOOLS_SERVER_KEY_PATH: /testdata/certificates/server/private_key.pem
-        image: senzing/serve-grpc
-        ports:
-          - 8261:8261
-        volumes:
-          - ${{ github.workspace }}/testdata:/testdata
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: Restart Docker services
-        uses: docker://docker
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
         with:
-          args: docker restart servegrpc
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_ACCESS_TOKEN }}
 
-      - name: View CA certificate
+      - name: Docker run
         run: |
-          openssl x509 \
-              -in ${{ github.workspace }}/testdata/certificates/certificate-authority/certificate.pem \
-              -noout \
-              -text
-
-      - name: View server certificate
-        run: |
-          openssl x509 \
-              -in ${{ github.workspace }}/testdata/certificates/server/certificate.pem \
-              -noout \
-              -text
-
-      - name: View client certificate
-        run: |
-          openssl x509 \
-              -in ${{ github.workspace }}/testdata/certificates/client/certificate.pem \
-              -noout \
-              -text
-
-      # - name: Login to Docker Hub
-      #   uses: docker/login-action@v3
-      #   with:
-      #     username: ${{ secrets.DOCKERHUB_USERNAME }}
-      #     password: ${{ secrets.DOCKERHUB_ACCESS_TOKEN }}
-
-      # - name: Docker run
-      #   run: |
-      #     docker run \
-      #       --detach \
-      #       --env SENZING_TOOLS_ENABLE_ALL=true \
-      #       --env SENZING_TOOLS_SERVER_CERTIFICATE_PATH=/testdata/certificates/server/certificate.pem \
-      #       --env SENZING_TOOLS_SERVER_KEY_PATH=/testdata/certificates/server/private_key.pem \
-      #       --name servegrpc \
-      #       --publish 8261:8261 \
-      #       --rm \
-      #       --volume ${{ github.workspace }}/testdata:/testdata \
-      #       senzing/serve-grpc
+          docker run \
+            --detach \
+            --env SENZING_TOOLS_ENABLE_ALL=true \
+            --env SENZING_TOOLS_SERVER_CERTIFICATE_PATH=/testdata/certificates/server/certificate.pem \
+            --env SENZING_TOOLS_SERVER_KEY_PATH=/testdata/certificates/server/private_key.pem \
+            --name servegrpc \
+            --publish 8261:8261 \
+            --rm \
+            --volume ${{ github.workspace }}/testdata:/testdata \
+            senzing/serve-grpc
 
       - name: Install grpcurl
         run: |
@@ -92,18 +51,8 @@ jobs:
       - name: Test using grpcurl
         run: |
           grpcurl \
-            -authority www.senzing.com \
             -cacert ${{ github.workspace }}/testdata/certificates/certificate-authority/certificate.pem \
             -format text \
-            localhost:8261 \
-              szproduct.SzProduct.GetVersion
-
-      - name: Test using grpcurl 2
-        run: |
-          grpcurl \
-            -cacert ${{ github.workspace }}/testdata/certificates/certificate-authority/certificate.pem \
-            -format text \
-            -vv \
             localhost:8261 \
               szproduct.SzProduct.GetVersion
 
@@ -128,7 +77,6 @@ jobs:
         env:
           SENZING_TOOLS_CLIENT_CA_CERTIFICATE_PATH: ${{ github.workspace }}/testdata/certificates/certificate-authority/certificate.pem
         run: |
-          sleep 10   # Wait until senzing/serve-grpc is up
           go test -json -v -p 1 -coverprofile=./cover.out -covermode=atomic -coverpkg=./... ./...  2>&1 | tee /tmp/gotest.log | gotestfmt
 
       - name: Store coverage file

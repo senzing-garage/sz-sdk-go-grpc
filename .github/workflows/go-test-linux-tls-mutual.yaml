@@ -147,14 +147,14 @@ jobs:
         run: |
           docker run \
             --detach \
-            --env SENZING_TOOLS_CLIENT_CA_CERTIFICATE_PATH=/certificates/certificate-authority/certificate.pem \
+            --env SENZING_TOOLS_CLIENT_CA_CERTIFICATE_PATH=/testdata/certificates/certificate-authority/certificate.pem \
             --env SENZING_TOOLS_ENABLE_ALL=true \
-            --env SENZING_TOOLS_SERVER_CERTIFICATE_PATH=/certificates/server/certificate.pem \
-            --env SENZING_TOOLS_SERVER_KEY_PATH=/certificates/server/private_key.pem \
+            --env SENZING_TOOLS_SERVER_CERTIFICATE_PATH=/testdata/certificates/server/certificate.pem \
+            --env SENZING_TOOLS_SERVER_KEY_PATH=/testdata/certificates/server/private_key.pem \
             --name servegrpc \
             --publish 8261:8261 \
             --rm \
-            --volume ${{ github.workspace }}/testdata/certificates:/certificates \
+            --volume ${{ github.workspace }}/testdata:/testdata \
             senzing/serve-grpc
 
       - name: Install grpcurl
@@ -188,7 +188,8 @@ jobs:
           SENZING_TOOLS_CLIENT_CA_CERTIFICATE_PATH: ${{ github.workspace }}/testdata/certificates/certificate-authority/certificate.pem
           SENZING_TOOLS_CLIENT_CERTIFICATE_PATH: ${{ github.workspace }}/testdata/certificates/client/certificate.pem
           SENZING_TOOLS_CLIENT_KEY_PATH: ${{ github.workspace }}/testdata/certificates/client/private_key.pem
-        run: go test -json -v -p 1 -coverprofile=./cover.out -covermode=atomic -coverpkg=./... ./...  2>&1 | tee /tmp/gotest.log | gotestfmt
+        run: |
+          go test -json -v -p 1 -coverprofile=./cover.out -covermode=atomic -coverpkg=./... ./...  2>&1 | tee /tmp/gotest.log | gotestfmt
 
       - name: Store coverage file
         uses: actions/upload-artifact@v4
