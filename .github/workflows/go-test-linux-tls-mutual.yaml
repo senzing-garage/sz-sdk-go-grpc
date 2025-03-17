@@ -25,12 +25,13 @@ jobs:
           fetch-depth: 0
 
       # -----------------------------------------------------------------------------
-      # --- <begin> Create certificates - With luck this can be a GitHub Action
+      # --- <begin> Create certificates - With luck this can be a GitHub Action.
       #
       # - name: Create certificates
-      #   uses: senzing/github-action-create-tls-certificates
+      #   uses: senzing/github-action-create-tls-certificates@v1
       #   with:
       #     output-path: ${{ github.workspace }}/certificates
+      #     subject: "/C=US/ST=FL/L=West Palm Beach/O=Dockter/OU=Test CA/CN=dockter.com"
       # -----------------------------------------------------------------------------
 
       - name: Create directories
