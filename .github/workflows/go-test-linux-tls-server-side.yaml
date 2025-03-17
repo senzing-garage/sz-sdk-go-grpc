@@ -53,7 +53,7 @@ jobs:
             --entrypoint ls \
             --rm \
             --volume ${{ github.workspace }}/testdata:/testdata \
-            senzing/serve-grpc /testdata/certificates
+            senzing/serve-grpc /testdata/certificates/server
 
       - name: Install grpcurl
         run: |
