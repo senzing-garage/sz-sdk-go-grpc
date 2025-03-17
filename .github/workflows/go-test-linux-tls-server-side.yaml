@@ -29,15 +29,28 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_ACCESS_TOKEN }}
 
+      # - name: Docker run
+      #   run: |
+      #     docker run \
+      #       --detach \
+      #       --env SENZING_TOOLS_ENABLE_ALL=true \
+      #       --env SENZING_TOOLS_SERVER_CERTIFICATE_PATH=/testdata/certificates/server/certificate.pem \
+      #       --env SENZING_TOOLS_SERVER_KEY_PATH=/testdata/certificates/server/private_key.pem \
+      #       --name servegrpc \
+      #       --publish 8261:8261 \
+      #       --rm \
+      #       --volume ${{ github.workspace }}/testdata:/testdata \
+      #       senzing/serve-grpc
+
       - name: Docker run
         run: |
           docker run \
-            --detach \
             --env SENZING_TOOLS_ENABLE_ALL=true \
             --env SENZING_TOOLS_SERVER_CERTIFICATE_PATH=/testdata/certificates/server/certificate.pem \
             --env SENZING_TOOLS_SERVER_KEY_PATH=/testdata/certificates/server/private_key.pem \
             --name servegrpc \
             --publish 8261:8261 \
+            --entrypoint cat /testdata/certificates/server/certificate.pem \
             --rm \
             --volume ${{ github.workspace }}/testdata:/testdata \
             senzing/serve-grpc
