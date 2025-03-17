@@ -38,14 +38,14 @@ jobs:
       #     subject: "/C=US/ST=FL/L=West Palm Beach/O=Dockter/OU=Test CA/CN=dockter.com"
       # -----------------------------------------------------------------------------
 
-      - name: Create directories
-        run: |
-          sudo mkdir ${OUTPUT_PATH}
-          sudo mkdir ${OUTPUT_PATH}/certificate-authority
-          sudo mkdir ${OUTPUT_PATH}/client
-          sudo mkdir ${OUTPUT_PATH}/server
-          sudo chmod -R 777 ${OUTPUT_PATH}
-          ls -la ${OUTPUT_PATH}
+      # - name: Create directories
+      #   run: |
+      #     sudo mkdir ${OUTPUT_PATH}
+      #     sudo mkdir ${OUTPUT_PATH}/certificate-authority
+      #     sudo mkdir ${OUTPUT_PATH}/client
+      #     sudo mkdir ${OUTPUT_PATH}/server
+      #     sudo chmod -R 777 ${OUTPUT_PATH}
+      #     ls -la ${OUTPUT_PATH}
 
       # -----------------------------------------------------------------------------
       # --- Self-Signed Certificate Authority
