@@ -162,7 +162,6 @@ jobs:
       - name: Test using grpcurl
         run: |
           grpcurl \
-            -authority www.senzing.com \
             -cacert ${OUTPUT_PATH}/certificate-authority/certificate.pem \
             -cert ${OUTPUT_PATH}/client/certificate.pem \
             -format text \
