@@ -4,7 +4,7 @@ on: [push, workflow_dispatch]
 
 env:
   SENZING_LOG_LEVEL: TRACE
-  OUTPUT_PATH: /certificates
+  OUTPUT_PATH: ${{ github.workspace }}/testdata/certificates
 
 permissions:
   contents: read
