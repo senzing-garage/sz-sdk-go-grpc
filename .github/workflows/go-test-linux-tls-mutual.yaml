@@ -185,7 +185,7 @@ jobs:
 
       - name: Run go test
         env:
-          SENZING_TOOLS_CLIENT_CA_CERTIFICATE_PATH: ${{ github.workspace }}/testdata/certificates/certificate-authority/certificate.pem
+          SENZING_TOOLS_SERVER_CA_CERTIFICATE_PATH: ${{ github.workspace }}/testdata/certificates/certificate-authority/certificate.pem
           SENZING_TOOLS_CLIENT_CERTIFICATE_PATH: ${{ github.workspace }}/testdata/certificates/client/certificate.pem
           SENZING_TOOLS_CLIENT_KEY_PATH: ${{ github.workspace }}/testdata/certificates/client/private_key.pem
         run: |
