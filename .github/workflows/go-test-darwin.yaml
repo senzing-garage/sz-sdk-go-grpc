@@ -33,10 +33,6 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      # - name: Install Docker
-      #   uses: docker-practice/actions-setup-docker@v1
-      #   timeout-minutes: 12
-
       - name: Setup docker (missing on MacOS)
         run: |
           brew install colima docker
