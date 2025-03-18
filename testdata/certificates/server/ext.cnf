@@ -1,1 +1,1 @@
-subjectAltName=DNS:*.senzing.com,DNS:*.com,DNS:*.github.com,DNS:github.com,DNS:*.windows.net,DNS:localhost,IP:0.0.0.0
+subjectAltName=DNS:*.senzing.com,IP:0.0.0.0
