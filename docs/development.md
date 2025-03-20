@@ -73,6 +73,40 @@ These are "one-time tasks" which may already have been completed.
 
     ```
 
+### Test Server-Side TLS
+
+1. Run a gRPC server.
+   Either:
+
+    ```console
+    cd ${GIT_REPOSITORY_DIR}
+    make clean setup-server-side-tls run-server-side-tls
+    ```
+
+   Or:
+
+    ```console
+    cd ${GIT_REPOSITORY_DIR}
+    make clean setup-server-side-tls run-server-side-tls-encrypted-key
+    ```
+
+## Test Mutual TLS
+
+1. Run a gRPC server.
+   Either:
+
+    ```console
+    cd ${GIT_REPOSITORY_DIR}
+    make clean setup-mutual-tls run-mutual-tls
+    ```
+
+   Or:
+
+    ```console
+    cd ${GIT_REPOSITORY_DIR}
+    make clean setup-mutual-tls run-mutual-tls-encrypted-key
+    ```
+
 ## Coverage
 
 Create a code coverage map.

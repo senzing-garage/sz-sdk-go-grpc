@@ -130,6 +130,10 @@ test: test-osarch-specific
 test-mutual-tls: test-mutual-tls-osarch-specific
 
 
+.PHONY: test-mutual-tls-encrypted-key
+test-mutual-tls-encrypted-key: test-mutual-tls-encrypted-key-osarch-specific
+
+
 .PHONY: test-server-side-tls
 test-server-side-tls: test-server-side-tls-osarch-specific
 

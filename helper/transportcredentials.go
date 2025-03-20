@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 
+	tlshelper "github.com/senzing-garage/go-helpers/tls"
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/credentials/insecure"
 )
@@ -44,7 +45,8 @@ func GetGrpcTransportCredentials() (credentials.TransportCredentials, error) {
 		clientCertificatePath, isClientCertificatePathSet := os.LookupEnv("SENZING_TOOLS_CLIENT_CERTIFICATE_PATH")
 		clientKeyPath, isClientKeyPathSet := os.LookupEnv("SENZING_TOOLS_CLIENT_KEY_PATH")
 		if isClientCertificatePathSet && isClientKeyPathSet {
-			clientCertificate, err := tls.LoadX509KeyPair(clientCertificatePath, clientKeyPath)
+			clientKeyPassPhrase, _ := os.LookupEnv("SENZING_TOOLS_CLIENT_KEY_PASSPHRASE")
+			clientCertificate, err := tlshelper.LoadX509KeyPair(clientCertificatePath, clientKeyPath, clientKeyPassPhrase)
 			if err != nil {
 				return result, err
 			}
