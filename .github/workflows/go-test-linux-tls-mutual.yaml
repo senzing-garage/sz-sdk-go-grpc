@@ -4,7 +4,7 @@ on: [push, workflow_dispatch]
 
 env:
   SENZING_LOG_LEVEL: TRACE
-  SENZING_TOOLS_SERVER_CA_CERTIFICATE_PATH: ${{ github.workspace }}/testdata/certificates/certificate-authority/certificate.pem
+  SENZING_TOOLS_SERVER_CA_CERTIFICATE_FILE: ${{ github.workspace }}/testdata/certificates/certificate-authority/certificate.pem
 
 permissions:
   contents: read
@@ -68,11 +68,11 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Run go test
+      - name: Run go test - unencrypted private key
         env:
-          SENZING_TOOLS_SERVER_CA_CERTIFICATE_PATH: ${{ github.workspace }}/testdata/certificates/certificate-authority/certificate.pem
-          SENZING_TOOLS_CLIENT_CERTIFICATE_PATH: ${{ github.workspace }}/testdata/certificates/client/certificate.pem
-          SENZING_TOOLS_CLIENT_KEY_PATH: ${{ github.workspace }}/testdata/certificates/client/private_key.pem
+          SENZING_TOOLS_SERVER_CA_CERTIFICATE_FILE: ${{ github.workspace }}/testdata/certificates/certificate-authority/certificate.pem
+          SENZING_TOOLS_CLIENT_CERTIFICATE_FILE: ${{ github.workspace }}/testdata/certificates/client/certificate.pem
+          SENZING_TOOLS_CLIENT_KEY_FILE: ${{ github.workspace }}/testdata/certificates/client/private_key.pem
         run: |
           go test -json -v -p 1 -coverprofile=./cover.out -covermode=atomic -coverpkg=./... ./...  2>&1 | tee /tmp/gotest.log | gotestfmt
 

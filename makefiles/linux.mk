@@ -102,24 +102,24 @@ test-osarch-specific:
 
 
 .PHONY: test-mutual-tls-osarch-specific
-test-mutual-tls-osarch-specific: export SENZING_TOOLS_SERVER_CA_CERTIFICATE_PATH=$(MAKEFILE_DIRECTORY)/testdata/certificates/certificate-authority/certificate.pem
-test-mutual-tls-osarch-specific: export SENZING_TOOLS_CLIENT_CERTIFICATE_PATH=$(MAKEFILE_DIRECTORY)/testdata/certificates/client/certificate.pem
-test-mutual-tls-osarch-specific: export SENZING_TOOLS_CLIENT_KEY_PATH=$(MAKEFILE_DIRECTORY)/testdata/certificates/client/private_key.pem
+test-mutual-tls-osarch-specific: export SENZING_TOOLS_SERVER_CA_CERTIFICATE_FILE=$(MAKEFILE_DIRECTORY)/testdata/certificates/certificate-authority/certificate.pem
+test-mutual-tls-osarch-specific: export SENZING_TOOLS_CLIENT_CERTIFICATE_FILE=$(MAKEFILE_DIRECTORY)/testdata/certificates/client/certificate.pem
+test-mutual-tls-osarch-specific: export SENZING_TOOLS_CLIENT_KEY_FILE=$(MAKEFILE_DIRECTORY)/testdata/certificates/client/private_key.pem
 test-mutual-tls-osarch-specific:
 	@go test -json -v -p 1 ./... 2>&1 | tee /tmp/gotest.log | gotestfmt
 
 
 .PHONY: test-mutual-tls-encrypted-key-osarch-specific
-test-mutual-tls-encrypted-key-osarch-specific: export SENZING_TOOLS_SERVER_CA_CERTIFICATE_PATH=$(MAKEFILE_DIRECTORY)/testdata/certificates/certificate-authority/certificate.pem
-test-mutual-tls-encrypted-key-osarch-specific: export SENZING_TOOLS_CLIENT_CERTIFICATE_PATH=$(MAKEFILE_DIRECTORY)/testdata/certificates/client/certificate.pem
-test-mutual-tls-encrypted-key-osarch-specific: export SENZING_TOOLS_CLIENT_KEY_PATH=$(MAKEFILE_DIRECTORY)/testdata/certificates/client/private_key_encrypted.pem
+test-mutual-tls-encrypted-key-osarch-specific: export SENZING_TOOLS_SERVER_CA_CERTIFICATE_FILE=$(MAKEFILE_DIRECTORY)/testdata/certificates/certificate-authority/certificate.pem
+test-mutual-tls-encrypted-key-osarch-specific: export SENZING_TOOLS_CLIENT_CERTIFICATE_FILE=$(MAKEFILE_DIRECTORY)/testdata/certificates/client/certificate.pem
+test-mutual-tls-encrypted-key-osarch-specific: export SENZING_TOOLS_CLIENT_KEY_FILE=$(MAKEFILE_DIRECTORY)/testdata/certificates/client/private_key_encrypted.pem
 test-mutual-tls-encrypted-key-osarch-specific: export SENZING_TOOLS_CLIENT_KEY_PASSPHRASE=Passw0rd
 test-mutual-tls-encrypted-key-osarch-specific:
 	@go test -json -v -p 1 ./... 2>&1 | tee /tmp/gotest.log | gotestfmt
 
 
 .PHONY: test-server-side-tls-osarch-specific
-test-server-side-tls-osarch-specific: export SENZING_TOOLS_SERVER_CA_CERTIFICATE_PATH=$(MAKEFILE_DIRECTORY)/testdata/certificates/certificate-authority/certificate.pem
+test-server-side-tls-osarch-specific: export SENZING_TOOLS_SERVER_CA_CERTIFICATE_FILE=$(MAKEFILE_DIRECTORY)/testdata/certificates/certificate-authority/certificate.pem
 test-server-side-tls-osarch-specific:
 	@go test -json -v -p 1 ./... 2>&1 | tee /tmp/gotest.log | gotestfmt
 

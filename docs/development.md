@@ -83,13 +83,6 @@ These are "one-time tasks" which may already have been completed.
     make clean setup-server-side-tls test-server-side-tls
     ```
 
-   Or:
-
-    ```console
-    cd ${GIT_REPOSITORY_DIR}
-    make clean setup-server-side-tls test-server-side-tls-encrypted-key
-    ```
-
 ## Test Mutual TLS
 
 1. Run a gRPC server.
