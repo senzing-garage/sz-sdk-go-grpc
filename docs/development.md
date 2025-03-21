@@ -83,7 +83,7 @@ These are "one-time tasks" which may already have been completed.
     make clean setup-server-side-tls test-server-side-tls
     ```
 
-## Test Mutual TLS
+### Test Mutual TLS
 
 1. Run a gRPC server.
    Either:
