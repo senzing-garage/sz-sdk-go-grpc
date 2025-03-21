@@ -69,10 +69,10 @@ setup-osarch-specific:
 setup-mutual-tls-osarch-specific:
 	@docker run \
 		--detach \
-		--env SENZING_TOOLS_CLIENT_CA_CERTIFICATE_PATH=/testdata/certificates/certificate-authority/certificate.pem \
+		--env SENZING_TOOLS_CLIENT_CA_CERTIFICATE_FILE=/testdata/certificates/certificate-authority/certificate.pem \
 		--env SENZING_TOOLS_ENABLE_ALL=true \
-		--env SENZING_TOOLS_SERVER_CERTIFICATE_PATH=/testdata/certificates/server/certificate.pem \
-		--env SENZING_TOOLS_SERVER_KEY_PATH=/testdata/certificates/server/private_key.pem \
+		--env SENZING_TOOLS_SERVER_CERTIFICATE_FILE=/testdata/certificates/server/certificate.pem \
+		--env SENZING_TOOLS_SERVER_KEY_FILE=/testdata/certificates/server/private_key.pem \
 		--name senzing-serve-grpc \
 		--publish 8261:8261 \
 		--rm \
@@ -86,8 +86,8 @@ setup-server-side-tls-osarch-specific:
 	@docker run \
 		--detach \
 		--env SENZING_TOOLS_ENABLE_ALL=true \
-		--env SENZING_TOOLS_SERVER_CERTIFICATE_PATH=/testdata/certificates/server/certificate.pem \
-		--env SENZING_TOOLS_SERVER_KEY_PATH=/testdata/certificates/server/private_key.pem \
+		--env SENZING_TOOLS_SERVER_CERTIFICATE_FILE=/testdata/certificates/server/certificate.pem \
+		--env SENZING_TOOLS_SERVER_KEY_FILE=/testdata/certificates/server/private_key.pem \
 		--name senzing-serve-grpc \
 		--publish 8261:8261 \
 		--rm \
@@ -102,17 +102,30 @@ test-osarch-specific:
 
 
 .PHONY: test-mutual-tls-osarch-specific
-test-mutual-tls-osarch-specific: export SENZING_TOOLS_SERVER_CA_CERTIFICATE_PATH=$(MAKEFILE_DIRECTORY)/testdata/certificates/certificate-authority/certificate.pem
-test-mutual-tls-osarch-specific: export SENZING_TOOLS_CLIENT_CERTIFICATE_PATH=$(MAKEFILE_DIRECTORY)/testdata/certificates/client/certificate.pem
-test-mutual-tls-osarch-specific: export SENZING_TOOLS_CLIENT_KEY_PATH=$(MAKEFILE_DIRECTORY)/testdata/certificates/client/private_key.pem
+test-mutual-tls-osarch-specific: export SENZING_TOOLS_SERVER_CA_CERTIFICATE_FILE=$(MAKEFILE_DIRECTORY)/testdata/certificates/certificate-authority/certificate.pem
+test-mutual-tls-osarch-specific: export SENZING_TOOLS_CLIENT_CERTIFICATE_FILE=$(MAKEFILE_DIRECTORY)/testdata/certificates/client/certificate.pem
+test-mutual-tls-osarch-specific: export SENZING_TOOLS_CLIENT_KEY_FILE=$(MAKEFILE_DIRECTORY)/testdata/certificates/client/private_key.pem
 test-mutual-tls-osarch-specific:
 	@go test -json -v -p 1 ./... 2>&1 | tee /tmp/gotest.log | gotestfmt
 
 
+.PHONY: test-mutual-tls-encrypted-key-osarch-specific
+test-mutual-tls-encrypted-key-osarch-specific: export SENZING_TOOLS_SERVER_CA_CERTIFICATE_FILE=$(MAKEFILE_DIRECTORY)/testdata/certificates/certificate-authority/certificate.pem
+test-mutual-tls-encrypted-key-osarch-specific: export SENZING_TOOLS_CLIENT_CERTIFICATE_FILE=$(MAKEFILE_DIRECTORY)/testdata/certificates/client/certificate.pem
+test-mutual-tls-encrypted-key-osarch-specific: export SENZING_TOOLS_CLIENT_KEY_FILE=$(MAKEFILE_DIRECTORY)/testdata/certificates/client/private_key_encrypted.pem
+test-mutual-tls-encrypted-key-osarch-specific: export SENZING_TOOLS_CLIENT_KEY_PASSPHRASE=Passw0rd
+test-mutual-tls-encrypted-key-osarch-specific:
+	@go test -json -v -p 1 ./... 2>&1 | tee /tmp/gotest.log | gotestfmt
+
+
 .PHONY: test-server-side-tls-osarch-specific
-test-server-side-tls-osarch-specific: export SENZING_TOOLS_SERVER_CA_CERTIFICATE_PATH=$(MAKEFILE_DIRECTORY)/testdata/certificates/certificate-authority/certificate.pem
+test-server-side-tls-osarch-specific: export SENZING_TOOLS_SERVER_CA_CERTIFICATE_FILE=$(MAKEFILE_DIRECTORY)/testdata/certificates/certificate-authority/certificate.pem
 test-server-side-tls-osarch-specific:
 	@go test -json -v -p 1 ./... 2>&1 | tee /tmp/gotest.log | gotestfmt
+
+
+.PHONY: test-mutual-tls
+test-mutual-tls: test-mutual-tls-osarch-specific
 
 # -----------------------------------------------------------------------------
 # Makefile targets supported only by this platform.

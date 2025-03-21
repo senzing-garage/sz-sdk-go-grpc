@@ -20,8 +20,6 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
 
       - name: Login to Docker Hub
         uses: docker/login-action@v3
@@ -34,8 +32,8 @@ jobs:
           docker run \
             --detach \
             --env SENZING_TOOLS_ENABLE_ALL=true \
-            --env SENZING_TOOLS_SERVER_CERTIFICATE_PATH=/testdata/certificates/server/certificate.pem \
-            --env SENZING_TOOLS_SERVER_KEY_PATH=/testdata/certificates/server/private_key.pem \
+            --env SENZING_TOOLS_SERVER_CERTIFICATE_FILE=/testdata/certificates/server/certificate.pem \
+            --env SENZING_TOOLS_SERVER_KEY_FILE=/testdata/certificates/server/private_key.pem \
             --name servegrpc \
             --publish 8261:8261 \
             --rm \
@@ -56,7 +54,7 @@ jobs:
             localhost:8261 \
               szproduct.SzProduct.GetVersion
 
-      - name: Setup go
+      - name: Setup go ${{ matrix.go }}
         uses: actions/setup-go@v5
         with:
           go-version: ${{ matrix.go }}
@@ -68,7 +66,7 @@ jobs:
 
       - name: Run go test
         env:
-          SENZING_TOOLS_SERVER_CA_CERTIFICATE_PATH: ${{ github.workspace }}/testdata/certificates/certificate-authority/certificate.pem
+          SENZING_TOOLS_SERVER_CA_CERTIFICATE_FILE: ${{ github.workspace }}/testdata/certificates/certificate-authority/certificate.pem
         run: |
           go test -json -v -p 1 -coverprofile=./cover.out -covermode=atomic -coverpkg=./... ./...  2>&1 | tee /tmp/gotest.log | gotestfmt
 
