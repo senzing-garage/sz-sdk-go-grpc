@@ -10,12 +10,12 @@ permissions:
 
 jobs:
   go-test-darwin:
-    name: "Go test with Senzing: ${{ matrix.senzingsdk-version }}; OS: macos-latest; Go: ${{ matrix.go }}"
-    runs-on: macos-latest
+    name: "Go test with OS: ${{ matrix.os }}; Go: ${{ matrix.go }}"
+    runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        go: ["1.21"]
-        senzingsdk-version: [staging-v4]
+        go: ["1.24"]
+        os: [macos-latest]
 
     steps:
       - name: Checkout repository
@@ -23,7 +23,7 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Setup go
+      - name: Setup go ${{ matrix.go }}
         uses: actions/setup-go@v5
         with:
           go-version: ${{ matrix.go }}
@@ -45,10 +45,12 @@ jobs:
           password: ${{ secrets.DOCKERHUB_ACCESS_TOKEN }}
 
       - name: Run gRPC service
-        run: docker run --detach --env SENZING_TOOLS_ENABLE_ALL=true --publish 8261:8261 senzing/serve-grpc:latest
+        run: |
+          docker run --detach --env SENZING_TOOLS_ENABLE_ALL=true --publish 8261:8261 senzing/serve-grpc:latest
 
       - name: Run go test
-        run: go test -json -v -p 1 -coverprofile=./cover.out -covermode=atomic -coverpkg=./... ./...  2>&1 | tee /tmp/gotest.log | gotestfmt
+        run: |
+          go test -json -v -p 1 -coverprofile=./cover.out -covermode=atomic -coverpkg=./... ./...  2>&1 | tee /tmp/gotest.log | gotestfmt
 
       - name: Store coverage file
         uses: actions/upload-artifact@v4

@@ -14,7 +14,7 @@ jobs:
     runs-on: windows-latest
     strategy:
       matrix:
-        go: ["1.21"]
+        go: ["1.24"]
         senzingsdk-version: [staging-v4]
 
     steps:
@@ -23,7 +23,7 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Setup go
+      - name: Setup go ${{ matrix.go }}
         uses: actions/setup-go@v5
         with:
           go-version: ${{ matrix.go }}
@@ -43,7 +43,8 @@ jobs:
         uses: docker/setup-docker-action@v4
 
       - name: Run gRPC service
-        run: docker run --detach --env SENZING_TOOLS_ENABLE_ALL --publish 8261:8261 senzing/serve-grpc:latest
+        run: |
+          docker run --detach --env SENZING_TOOLS_ENABLE_ALL --publish 8261:8261 senzing/serve-grpc:latest
 
       - name: Run go test
         run: |
