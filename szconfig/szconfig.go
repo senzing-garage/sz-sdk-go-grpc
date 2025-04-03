@@ -19,11 +19,12 @@ import (
 )
 
 type Szconfig struct {
-	GrpcClient     szpb.SzConfigClient
-	isTrace        bool
-	logger         logging.Logging
-	observerOrigin string
-	observers      subject.Subject
+	configDefinition string
+	GrpcClient       szpb.SzConfigClient
+	isTrace          bool
+	logger           logging.Logging
+	observerOrigin   string
+	observers        subject.Subject
 }
 
 const (
@@ -49,15 +50,15 @@ Input
 Output
   - A JSON document listing the newly created data source.
 */
-func (client *Szconfig) AddDataSource(ctx context.Context, configHandle uintptr, dataSourceCode string) (string, error) {
+func (client *Szconfig) AddDataSource(ctx context.Context, dataSourceCode string) (string, error) {
 	var err error
 	var result string
 	if client.isTrace {
 		entryTime := time.Now()
-		client.traceEntry(1, configHandle, dataSourceCode)
-		defer func() { client.traceExit(2, configHandle, dataSourceCode, result, err, time.Since(entryTime)) }()
+		client.traceEntry(1, dataSourceCode)
+		defer func() { client.traceExit(2, dataSourceCode, result, err, time.Since(entryTime)) }()
 	}
-	result, err = client.addDataSource(ctx, configHandle, dataSourceCode)
+	result, err = client.addDataSource(ctx, dataSourceCode)
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{
@@ -65,63 +66,6 @@ func (client *Szconfig) AddDataSource(ctx context.Context, configHandle uintptr,
 				"return":         result,
 			}
 			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentID, 8001, err, details)
-		}()
-	}
-	return result, err
-}
-
-/*
-Method CloseConfig terminates an in-memory configuration and cleans up system resources.
-After calling CloseConfig, the configuration handle can no longer be used and is invalid.
-
-Input
-  - ctx: A context to control lifecycle.
-  - configHandle: Identifier of the in-memory configuration. It was created by the
-    [Szconfig.CreateConfig] or [Szconfig.ImportConfig] methods.
-*/
-func (client *Szconfig) CloseConfig(ctx context.Context, configHandle uintptr) error {
-	var err error
-	if client.isTrace {
-		entryTime := time.Now()
-		client.traceEntry(5, configHandle)
-		defer func() { client.traceExit(6, configHandle, err, time.Since(entryTime)) }()
-	}
-	err = client.closeConfig(ctx, configHandle)
-	if client.observers != nil {
-		go func() {
-			details := map[string]string{}
-			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentID, 8002, err, details)
-		}()
-	}
-	return err
-}
-
-/*
-Method CreateConfig creates an in-memory configuration using the default template.
-The default template is the Senzing configuration JSON document file, g2config.json, located in the PIPELINE.RESOURCEPATH path.
-The returned configHandle is used by the [Szconfig.AddDataSource], [Szconfig.DeleteDataSource],
-[Szconfig.ExportConfig], and [Szconfig.GetDataSources] methods.
-The configHandle is terminated by the [Szconfig.CloseConfig] method.
-
-Input
-  - ctx: A context to control lifecycle.
-
-Output
-  - configHandle: Identifier of an in-memory configuration.
-*/
-func (client *Szconfig) CreateConfig(ctx context.Context) (uintptr, error) {
-	var err error
-	var result uintptr
-	if client.isTrace {
-		entryTime := time.Now()
-		client.traceEntry(7)
-		defer func() { client.traceExit(8, result, err, time.Since(entryTime)) }()
-	}
-	result, err = client.createConfig(ctx)
-	if client.observers != nil {
-		go func() {
-			details := map[string]string{}
-			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentID, 8003, err, details)
 		}()
 	}
 	return result, err
@@ -136,14 +80,14 @@ Input
     [Szconfig.CreateConfig] or [Szconfig.ImportConfig] methods.
   - dataSourceCode: Unique identifier of the data source (e.g. "TEST_DATASOURCE").
 */
-func (client *Szconfig) DeleteDataSource(ctx context.Context, configHandle uintptr, dataSourceCode string) error {
+func (client *Szconfig) DeleteDataSource(ctx context.Context, dataSourceCode string) error {
 	var err error
 	if client.isTrace {
 		entryTime := time.Now()
-		client.traceEntry(9, configHandle, dataSourceCode)
-		defer func() { client.traceExit(10, configHandle, dataSourceCode, err, time.Since(entryTime)) }()
+		client.traceEntry(9, dataSourceCode)
+		defer func() { client.traceExit(10, dataSourceCode, err, time.Since(entryTime)) }()
 	}
-	err = client.deleteDataSource(ctx, configHandle, dataSourceCode)
+	err = client.deleteDataSource(ctx, dataSourceCode)
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{
@@ -156,7 +100,7 @@ func (client *Szconfig) DeleteDataSource(ctx context.Context, configHandle uintp
 }
 
 /*
-Method ExportConfig creates a Senzing configuration JSON document representation of an in-memory configuration.
+Method Export creates a Senzing configuration JSON document representation of an in-memory configuration.
 
 Input
   - ctx: A context to control lifecycle.
@@ -166,15 +110,15 @@ Input
 Output
   - configDefinition: A Senzing configuration JSON document representation of the in-memory configuration.
 */
-func (client *Szconfig) ExportConfig(ctx context.Context, configHandle uintptr) (string, error) {
+func (client *Szconfig) Export(ctx context.Context) (string, error) {
 	var err error
 	var result string
 	if client.isTrace {
 		entryTime := time.Now()
-		client.traceEntry(13, configHandle)
-		defer func() { client.traceExit(14, configHandle, result, err, time.Since(entryTime)) }()
+		client.traceEntry(13)
+		defer func() { client.traceExit(14, result, err, time.Since(entryTime)) }()
 	}
-	result, err = client.exportConfig(ctx, configHandle)
+	result, err = client.export(ctx)
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{}
@@ -195,50 +139,19 @@ Input
 Output
   - A JSON document listing data sources in the in-memory configuration.
 */
-func (client *Szconfig) GetDataSources(ctx context.Context, configHandle uintptr) (string, error) {
+func (client *Szconfig) GetDataSources(ctx context.Context) (string, error) {
 	var err error
 	var result string
 	if client.isTrace {
 		entryTime := time.Now()
-		client.traceEntry(15, configHandle)
-		defer func() { client.traceExit(16, configHandle, result, err, time.Since(entryTime)) }()
+		client.traceEntry(15)
+		defer func() { client.traceExit(16, result, err, time.Since(entryTime)) }()
 	}
-	result, err = client.getDataSources(ctx, configHandle)
+	result, err = client.getDataSources(ctx)
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{}
 			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentID, 8008, err, details)
-		}()
-	}
-	return result, err
-}
-
-/*
-Method ImportConfig creates a new in-memory configuration from a JSON document.
-The returned configHandle is used by the [Szconfig.AddDataSource], [Szconfig.DeleteDataSource],
-[Szconfig.ExportConfig], and [Szconfig.GetDataSources] methods.
-The configHandle is terminated by the [Szconfig.CloseConfig] method.
-
-Input
-  - ctx: A context to control lifecycle.
-  - configDefinition: A Senzing configuration JSON document.
-
-Output
-  - configHandle: Identifier of the in-memory configuration.
-*/
-func (client *Szconfig) ImportConfig(ctx context.Context, configDefinition string) (uintptr, error) {
-	var err error
-	var result uintptr
-	if client.isTrace {
-		entryTime := time.Now()
-		client.traceEntry(21, configDefinition)
-		defer func() { client.traceExit(22, configDefinition, result, err, time.Since(entryTime)) }()
-	}
-	result, err = client.importConfig(ctx, configDefinition)
-	if client.observers != nil {
-		go func() {
-			details := map[string]string{}
-			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentID, 8009, err, details)
 		}()
 	}
 	return result, err
@@ -285,6 +198,59 @@ func (client *Szconfig) GetObserverOrigin(ctx context.Context) string {
 }
 
 /*
+Method Import sets the value of the Senzing configuration to be operated upon.
+
+Input
+  - ctx: A context to control lifecycle.
+  - configDefinition: A Senzing configuration JSON document.
+*/
+func (client *Szconfig) Import(ctx context.Context, configDefinition string) error {
+	var err error
+	if client.isTrace {
+		entryTime := time.Now()
+		client.traceEntry(999)
+		defer func() { client.traceExit(999, err, time.Since(entryTime)) }()
+	}
+	client.configDefinition = configDefinition
+	if client.observers != nil {
+		go func() {
+			details := map[string]string{}
+			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentID, 8999, err, details)
+		}()
+	}
+	return err
+}
+
+/*
+Method ImportTemplate retrieves a Senzing configuration from the default template.
+The default template is the Senzing configuration JSON document file,
+g2config.json, located in the PIPELINE.RESOURCEPATH path.
+
+Input
+  - ctx: A context to control lifecycle.
+
+Output
+  - configDefinition: A Senzing configuration JSON document.
+*/
+func (client *Szconfig) ImportTemplate(ctx context.Context) error {
+	var err error
+	var result string
+	if client.isTrace {
+		entryTime := time.Now()
+		client.traceEntry(999)
+		defer func() { client.traceExit(999, result, err, time.Since(entryTime)) }()
+	}
+	result, err = client.importTemplate(ctx)
+	if client.observers != nil {
+		go func() {
+			details := map[string]string{}
+			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentID, 8999, err, details)
+		}()
+	}
+	return err
+}
+
+/*
 Method Initialize is a Null function for sz-sdk-go-grpc.
 
 Input
@@ -293,7 +259,12 @@ Input
   - settings: A JSON string containing configuration parameters.
   - verboseLogging: A flag to enable deeper logging of the Sz processing. 0 for no Senzing logging; 1 for logging.
 */
-func (client *Szconfig) Initialize(ctx context.Context, instanceName string, settings string, verboseLogging int64) error {
+func (client *Szconfig) Initialize(
+	ctx context.Context,
+	instanceName string,
+	settings string,
+	verboseLogging int64,
+) error {
 	var err error
 	if client.isTrace {
 		entryTime := time.Now()
@@ -419,57 +390,43 @@ func (client *Szconfig) UnregisterObserver(ctx context.Context, observer observe
 // Private methods for gRPC request/response
 // ----------------------------------------------------------------------------
 
-func (client *Szconfig) addDataSource(ctx context.Context, configHandle uintptr, dataSourceCode string) (string, error) {
+func (client *Szconfig) addDataSource(
+	ctx context.Context,
+	dataSourceCode string,
+) (string, error) {
 	request := szpb.AddDataSourceRequest{
-		ConfigHandle:   int64(configHandle), //nolint:gosec
-		DataSourceCode: dataSourceCode,
+		ConfigDefinition: client.configDefinition,
+		DataSourceCode:   dataSourceCode,
 	}
 	response, err := client.GrpcClient.AddDataSource(ctx, &request)
 	result := response.GetResult()
 	err = helper.ConvertGrpcError(err)
-	return result, err
-}
-
-func (client *Szconfig) closeConfig(ctx context.Context, configHandle uintptr) error {
-	request := szpb.CloseConfigRequest{
-		ConfigHandle: int64(configHandle), //nolint:gosec
+	if err == nil {
+		client.configDefinition = response.GetConfigDefinition()
 	}
-	_, err := client.GrpcClient.CloseConfig(ctx, &request)
-	err = helper.ConvertGrpcError(err)
-	return err
-}
-
-func (client *Szconfig) createConfig(ctx context.Context) (uintptr, error) {
-	request := szpb.CreateConfigRequest{}
-	response, err := client.GrpcClient.CreateConfig(ctx, &request)
-	result := (uintptr)(response.GetResult())
-	err = helper.ConvertGrpcError(err)
 	return result, err
 }
 
-func (client *Szconfig) deleteDataSource(ctx context.Context, configHandle uintptr, dataSourceCode string) error {
+func (client *Szconfig) deleteDataSource(ctx context.Context, dataSourceCode string) error {
 	request := szpb.DeleteDataSourceRequest{
-		ConfigHandle:   int64(configHandle), //nolint:gosec
-		DataSourceCode: dataSourceCode,
+		ConfigDefinition: client.configDefinition,
+		DataSourceCode:   dataSourceCode,
 	}
-	_, err := client.GrpcClient.DeleteDataSource(ctx, &request)
+	response, err := client.GrpcClient.DeleteDataSource(ctx, &request)
 	err = helper.ConvertGrpcError(err)
+	if err == nil {
+		client.configDefinition = response.GetConfigDefinition()
+	}
 	return err
 }
 
-func (client *Szconfig) exportConfig(ctx context.Context, configHandle uintptr) (string, error) {
-	request := szpb.ExportConfigRequest{
-		ConfigHandle: int64(configHandle), //nolint:gosec
-	}
-	response, err := client.GrpcClient.ExportConfig(ctx, &request)
-	result := response.GetResult()
-	err = helper.ConvertGrpcError(err)
-	return result, err
+func (client *Szconfig) export(ctx context.Context) (string, error) {
+	return client.configDefinition, nil
 }
 
-func (client *Szconfig) getDataSources(ctx context.Context, configHandle uintptr) (string, error) {
+func (client *Szconfig) getDataSources(ctx context.Context) (string, error) {
 	request := szpb.GetDataSourcesRequest{
-		ConfigHandle: int64(configHandle), //nolint:gosec
+		ConfigDefinition: client.configDefinition,
 	}
 	response, err := client.GrpcClient.GetDataSources(ctx, &request)
 	result := response.GetResult()
@@ -477,14 +434,14 @@ func (client *Szconfig) getDataSources(ctx context.Context, configHandle uintptr
 	return result, err
 }
 
-func (client *Szconfig) importConfig(ctx context.Context, configDefinition string) (uintptr, error) {
-	request := szpb.ImportConfigRequest{
-		ConfigDefinition: configDefinition,
-	}
-	response, err := client.GrpcClient.ImportConfig(ctx, &request)
-	result := (uintptr)(response.GetResult())
+func (client *Szconfig) importTemplate(ctx context.Context) error {
+	request := szpb.ImportTemplateRequest{}
+	response, err := client.GrpcClient.ImportTemplate(ctx, &request)
 	err = helper.ConvertGrpcError(err)
-	return result, err
+	if err == nil {
+		client.configDefinition = response.GetConfigDefinition()
+	}
+	return err
 }
 
 // ----------------------------------------------------------------------------

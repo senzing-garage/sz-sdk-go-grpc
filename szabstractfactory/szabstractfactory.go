@@ -3,13 +3,11 @@ package szabstractfactory
 import (
 	"context"
 
-	"github.com/senzing-garage/sz-sdk-go-grpc/szconfig"
 	"github.com/senzing-garage/sz-sdk-go-grpc/szconfigmanager"
 	"github.com/senzing-garage/sz-sdk-go-grpc/szdiagnostic"
 	"github.com/senzing-garage/sz-sdk-go-grpc/szengine"
 	"github.com/senzing-garage/sz-sdk-go-grpc/szproduct"
 	"github.com/senzing-garage/sz-sdk-go/senzing"
-	szconfigpb "github.com/senzing-garage/sz-sdk-proto/go/szconfig"
 	szconfigmanagerpb "github.com/senzing-garage/sz-sdk-proto/go/szconfigmanager"
 	szdiagnosticpb "github.com/senzing-garage/sz-sdk-proto/go/szdiagnostic"
 	szenginepb "github.com/senzing-garage/sz-sdk-proto/go/szengine"
@@ -29,24 +27,6 @@ type Szabstractfactory struct {
 // ----------------------------------------------------------------------------
 // senzing.SzAbstractFactory interface methods
 // ----------------------------------------------------------------------------
-
-/*
-Method CreateConfig returns an SzConfig object
-implemented to use the Senzing native C binary, libSz.so.
-
-Input
-  - ctx: A context to control lifecycle.
-
-Output
-  - An SzConfig object.
-*/
-func (factory *Szabstractfactory) CreateConfig(ctx context.Context) (senzing.SzConfig, error) {
-	_ = ctx
-	result := &szconfig.Szconfig{
-		GrpcClient: szconfigpb.NewSzConfigClient(factory.GrpcConnection),
-	}
-	return result, nil
-}
 
 /*
 Method CreateConfigManager returns an SzConfigManager object
@@ -129,13 +109,7 @@ Input
 */
 func (factory *Szabstractfactory) Destroy(ctx context.Context) error {
 	var err error
-	szConfig := &szconfig.Szconfig{
-		GrpcClient: szconfigpb.NewSzConfigClient(factory.GrpcConnection),
-	}
-	err = szConfig.Destroy(ctx)
-	if err != nil {
-		return err
-	}
+
 	szConfigmanager := &szconfigmanager.Szconfigmanager{
 		GrpcClient: szconfigmanagerpb.NewSzConfigManagerClient(factory.GrpcConnection),
 	}

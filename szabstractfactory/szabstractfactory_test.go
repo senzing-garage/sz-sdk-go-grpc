@@ -1,4 +1,4 @@
-package szabstractfactory
+package szabstractfactory_test
 
 import (
 	"context"
@@ -28,19 +28,6 @@ var (
 // ----------------------------------------------------------------------------
 // Interface methods - test
 // ----------------------------------------------------------------------------
-
-func TestSzAbstractFactory_CreateConfig(test *testing.T) {
-	ctx := context.TODO()
-	szAbstractFactory := getTestObject(ctx, test)
-	defer func() { handleError(szAbstractFactory.Destroy(ctx)) }()
-	szConfig, err := szAbstractFactory.CreateConfig(ctx)
-	require.NoError(test, err)
-	configHandle, err := szConfig.CreateConfig(ctx)
-	require.NoError(test, err)
-	dataSources, err := szConfig.GetDataSources(ctx, configHandle)
-	require.NoError(test, err)
-	printActual(test, dataSources)
-}
 
 func TestSzAbstractFactory_CreateConfigManager(test *testing.T) {
 	ctx := context.TODO()
