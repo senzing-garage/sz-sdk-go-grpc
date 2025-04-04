@@ -1,4 +1,4 @@
-package szproduct
+package szproduct_test
 
 import (
 	"context"
@@ -8,6 +8,7 @@ import (
 	truncator "github.com/aquilax/truncate"
 	"github.com/senzing-garage/go-observing/observer"
 	"github.com/senzing-garage/sz-sdk-go-grpc/helper"
+	"github.com/senzing-garage/sz-sdk-go-grpc/szproduct"
 	"github.com/senzing-garage/sz-sdk-go/senzing"
 	szpb "github.com/senzing-garage/sz-sdk-proto/go/szproduct"
 	"github.com/stretchr/testify/assert"
@@ -37,7 +38,7 @@ var (
 		ID:       "Observer 1",
 		IsSilent: true,
 	}
-	szProductSingleton *Szproduct
+	szProductSingleton *szproduct.Szproduct
 )
 
 // ----------------------------------------------------------------------------
@@ -45,16 +46,16 @@ var (
 // ----------------------------------------------------------------------------
 
 func TestSzproduct_GetLicense(test *testing.T) {
-	ctx := context.TODO()
-	szProduct := getTestObject(ctx, test)
+	ctx := test.Context()
+	szProduct := getTestObject(test)
 	actual, err := szProduct.GetLicense(ctx)
 	require.NoError(test, err)
 	printActual(test, actual)
 }
 
 func TestSzproduct_GetVersion(test *testing.T) {
-	ctx := context.TODO()
-	szProduct := getTestObject(ctx, test)
+	ctx := test.Context()
+	szProduct := getTestObject(test)
 	actual, err := szProduct.GetVersion(ctx)
 	require.NoError(test, err)
 	printActual(test, actual)
@@ -65,21 +66,21 @@ func TestSzproduct_GetVersion(test *testing.T) {
 // ----------------------------------------------------------------------------
 
 func TestSzproduct_SetLogLevel_badLogLevelName(test *testing.T) {
-	ctx := context.TODO()
-	szConfig := getTestObject(ctx, test)
+	ctx := test.Context()
+	szConfig := getTestObject(test)
 	_ = szConfig.SetLogLevel(ctx, badLogLevelName)
 }
 
 func TestSzproduct_SetObserverOrigin(test *testing.T) {
-	ctx := context.TODO()
-	szProduct := getTestObject(ctx, test)
+	ctx := test.Context()
+	szProduct := getTestObject(test)
 	origin := "Machine: nn; Task: UnitTest"
 	szProduct.SetObserverOrigin(ctx, origin)
 }
 
 func TestSzproduct_GetObserverOrigin(test *testing.T) {
-	ctx := context.TODO()
-	szProduct := getTestObject(ctx, test)
+	ctx := test.Context()
+	szProduct := getTestObject(test)
 	origin := "Machine: nn; Task: UnitTest"
 	szProduct.SetObserverOrigin(ctx, origin)
 	actual := szProduct.GetObserverOrigin(ctx)
@@ -87,8 +88,8 @@ func TestSzproduct_GetObserverOrigin(test *testing.T) {
 }
 
 func TestSzproduct_UnregisterObserver(test *testing.T) {
-	ctx := context.TODO()
-	szProduct := getTestObject(ctx, test)
+	ctx := test.Context()
+	szProduct := getTestObject(test)
 	err := szProduct.UnregisterObserver(ctx, observerSingleton)
 	require.NoError(test, err)
 }
@@ -98,7 +99,7 @@ func TestSzproduct_UnregisterObserver(test *testing.T) {
 // ----------------------------------------------------------------------------
 
 func TestSzproduct_AsInterface(test *testing.T) {
-	ctx := context.TODO()
+	ctx := test.Context()
 	szProduct := getSzProductAsInterface(ctx)
 	actual, err := szProduct.GetLicense(ctx)
 	require.NoError(test, err)
@@ -106,12 +107,10 @@ func TestSzproduct_AsInterface(test *testing.T) {
 }
 
 func TestSzproduct_Initialize(test *testing.T) {
-	ctx := context.TODO()
-	szProduct, err := getSzProduct(ctx)
-	require.NoError(test, err)
-	settings, err := getSettings()
-	require.NoError(test, err)
-	err = szProduct.Initialize(ctx, instanceName, settings, verboseLogging)
+	ctx := test.Context()
+	szProduct := &szproduct.Szproduct{}
+	settings := getSettings()
+	err := szProduct.Initialize(ctx, instanceName, settings, verboseLogging)
 	require.NoError(test, err)
 }
 
@@ -119,8 +118,8 @@ func TestSzproduct_Initialize(test *testing.T) {
 // func TestSzproduct_Initialize_error(test *testing.T) {}
 
 func TestSzproduct_Destroy(test *testing.T) {
-	ctx := context.TODO()
-	szProduct := getTestObject(ctx, test)
+	ctx := test.Context()
+	szProduct := getTestObject(test)
 	err := szProduct.Destroy(ctx)
 	require.NoError(test, err)
 }
@@ -129,9 +128,9 @@ func TestSzproduct_Destroy(test *testing.T) {
 // func TestSzproduct_Destroy_error(test *testing.T) {}
 
 func TestSzproduct_Destroy_withObserver(test *testing.T) {
-	ctx := context.TODO()
+	ctx := test.Context()
 	szProductSingleton = nil
-	szProduct := getTestObject(ctx, test)
+	szProduct := getTestObject(test)
 	err := szProduct.Destroy(ctx)
 	require.NoError(test, err)
 }
@@ -143,80 +142,91 @@ func TestSzproduct_Destroy_withObserver(test *testing.T) {
 func getGrpcConnection() *grpc.ClientConn {
 	if grpcConnection == nil {
 		transportCredentials, err := helper.GetGrpcTransportCredentials()
-		if err != nil {
-			panic(err)
-		}
+		handleErrorWithPanic(err)
+
 		dialOptions := []grpc.DialOption{
 			grpc.WithTransportCredentials(transportCredentials),
 		}
+
 		grpcConnection, err = grpc.NewClient(grpcAddress, dialOptions...)
-		if err != nil {
-			panic(err)
-		}
+		handleErrorWithPanic(err)
 	}
+
 	return grpcConnection
 }
 
-func getSettings() (string, error) {
-	return "{}", nil
+func getSettings() string {
+	return "{}"
 }
 
-func getSzProduct(ctx context.Context) (*Szproduct, error) {
-	var err error
+func getSzProduct(ctx context.Context) *szproduct.Szproduct {
 	if szProductSingleton == nil {
 		settings, err := getSettings()
-		if err != nil {
-			return szProductSingleton, fmt.Errorf("getSettings() Error: %w", err)
-		}
+		handleErrorWithPanic(err)
+
 		grpcConnection := getGrpcConnection()
 		szProductSingleton = &Szproduct{
 			GrpcClient: szpb.NewSzProductClient(grpcConnection),
 		}
 		err = szProductSingleton.SetLogLevel(ctx, logLevel)
-		if err != nil {
-			return szProductSingleton, fmt.Errorf("SetLogLevel() Error: %w", err)
-		}
+
+		handleErrorWithPanic(err)
+
 		if logLevel == "TRACE" {
 			szProductSingleton.SetObserverOrigin(ctx, observerOrigin)
+
 			err = szProductSingleton.RegisterObserver(ctx, observerSingleton)
-			if err != nil {
-				return szProductSingleton, fmt.Errorf("RegisterObserver() Error: %w", err)
-			}
+			handleErrorWithPanic(err)
+
 			err = szProductSingleton.SetLogLevel(ctx, logLevel) // Duplicated for coverage testing
-			if err != nil {
-				return szProductSingleton, fmt.Errorf("SetLogLevel() - 2 Error: %w", err)
-			}
+			handleErrorWithPanic(err)
 		}
+
 		err = szProductSingleton.Initialize(ctx, instanceName, settings, verboseLogging)
-		if err != nil {
-			return szProductSingleton, fmt.Errorf("Initialize() Error: %w", err)
-		}
+		handleErrorWithPanic(err)
 	}
-	return szProductSingleton, err
+
+	return szProductSingleton
 }
 
 func getSzProductAsInterface(ctx context.Context) senzing.SzProduct {
-	result, err := getSzProduct(ctx)
+	return getSzProduct(ctx)
+}
+
+func getTestObject(t *testing.T) *szproduct.Szproduct {
+	t.Helper()
+	ctx := t.Context()
+
+	return getSzProduct(ctx)
+}
+
+func handleError(err error) {
+	if err != nil {
+		safePrintln("Error:", err)
+	}
+}
+
+func handleErrorWithPanic(err error) {
 	if err != nil {
 		panic(err)
 	}
-	return result
 }
 
-func getTestObject(ctx context.Context, test *testing.T) *Szproduct {
-	result, err := getSzProduct(ctx)
-	require.NoError(test, err)
-	return result
+func printActual(t *testing.T, actual interface{}) {
+	t.Helper()
+	printResult(t, "Actual", actual)
 }
 
-func printActual(test *testing.T, actual interface{}) {
-	printResult(test, "Actual", actual)
-}
+func printResult(t *testing.T, title string, result interface{}) {
+	t.Helper()
 
-func printResult(test *testing.T, title string, result interface{}) {
 	if printResults {
-		test.Logf("%s: %v", title, truncate(fmt.Sprintf("%v", result), defaultTruncation))
+		t.Logf("%s: %v", title, truncate(fmt.Sprintf("%v", result), defaultTruncation))
 	}
+}
+
+func safePrintln(message ...any) {
+	fmt.Println(message...) //nolint
 }
 
 func truncate(aString string, length int) string {

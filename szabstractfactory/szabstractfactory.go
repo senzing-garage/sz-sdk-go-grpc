@@ -3,6 +3,7 @@ package szabstractfactory
 import (
 	"context"
 
+	"github.com/senzing-garage/go-helpers/wraperror"
 	"github.com/senzing-garage/sz-sdk-go-grpc/szconfigmanager"
 	"github.com/senzing-garage/sz-sdk-go-grpc/szdiagnostic"
 	"github.com/senzing-garage/sz-sdk-go-grpc/szengine"
@@ -39,11 +40,14 @@ Output
   - An SzConfigManager object.
 */
 func (factory *Szabstractfactory) CreateConfigManager(ctx context.Context) (senzing.SzConfigManager, error) {
+	var err error
+
 	_ = ctx
 	result := &szconfigmanager.Szconfigmanager{
 		GrpcClient: szconfigmanagerpb.NewSzConfigManagerClient(factory.GrpcConnection),
 	}
-	return result, nil
+
+	return result, wraperror.Errorf(err, "szabstractfactory.CreateConfigManager  error: %w", err)
 }
 
 /*
@@ -57,11 +61,14 @@ Output
   - An SzDiagnostic object.
 */
 func (factory *Szabstractfactory) CreateDiagnostic(ctx context.Context) (senzing.SzDiagnostic, error) {
+	var err error
+
 	_ = ctx
 	result := &szdiagnostic.Szdiagnostic{
 		GrpcClient: szdiagnosticpb.NewSzDiagnosticClient(factory.GrpcConnection),
 	}
-	return result, nil
+
+	return result, wraperror.Errorf(err, "szabstractfactory.CreateDiagnostic  error: %w", err)
 }
 
 /*
@@ -75,11 +82,14 @@ Output
   - An SzEngine object.
 */
 func (factory *Szabstractfactory) CreateEngine(ctx context.Context) (senzing.SzEngine, error) {
+	var err error
+
 	_ = ctx
 	result := &szengine.Szengine{
 		GrpcClient: szenginepb.NewSzEngineClient(factory.GrpcConnection),
 	}
-	return result, nil
+
+	return result, wraperror.Errorf(err, "szabstractfactory.CreateEngine  error: %w", err)
 }
 
 /*
@@ -93,11 +103,14 @@ Output
   - An SzProduct object.
 */
 func (factory *Szabstractfactory) CreateProduct(ctx context.Context) (senzing.SzProduct, error) {
+	var err error
+
 	_ = ctx
 	result := &szproduct.Szproduct{
 		GrpcClient: szproductpb.NewSzProductClient(factory.GrpcConnection),
 	}
-	return result, nil
+
+	return result, wraperror.Errorf(err, "szabstractfactory.CreateProduct  error: %w", err)
 }
 
 /*
@@ -113,36 +126,45 @@ func (factory *Szabstractfactory) Destroy(ctx context.Context) error {
 	szConfigmanager := &szconfigmanager.Szconfigmanager{
 		GrpcClient: szconfigmanagerpb.NewSzConfigManagerClient(factory.GrpcConnection),
 	}
+
 	err = szConfigmanager.Destroy(ctx)
 	if err != nil {
 		return err
 	}
+
 	szDiagnostic := &szdiagnostic.Szdiagnostic{
 		GrpcClient: szdiagnosticpb.NewSzDiagnosticClient(factory.GrpcConnection),
 	}
+
 	err = szDiagnostic.Destroy(ctx)
 	if err != nil {
 		return err
 	}
+
 	szEngine := &szengine.Szengine{
 		GrpcClient: szenginepb.NewSzEngineClient(factory.GrpcConnection),
 	}
+
 	err = szEngine.Destroy(ctx)
 	if err != nil {
 		return err
 	}
+
 	szProduct := &szproduct.Szproduct{
 		GrpcClient: szproductpb.NewSzProductClient(factory.GrpcConnection),
 	}
+
 	err = szProduct.Destroy(ctx)
 	if err != nil {
 		return err
 	}
+
 	return err
 }
 
 /*
-Method Reinitialize re-initializes the Senzing objects created by the AbstractFactory with a specific Senzing configuration JSON document identifier.
+Method Reinitialize re-initializes the Senzing objects created by the AbstractFactory
+with a specific Senzing configuration JSON document identifier.
 
 Input
   - ctx: A context to control lifecycle.
@@ -150,19 +172,24 @@ Input
 */
 func (factory *Szabstractfactory) Reinitialize(ctx context.Context, configID int64) error {
 	var err error
+
 	szDiagnostic := &szdiagnostic.Szdiagnostic{
 		GrpcClient: szdiagnosticpb.NewSzDiagnosticClient(factory.GrpcConnection),
 	}
+
 	err = szDiagnostic.Reinitialize(ctx, configID)
 	if err != nil {
 		return err
 	}
+
 	szEngine := &szengine.Szengine{
 		GrpcClient: szenginepb.NewSzEngineClient(factory.GrpcConnection),
 	}
+
 	err = szEngine.Reinitialize(ctx, configID)
 	if err != nil {
 		return err
 	}
+
 	return err
 }

@@ -46,9 +46,11 @@ func TestConvertGrpcError(test *testing.T) {
 			originalError := status.Error(testCase.gRPCCode, testCase.senzingErrorMessage)
 			actual := ConvertGrpcError(originalError)
 			require.ErrorIs(test, actual, testCase.expectedType)
+
 			for _, szerrorTypeID := range testCase.expectedTypes {
 				require.ErrorIs(test, actual, szerrorTypeID)
 			}
+
 			for _, szerrorTypeID := range testCase.falseTypes {
 				assert.NotErrorIs(test, actual, szerrorTypeID)
 			}

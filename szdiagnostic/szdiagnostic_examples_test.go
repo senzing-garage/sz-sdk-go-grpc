@@ -16,6 +16,10 @@ import (
 	"google.golang.org/grpc"
 )
 
+const (
+	jsonIndentation = "    "
+)
+
 var (
 	grpcAddress    = "0.0.0.0:8261"
 	grpcConnection *grpc.ClientConn
@@ -26,63 +30,110 @@ var (
 // ----------------------------------------------------------------------------
 
 func ExampleSzdiagnostic_CheckDatastorePerformance() {
-	// For more information, visit https://github.com/senzing-garage/sz-sdk-go-grpc/blob/main/szdiagnostic/szdiagnostic_examples_test.go
+	// For more information, visit
+	// https://github.com/senzing-garage/sz-sdk-go-grpc/blob/main/szdiagnostic/szdiagnostic_examples_test.go
 	ctx := context.TODO()
 	szAbstractFactory := getSzAbstractFactory(ctx)
+
 	szDiagnostic, err := szAbstractFactory.CreateDiagnostic(ctx)
 	if err != nil {
 		handleError(err)
 	}
+
 	secondsToRun := 1
+
 	result, err := szDiagnostic.CheckDatastorePerformance(ctx, secondsToRun)
 	if err != nil {
 		handleError(err)
 	}
+
 	fmt.Println(jsonutil.Truncate(result, 2))
 	// Output: {"insertTime":1000,...
 }
 
 func ExampleSzdiagnostic_GetDatastoreInfo() {
-	// For more information, visit https://github.com/senzing-garage/sz-sdk-go-grpc/blob/main/szdiagnostic/szdiagnostic_examples_test.go
+	// For more information, visit
+	// https://github.com/senzing-garage/sz-sdk-go-grpc/blob/main/szdiagnostic/szdiagnostic_examples_test.go
 	ctx := context.TODO()
 	szAbstractFactory := getSzAbstractFactory(ctx)
+
 	szDiagnostic, err := szAbstractFactory.CreateDiagnostic(ctx)
 	if err != nil {
 		handleError(err)
 	}
+
 	result, err := szDiagnostic.GetDatastoreInfo(ctx)
 	if err != nil {
 		handleError(err)
 	}
+
 	fmt.Println(result)
 	// Output: {"dataStores":[{"id":"CORE","type":"sqlite3","location":"nowhere"}]}
 }
 
 func ExampleSzdiagnostic_GetFeature() {
-	// For more information, visit https://github.com/senzing-garage/sz-sdk-go-grpc/blob/main/szdiagnostic/szdiagnostic_examples_test.go
+	// For more information, visit
+	// https://github.com/senzing-garage/sz-sdk-go-grpc/blob/main/szdiagnostic/szdiagnostic_examples_test.go
 	ctx := context.TODO()
 	szAbstractFactory := getSzAbstractFactory(ctx)
+
 	szDiagnostic, err := szAbstractFactory.CreateDiagnostic(ctx)
 	if err != nil {
 		handleError(err)
 	}
+
 	featureID := int64(1)
+
 	result, err := szDiagnostic.GetFeature(ctx, featureID)
 	if err != nil {
 		handleError(err)
 	}
-	fmt.Println(result)
-	// Output: {"LIB_FEAT_ID":1,"FTYPE_CODE":"NAME","ELEMENTS":[{"FELEM_CODE":"FULL_NAME","FELEM_VALUE":"Robert Smith"},{"FELEM_CODE":"SUR_NAME","FELEM_VALUE":"Smith"},{"FELEM_CODE":"GIVEN_NAME","FELEM_VALUE":"Robert"},{"FELEM_CODE":"CULTURE","FELEM_VALUE":"ANGLO"},{"FELEM_CODE":"CATEGORY","FELEM_VALUE":"PERSON"},{"FELEM_CODE":"TOKENIZED_NM","FELEM_VALUE":"ROBERT|SMITH"}]}
+
+	fmt.Println(jsonutil.PrettyPrint(result, jsonIndentation))
+	// Output:
+	// {
+	//     "LIB_FEAT_ID": 1,
+	//     "FTYPE_CODE": "NAME",
+	//     "ELEMENTS": [
+	//         {
+	//             "FELEM_CODE": "FULL_NAME",
+	//             "FELEM_VALUE": "Robert Smith"
+	//         },
+	//         {
+	//             "FELEM_CODE": "SUR_NAME",
+	//             "FELEM_VALUE": "Smith"
+	//         },
+	//         {
+	//             "FELEM_CODE": "GIVEN_NAME",
+	//             "FELEM_VALUE": "Robert"
+	//         },
+	//         {
+	//             "FELEM_CODE": "CULTURE",
+	//             "FELEM_VALUE": "ANGLO"
+	//         },
+	//         {
+	//             "FELEM_CODE": "CATEGORY",
+	//             "FELEM_VALUE": "PERSON"
+	//         },
+	//         {
+	//             "FELEM_CODE": "TOKENIZED_NM",
+	//             "FELEM_VALUE": "ROBERT|SMITH"
+	//         }
+	//     ]
+	// }
 }
 
 func ExampleSzdiagnostic_PurgeRepository() {
-	// For more information, visit https://github.com/senzing-garage/sz-sdk-go-grpc/blob/main/szdiagnostic/szdiagnostic_examples_test.go
+	// For more information, visit
+	// https://github.com/senzing-garage/sz-sdk-go-grpc/blob/main/szdiagnostic/szdiagnostic_examples_test.go
 	ctx := context.TODO()
 	szAbstractFactory := getSzAbstractFactory(ctx)
+
 	szDiagnostic, err := szAbstractFactory.CreateDiagnostic(ctx)
 	if err != nil {
 		handleError(err)
 	}
+
 	err = szDiagnostic.PurgeRepository(ctx)
 	if err != nil {
 		handleError(err)
@@ -95,9 +146,11 @@ func ExampleSzdiagnostic_PurgeRepository() {
 // ----------------------------------------------------------------------------
 
 func ExampleSzdiagnostic_SetLogLevel() {
-	// For more information, visit https://github.com/senzing-garage/sz-sdk-go-grpc/blob/main/szdiagnostic/szdiagnostic_examples_test.go
+	// For more information, visit
+	// https://github.com/senzing-garage/sz-sdk-go-grpc/blob/main/szdiagnostic/szdiagnostic_examples_test.go
 	ctx := context.TODO()
 	szDiagnostic := getSzDiagnostic(ctx)
+
 	err := szDiagnostic.SetLogLevel(ctx, logging.LevelInfoName)
 	if err != nil {
 		handleError(err)
@@ -106,7 +159,8 @@ func ExampleSzdiagnostic_SetLogLevel() {
 }
 
 func ExampleSzdiagnostic_SetObserverOrigin() {
-	// For more information, visit https://github.com/senzing-garage/sz-sdk-go-grpc/blob/main/szdiagnostic/szdiagnostic_examples_test.go
+	// For more information, visit
+	// https://github.com/senzing-garage/sz-sdk-go-grpc/blob/main/szdiagnostic/szdiagnostic_examples_test.go
 	ctx := context.TODO()
 	szDiagnostic := getSzDiagnostic(ctx)
 	origin := "Machine: nn; Task: UnitTest"
@@ -115,7 +169,8 @@ func ExampleSzdiagnostic_SetObserverOrigin() {
 }
 
 func ExampleSzdiagnostic_GetObserverOrigin() {
-	// For more information, visit https://github.com/senzing-garage/sz-sdk-go-grpc/blob/main/szdiagnostic/szdiagnostic_examples_test.go
+	// For more information, visit
+	// https://github.com/senzing-garage/sz-sdk-go-grpc/blob/main/szdiagnostic/szdiagnostic_examples_test.go
 	ctx := context.TODO()
 	szDiagnostic := getSzDiagnostic(ctx)
 	origin := "Machine: nn; Task: UnitTest"
@@ -135,19 +190,23 @@ func getGrpcConnection() *grpc.ClientConn {
 		if err != nil {
 			panic(err)
 		}
+
 		dialOptions := []grpc.DialOption{
 			grpc.WithTransportCredentials(transportCredentials),
 		}
+
 		grpcConnection, err = grpc.NewClient(grpcAddress, dialOptions...)
 		if err != nil {
 			panic(err)
 		}
 	}
+
 	return grpcConnection
 }
 
 func getSzAbstractFactory(ctx context.Context) senzing.SzAbstractFactory {
 	_ = ctx
+
 	return &szabstractfactory.Szabstractfactory{
 		GrpcConnection: getGrpcConnection(),
 	}
@@ -155,13 +214,8 @@ func getSzAbstractFactory(ctx context.Context) senzing.SzAbstractFactory {
 
 func getSzDiagnostic(ctx context.Context) *szdiagnostic.Szdiagnostic {
 	_ = ctx
+
 	return &szdiagnostic.Szdiagnostic{
 		GrpcClient: szdiagnosticpb.NewSzDiagnosticClient(getGrpcConnection()),
-	}
-}
-
-func handleError(err error) {
-	if err != nil {
-		fmt.Println("Error:", err)
 	}
 }

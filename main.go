@@ -60,11 +60,13 @@ var (
 
 func main() {
 	var err error
+
 	ctx := context.TODO()
 
 	// Configure the "log" standard library.
 
 	log.SetFlags(0)
+
 	logger, err = getLogger(ctx)
 	failOnError(5000, err)
 
@@ -159,9 +161,7 @@ func main() {
 // ----------------------------------------------------------------------------
 
 func demonstrateAdditionalFunctions(ctx context.Context, szEngine senzing.SzEngine, szProduct senzing.SzProduct) error {
-
 	// Using SzEngine: Add records with information returned.
-
 	withInfo, err := demonstrateAddRecord(ctx, szEngine)
 	failOnError(5302, err)
 	logger.Log(2003, withInfo)
@@ -177,16 +177,19 @@ func demonstrateAdditionalFunctions(ctx context.Context, szEngine senzing.SzEngi
 
 func demonstrateAddRecord(ctx context.Context, szEngine senzing.SzEngine) (string, error) {
 	dataSourceCode := "TEST"
+
 	randomNumber, err := rand.Int(rand.Reader, big.NewInt(1000000000))
 	if err != nil {
 		panic(err)
 	}
+
 	recordID := randomNumber.String()
 	recordDefinition := fmt.Sprintf(
 		"%s%s%s",
 		`{"SOCIAL_HANDLE": "flavorh", "DATE_OF_BIRTH": "4/8/1983", "ADDR_STATE": "LA", "ADDR_POSTAL_CODE": "71232", "SSN_NUMBER": "053-39-3251", "ENTITY_TYPE": "TEST", "GENDER": "F", "srccode": "MDMPER", "CC_ACCOUNT_NUMBER": "5534202208773608", "RECORD_ID": "`,
 		recordID,
 		`", "DSRC_ACTION": "A", "ADDR_CITY": "Delhi", "DRIVERS_LICENSE_STATE": "DE", "PHONE_NUMBER": "225-671-0796", "NAME_LAST": "SEAMAN", "entityid": "284430058", "ADDR_LINE1": "772 Armstrong RD"}`)
+
 	var flags = senzing.SzWithInfo
 
 	// Using SzEngine: Add record and return "withInfo".
@@ -223,6 +226,7 @@ func demonstrateConfigFunctions(ctx context.Context, szConfig senzing.SzConfig, 
 	// Using SzConfigManager: Persist configuration string to database.
 
 	configComments := fmt.Sprintf("Created by szmain.go at %s", now.UTC())
+
 	configID, err := szConfigManager.AddConfig(ctx, configStr, configComments)
 	if err != nil {
 		return logger.NewError(5103, err)
@@ -251,14 +255,17 @@ func getGrpcConnection() *grpc.ClientConn {
 		if err != nil {
 			panic(err)
 		}
+
 		dialOptions := []grpc.DialOption{
 			grpc.WithTransportCredentials(transportCredentials),
 		}
+
 		grpcConnection, err = grpc.NewClient(grpcAddress, dialOptions...)
 		if err != nil {
 			panic(err)
 		}
 	}
+
 	return grpcConnection
 }
 
@@ -278,36 +285,48 @@ func getLogger(ctx context.Context) (logging.Logging, error) {
 
 func getSzConfig(ctx context.Context) (senzing.SzConfig, error) {
 	_ = ctx
+
 	var err error
+
 	result := &szconfig.Szconfig{
 		GrpcClient: szconfigpb.NewSzConfigClient(getGrpcConnection()),
 	}
+
 	return result, err
 }
 
 func getSzConfigManager(ctx context.Context) (senzing.SzConfigManager, error) {
 	_ = ctx
+
 	var err error
+
 	result := &szconfigmanager.Szconfigmanager{
 		GrpcClient: szconfigmanagerpb.NewSzConfigManagerClient(getGrpcConnection()),
 	}
+
 	return result, err
 }
 
 func getSzEngine(ctx context.Context) (senzing.SzEngine, error) {
 	_ = ctx
+
 	var err error
+
 	result := &szengine.Szengine{
 		GrpcClient: szenginepb.NewSzEngineClient(getGrpcConnection()),
 	}
+
 	return result, err
 }
 
 func getSzProduct(ctx context.Context) (senzing.SzProduct, error) {
 	_ = ctx
+
 	var err error
+
 	result := &szproduct.Szproduct{
 		GrpcClient: szproductpb.NewSzProductClient(getGrpcConnection()),
 	}
+
 	return result, err
 }

@@ -51,19 +51,26 @@ Output
 */
 func (client *Szdiagnostic) CheckDatastorePerformance(ctx context.Context, secondsToRun int) (string, error) {
 	var err error
+
 	var result string
+
 	if client.isTrace {
 		entryTime := time.Now()
+
 		client.traceEntry(1, secondsToRun)
+
 		defer func() { client.traceExit(2, secondsToRun, result, err, time.Since(entryTime)) }()
 	}
+
 	result, err = client.checkDatastorePerformance(ctx, secondsToRun)
+
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{}
 			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentID, 8001, err, details)
 		}()
 	}
+
 	return result, err
 }
 
@@ -75,17 +82,22 @@ Input
 */
 func (client *Szdiagnostic) Destroy(ctx context.Context) error {
 	var err error
+
 	if client.isTrace {
 		entryTime := time.Now()
+
 		client.traceEntry(5)
+
 		defer func() { client.traceExit(6, err, time.Since(entryTime)) }()
 	}
+
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{}
 			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentID, 8002, err, details)
 		}()
 	}
+
 	return err
 }
 
@@ -101,19 +113,26 @@ Output
 */
 func (client *Szdiagnostic) GetDatastoreInfo(ctx context.Context) (string, error) {
 	var err error
+
 	var result string
+
 	if client.isTrace {
 		entryTime := time.Now()
+
 		client.traceEntry(7)
+
 		defer func() { client.traceExit(8, result, err, time.Since(entryTime)) }()
 	}
+
 	result, err = client.getDatastoreInfo(ctx)
+
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{}
 			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentID, 8003, err, details)
 		}()
 	}
+
 	return result, err
 }
 
@@ -131,13 +150,19 @@ Output
 */
 func (client *Szdiagnostic) GetFeature(ctx context.Context, featureID int64) (string, error) {
 	var err error
+
 	var result string
+
 	if client.isTrace {
 		entryTime := time.Now()
+
 		client.traceEntry(9, featureID)
+
 		defer func() { client.traceExit(10, featureID, result, err, time.Since(entryTime)) }()
 	}
+
 	result, err = client.getFeature(ctx, featureID)
+
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{
@@ -146,6 +171,7 @@ func (client *Szdiagnostic) GetFeature(ctx context.Context, featureID int64) (st
 			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentID, 8004, err, details)
 		}()
 	}
+
 	return result, err
 }
 
@@ -159,18 +185,24 @@ Input
 */
 func (client *Szdiagnostic) PurgeRepository(ctx context.Context) error {
 	var err error
+
 	if client.isTrace {
 		entryTime := time.Now()
+
 		client.traceEntry(17)
+
 		defer func() { client.traceExit(18, err, time.Since(entryTime)) }()
 	}
+
 	err = client.purgeRepository(ctx)
+
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{}
 			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentID, 8007, err, details)
 		}()
 	}
+
 	return err
 }
 
@@ -183,12 +215,17 @@ Input
 */
 func (client *Szdiagnostic) Reinitialize(ctx context.Context, configID int64) error {
 	var err error
+
 	if client.isTrace {
 		entryTime := time.Now()
+
 		client.traceEntry(19, configID)
+
 		defer func() { client.traceExit(20, configID, err, time.Since(entryTime)) }()
 	}
+
 	err = client.reinitialize(ctx, configID)
+
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{
@@ -197,6 +234,7 @@ func (client *Szdiagnostic) Reinitialize(ctx context.Context, configID int64) er
 			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentID, 8008, err, details)
 		}()
 	}
+
 	return err
 }
 
@@ -230,13 +268,17 @@ Input
 */
 func (client *Szdiagnostic) Initialize(ctx context.Context, instanceName string, settings string, configID int64, verboseLogging int64) error {
 	var err error
+
 	if client.isTrace {
 		entryTime := time.Now()
+
 		client.traceEntry(15, instanceName, settings, configID, verboseLogging)
+
 		defer func() {
 			client.traceExit(16, instanceName, settings, configID, verboseLogging, err, time.Since(entryTime))
 		}()
 	}
+
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{
@@ -248,6 +290,7 @@ func (client *Szdiagnostic) Initialize(ctx context.Context, instanceName string,
 			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentID, 8005, err, details)
 		}()
 	}
+
 	return err
 }
 
@@ -260,15 +303,21 @@ Input
 */
 func (client *Szdiagnostic) RegisterObserver(ctx context.Context, observer observer.Observer) error {
 	var err error
+
 	if client.isTrace {
 		entryTime := time.Now()
+
 		client.traceEntry(703, observer.GetObserverID(ctx))
+
 		defer func() { client.traceExit(704, observer.GetObserverID(ctx), err, time.Since(entryTime)) }()
 	}
+
 	if client.observers == nil {
 		client.observers = &subject.SimpleSubject{}
 	}
+
 	err = client.observers.RegisterObserver(ctx, observer)
+
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{
@@ -277,6 +326,7 @@ func (client *Szdiagnostic) RegisterObserver(ctx context.Context, observer obser
 			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentID, 8702, err, details)
 		}()
 	}
+
 	return err
 }
 
@@ -289,15 +339,21 @@ Input
 */
 func (client *Szdiagnostic) SetLogLevel(ctx context.Context, logLevelName string) error {
 	var err error
+
 	if client.isTrace {
 		entryTime := time.Now()
+
 		client.traceEntry(705, logLevelName)
+
 		defer func() { client.traceExit(706, logLevelName, err, time.Since(entryTime)) }()
 	}
+
 	if !logging.IsValidLogLevelName(logLevelName) {
 		return fmt.Errorf("invalid error level: %s", logLevelName)
 	}
+
 	err = client.getLogger().SetLogLevel(logLevelName)
+
 	client.isTrace = (logLevelName == logging.LevelTraceName)
 	if client.observers != nil {
 		go func() {
@@ -307,6 +363,7 @@ func (client *Szdiagnostic) SetLogLevel(ctx context.Context, logLevelName string
 			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentID, 8703, err, details)
 		}()
 	}
+
 	return err
 }
 
@@ -331,11 +388,15 @@ Input
 */
 func (client *Szdiagnostic) UnregisterObserver(ctx context.Context, observer observer.Observer) error {
 	var err error
+
 	if client.isTrace {
 		entryTime := time.Now()
+
 		client.traceEntry(707, observer.GetObserverID(ctx))
+
 		defer func() { client.traceExit(708, observer.GetObserverID(ctx), err, time.Since(entryTime)) }()
 	}
+
 	if client.observers != nil {
 		// Tricky code:
 		// client.notify is called synchronously before client.observers is set to nil.
@@ -346,10 +407,12 @@ func (client *Szdiagnostic) UnregisterObserver(ctx context.Context, observer obs
 		}
 		notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentID, 8704, err, details)
 		err = client.observers.UnregisterObserver(ctx, observer)
+
 		if !client.observers.HasObservers(ctx) {
 			client.observers = nil
 		}
 	}
+
 	return err
 }
 
@@ -364,6 +427,7 @@ func (client *Szdiagnostic) checkDatastorePerformance(ctx context.Context, secon
 	response, err := client.GrpcClient.CheckDatastorePerformance(ctx, &request)
 	result := response.GetResult()
 	err = helper.ConvertGrpcError(err)
+
 	return result, err
 }
 
@@ -372,6 +436,7 @@ func (client *Szdiagnostic) getDatastoreInfo(ctx context.Context) (string, error
 	response, err := client.GrpcClient.GetDatastoreInfo(ctx, &request)
 	result := response.GetResult()
 	err = helper.ConvertGrpcError(err)
+
 	return result, err
 }
 
@@ -382,6 +447,7 @@ func (client *Szdiagnostic) getFeature(ctx context.Context, featureID int64) (st
 	response, err := client.GrpcClient.GetFeature(ctx, &request)
 	result := response.GetResult()
 	err = helper.ConvertGrpcError(err)
+
 	return result, err
 }
 
@@ -389,6 +455,7 @@ func (client *Szdiagnostic) purgeRepository(ctx context.Context) error {
 	request := szpb.PurgeRepositoryRequest{}
 	_, err := client.GrpcClient.PurgeRepository(ctx, &request)
 	err = helper.ConvertGrpcError(err)
+
 	return err
 }
 
@@ -398,6 +465,7 @@ func (client *Szdiagnostic) reinitialize(ctx context.Context, configID int64) er
 	}
 	_, err := client.GrpcClient.Reinitialize(ctx, &request)
 	err = helper.ConvertGrpcError(err)
+
 	return err
 }
 
@@ -412,6 +480,7 @@ func (client *Szdiagnostic) getLogger() logging.Logging {
 	if client.logger == nil {
 		client.logger = helper.GetLogger(ComponentID, szdiagnostic.IDMessages, baseCallerSkip)
 	}
+
 	return client.logger
 }
 

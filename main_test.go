@@ -6,5 +6,6 @@ import (
 
 func TestMain(test *testing.T) {
 	_ = test
+
 	main()
 }
