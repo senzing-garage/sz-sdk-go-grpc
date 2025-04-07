@@ -6,17 +6,20 @@ import (
 	"testing"
 
 	truncator "github.com/aquilax/truncate"
+	"github.com/senzing-garage/go-helpers/env"
 	"github.com/senzing-garage/go-observing/observer"
 	"github.com/senzing-garage/sz-sdk-go-grpc/helper"
 	"github.com/senzing-garage/sz-sdk-go-grpc/szconfig"
 	"github.com/senzing-garage/sz-sdk-go/senzing"
 	"github.com/senzing-garage/sz-sdk-go/szerror"
+	szpb "github.com/senzing-garage/sz-sdk-proto/go/szconfig"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"google.golang.org/grpc"
 )
 
 const (
+	baseTen           = 10
 	dataSourceCode    = "GO_TEST"
 	defaultTruncation = 76
 	instanceName      = "SzConfig Test"
@@ -46,7 +49,7 @@ var (
 var (
 	grpcAddress       = "0.0.0.0:8261"
 	grpcConnection    *grpc.ClientConn
-	logLevel          = helper.GetEnv("SENZING_LOG_LEVEL", "INFO")
+	logLevel          = env.GetEnv("SENZING_LOG_LEVEL", "INFO")
 	observerSingleton = &observer.NullObserver{
 		ID:       "Observer 1",
 		IsSilent: true,
@@ -274,11 +277,39 @@ func getGrpcConnection() *grpc.ClientConn {
 	return grpcConnection
 }
 
-func getSettings() (string, error) {
-	return "{}", nil
+func getSettings() string {
+	return "{}"
 }
 
-func getSzConfig(ctx context.Context) *szconfig.Szconfig {}
+func getSzConfig(ctx context.Context) szconfig.Szconfig {
+	var err error
+	if szConfigSingleton == nil {
+
+		grpcConnection := getGrpcConnection()
+		szConfigSingleton = &szconfig.Szconfig{
+			GrpcClient: szpb.NewSzConfigClient(grpcConnection),
+		}
+		err = szConfigSingleton.SetLogLevel(ctx, logLevel)
+
+		handleErrorWithPanic(err)
+
+		if logLevel == "TRACE" {
+			szConfigSingleton.SetObserverOrigin(ctx, observerOrigin)
+
+			err = szConfigSingleton.RegisterObserver(ctx, observerSingleton)
+			handleErrorWithPanic(err)
+
+			err = szConfigSingleton.SetLogLevel(ctx, logLevel) // Duplicated for coverage testing
+			handleErrorWithPanic(err)
+		}
+	}
+
+	return szConfigSingleton
+}
+
+func getSzConfigAsInterface(ctx context.Context) *senzing.SzConfig {
+	return getSzConfig(ctx)
+}
 
 func getTestObject(t *testing.T) *szconfig.Szconfig {
 	t.Helper()

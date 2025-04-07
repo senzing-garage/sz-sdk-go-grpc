@@ -1,5 +1,4 @@
 /*
-
 Package szconfigmanager implements a client for the service.
 */
 package szconfigmanager
@@ -11,6 +10,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/senzing-garage/go-helpers/wraperror"
 	"github.com/senzing-garage/go-logging/logging"
 	"github.com/senzing-garage/go-observing/notifier"
 	"github.com/senzing-garage/go-observing/observer"
@@ -19,6 +19,7 @@ import (
 	"github.com/senzing-garage/sz-sdk-go-grpc/szconfig"
 	"github.com/senzing-garage/sz-sdk-go/senzing"
 	"github.com/senzing-garage/sz-sdk-go/szconfigmanager"
+	"github.com/senzing-garage/sz-sdk-go/szerror"
 	szpb "github.com/senzing-garage/sz-sdk-proto/go/szconfigmanager"
 )
 
@@ -151,7 +152,7 @@ func (client *Szconfigmanager) GetConfigs(ctx context.Context) (string, error) {
 		defer func() { client.traceExit(10, result, err, time.Since(entryTime)) }()
 	}
 
-	result, err = client.getConfigList(ctx)
+	result, err = client.getConfigs(ctx)
 
 	if client.observers != nil {
 		go func() {
@@ -585,11 +586,6 @@ func (client *Szconfigmanager) createConfigFromStringChoreography(
 
 	result := &szconfig.Szconfig{}
 
-	err = result.Initialize(ctx, client.instanceName, client.settings, client.verboseLogging)
-	if err != nil {
-		return nil, fmt.Errorf("createConfigFromStringChoreography.Initialize error: %w", err)
-	}
-
 	err = result.Import(ctx, configDefinition)
 
 	return result, wraperror.Errorf(err, "createConfigFromStringChoreography.Import error: %w", err)
@@ -602,11 +598,6 @@ func (client *Szconfigmanager) createConfigFromTemplateChoreography(ctx context.
 	var err error
 
 	result := &szconfig.Szconfig{}
-
-	err = result.Initialize(ctx, client.instanceName, client.settings, client.verboseLogging)
-	if err != nil {
-		return nil, fmt.Errorf("createConfigFromTemplateChoreography.Initialize error: %w", err)
-	}
 
 	err = result.ImportTemplate(ctx)
 

@@ -6,20 +6,10 @@ import (
 	"context"
 	"fmt"
 
-	truncator "github.com/aquilax/truncate"
 	"github.com/senzing-garage/go-helpers/jsonutil"
 	"github.com/senzing-garage/go-logging/logging"
-	"github.com/senzing-garage/sz-sdk-go-grpc/helper"
 	"github.com/senzing-garage/sz-sdk-go-grpc/szabstractfactory"
-	"github.com/senzing-garage/sz-sdk-go-grpc/szproduct"
 	"github.com/senzing-garage/sz-sdk-go/senzing"
-	szproductpb "github.com/senzing-garage/sz-sdk-proto/go/szproduct"
-	"google.golang.org/grpc"
-)
-
-var (
-	grpcAddress    = "0.0.0.0:8261"
-	grpcConnection *grpc.ClientConn
 )
 
 // ----------------------------------------------------------------------------
@@ -109,26 +99,6 @@ func ExampleSzproduct_GetObserverOrigin() {
 // ----------------------------------------------------------------------------
 // Helper functions
 // ----------------------------------------------------------------------------
-
-func getGrpcConnection() *grpc.ClientConn {
-	if grpcConnection == nil {
-		transportCredentials, err := helper.GetGrpcTransportCredentials()
-		if err != nil {
-			panic(err)
-		}
-
-		dialOptions := []grpc.DialOption{
-			grpc.WithTransportCredentials(transportCredentials),
-		}
-
-		grpcConnection, err = grpc.NewClient(grpcAddress, dialOptions...)
-		if err != nil {
-			panic(err)
-		}
-	}
-
-	return grpcConnection
-}
 
 func getSzAbstractFactory(ctx context.Context) senzing.SzAbstractFactory {
 	_ = ctx

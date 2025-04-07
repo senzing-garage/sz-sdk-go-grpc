@@ -8,10 +8,8 @@ import (
 
 	"github.com/senzing-garage/go-helpers/jsonutil"
 	"github.com/senzing-garage/go-logging/logging"
-	"github.com/senzing-garage/sz-sdk-go-grpc/helper"
 	"github.com/senzing-garage/sz-sdk-go-grpc/szabstractfactory"
 	"github.com/senzing-garage/sz-sdk-go/senzing"
-	"google.golang.org/grpc"
 )
 
 // ----------------------------------------------------------------------------
@@ -164,26 +162,6 @@ func ExampleSzconfig_GetObserverOrigin() {
 // ----------------------------------------------------------------------------
 // Helper functions
 // ----------------------------------------------------------------------------
-
-func getGrpcConnection() *grpc.ClientConn {
-	if grpcConnection == nil {
-		transportCredentials, err := helper.GetGrpcTransportCredentials()
-		if err != nil {
-			panic(err)
-		}
-
-		dialOptions := []grpc.DialOption{
-			grpc.WithTransportCredentials(transportCredentials),
-		}
-
-		grpcConnection, err = grpc.NewClient(grpcAddress, dialOptions...)
-		if err != nil {
-			panic(err)
-		}
-	}
-
-	return grpcConnection
-}
 
 func getSzAbstractFactory(ctx context.Context) senzing.SzAbstractFactory {
 	_ = ctx

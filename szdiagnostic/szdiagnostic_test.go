@@ -12,14 +12,13 @@ import (
 	"github.com/senzing-garage/go-helpers/record"
 	"github.com/senzing-garage/go-helpers/truthset"
 	"github.com/senzing-garage/go-observing/observer"
-	"github.com/senzing-garage/sz-sdk-go-core/szdiagnostic"
 	"github.com/senzing-garage/sz-sdk-go-grpc/helper"
 	"github.com/senzing-garage/sz-sdk-go-grpc/szconfig"
 	"github.com/senzing-garage/sz-sdk-go-grpc/szconfigmanager"
+	"github.com/senzing-garage/sz-sdk-go-grpc/szdiagnostic"
 	"github.com/senzing-garage/sz-sdk-go-grpc/szengine"
 	"github.com/senzing-garage/sz-sdk-go/senzing"
 	"github.com/senzing-garage/sz-sdk-go/szerror"
-	szconfigpb "github.com/senzing-garage/sz-sdk-proto/go/szconfig"
 	szconfigmanagerpb "github.com/senzing-garage/sz-sdk-proto/go/szconfigmanager"
 	szpb "github.com/senzing-garage/sz-sdk-proto/go/szdiagnostic"
 	szenginepb "github.com/senzing-garage/sz-sdk-proto/go/szengine"
@@ -31,6 +30,7 @@ import (
 const (
 	defaultTruncation = 76
 	instanceName      = "SzDiagnostic Test"
+	jsonIndentation   = "    "
 	observerOrigin    = "SzDiagnostic observer"
 	printResults      = false
 	verboseLogging    = senzing.SzNoLogging
@@ -62,7 +62,7 @@ var (
 	}
 	szConfigManagerSingleton *szconfigmanager.Szconfigmanager
 	szConfigSingleton        *szconfig.Szconfig
-	szDiagnosticSingleton    *Szdiagnostic
+	szDiagnosticSingleton    *szdiagnostic.Szdiagnostic
 	szEngineSingleton        *szengine.Szengine
 )
 
@@ -204,14 +204,13 @@ func TestSzdiagnostic_AsInterface(test *testing.T) {
 func TestSzdiagnostic_Initialize(test *testing.T) {
 	ctx := test.Context()
 	grpcConnection := getGrpcConnection()
-	szDiagnostic := &Szdiagnostic{
+	szDiagnostic := &szdiagnostic.Szdiagnostic{
 		GrpcClient: szpb.NewSzDiagnosticClient(grpcConnection),
 	}
-	settings, err := getSettings()
-	require.NoError(test, err)
+	settings := getSettings()
 
 	configID := senzing.SzInitializeWithDefaultConfiguration
-	err = szDiagnostic.Initialize(ctx, instanceName, settings, configID, verboseLogging)
+	err := szDiagnostic.Initialize(ctx, instanceName, settings, configID, verboseLogging)
 	require.NoError(test, err)
 }
 
@@ -221,14 +220,13 @@ func TestSzdiagnostic_Initialize(test *testing.T) {
 func TestSzdiagnostic_Initialize_withConfigId(test *testing.T) {
 	ctx := test.Context()
 	grpcConnection := getGrpcConnection()
-	szDiagnostic := &Szdiagnostic{
+	szDiagnostic := &szdiagnostic.Szdiagnostic{
 		GrpcClient: szpb.NewSzDiagnosticClient(grpcConnection),
 	}
-	settings, err := getSettings()
-	require.NoError(test, err)
+	settings := getSettings()
 
 	configID := getDefaultConfigID()
-	err = szDiagnostic.Initialize(ctx, instanceName, settings, configID, verboseLogging)
+	err := szDiagnostic.Initialize(ctx, instanceName, settings, configID, verboseLogging)
 	require.NoError(test, err)
 }
 
@@ -309,51 +307,20 @@ func getGrpcConnection() *grpc.ClientConn {
 	return grpcConnection
 }
 
-func getSettings() (string, error) {
-	return "{}", nil
-}
-
-func getSzConfig(ctx context.Context) (senzing.SzConfig, error) {
-	var err error
-	if szConfigSingleton == nil {
-		settings, err := getSettings()
-		handleErrorWithPanic(err)
-
-		grpcConnection := getGrpcConnection()
-		szConfigSingleton = &szconfig.Szconfig{
-			GrpcClient: szconfigpb.NewSzConfigClient(grpcConnection),
-		}
-		err = szConfigSingleton.SetLogLevel(ctx, logLevel)
-		handleErrorWithPanic(err)
-
-		if logLevel == "TRACE" {
-			szConfigSingleton.SetObserverOrigin(ctx, observerOrigin)
-
-			err = szConfigSingleton.RegisterObserver(ctx, observerSingleton)
-			handleErrorWithPanic(err)
-
-			err = szConfigSingleton.SetLogLevel(ctx, logLevel) // Duplicated for coverage testing
-			handleErrorWithPanic(err)
-		}
-
-		err = szConfigSingleton.Initialize(ctx, instanceName, settings, verboseLogging)
-		handleErrorWithPanic(err)
-	}
-
-	return szConfigSingleton, err
+func getSettings() string {
+	return "{}"
 }
 
 func getSzConfigManager(ctx context.Context) senzing.SzConfigManager {
 	var err error
 	if szConfigManagerSingleton == nil {
-		settings, err := getSettings()
-		handleErrorWithPanic(err)
 
 		grpcConnection := getGrpcConnection()
 		szConfigManagerSingleton = &szconfigmanager.Szconfigmanager{
 			GrpcClient: szconfigmanagerpb.NewSzConfigManagerClient(grpcConnection),
 		}
 		err = szConfigManagerSingleton.SetLogLevel(ctx, logLevel)
+
 		handleErrorWithPanic(err)
 
 		if logLevel == "TRACE" {
@@ -365,20 +332,17 @@ func getSzConfigManager(ctx context.Context) senzing.SzConfigManager {
 			err = szConfigManagerSingleton.SetLogLevel(ctx, logLevel) // Duplicated for coverage testing
 			handleErrorWithPanic(err)
 		}
-
-		err = szConfigManagerSingleton.Initialize(ctx, instanceName, settings, verboseLogging)
-		handleErrorWithPanic(err)
 	}
 
 	return szConfigManagerSingleton
 }
 
-func getSzDiagnostic(ctx context.Context) *Szdiagnostic {
+func getSzDiagnostic(ctx context.Context) *szdiagnostic.Szdiagnostic {
 	var err error
 
 	if szDiagnosticSingleton == nil {
 		grpcConnection := getGrpcConnection()
-		szDiagnosticSingleton = &Szdiagnostic{
+		szDiagnosticSingleton = &szdiagnostic.Szdiagnostic{
 			GrpcClient: szpb.NewSzDiagnosticClient(grpcConnection),
 		}
 		err = szDiagnosticSingleton.SetLogLevel(ctx, logLevel)
@@ -403,7 +367,6 @@ func getSzDiagnosticAsInterface(ctx context.Context) senzing.SzDiagnostic {
 
 func getSzEngine(ctx context.Context) senzing.SzEngine {
 	var err error
-
 	if szEngineSingleton == nil {
 		grpcConnection := getGrpcConnection()
 		szEngineSingleton = &szengine.Szengine{
@@ -421,7 +384,6 @@ func getSzEngine(ctx context.Context) senzing.SzEngine {
 
 			err = szEngineSingleton.SetLogLevel(ctx, logLevel) // Duplicated for coverage testing
 			handleErrorWithPanic(err)
-
 		}
 	}
 
@@ -477,9 +439,7 @@ func TestMain(m *testing.M) {
 	code := m.Run()
 
 	err := teardown()
-	if err != nil {
-		fmt.Print(err)
-	}
+	handleErrorWithPanic(err)
 
 	os.Exit(code)
 }
@@ -490,57 +450,34 @@ func setup() {
 }
 
 func setupSenzingConfiguration() {
-	ctx := test.Context()
+	ctx := context.TODO()
 	now := time.Now()
 
 	// Create sz objects.
 
-	szConfig, err := getSzConfig(ctx)
+	szConfigManager := getSzConfigManager(ctx)
+	szConfig, err := szConfigManager.CreateConfigFromTemplate(ctx)
 	handleErrorWithPanic(err)
 
-	szConfigManager, err := getSzConfigManager(ctx)
-	handleErrorWithPanic(err)
-
-	// Create an in memory Senzing configuration.
-
-	configHandle, err := szConfig.CreateConfig(ctx)
-	handleErrorWithPanic(err)
-
-	// Add data sources to in-memory Senzing configuration.
+	// Add data sources to Senzing configuration.
 
 	dataSourceCodes := []string{"CUSTOMERS", "REFERENCE", "WATCHLIST"}
 	for _, dataSourceCode := range dataSourceCodes {
-		_, err := szConfig.AddDataSource(ctx, configHandle, dataSourceCode)
+		_, err := szConfig.AddDataSource(ctx, dataSourceCode)
 		handleErrorWithPanic(err)
-
 	}
-
-	// Create a string representation of the in-memory configuration.
-
-	configDefinition, err := szConfig.ExportConfig(ctx, configHandle)
-	handleErrorWithPanic(err)
-
-	// Close szConfig in-memory object.
-
-	err = szConfig.CloseConfig(ctx, configHandle)
-	handleErrorWithPanic(err)
 
 	// Persist the Senzing configuration to the Senzing repository as default.
 
 	configComment := fmt.Sprintf("Created by szdiagnostic_test at %s", now.UTC())
+	configDefinition, err := szConfig.Export(ctx)
+	handleErrorWithPanic(err)
 
-	configID, err := szConfigManager.AddConfig(ctx, configDefinition, configComment)
+	configID, err := szConfigManager.RegisterConfig(ctx, configDefinition, configComment)
 	handleErrorWithPanic(err)
 
 	err = szConfigManager.SetDefaultConfigID(ctx, configID)
 	handleErrorWithPanic(err)
-
-	szDiagnostic, err := getSzDiagnostic(ctx)
-	handleErrorWithPanic(err)
-
-	err = szDiagnostic.Reinitialize(ctx, configID)
-	handleErrorWithPanic(err)
-
 }
 
 func setupPurgeRepository() {
@@ -548,7 +485,6 @@ func setupPurgeRepository() {
 	szDiagnostic := getSzDiagnostic(ctx)
 	err := szDiagnostic.PurgeRepository(ctx)
 	handleErrorWithPanic(err)
-
 }
 
 func teardown() error {

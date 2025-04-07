@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	truncator "github.com/aquilax/truncate"
+	"github.com/senzing-garage/go-helpers/env"
 	"github.com/senzing-garage/go-observing/observer"
 	"github.com/senzing-garage/sz-sdk-go-grpc/helper"
 	"github.com/senzing-garage/sz-sdk-go-grpc/szproduct"
@@ -33,7 +34,7 @@ const (
 var (
 	grpcAddress       = "0.0.0.0:8261"
 	grpcConnection    *grpc.ClientConn
-	logLevel          = helper.GetEnv("SENZING_LOG_LEVEL", "INFO")
+	logLevel          = env.GetEnv("SENZING_LOG_LEVEL", "INFO")
 	observerSingleton = &observer.NullObserver{
 		ID:       "Observer 1",
 		IsSilent: true,
@@ -160,12 +161,12 @@ func getSettings() string {
 }
 
 func getSzProduct(ctx context.Context) *szproduct.Szproduct {
+	var err error
 	if szProductSingleton == nil {
-		settings, err := getSettings()
-		handleErrorWithPanic(err)
+		settings := getSettings()
 
 		grpcConnection := getGrpcConnection()
-		szProductSingleton = &Szproduct{
+		szProductSingleton = &szproduct.Szproduct{
 			GrpcClient: szpb.NewSzProductClient(grpcConnection),
 		}
 		err = szProductSingleton.SetLogLevel(ctx, logLevel)

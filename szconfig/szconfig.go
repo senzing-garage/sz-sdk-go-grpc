@@ -9,12 +9,14 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/senzing-garage/go-helpers/wraperror"
 	"github.com/senzing-garage/go-logging/logging"
 	"github.com/senzing-garage/go-observing/notifier"
 	"github.com/senzing-garage/go-observing/observer"
 	"github.com/senzing-garage/go-observing/subject"
 	"github.com/senzing-garage/sz-sdk-go-grpc/helper"
 	"github.com/senzing-garage/sz-sdk-go/szconfig"
+	"github.com/senzing-garage/sz-sdk-go/szerror"
 	szpb "github.com/senzing-garage/sz-sdk-proto/go/szconfig"
 )
 
@@ -63,10 +65,7 @@ func (client *Szconfig) AddDataSource(ctx context.Context, dataSourceCode string
 		}()
 	}
 
-	configDefinition, result, err := client.addDataSourceChoreography(ctx, client.configDefinition, dataSourceCode)
-	if err == nil {
-		client.configDefinition = configDefinition
-	}
+	result, err = client.addDataSource(ctx, dataSourceCode)
 
 	if client.observers != nil {
 		go func() {
@@ -104,10 +103,7 @@ func (client *Szconfig) DeleteDataSource(ctx context.Context, dataSourceCode str
 		defer func() { client.traceExit(10, dataSourceCode, err, time.Since(entryTime)) }()
 	}
 
-	configDefinition, result, err := client.deleteDataSourceChoreography(ctx, client.configDefinition, dataSourceCode)
-	if err == nil {
-		client.configDefinition = configDefinition
-	}
+	result, err = client.deleteDataSource(ctx, dataSourceCode)
 
 	if client.observers != nil {
 		go func() {
@@ -143,7 +139,7 @@ func (client *Szconfig) Export(ctx context.Context) (string, error) {
 		defer func() { client.traceExit(14, result, err, time.Since(entryTime)) }()
 	}
 
-	result = client.configDefinition
+	result, err = client.export(ctx)
 
 	if client.observers != nil {
 		go func() {
@@ -177,7 +173,7 @@ func (client *Szconfig) GetDataSources(ctx context.Context) (string, error) {
 		defer func() { client.traceExit(16, result, err, time.Since(entryTime)) }()
 	}
 
-	result, err = client.getDataSourcesChoreography(ctx, client.configDefinition)
+	result, err = client.getDataSources(ctx)
 
 	if client.observers != nil {
 		go func() {
@@ -251,7 +247,7 @@ func (client *Szconfig) Import(ctx context.Context, configDefinition string) err
 		defer func() { client.traceExit(22, configDefinition, err, time.Since(entryTime)) }()
 	}
 
-	client.configDefinition = configDefinition
+	err = client.importConfigDefinition(ctx, configDefinition)
 
 	if client.observers != nil {
 		go func() {
@@ -287,12 +283,12 @@ func (client *Szconfig) ImportTemplate(ctx context.Context) error {
 		defer func() { client.traceExit(8, result, err, time.Since(entryTime)) }()
 	}
 
-	result, err = client.importTemplateChoregraphy(ctx)
+	err = client.importTemplate(ctx)
 	if err != nil {
-		return fmt.Errorf("importTemplateChoregraphy error: %w", err)
+		return fmt.Errorf("importTemplate error: %w", err)
 	}
 
-	client.configDefinition = result
+	err = client.importConfigDefinition(ctx, result)
 
 	if client.observers != nil {
 		go func() {
@@ -326,8 +322,6 @@ func (client *Szconfig) Initialize(
 		entryTime := time.Now()
 		defer func() { client.traceExit(24, instanceName, settings, verboseLogging, err, time.Since(entryTime)) }()
 	}
-
-	err = client.init(ctx, instanceName, settings, verboseLogging)
 
 	if client.observers != nil {
 		go func() {
@@ -479,7 +473,8 @@ func (client *Szconfig) addDataSource(
 
 	err = helper.ConvertGrpcError(err)
 	if err == nil {
-		client.configDefinition = response.GetConfigDefinition()
+		err = client.importConfigDefinition(ctx, response.GetConfigDefinition())
+
 	}
 
 	return result, err
@@ -495,7 +490,7 @@ func (client *Szconfig) deleteDataSource(ctx context.Context, dataSourceCode str
 
 	err = helper.ConvertGrpcError(err)
 	if err == nil {
-		client.configDefinition = response.GetConfigDefinition()
+		err = client.importConfigDefinition(ctx, response.GetConfigDefinition())
 	}
 
 	return result, err
@@ -527,7 +522,7 @@ func (client *Szconfig) importTemplate(ctx context.Context) error {
 	err = helper.ConvertGrpcError(err)
 
 	if err == nil {
-		err = client.importConfigDefinition(ctx, response.GetConfigDefinition)
+		err = client.importConfigDefinition(ctx, response.GetConfigDefinition())
 	}
 
 	return err

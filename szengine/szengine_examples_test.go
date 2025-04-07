@@ -4,36 +4,13 @@ package szengine_test
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
-	"strconv"
 
 	"github.com/senzing-garage/go-helpers/jsonutil"
-	"github.com/senzing-garage/go-helpers/record"
 	"github.com/senzing-garage/go-helpers/truthset"
 	"github.com/senzing-garage/go-logging/logging"
-	"github.com/senzing-garage/sz-sdk-go-grpc/helper"
 	"github.com/senzing-garage/sz-sdk-go-grpc/szabstractfactory"
-	"github.com/senzing-garage/sz-sdk-go-grpc/szengine"
 	"github.com/senzing-garage/sz-sdk-go/senzing"
-	szenginepb "github.com/senzing-garage/sz-sdk-proto/go/szengine"
-	"google.golang.org/grpc"
-)
-
-type GetEntityByRecordIDResponse struct {
-	ResolvedEntity struct {
-		EntityID int64 `json:"ENTITY_ID"`
-	} `json:"RESOLVED_ENTITY"`
-}
-
-const (
-	baseTen         = 10
-	jsonIndentation = "    "
-)
-
-var (
-	grpcAddress    = "0.0.0.0:8261"
-	grpcConnection *grpc.ClientConn
 )
 
 // ----------------------------------------------------------------------------
@@ -7028,7 +7005,7 @@ func ExampleSzengine_WhyRecords_output() {
 
 func ExampleSzengine_SetLogLevel() {
 	// For more information, visit
-	// https://github.com/senzing-garage/sz-sdk-go-grpc/blob/main/szenzing/szengine_test.go
+	// https://github.com/senzing-garage/sz-sdk-go-grpc/blob/main/szengine/szengine_examples_test.go
 	ctx := context.TODO()
 	szEngine := getSzEngine(ctx)
 
@@ -7051,7 +7028,7 @@ func ExampleSzengine_SetObserverOrigin() {
 
 func ExampleSzengine_GetObserverOrigin() {
 	// For more information, visit
-	// https://github.com/senzing-garage/sz-sdk-go-grpc/blob/main/szenzing/szengine_test.go
+	// https://github.com/senzing-garage/sz-sdk-go-grpc/blob/main/szengine/szengine_test.go
 	ctx := context.TODO()
 	szEngine := getSzEngine(ctx)
 	origin := "Machine: nn; Task: UnitTest"
@@ -7066,89 +7043,10 @@ func ExampleSzengine_GetObserverOrigin() {
 // Helper functions
 // ----------------------------------------------------------------------------
 
-func getEntityID(record record.Record) (int64, error) {
-	return getEntityIDForRecord(record.DataSource, record.ID)
-}
-
-func getEntityIDForRecord(datasource string, id string) (int64, error) {
-	var result int64
-
-	var err error
-
-	ctx := context.TODO()
-	// var result int64
-	szEngine := getSzEngine(ctx)
-
-	response, err := szEngine.GetEntityByRecordID(ctx, datasource, id, senzing.SzWithoutInfo)
-	if err != nil {
-		return result, err
-	}
-
-	getEntityByRecordIDResponse := &GetEntityByRecordIDResponse{}
-
-	err = json.Unmarshal([]byte(response), &getEntityByRecordIDResponse)
-	if err != nil {
-		return result, err
-	}
-
-	result = getEntityByRecordIDResponse.ResolvedEntity.EntityID
-
-	return result, err
-}
-
-func getEntityIDStringForRecord(datasource string, id string) (string, error) {
-	var result string
-
-	var err error
-
-	entityID, err := getEntityIDForRecord(datasource, id)
-	if err != nil {
-		return result, err
-	}
-
-	result = strconv.FormatInt(entityID, baseTen)
-
-	return result, err
-}
-
-func getGrpcConnection() *grpc.ClientConn {
-	if grpcConnection == nil {
-		transportCredentials, err := helper.GetGrpcTransportCredentials()
-		if err != nil {
-			panic(err)
-		}
-
-		dialOptions := []grpc.DialOption{
-			grpc.WithTransportCredentials(transportCredentials),
-		}
-
-		grpcConnection, err = grpc.NewClient(grpcAddress, dialOptions...)
-		if err != nil {
-			panic(err)
-		}
-	}
-
-	return grpcConnection
-}
-
 func getSzAbstractFactory(ctx context.Context) senzing.SzAbstractFactory {
 	_ = ctx
 
 	return &szabstractfactory.Szabstractfactory{
 		GrpcConnection: getGrpcConnection(),
-	}
-}
-
-func getSzEngine(ctx context.Context) *szengine.Szengine {
-	_ = ctx
-
-	return &szengine.Szengine{
-		GrpcClient: szenginepb.NewSzEngineClient(getGrpcConnection()),
-	}
-}
-
-func handleError(err error) {
-	if err != nil {
-		fmt.Println("Error:", err)
 	}
 }

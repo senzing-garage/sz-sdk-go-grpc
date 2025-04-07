@@ -6,6 +6,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/senzing-garage/go-helpers/jsonutil"
 	"github.com/senzing-garage/go-messaging/parser"
 	"github.com/senzing-garage/sz-sdk-go/szerror"
 )
@@ -40,7 +41,7 @@ func ConvertGrpcError(originalError error) error {
 			indexOfDesc := strings.Index(errorMessage, " desc = ")
 			senzingErrorMessage := errorMessage[indexOfDesc+8:] // Implicitly safe from "0+8" because of "rpc error:" prefix.
 
-			if isJSON(senzingErrorMessage) {
+			if jsonutil.IsJSON(senzingErrorMessage) {
 				// TODO: Add information about any gRPC error.
 				// Status: https://pkg.go.dev/google.golang.org/grpc/status
 				// Codes: https://pkg.go.dev/google.golang.org/grpc/codes

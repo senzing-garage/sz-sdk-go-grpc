@@ -2,7 +2,6 @@ package szconfigmanager_test
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"os"
 	"strconv"
@@ -40,6 +39,7 @@ const (
 	badCurrentDefaultConfigID = int64(0)
 	badLogLevelName           = "BadLogLevelName"
 	badNewDefaultConfigID     = int64(0)
+	baseTen                   = 10
 )
 
 // Nil/empty parameters
@@ -369,15 +369,13 @@ func getGrpcConnection() *grpc.ClientConn {
 	return grpcConnection
 }
 
-func getSettings() (string, error) {
-	return "{}", nil
+func getSettings() string {
+	return "{}"
 }
 
 func getSzConfig(ctx context.Context) senzing.SzConfig {
 	var err error
 	if szConfigSingleton == nil {
-		settings, err := getSettings()
-		handleErrorWithPanic(err)
 
 		grpcConnection := getGrpcConnection()
 		szConfigSingleton = &szconfig.Szconfig{
@@ -396,37 +394,32 @@ func getSzConfig(ctx context.Context) senzing.SzConfig {
 			err = szConfigSingleton.SetLogLevel(ctx, logLevel) // Duplicated for coverage testing
 			handleErrorWithPanic(err)
 		}
-
-		err = szConfigSingleton.Initialize(ctx, instanceName, settings, verboseLogging)
-		handleErrorWithPanic(err)
 	}
 
-	return szConfigSingleton, err
+	return szConfigSingleton
 }
 
-func getSzConfigManager(ctx context.Context) (*Szconfigmanager, error) {
+func getSzConfigManager(ctx context.Context) *szconfigmanager.Szconfigmanager {
 	var err error
 	if szConfigManagerSingleton == nil {
-		settings, err := getSettings()
-		handleErrorWithPanic(err)
 
 		grpcConnection := getGrpcConnection()
-		szConfigManagerSingleton = &Szconfigmanager{
+		szConfigManagerSingleton = &szconfigmanager.Szconfigmanager{
 			GrpcClient: szpb.NewSzConfigManagerClient(grpcConnection),
 		}
 		err = szConfigManagerSingleton.SetLogLevel(ctx, logLevel)
+
 		handleErrorWithPanic(err)
 
 		if logLevel == "TRACE" {
 			szConfigManagerSingleton.SetObserverOrigin(ctx, observerOrigin)
+
 			err = szConfigManagerSingleton.RegisterObserver(ctx, observerSingleton)
 			handleErrorWithPanic(err)
+
 			err = szConfigManagerSingleton.SetLogLevel(ctx, logLevel) // Duplicated for coverage testing
 			handleErrorWithPanic(err)
 		}
-
-		err = szConfigManagerSingleton.Initialize(ctx, instanceName, settings, verboseLogging)
-		handleErrorWithPanic(err)
 	}
 
 	return szConfigManagerSingleton
@@ -481,87 +474,47 @@ func truncate(aString string, length int) string {
 // ----------------------------------------------------------------------------
 
 func TestMain(m *testing.M) {
-	err := setup()
-	if err != nil {
-		if errors.Is(err, szerror.ErrSzUnrecoverable) {
-			fmt.Printf("\nUnrecoverable error detected. \n\n")
-		}
-
-		if errors.Is(err, szerror.ErrSzRetryable) {
-			fmt.Printf("\nRetryable error detected. \n\n")
-		}
-
-		if errors.Is(err, szerror.ErrSzBadInput) {
-			fmt.Printf("\nBad user input error detected. \n\n")
-		}
-
-		fmt.Print(err)
-		os.Exit(1)
-	}
+	setup()
 
 	code := m.Run()
 
-	err = teardown()
-	if err != nil {
-		fmt.Print(err)
-	}
+	teardown()
 
 	os.Exit(code)
 }
 
-func setup() error {
-	err := setupSenzingConfiguration()
-	handleErrorWithPanic(err)
-
-	return err
+func setup() {
+	setupSenzingConfiguration()
 }
 
-func setupSenzingConfiguration() error {
-	ctx := test.Context()
+func setupSenzingConfiguration() {
+	ctx := context.TODO()
 	now := time.Now()
 
 	// Create sz objects.
 
-	szConfig, err := getSzConfig(ctx)
-	handleErrorWithPanic(err)
-
-	szConfigManager, err := getSzConfigManager(ctx)
-	handleErrorWithPanic(err)
-
-	// Create an in memory Senzing configuration.
-
-	configHandle, err := szConfig.CreateConfig(ctx)
-	handleErrorWithPanic(err)
+	szConfig := getSzConfig(ctx)
+	szConfigManager := getSzConfigManager(ctx)
 
 	// Add data sources to in-memory Senzing configuration.
 
 	dataSourceCodes := []string{"CUSTOMERS", "REFERENCE", "WATCHLIST"}
 	for _, dataSourceCode := range dataSourceCodes {
-		_, err := szConfig.AddDataSource(ctx, configHandle, dataSourceCode)
+		_, err := szConfig.AddDataSource(ctx, dataSourceCode)
 		handleErrorWithPanic(err)
 	}
-
-	// Create a string representation of the in-memory configuration.
-
-	configDefinition, err := szConfig.ExportConfig(ctx, configHandle)
-	handleErrorWithPanic(err)
-
-	// Close szConfig in-memory object.
-
-	err = szConfig.CloseConfig(ctx, configHandle)
-	handleErrorWithPanic(err)
 
 	// Persist the Senzing configuration to the Senzing repository as default.
 
 	configComment := fmt.Sprintf("Created by szconfigmanager_test at %s", now.UTC())
+	configDefinition, err := szConfig.Export(ctx)
+	handleErrorWithPanic(err)
 
-	configID, err := szConfigManager.AddConfig(ctx, configDefinition, configComment)
+	configID, err := szConfigManager.RegisterConfig(ctx, configDefinition, configComment)
 	handleErrorWithPanic(err)
 
 	err = szConfigManager.SetDefaultConfigID(ctx, configID)
 	handleErrorWithPanic(err)
-
-	return err
 }
 
 func teardown() error {

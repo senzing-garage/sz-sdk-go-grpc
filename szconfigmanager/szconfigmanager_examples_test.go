@@ -8,12 +8,8 @@ import (
 
 	"github.com/senzing-garage/go-helpers/jsonutil"
 	"github.com/senzing-garage/go-logging/logging"
-	"github.com/senzing-garage/sz-sdk-go-grpc/helper"
 	"github.com/senzing-garage/sz-sdk-go-grpc/szabstractfactory"
-	"github.com/senzing-garage/sz-sdk-go-grpc/szconfigmanager"
 	"github.com/senzing-garage/sz-sdk-go/senzing"
-	szconfigmanagerpb "github.com/senzing-garage/sz-sdk-proto/go/szconfigmanager"
-	"google.golang.org/grpc"
 )
 
 // ----------------------------------------------------------------------------
@@ -239,44 +235,10 @@ func ExampleSzconfigmanager_GetObserverOrigin() {
 // Helper functions
 // ----------------------------------------------------------------------------
 
-func getGrpcConnection() *grpc.ClientConn {
-	if grpcConnection == nil {
-		transportCredentials, err := helper.GetGrpcTransportCredentials()
-		if err != nil {
-			panic(err)
-		}
-
-		dialOptions := []grpc.DialOption{
-			grpc.WithTransportCredentials(transportCredentials),
-		}
-
-		grpcConnection, err = grpc.NewClient(grpcAddress, dialOptions...)
-		if err != nil {
-			panic(err)
-		}
-	}
-
-	return grpcConnection
-}
-
 func getSzAbstractFactory(ctx context.Context) senzing.SzAbstractFactory {
 	_ = ctx
 
 	return &szabstractfactory.Szabstractfactory{
 		GrpcConnection: getGrpcConnection(),
-	}
-}
-
-func getSzConfigManager(ctx context.Context) *szconfigmanager.Szconfigmanager {
-	_ = ctx
-
-	return &szconfigmanager.Szconfigmanager{
-		GrpcClient: szconfigmanagerpb.NewSzConfigManagerClient(getGrpcConnection()),
-	}
-}
-
-func handleError(err error) {
-	if err != nil {
-		fmt.Println("Error:", err)
 	}
 }
