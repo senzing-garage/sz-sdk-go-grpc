@@ -6,7 +6,6 @@ package szconfigmanager
 import (
 	"context"
 	"fmt"
-	"runtime"
 	"strconv"
 	"time"
 
@@ -93,7 +92,7 @@ func (client *Szconfigmanager) CreateConfigFromString(
 		defer func() { client.traceExit(999, configDefinition, result, err, time.Since(entryTime)) }()
 	}
 
-	result, err = client.createConfigFromStringChoreography(ctx, configDefinition)
+	result, err = client.createConfigFromString(ctx, configDefinition)
 
 	if client.observers != nil {
 		go func() {
@@ -230,7 +229,7 @@ func (client *Szconfigmanager) RegisterConfig(
 		}()
 	}
 
-	result, err = client.addConfig(ctx, configDefinition, configComment)
+	result, err = client.registerConfig(ctx, configDefinition, configComment)
 
 	if client.observers != nil {
 		go func() {
@@ -562,10 +561,8 @@ func (client *Szconfigmanager) UnregisterObserver(ctx context.Context, observer 
 
 func (client *Szconfigmanager) createConfigFromConfigIDChoreography(
 	ctx context.Context,
-	configID int64) (senzing.SzConfig, error) {
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
-
+	configID int64,
+) (senzing.SzConfig, error) {
 	var err error
 
 	configDefinition, err := client.getConfig(ctx, configID)
@@ -573,15 +570,13 @@ func (client *Szconfigmanager) createConfigFromConfigIDChoreography(
 		return nil, fmt.Errorf("createConfigFromConfigIDChoreography.getConfig error: %w", err)
 	}
 
-	return client.createConfigFromStringChoreography(ctx, configDefinition)
+	return client.createConfigFromString(ctx, configDefinition)
 }
 
-func (client *Szconfigmanager) createConfigFromStringChoreography(
+func (client *Szconfigmanager) createConfigFromString(
 	ctx context.Context,
-	configDefinition string) (senzing.SzConfig, error) {
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
-
+	configDefinition string,
+) (senzing.SzConfig, error) {
 	var err error
 
 	result := &szconfig.Szconfig{}
@@ -592,37 +587,31 @@ func (client *Szconfigmanager) createConfigFromStringChoreography(
 }
 
 func (client *Szconfigmanager) createConfigFromTemplateChoreography(ctx context.Context) (senzing.SzConfig, error) {
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
-
 	var err error
-
-	result := &szconfig.Szconfig{}
-
-	err = result.ImportTemplate(ctx)
-
-	return result, wraperror.Errorf(err, "createConfigFromTemplateChoreography.ImportTemplate error: %w", err)
+	request := szpb.GetTemplateConfigRequest{}
+	response, err := client.GrpcClient.GetTemplateConfig(ctx, &request)
+	err = helper.ConvertGrpcError(err)
+	if err != nil {
+		return nil, fmt.Errorf("createConfigFromTemplateChoreography.getConfig error: %w", err)
+	}
+	return client.createConfigFromString(ctx, response.GetResult())
 }
 
 func (client *Szconfigmanager) setDefaultConfigChoreography(
 	ctx context.Context,
 	configDefinition string,
 	configComment string) (int64, error) {
-	runtime.LockOSThread()
-	defer runtime.UnlockOSThread()
-
 	var (
 		err    error
 		result int64
 	)
 
-	result, err = client.addConfig(ctx, configDefinition, configComment)
+	configID, err := client.registerConfig(ctx, configDefinition, configComment)
 	if err != nil {
-		return 0, fmt.Errorf("setDefaultConfigChoreography.addConfig error: %w", err)
+		return 0, fmt.Errorf("setDefaultConfigChoreography.registerConfig error: %w", err)
 	}
 
-	err = client.setDefaultConfigID(ctx, result)
-
+	err = client.setDefaultConfigID(ctx, configID)
 	return result, wraperror.Errorf(err, "setDefaultConfigChoreography.setDefaultConfigID error: %w", err)
 }
 
@@ -630,16 +619,16 @@ func (client *Szconfigmanager) setDefaultConfigChoreography(
 // Private methods for gRPC request/response
 // ----------------------------------------------------------------------------
 
-func (client *Szconfigmanager) addConfig(
+func (client *Szconfigmanager) registerConfig(
 	ctx context.Context,
 	configDefinition string,
 	configComment string,
 ) (int64, error) {
-	request := szpb.AddConfigRequest{
+	request := szpb.RegisterConfigRequest{
 		ConfigDefinition: configDefinition,
 		ConfigComment:    configComment,
 	}
-	response, err := client.GrpcClient.AddConfig(ctx, &request)
+	response, err := client.GrpcClient.RegisterConfig(ctx, &request)
 	result := response.GetResult()
 	err = helper.ConvertGrpcError(err)
 

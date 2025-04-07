@@ -42,7 +42,6 @@ const (
 
 var (
 	nilConfigDefinition string
-	nilConfigHandle     uintptr
 	nilDataSourceCode   string
 )
 
@@ -161,13 +160,6 @@ func TestSzconfig_Import_nilConfigDefinition(test *testing.T) {
 	require.NoError(test, err)
 }
 
-func TestSzconfig_ImportTemplate(test *testing.T) {
-	ctx := test.Context()
-	szConfig := getTestObject(test)
-	err := szConfig.ImportTemplate(ctx)
-	require.NoError(test, err)
-}
-
 // ----------------------------------------------------------------------------
 // Logging and observing
 // ----------------------------------------------------------------------------
@@ -281,7 +273,7 @@ func getSettings() string {
 	return "{}"
 }
 
-func getSzConfig(ctx context.Context) szconfig.Szconfig {
+func getSzConfig(ctx context.Context) *szconfig.Szconfig {
 	var err error
 	if szConfigSingleton == nil {
 
@@ -307,7 +299,7 @@ func getSzConfig(ctx context.Context) szconfig.Szconfig {
 	return szConfigSingleton
 }
 
-func getSzConfigAsInterface(ctx context.Context) *senzing.SzConfig {
+func getSzConfigAsInterface(ctx context.Context) senzing.SzConfig {
 	return getSzConfig(ctx)
 }
 

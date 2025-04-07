@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
-	"path/filepath"
 	"strconv"
 	"strings"
 	"testing"
@@ -18,7 +17,6 @@ import (
 	"github.com/senzing-garage/go-helpers/truthset"
 	"github.com/senzing-garage/go-observing/observer"
 	"github.com/senzing-garage/sz-sdk-go-grpc/helper"
-	"github.com/senzing-garage/sz-sdk-go-grpc/szconfig"
 	"github.com/senzing-garage/sz-sdk-go-grpc/szconfigmanager"
 	"github.com/senzing-garage/sz-sdk-go-grpc/szdiagnostic"
 	"github.com/senzing-garage/sz-sdk-go-grpc/szengine"
@@ -100,7 +98,6 @@ var (
 		IsSilent: true,
 	}
 	szConfigManagerSingleton *szconfigmanager.Szconfigmanager
-	szConfigSingleton        *szconfig.Szconfig
 	szDiagnosticSingleton    *szdiagnostic.Szdiagnostic
 	szEngineSingleton        *szengine.Szengine
 )
@@ -3458,10 +3455,6 @@ func deleteRecords(ctx context.Context, records []record.Record) {
 		_, err := szEngine.DeleteRecord(ctx, record.DataSource, record.ID, flags)
 		handleErrorWithPanic(err)
 	}
-}
-
-func getDatabaseTemplatePath() string {
-	return filepath.FromSlash("../testdata/sqlite/G2C.db")
 }
 
 func getDefaultConfigID() int64 {

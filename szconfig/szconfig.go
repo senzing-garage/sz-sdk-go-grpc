@@ -260,47 +260,6 @@ func (client *Szconfig) Import(ctx context.Context, configDefinition string) err
 }
 
 /*
-Method ImportTemplate retrieves a Senzing configuration from the default template.
-The default template is the Senzing configuration JSON document file,
-g2config.json, located in the PIPELINE.RESOURCEPATH path.
-
-Input
-  - ctx: A context to control lifecycle.
-
-Output
-  - configDefinition: A Senzing configuration JSON document.
-*/
-func (client *Szconfig) ImportTemplate(ctx context.Context) error {
-	var (
-		err    error
-		result string
-	)
-
-	if client.isTrace {
-		client.traceEntry(7)
-
-		entryTime := time.Now()
-		defer func() { client.traceExit(8, result, err, time.Since(entryTime)) }()
-	}
-
-	err = client.importTemplate(ctx)
-	if err != nil {
-		return fmt.Errorf("importTemplate error: %w", err)
-	}
-
-	err = client.importConfigDefinition(ctx, result)
-
-	if client.observers != nil {
-		go func() {
-			details := map[string]string{}
-			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentID, 8003, err, details)
-		}()
-	}
-
-	return wraperror.Errorf(err, "szconfig.ImportTemplate error: %w", err)
-}
-
-/*
 Method Initialize is a Null function for sz-sdk-go-grpc.
 
 Input
@@ -473,7 +432,7 @@ func (client *Szconfig) addDataSource(
 
 	err = helper.ConvertGrpcError(err)
 	if err == nil {
-		err = client.importConfigDefinition(ctx, response.GetConfigDefinition())
+		err = client.importConfigDefinition(ctx, result)
 
 	}
 
@@ -490,13 +449,14 @@ func (client *Szconfig) deleteDataSource(ctx context.Context, dataSourceCode str
 
 	err = helper.ConvertGrpcError(err)
 	if err == nil {
-		err = client.importConfigDefinition(ctx, response.GetConfigDefinition())
+		err = client.importConfigDefinition(ctx, result)
 	}
 
 	return result, err
 }
 
 func (client *Szconfig) export(ctx context.Context) (string, error) {
+	_ = ctx
 	return client.configDefinition, nil
 }
 
@@ -512,20 +472,9 @@ func (client *Szconfig) getDataSources(ctx context.Context) (string, error) {
 }
 
 func (client *Szconfig) importConfigDefinition(ctx context.Context, configDefinition string) error {
+	_ = ctx
 	client.configDefinition = configDefinition
 	return nil
-}
-
-func (client *Szconfig) importTemplate(ctx context.Context) error {
-	request := szpb.GetTemplateRequest{}
-	response, err := client.GrpcClient.GetTemplate(ctx, &request)
-	err = helper.ConvertGrpcError(err)
-
-	if err == nil {
-		err = client.importConfigDefinition(ctx, response.GetConfigDefinition())
-	}
-
-	return err
 }
 
 // ----------------------------------------------------------------------------

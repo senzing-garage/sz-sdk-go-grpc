@@ -517,7 +517,4 @@ func setupSenzingConfiguration() {
 	handleErrorWithPanic(err)
 }
 
-func teardown() error {
-	var err error
-	return err
-}
+func teardown() {}
