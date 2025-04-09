@@ -17,6 +17,7 @@ import (
 	"github.com/senzing-garage/go-helpers/truthset"
 	"github.com/senzing-garage/go-observing/observer"
 	"github.com/senzing-garage/sz-sdk-go-grpc/helper"
+	"github.com/senzing-garage/sz-sdk-go-grpc/szabstractfactory"
 	"github.com/senzing-garage/sz-sdk-go-grpc/szconfigmanager"
 	"github.com/senzing-garage/sz-sdk-go-grpc/szdiagnostic"
 	"github.com/senzing-garage/sz-sdk-go-grpc/szengine"
@@ -558,7 +559,7 @@ func TestSzengine_ExportJSONEntityReport(test *testing.T) {
 	printActual(test, actual)
 
 	defer func() {
-		handleErrorWithString(szEngine.DeleteRecord(ctx, aRecord.DataSource, aRecord.ID, senzing.SzWithoutInfo))
+		panicOnErrorWithString(szEngine.DeleteRecord(ctx, aRecord.DataSource, aRecord.ID, senzing.SzWithoutInfo))
 	}()
 
 	flags = senzing.SzExportDefaultFlags
@@ -3444,7 +3445,7 @@ func addRecords(ctx context.Context, records []record.Record) {
 
 	for _, record := range records {
 		_, err := szEngine.AddRecord(ctx, record.DataSource, record.ID, record.JSON, flags)
-		handleErrorWithPanic(err)
+		panicOnError(err)
 	}
 }
 
@@ -3454,7 +3455,7 @@ func deleteRecords(ctx context.Context, records []record.Record) {
 
 	for _, record := range records {
 		_, err := szEngine.DeleteRecord(ctx, record.DataSource, record.ID, flags)
-		handleErrorWithPanic(err)
+		panicOnError(err)
 	}
 }
 
@@ -3475,11 +3476,11 @@ func getEntityIDForRecord(datasource string, recordID string) (int64, error) {
 	ctx := context.TODO()
 	szEngine := getSzEngine(ctx)
 	response, err := szEngine.GetEntityByRecordID(ctx, datasource, recordID, senzing.SzWithoutInfo)
-	handleErrorWithPanic(err)
+	panicOnError(err)
 
 	getEntityByRecordIDResponse := &GetEntityByRecordIDResponse{} //exhaustruct:ignore
 	err = json.Unmarshal([]byte(response), &getEntityByRecordIDResponse)
-	handleErrorWithPanic(err)
+	panicOnError(err)
 
 	result = getEntityByRecordIDResponse.ResolvedEntity.EntityID
 
@@ -3488,7 +3489,7 @@ func getEntityIDForRecord(datasource string, recordID string) (int64, error) {
 
 func getEntityIDString(record record.Record) string {
 	entityID, err := getEntityID(record)
-	handleErrorWithPanic(err)
+	panicOnError(err)
 
 	result := strconv.FormatInt(entityID, baseTen)
 
@@ -3501,7 +3502,7 @@ func getEntityIDStringForRecord(datasource string, recordID string) string {
 	)
 
 	entityID, err := getEntityIDForRecord(datasource, recordID)
-	handleErrorWithPanic(err)
+	panicOnError(err)
 
 	result = strconv.FormatInt(entityID, baseTen)
 
@@ -3551,14 +3552,14 @@ func getFlagsForEntityReport() int64 {
 func getGrpcConnection() *grpc.ClientConn {
 	if grpcConnection == nil {
 		transportCredentials, err := helper.GetGrpcTransportCredentials()
-		handleErrorWithPanic(err)
+		panicOnError(err)
 
 		dialOptions := []grpc.DialOption{
 			grpc.WithTransportCredentials(transportCredentials),
 		}
 
 		grpcConnection, err = grpc.NewClient(grpcAddress, dialOptions...)
-		handleErrorWithPanic(err)
+		panicOnError(err)
 	}
 
 	return grpcConnection
@@ -3566,6 +3567,14 @@ func getGrpcConnection() *grpc.ClientConn {
 
 func getSettings() string {
 	return "{}"
+}
+
+func getSzAbstractFactory(ctx context.Context) senzing.SzAbstractFactory {
+	_ = ctx
+
+	return &szabstractfactory.Szabstractfactory{
+		GrpcConnection: getGrpcConnection(),
+	}
 }
 
 func getSzConfigManager(ctx context.Context) senzing.SzConfigManager {
@@ -3579,16 +3588,16 @@ func getSzConfigManager(ctx context.Context) senzing.SzConfigManager {
 		}
 		err = szConfigManagerSingleton.SetLogLevel(ctx, logLevel)
 
-		handleErrorWithPanic(err)
+		panicOnError(err)
 
 		if logLevel == "TRACE" {
 			szConfigManagerSingleton.SetObserverOrigin(ctx, observerOrigin)
 
 			err = szConfigManagerSingleton.RegisterObserver(ctx, observerSingleton)
-			handleErrorWithPanic(err)
+			panicOnError(err)
 
 			err = szConfigManagerSingleton.SetLogLevel(ctx, logLevel) // Duplicated for coverage testing
-			handleErrorWithPanic(err)
+			panicOnError(err)
 		}
 	}
 
@@ -3605,16 +3614,16 @@ func getSzDiagnostic(ctx context.Context) senzing.SzDiagnostic {
 		}
 		err = szDiagnosticSingleton.SetLogLevel(ctx, logLevel)
 
-		handleErrorWithPanic(err)
+		panicOnError(err)
 
 		if logLevel == "TRACE" {
 			szDiagnosticSingleton.SetObserverOrigin(ctx, observerOrigin)
 
 			err = szDiagnosticSingleton.RegisterObserver(ctx, observerSingleton)
-			handleErrorWithPanic(err)
+			panicOnError(err)
 
 			err = szDiagnosticSingleton.SetLogLevel(ctx, logLevel) // Duplicated for coverage testing
-			handleErrorWithPanic(err)
+			panicOnError(err)
 		}
 	}
 
@@ -3631,16 +3640,16 @@ func getSzEngine(ctx context.Context) *szengine.Szengine {
 		}
 		err = szEngineSingleton.SetLogLevel(ctx, logLevel)
 
-		handleErrorWithPanic(err)
+		panicOnError(err)
 
 		if logLevel == "TRACE" {
 			szEngineSingleton.SetObserverOrigin(ctx, observerOrigin)
 
 			err = szEngineSingleton.RegisterObserver(ctx, observerSingleton)
-			handleErrorWithPanic(err)
+			panicOnError(err)
 
 			err = szEngineSingleton.SetLogLevel(ctx, logLevel) // Duplicated for coverage testing
-			handleErrorWithPanic(err)
+			panicOnError(err)
 		}
 	}
 
@@ -3653,9 +3662,8 @@ func getSzEngineAsInterface(ctx context.Context) senzing.SzEngine {
 
 func getTestObject(t *testing.T) *szengine.Szengine {
 	t.Helper()
-	ctx := t.Context()
 
-	return getSzEngine(ctx)
+	return getSzEngine(t.Context())
 }
 
 func handleError(err error) {
@@ -3664,16 +3672,16 @@ func handleError(err error) {
 	}
 }
 
-func handleErrorWithPanic(err error) {
+func panicOnError(err error) {
 	if err != nil {
 		panic(err)
 	}
 }
 
-func handleErrorWithString(aString string, err error) {
+func panicOnErrorWithString(aString string, err error) {
 	_ = aString
 
-	handleError(err)
+	panicOnError(err)
 }
 
 func printActual(t *testing.T, actual interface{}) {
@@ -3720,27 +3728,27 @@ func setupSenzingConfiguration() {
 
 	szConfigManager := getSzConfigManager(ctx)
 	szConfig, err := szConfigManager.CreateConfigFromTemplate(ctx)
-	handleErrorWithPanic(err)
+	panicOnError(err)
 
 	// Add data sources to Senzing configuration.
 
 	dataSourceCodes := []string{"CUSTOMERS", "REFERENCE", "WATCHLIST"}
 	for _, dataSourceCode := range dataSourceCodes {
 		_, err := szConfig.AddDataSource(ctx, dataSourceCode)
-		handleErrorWithPanic(err)
+		panicOnError(err)
 	}
 
 	// Persist the Senzing configuration to the Senzing repository as default.
 
 	configComment := fmt.Sprintf("Created by szengine_test at %s", now.UTC())
 	configDefinition, err := szConfig.Export(ctx)
-	handleErrorWithPanic(err)
+	panicOnError(err)
 
 	configID, err := szConfigManager.RegisterConfig(ctx, configDefinition, configComment)
-	handleErrorWithPanic(err)
+	panicOnError(err)
 
 	err = szConfigManager.SetDefaultConfigID(ctx, configID)
-	handleErrorWithPanic(err)
+	panicOnError(err)
 
 }
 
@@ -3748,5 +3756,5 @@ func setupPurgeRepository() {
 	ctx := context.TODO()
 	szDiagnostic := getSzDiagnostic(ctx)
 	err := szDiagnostic.PurgeRepository(ctx)
-	handleErrorWithPanic(err)
+	panicOnError(err)
 }

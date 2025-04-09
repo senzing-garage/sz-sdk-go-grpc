@@ -12,6 +12,7 @@ import (
 	"github.com/senzing-garage/go-helpers/env"
 	"github.com/senzing-garage/go-observing/observer"
 	"github.com/senzing-garage/sz-sdk-go-grpc/helper"
+	"github.com/senzing-garage/sz-sdk-go-grpc/szabstractfactory"
 	"github.com/senzing-garage/sz-sdk-go-grpc/szconfig"
 	"github.com/senzing-garage/sz-sdk-go-grpc/szconfigmanager"
 	"github.com/senzing-garage/sz-sdk-go/senzing"
@@ -72,7 +73,7 @@ func TestSzconfigmanager_CreateConfigFromConfigID(test *testing.T) {
 	ctx := test.Context()
 	szConfigManager := getTestObject(test)
 	configID, err1 := szConfigManager.GetDefaultConfigID(ctx)
-	handleErrorWithPanic(err1)
+	require.NoError(test, err1)
 
 	actual, err := szConfigManager.CreateConfigFromConfigID(ctx, configID)
 	require.NoError(test, err)
@@ -186,12 +187,12 @@ func TestSzconfigmanager_ReplaceDefaultConfigID(test *testing.T) {
 	ctx := test.Context()
 	szConfigManager := getTestObject(test)
 	currentDefaultConfigID, err1 := szConfigManager.GetDefaultConfigID(ctx)
-	handleErrorWithPanic(err1)
+	require.NoError(test, err1)
 
 	// TODO: This is kind of a cheater.
 
 	newDefaultConfigID, err2 := szConfigManager.GetDefaultConfigID(ctx)
-	handleErrorWithPanic(err2)
+	require.NoError(test, err2)
 
 	err := szConfigManager.ReplaceDefaultConfigID(ctx, currentDefaultConfigID, newDefaultConfigID)
 	require.NoError(test, err)
@@ -201,7 +202,7 @@ func TestSzconfigmanager_ReplaceDefaultConfigID_badCurrentDefaultConfigID(test *
 	ctx := test.Context()
 	szConfigManager := getTestObject(test)
 	newDefaultConfigID, err := szConfigManager.GetDefaultConfigID(ctx)
-	handleErrorWithPanic(err)
+	require.NoError(test, err)
 	err = szConfigManager.ReplaceDefaultConfigID(ctx, badCurrentDefaultConfigID, newDefaultConfigID)
 	require.ErrorIs(test, err, szerror.ErrSzReplaceConflict)
 }
@@ -210,7 +211,7 @@ func TestSzconfigmanager_ReplaceDefaultConfigID_badNewDefaultConfigID(test *test
 	ctx := test.Context()
 	szConfigManager := getTestObject(test)
 	currentDefaultConfigID, err := szConfigManager.GetDefaultConfigID(ctx)
-	handleErrorWithPanic(err)
+	require.NoError(test, err)
 	err = szConfigManager.ReplaceDefaultConfigID(ctx, currentDefaultConfigID, badNewDefaultConfigID)
 	require.ErrorIs(test, err, szerror.ErrSzConfiguration)
 }
@@ -219,7 +220,7 @@ func TestSzconfigmanager_ReplaceDefaultConfigID_nilCurrentDefaultConfigID(test *
 	ctx := test.Context()
 	szConfigManager := getTestObject(test)
 	newDefaultConfigID, err := szConfigManager.GetDefaultConfigID(ctx)
-	handleErrorWithPanic(err)
+	require.NoError(test, err)
 	err = szConfigManager.ReplaceDefaultConfigID(ctx, nilCurrentDefaultConfigID, newDefaultConfigID)
 	require.ErrorIs(test, err, szerror.ErrSzReplaceConflict)
 }
@@ -228,7 +229,7 @@ func TestSzconfigmanager_ReplaceDefaultConfigID_nilNewDefaultConfigID(test *test
 	ctx := test.Context()
 	szConfigManager := getTestObject(test)
 	currentDefaultConfigID, err := szConfigManager.GetDefaultConfigID(ctx)
-	handleErrorWithPanic(err)
+	require.NoError(test, err)
 	err = szConfigManager.ReplaceDefaultConfigID(ctx, currentDefaultConfigID, nilNewDefaultConfigID)
 	require.ErrorIs(test, err, szerror.ErrSzConfiguration)
 }
@@ -256,7 +257,7 @@ func TestSzconfigmanager_SetDefaultConfigID(test *testing.T) {
 	ctx := test.Context()
 	szConfigManager := getTestObject(test)
 	configID, err := szConfigManager.GetDefaultConfigID(ctx)
-	handleErrorWithPanic(err)
+	require.NoError(test, err)
 	err = szConfigManager.SetDefaultConfigID(ctx, configID)
 	require.NoError(test, err)
 }
@@ -356,14 +357,14 @@ func TestSzconfigmanager_Destroy_withObserver(test *testing.T) {
 func getGrpcConnection() *grpc.ClientConn {
 	if grpcConnection == nil {
 		transportCredentials, err := helper.GetGrpcTransportCredentials()
-		handleErrorWithPanic(err)
+		panicOnError(err)
 
 		dialOptions := []grpc.DialOption{
 			grpc.WithTransportCredentials(transportCredentials),
 		}
 
 		grpcConnection, err = grpc.NewClient(grpcAddress, dialOptions...)
-		handleErrorWithPanic(err)
+		panicOnError(err)
 	}
 
 	return grpcConnection
@@ -378,33 +379,41 @@ func getSettings() string {
 
 // 	szConfigManager := getSzConfigManager(ctx)
 // 	szConfigForExport, err := szConfigManager.CreateConfigFromTemplate(ctx)
-// 	handleErrorWithPanic(err)
+// 	panicOnError(err)
 
 // 	configDefinition, err := szConfigForExport.Export(ctx)
-// 	handleErrorWithPanic(err)
+// 	panicOnError(err)
 
 // 	grpcConnection := getGrpcConnection()
 // 	szConfig = &szconfig.Szconfig{
 // 		GrpcClient: szconfigpb.NewSzConfigClient(grpcConnection),
 // 	}
 // 	err = szConfig.SetLogLevel(ctx, logLevel)
-// 	handleErrorWithPanic(err)
+// 	panicOnError(err)
 
 // 	err = szConfig.Import(ctx, configDefinition)
-// 	handleErrorWithPanic(err)
+// 	panicOnError(err)
 
 // 	if logLevel == "TRACE" {
 // 		szConfig.SetObserverOrigin(ctx, observerOrigin)
 
 // 		err = szConfig.RegisterObserver(ctx, observerSingleton)
-// 		handleErrorWithPanic(err)
+// 		panicOnError(err)
 
 // 		err = szConfig.SetLogLevel(ctx, logLevel) // Duplicated for coverage testing
-// 		handleErrorWithPanic(err)
+// 		panicOnError(err)
 // 	}
 
 // 	return szConfig
 // }
+
+func getSzAbstractFactory(ctx context.Context) senzing.SzAbstractFactory {
+	_ = ctx
+
+	return &szabstractfactory.Szabstractfactory{
+		GrpcConnection: getGrpcConnection(),
+	}
+}
 
 func getSzConfigManager(ctx context.Context) *szconfigmanager.Szconfigmanager {
 	var err error
@@ -417,16 +426,16 @@ func getSzConfigManager(ctx context.Context) *szconfigmanager.Szconfigmanager {
 		}
 		err = szConfigManagerSingleton.SetLogLevel(ctx, logLevel)
 
-		handleErrorWithPanic(err)
+		panicOnError(err)
 
 		if logLevel == "TRACE" {
 			szConfigManagerSingleton.SetObserverOrigin(ctx, observerOrigin)
 
 			err = szConfigManagerSingleton.RegisterObserver(ctx, observerSingleton)
-			handleErrorWithPanic(err)
+			panicOnError(err)
 
 			err = szConfigManagerSingleton.SetLogLevel(ctx, logLevel) // Duplicated for coverage testing
-			handleErrorWithPanic(err)
+			panicOnError(err)
 		}
 	}
 
@@ -450,7 +459,7 @@ func handleError(err error) {
 	}
 }
 
-func handleErrorWithPanic(err error) {
+func panicOnError(err error) {
 	if err != nil {
 		panic(err)
 	}
@@ -500,25 +509,25 @@ func setupSenzingConfiguration() {
 	// szConfig := getSzConfig(ctx)
 	szConfigManager := getSzConfigManager(ctx)
 	szConfig, err := szConfigManager.CreateConfigFromTemplate(ctx)
-	handleErrorWithPanic(err)
+	panicOnError(err)
 
 	// Add data sources to in-memory Senzing configuration.
 
 	dataSourceCodes := []string{"CUSTOMERS", "REFERENCE", "WATCHLIST"}
 	for _, dataSourceCode := range dataSourceCodes {
 		_, err := szConfig.AddDataSource(ctx, dataSourceCode)
-		handleErrorWithPanic(err)
+		panicOnError(err)
 	}
 
 	// Persist the Senzing configuration to the Senzing repository as default.
 
 	configComment := fmt.Sprintf("Created by szconfigmanager_test at %s", now.UTC())
 	configDefinition, err := szConfig.Export(ctx)
-	handleErrorWithPanic(err)
+	panicOnError(err)
 
 	configID, err := szConfigManager.RegisterConfig(ctx, configDefinition, configComment)
-	handleErrorWithPanic(err)
+	panicOnError(err)
 
 	err = szConfigManager.SetDefaultConfigID(ctx, configID)
-	handleErrorWithPanic(err)
+	panicOnError(err)
 }

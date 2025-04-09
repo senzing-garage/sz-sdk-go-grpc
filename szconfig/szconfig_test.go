@@ -9,6 +9,7 @@ import (
 	"github.com/senzing-garage/go-helpers/env"
 	"github.com/senzing-garage/go-observing/observer"
 	"github.com/senzing-garage/sz-sdk-go-grpc/helper"
+	"github.com/senzing-garage/sz-sdk-go-grpc/szabstractfactory"
 	"github.com/senzing-garage/sz-sdk-go-grpc/szconfig"
 	"github.com/senzing-garage/sz-sdk-go-grpc/szconfigmanager"
 	"github.com/senzing-garage/sz-sdk-go/senzing"
@@ -259,14 +260,14 @@ func TestSzconfig_Destroy_withObserver(test *testing.T) {
 func getGrpcConnection() *grpc.ClientConn {
 	if grpcConnection == nil {
 		transportCredentials, err := helper.GetGrpcTransportCredentials()
-		handleErrorWithPanic(err)
+		panicOnError(err)
 
 		dialOptions := []grpc.DialOption{
 			grpc.WithTransportCredentials(transportCredentials),
 		}
 
 		grpcConnection, err = grpc.NewClient(grpcAddress, dialOptions...)
-		handleErrorWithPanic(err)
+		panicOnError(err)
 	}
 
 	return grpcConnection
@@ -276,6 +277,14 @@ func getSettings() string {
 	return "{}"
 }
 
+func getSzAbstractFactory(ctx context.Context) senzing.SzAbstractFactory {
+	_ = ctx
+
+	return &szabstractfactory.Szabstractfactory{
+		GrpcConnection: getGrpcConnection(),
+	}
+}
+
 func getSzConfigSingleton(ctx context.Context) *szconfig.Szconfig {
 	if szConfigSingleton == nil {
 
@@ -283,29 +292,29 @@ func getSzConfigSingleton(ctx context.Context) *szconfig.Szconfig {
 
 		// szConfigManager := getSzConfigManager(ctx)
 		// szConfig, err := szConfigManager.CreateConfigFromTemplate(ctx)
-		// handleErrorWithPanic(err)
+		// panicOnError(err)
 
 		// configDefinition, err := szConfig.Export(ctx)
-		// handleErrorWithPanic(err)
+		// panicOnError(err)
 
 		// grpcConnection := getGrpcConnection()
 		// szConfigSingleton = &szconfig.Szconfig{
 		// 	GrpcClient: szpb.NewSzConfigClient(grpcConnection),
 		// }
 		// err = szConfigSingleton.SetLogLevel(ctx, logLevel)
-		// handleErrorWithPanic(err)
+		// panicOnError(err)
 
 		// err = szConfigSingleton.Import(ctx, configDefinition)
-		// handleErrorWithPanic(err)
+		// panicOnError(err)
 
 		// if logLevel == "TRACE" {
 		// 	szConfigSingleton.SetObserverOrigin(ctx, observerOrigin)
 
 		// 	err = szConfigSingleton.RegisterObserver(ctx, observerSingleton)
-		// 	handleErrorWithPanic(err)
+		// 	panicOnError(err)
 
 		// 	err = szConfigSingleton.SetLogLevel(ctx, logLevel) // Duplicated for coverage testing
-		// 	handleErrorWithPanic(err)
+		// 	panicOnError(err)
 		// }
 	}
 
@@ -326,16 +335,16 @@ func getSzConfigManager(ctx context.Context) *szconfigmanager.Szconfigmanager {
 		}
 		err = szConfigManagerSingleton.SetLogLevel(ctx, logLevel)
 
-		handleErrorWithPanic(err)
+		panicOnError(err)
 
 		if logLevel == "TRACE" {
 			szConfigManagerSingleton.SetObserverOrigin(ctx, observerOrigin)
 
 			err = szConfigManagerSingleton.RegisterObserver(ctx, observerSingleton)
-			handleErrorWithPanic(err)
+			panicOnError(err)
 
 			err = szConfigManagerSingleton.SetLogLevel(ctx, logLevel) // Duplicated for coverage testing
-			handleErrorWithPanic(err)
+			panicOnError(err)
 		}
 	}
 
@@ -347,29 +356,29 @@ func getSzConfig(ctx context.Context) *szconfig.Szconfig {
 
 	szConfigManager := getSzConfigManager(ctx)
 	szConfigForExport, err := szConfigManager.CreateConfigFromTemplate(ctx)
-	handleErrorWithPanic(err)
+	panicOnError(err)
 
 	configDefinition, err := szConfigForExport.Export(ctx)
-	handleErrorWithPanic(err)
+	panicOnError(err)
 
 	grpcConnection := getGrpcConnection()
 	szConfig = &szconfig.Szconfig{
 		GrpcClient: szpb.NewSzConfigClient(grpcConnection),
 	}
 	err = szConfig.SetLogLevel(ctx, logLevel)
-	handleErrorWithPanic(err)
+	panicOnError(err)
 
 	err = szConfig.Import(ctx, configDefinition)
-	handleErrorWithPanic(err)
+	panicOnError(err)
 
 	if logLevel == "TRACE" {
 		szConfig.SetObserverOrigin(ctx, observerOrigin)
 
 		err = szConfig.RegisterObserver(ctx, observerSingleton)
-		handleErrorWithPanic(err)
+		panicOnError(err)
 
 		err = szConfig.SetLogLevel(ctx, logLevel) // Duplicated for coverage testing
-		handleErrorWithPanic(err)
+		panicOnError(err)
 	}
 
 	return szConfig
@@ -388,7 +397,7 @@ func handleError(err error) {
 	}
 }
 
-func handleErrorWithPanic(err error) {
+func panicOnError(err error) {
 	if err != nil {
 		panic(err)
 	}

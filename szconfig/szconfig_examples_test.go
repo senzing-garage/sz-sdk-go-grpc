@@ -8,8 +8,6 @@ import (
 
 	"github.com/senzing-garage/go-helpers/jsonutil"
 	"github.com/senzing-garage/go-logging/logging"
-	"github.com/senzing-garage/sz-sdk-go-grpc/szabstractfactory"
-	"github.com/senzing-garage/sz-sdk-go/senzing"
 )
 
 // ----------------------------------------------------------------------------
@@ -157,16 +155,4 @@ func ExampleSzconfig_GetObserverOrigin() {
 	result := szConfig.GetObserverOrigin(ctx)
 	fmt.Println(result)
 	// Output: Machine: nn; Task: UnitTest
-}
-
-// ----------------------------------------------------------------------------
-// Helper functions
-// ----------------------------------------------------------------------------
-
-func getSzAbstractFactory(ctx context.Context) senzing.SzAbstractFactory {
-	_ = ctx
-
-	return &szabstractfactory.Szabstractfactory{
-		GrpcConnection: getGrpcConnection(),
-	}
 }

@@ -77,9 +77,7 @@ func (client *Szconfig) AddDataSource(ctx context.Context, dataSourceCode string
 		}()
 	}
 
-	// FIXME: return result, wraperror.Errorf(err, "szconfig.AddDataSource error: %w", err)
-
-	return result, err
+	return result, wraperror.Errorf(err, "szconfig.AddDataSource error: %w", err)
 }
 
 /*

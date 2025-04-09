@@ -9,6 +9,7 @@ import (
 	"github.com/senzing-garage/go-helpers/env"
 	"github.com/senzing-garage/go-observing/observer"
 	"github.com/senzing-garage/sz-sdk-go-grpc/helper"
+	"github.com/senzing-garage/sz-sdk-go-grpc/szabstractfactory"
 	"github.com/senzing-garage/sz-sdk-go-grpc/szproduct"
 	"github.com/senzing-garage/sz-sdk-go/senzing"
 	szpb "github.com/senzing-garage/sz-sdk-proto/go/szproduct"
@@ -143,14 +144,14 @@ func TestSzproduct_Destroy_withObserver(test *testing.T) {
 func getGrpcConnection() *grpc.ClientConn {
 	if grpcConnection == nil {
 		transportCredentials, err := helper.GetGrpcTransportCredentials()
-		handleErrorWithPanic(err)
+		panicOnError(err)
 
 		dialOptions := []grpc.DialOption{
 			grpc.WithTransportCredentials(transportCredentials),
 		}
 
 		grpcConnection, err = grpc.NewClient(grpcAddress, dialOptions...)
-		handleErrorWithPanic(err)
+		panicOnError(err)
 	}
 
 	return grpcConnection
@@ -158,6 +159,14 @@ func getGrpcConnection() *grpc.ClientConn {
 
 func getSettings() string {
 	return "{}"
+}
+
+func getSzAbstractFactory(ctx context.Context) senzing.SzAbstractFactory {
+	_ = ctx
+
+	return &szabstractfactory.Szabstractfactory{
+		GrpcConnection: getGrpcConnection(),
+	}
 }
 
 func getSzProduct(ctx context.Context) *szproduct.Szproduct {
@@ -171,20 +180,20 @@ func getSzProduct(ctx context.Context) *szproduct.Szproduct {
 		}
 		err = szProductSingleton.SetLogLevel(ctx, logLevel)
 
-		handleErrorWithPanic(err)
+		panicOnError(err)
 
 		if logLevel == "TRACE" {
 			szProductSingleton.SetObserverOrigin(ctx, observerOrigin)
 
 			err = szProductSingleton.RegisterObserver(ctx, observerSingleton)
-			handleErrorWithPanic(err)
+			panicOnError(err)
 
 			err = szProductSingleton.SetLogLevel(ctx, logLevel) // Duplicated for coverage testing
-			handleErrorWithPanic(err)
+			panicOnError(err)
 		}
 
 		err = szProductSingleton.Initialize(ctx, instanceName, settings, verboseLogging)
-		handleErrorWithPanic(err)
+		panicOnError(err)
 	}
 
 	return szProductSingleton
@@ -207,7 +216,7 @@ func handleError(err error) {
 	}
 }
 
-func handleErrorWithPanic(err error) {
+func panicOnError(err error) {
 	if err != nil {
 		panic(err)
 	}
