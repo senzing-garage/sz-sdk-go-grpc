@@ -9,6 +9,7 @@ import (
 	"github.com/senzing-garage/sz-sdk-go-grpc/szengine"
 	"github.com/senzing-garage/sz-sdk-go-grpc/szproduct"
 	"github.com/senzing-garage/sz-sdk-go/senzing"
+	szconfigpb "github.com/senzing-garage/sz-sdk-proto/go/szconfig"
 	szconfigmanagerpb "github.com/senzing-garage/sz-sdk-proto/go/szconfigmanager"
 	szdiagnosticpb "github.com/senzing-garage/sz-sdk-proto/go/szdiagnostic"
 	szenginepb "github.com/senzing-garage/sz-sdk-proto/go/szengine"
@@ -44,7 +45,8 @@ func (factory *Szabstractfactory) CreateConfigManager(ctx context.Context) (senz
 
 	_ = ctx
 	result := &szconfigmanager.Szconfigmanager{
-		GrpcClient: szconfigmanagerpb.NewSzConfigManagerClient(factory.GrpcConnection),
+		GrpcClient:         szconfigmanagerpb.NewSzConfigManagerClient(factory.GrpcConnection),
+		GrpcClientSzConfig: szconfigpb.NewSzConfigClient(factory.GrpcConnection),
 	}
 
 	return result, wraperror.Errorf(err, "szabstractfactory.CreateConfigManager  error: %w", err)

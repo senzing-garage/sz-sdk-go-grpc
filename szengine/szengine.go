@@ -314,12 +314,12 @@ func (client *Szengine) ExportCsvEntityReportIterator(
 			defer func() { client.traceExit(16, csvColumnList, flags, err, time.Since(entryTime)) }()
 		}
 
-		request := szpb.StreamExportCsvEntityReportRequest{
+		request := &szpb.StreamExportCsvEntityReportRequest{
 			CsvColumnList: csvColumnList,
 			Flags:         flags,
 		}
 
-		stream, err := client.GrpcClient.StreamExportCsvEntityReport(ctx, &request)
+		stream, err := client.GrpcClient.StreamExportCsvEntityReport(ctx, request)
 		if err != nil {
 			stringFragmentChannel <- senzing.StringFragment{
 				Error: helper.ConvertGrpcError(err),
@@ -427,11 +427,11 @@ func (client *Szengine) ExportJSONEntityReportIterator(ctx context.Context, flag
 			defer func() { client.traceExit(20, flags, err, time.Since(entryTime)) }()
 		}
 
-		request := szpb.StreamExportJsonEntityReportRequest{
+		request := &szpb.StreamExportJsonEntityReportRequest{
 			Flags: flags,
 		}
 
-		stream, err := client.GrpcClient.StreamExportJsonEntityReport(ctx, &request)
+		stream, err := client.GrpcClient.StreamExportJsonEntityReport(ctx, request)
 		if err != nil {
 			stringFragmentChannel <- senzing.StringFragment{
 				Error: helper.ConvertGrpcError(err),
@@ -1087,7 +1087,7 @@ func (client *Szengine) GetRedoRecord(ctx context.Context) (string, error) {
 		}()
 	}
 
-	return result, err
+	return result, helper.ConvertGrpcError(err)
 }
 
 /*
@@ -1384,7 +1384,7 @@ func (client *Szengine) ReevaluateRecord(
 		}()
 	}
 
-	return result, err
+	return result, helper.ConvertGrpcError(err)
 }
 
 /*
@@ -1553,7 +1553,7 @@ func (client *Szengine) WhyRecordInEntity(
 		}()
 	}
 
-	return result, err
+	return result, helper.ConvertGrpcError(err)
 }
 
 /*
@@ -1807,36 +1807,32 @@ func (client *Szengine) addRecord(
 	recordDefinition string,
 	flags int64,
 ) (string, error) {
-	request := szpb.AddRecordRequest{
+	request := &szpb.AddRecordRequest{
 		DataSourceCode:   dataSourceCode,
 		Flags:            flags,
 		RecordDefinition: recordDefinition,
 		RecordId:         recordID,
 	}
-	response, err := client.GrpcClient.AddRecord(ctx, &request)
+	response, err := client.GrpcClient.AddRecord(ctx, request)
 	result := response.GetResult()
-	err = helper.ConvertGrpcError(err)
 
-	return result, err
+	return result, helper.ConvertGrpcError(err)
 }
 
 func (client *Szengine) closeExport(ctx context.Context, exportHandle uintptr) error {
-	request := szpb.CloseExportRequest{
+	request := &szpb.CloseExportRequest{
 		ExportHandle: int64(exportHandle), //nolint:gosec
 	}
-	_, err := client.GrpcClient.CloseExport(ctx, &request)
-	err = helper.ConvertGrpcError(err)
-
-	return err
+	_, err := client.GrpcClient.CloseExport(ctx, request)
+	return helper.ConvertGrpcError(err)
 }
 
 func (client *Szengine) countRedoRecords(ctx context.Context) (int64, error) {
-	request := szpb.CountRedoRecordsRequest{}
-	response, err := client.GrpcClient.CountRedoRecords(ctx, &request)
+	request := &szpb.CountRedoRecordsRequest{}
+	response, err := client.GrpcClient.CountRedoRecords(ctx, request)
 	result := response.GetResult()
-	err = helper.ConvertGrpcError(err)
 
-	return result, err
+	return result, helper.ConvertGrpcError(err)
 }
 
 func (client *Szengine) deleteRecord(
@@ -1845,50 +1841,46 @@ func (client *Szengine) deleteRecord(
 	recordID string,
 	flags int64,
 ) (string, error) {
-	request := szpb.DeleteRecordRequest{
+	request := &szpb.DeleteRecordRequest{
 		DataSourceCode: dataSourceCode,
 		Flags:          flags,
 		RecordId:       recordID,
 	}
-	response, err := client.GrpcClient.DeleteRecord(ctx, &request)
+	response, err := client.GrpcClient.DeleteRecord(ctx, request)
 	result := response.GetResult()
-	err = helper.ConvertGrpcError(err)
 
-	return result, err
+	return result, helper.ConvertGrpcError(err)
 }
 
 func (client *Szengine) exportCsvEntityReport(ctx context.Context, csvColumnList string, flags int64) (uintptr, error) {
-	request := szpb.ExportCsvEntityReportRequest{
+	request := &szpb.ExportCsvEntityReportRequest{
 		CsvColumnList: csvColumnList,
 		Flags:         flags,
 	}
-	response, err := client.GrpcClient.ExportCsvEntityReport(ctx, &request)
+	response, err := client.GrpcClient.ExportCsvEntityReport(ctx, request)
 	result := uintptr(response.GetResult())
-	err = helper.ConvertGrpcError(err)
 
-	return result, err
+	return result, helper.ConvertGrpcError(err)
 }
 
 func (client *Szengine) exportJSONEntityReport(ctx context.Context, flags int64) (uintptr, error) {
-	request := szpb.ExportJsonEntityReportRequest{
+	request := &szpb.ExportJsonEntityReportRequest{
 		Flags: flags,
 	}
-	response, err := client.GrpcClient.ExportJsonEntityReport(ctx, &request)
+	response, err := client.GrpcClient.ExportJsonEntityReport(ctx, request)
 	result := (uintptr)(response.GetResult())
-	err = helper.ConvertGrpcError(err)
 
-	return result, err
+	return result, helper.ConvertGrpcError(err)
 }
 
 func (client *Szengine) fetchNext(ctx context.Context, exportHandle uintptr) (string, error) {
-	request := szpb.FetchNextRequest{
+	request := &szpb.FetchNextRequest{
 		ExportHandle: int64(exportHandle), //nolint:gosec
 	}
-	response, err := client.GrpcClient.FetchNext(ctx, &request)
+	response, err := client.GrpcClient.FetchNext(ctx, request)
 	result := response.GetResult()
-	err = helper.ConvertGrpcError(err)
 
-	return result, err
+	return result, helper.ConvertGrpcError(err)
 }
 
 func (client *Szengine) findInterestingEntitiesByEntityID(
@@ -1896,15 +1888,14 @@ func (client *Szengine) findInterestingEntitiesByEntityID(
 	entityID int64,
 	flags int64,
 ) (string, error) {
-	request := szpb.FindInterestingEntitiesByEntityIdRequest{
+	request := &szpb.FindInterestingEntitiesByEntityIdRequest{
 		EntityId: entityID,
 		Flags:    flags,
 	}
-	response, err := client.GrpcClient.FindInterestingEntitiesByEntityId(ctx, &request)
+	response, err := client.GrpcClient.FindInterestingEntitiesByEntityId(ctx, request)
 	result := response.GetResult()
-	err = helper.ConvertGrpcError(err)
 
-	return result, err
+	return result, helper.ConvertGrpcError(err)
 }
 
 func (client *Szengine) findInterestingEntitiesByRecordID(
@@ -1913,16 +1904,15 @@ func (client *Szengine) findInterestingEntitiesByRecordID(
 	recordID string,
 	flags int64,
 ) (string, error) {
-	request := szpb.FindInterestingEntitiesByRecordIdRequest{
+	request := &szpb.FindInterestingEntitiesByRecordIdRequest{
 		DataSourceCode: dataSourceCode,
 		Flags:          flags,
 		RecordId:       recordID,
 	}
-	response, err := client.GrpcClient.FindInterestingEntitiesByRecordId(ctx, &request)
+	response, err := client.GrpcClient.FindInterestingEntitiesByRecordId(ctx, request)
 	result := response.GetResult()
-	err = helper.ConvertGrpcError(err)
 
-	return result, err
+	return result, helper.ConvertGrpcError(err)
 }
 
 func (client *Szengine) findNetworkByEntityID(
@@ -1933,18 +1923,17 @@ func (client *Szengine) findNetworkByEntityID(
 	buildOutMaxEntities int64,
 	flags int64,
 ) (string, error) {
-	request := szpb.FindNetworkByEntityIdRequest{
+	request := &szpb.FindNetworkByEntityIdRequest{
 		BuildOutDegrees:     buildOutDegree,
 		BuildOutMaxEntities: buildOutMaxEntities,
 		EntityIds:           entityIDs,
 		Flags:               flags,
 		MaxDegrees:          maxDegrees,
 	}
-	response, err := client.GrpcClient.FindNetworkByEntityId(ctx, &request)
+	response, err := client.GrpcClient.FindNetworkByEntityId(ctx, request)
 	result := response.GetResult()
-	err = helper.ConvertGrpcError(err)
 
-	return result, err
+	return result, helper.ConvertGrpcError(err)
 }
 
 func (client *Szengine) findNetworkByRecordID(
@@ -1955,18 +1944,17 @@ func (client *Szengine) findNetworkByRecordID(
 	buildOutMaxEntities int64,
 	flags int64,
 ) (string, error) {
-	request := szpb.FindNetworkByRecordIdRequest{
+	request := &szpb.FindNetworkByRecordIdRequest{
 		BuildOutDegrees:     buildOutDegree,
 		BuildOutMaxEntities: buildOutMaxEntities,
 		Flags:               flags,
 		MaxDegrees:          maxDegrees,
 		RecordKeys:          recordKeys,
 	}
-	response, err := client.GrpcClient.FindNetworkByRecordId(ctx, &request)
+	response, err := client.GrpcClient.FindNetworkByRecordId(ctx, request)
 	result := response.GetResult()
-	err = helper.ConvertGrpcError(err)
 
-	return result, err
+	return result, helper.ConvertGrpcError(err)
 }
 
 func (client *Szengine) findPathByEntityID(
@@ -1978,7 +1966,7 @@ func (client *Szengine) findPathByEntityID(
 	requiredDataSources string,
 	flags int64,
 ) (string, error) {
-	request := szpb.FindPathByEntityIdRequest{
+	request := &szpb.FindPathByEntityIdRequest{
 		AvoidEntityIds:      avoidEntityIDs,
 		EndEntityId:         endEntityID,
 		Flags:               flags,
@@ -1986,11 +1974,10 @@ func (client *Szengine) findPathByEntityID(
 		RequiredDataSources: requiredDataSources,
 		StartEntityId:       startEntityID,
 	}
-	response, err := client.GrpcClient.FindPathByEntityId(ctx, &request)
+	response, err := client.GrpcClient.FindPathByEntityId(ctx, request)
 	result := response.GetResult()
-	err = helper.ConvertGrpcError(err)
 
-	return result, err
+	return result, helper.ConvertGrpcError(err)
 }
 
 func (client *Szengine) findPathByRecordID(
@@ -2004,7 +1991,7 @@ func (client *Szengine) findPathByRecordID(
 	requiredDataSources string,
 	flags int64,
 ) (string, error) {
-	request := szpb.FindPathByRecordIdRequest{
+	request := &szpb.FindPathByRecordIdRequest{
 		AvoidRecordKeys:     avoidRecordKeys,
 		EndDataSourceCode:   endDataSourceCode,
 		EndRecordId:         endRecordID,
@@ -2014,32 +2001,29 @@ func (client *Szengine) findPathByRecordID(
 		StartDataSourceCode: startDataSourceCode,
 		StartRecordId:       startRecordID,
 	}
-	response, err := client.GrpcClient.FindPathByRecordId(ctx, &request)
+	response, err := client.GrpcClient.FindPathByRecordId(ctx, request)
 	result := response.GetResult()
-	err = helper.ConvertGrpcError(err)
 
-	return result, err
+	return result, helper.ConvertGrpcError(err)
 }
 
 func (client *Szengine) getActiveConfigID(ctx context.Context) (int64, error) {
-	request := szpb.GetActiveConfigIdRequest{}
-	response, err := client.GrpcClient.GetActiveConfigId(ctx, &request)
+	request := &szpb.GetActiveConfigIdRequest{}
+	response, err := client.GrpcClient.GetActiveConfigId(ctx, request)
 	result := response.GetResult()
-	err = helper.ConvertGrpcError(err)
 
-	return result, err
+	return result, helper.ConvertGrpcError(err)
 }
 
 func (client *Szengine) getEntityByEntityID(ctx context.Context, entityID int64, flags int64) (string, error) {
-	request := szpb.GetEntityByEntityIdRequest{
+	request := &szpb.GetEntityByEntityIdRequest{
 		EntityId: entityID,
 		Flags:    flags,
 	}
-	response, err := client.GrpcClient.GetEntityByEntityId(ctx, &request)
+	response, err := client.GrpcClient.GetEntityByEntityId(ctx, request)
 	result := response.GetResult()
-	err = helper.ConvertGrpcError(err)
 
-	return result, err
+	return result, helper.ConvertGrpcError(err)
 }
 
 func (client *Szengine) getEntityByRecordID(
@@ -2048,16 +2032,15 @@ func (client *Szengine) getEntityByRecordID(
 	recordID string,
 	flags int64,
 ) (string, error) {
-	request := szpb.GetEntityByRecordIdRequest{
+	request := &szpb.GetEntityByRecordIdRequest{
 		DataSourceCode: dataSourceCode,
 		Flags:          flags,
 		RecordId:       recordID,
 	}
-	response, err := client.GrpcClient.GetEntityByRecordId(ctx, &request)
+	response, err := client.GrpcClient.GetEntityByRecordId(ctx, request)
 	result := response.GetResult()
-	err = helper.ConvertGrpcError(err)
 
-	return result, err
+	return result, helper.ConvertGrpcError(err)
 }
 
 func (client *Szengine) getRecord(
@@ -2066,34 +2049,31 @@ func (client *Szengine) getRecord(
 	recordID string,
 	flags int64,
 ) (string, error) {
-	request := szpb.GetRecordRequest{
+	request := &szpb.GetRecordRequest{
 		DataSourceCode: dataSourceCode,
 		Flags:          flags,
 		RecordId:       recordID,
 	}
-	response, err := client.GrpcClient.GetRecord(ctx, &request)
+	response, err := client.GrpcClient.GetRecord(ctx, request)
 	result := response.GetResult()
-	err = helper.ConvertGrpcError(err)
 
-	return result, err
+	return result, helper.ConvertGrpcError(err)
 }
 
 func (client *Szengine) getRedoRecord(ctx context.Context) (string, error) {
-	request := szpb.GetRedoRecordRequest{}
-	response, err := client.GrpcClient.GetRedoRecord(ctx, &request)
+	request := &szpb.GetRedoRecordRequest{}
+	response, err := client.GrpcClient.GetRedoRecord(ctx, request)
 	result := response.GetResult()
-	err = helper.ConvertGrpcError(err)
 
-	return result, err
+	return result, helper.ConvertGrpcError(err)
 }
 
 func (client *Szengine) getStats(ctx context.Context) (string, error) {
-	request := szpb.GetStatsRequest{}
-	response, err := client.GrpcClient.GetStats(ctx, &request)
+	request := &szpb.GetStatsRequest{}
+	response, err := client.GrpcClient.GetStats(ctx, request)
 	result := response.GetResult()
-	err = helper.ConvertGrpcError(err)
 
-	return result, err
+	return result, helper.ConvertGrpcError(err)
 }
 
 func (client *Szengine) getVirtualEntityByRecordID(
@@ -2101,71 +2081,64 @@ func (client *Szengine) getVirtualEntityByRecordID(
 	recordKeys string,
 	flags int64,
 ) (string, error) {
-	request := szpb.GetVirtualEntityByRecordIdRequest{
+	request := &szpb.GetVirtualEntityByRecordIdRequest{
 		Flags:      flags,
 		RecordKeys: recordKeys,
 	}
-	response, err := client.GrpcClient.GetVirtualEntityByRecordId(ctx, &request)
+	response, err := client.GrpcClient.GetVirtualEntityByRecordId(ctx, request)
 	result := response.GetResult()
-	err = helper.ConvertGrpcError(err)
 
-	return result, err
+	return result, helper.ConvertGrpcError(err)
 }
 
 func (client *Szengine) howEntityByEntityID(ctx context.Context, entityID int64, flags int64) (string, error) {
-	request := szpb.HowEntityByEntityIdRequest{
+	request := &szpb.HowEntityByEntityIdRequest{
 		EntityId: entityID,
 		Flags:    flags,
 	}
-	response, err := client.GrpcClient.HowEntityByEntityId(ctx, &request)
+	response, err := client.GrpcClient.HowEntityByEntityId(ctx, request)
 	result := response.GetResult()
-	err = helper.ConvertGrpcError(err)
 
-	return result, err
+	return result, helper.ConvertGrpcError(err)
 }
 
 func (client *Szengine) preprocessRecord(ctx context.Context, recordDefinition string, flags int64) (string, error) {
-	request := szpb.PreprocessRecordRequest{
+	request := &szpb.PreprocessRecordRequest{
 		Flags:            flags,
 		RecordDefinition: recordDefinition,
 	}
-	response, err := client.GrpcClient.PreprocessRecord(ctx, &request)
+	response, err := client.GrpcClient.PreprocessRecord(ctx, request)
 	result := response.GetResult()
-	err = helper.ConvertGrpcError(err)
 
-	return result, err
+	return result, helper.ConvertGrpcError(err)
 }
 
 func (client *Szengine) primeEngine(ctx context.Context) error {
-	request := szpb.PrimeEngineRequest{}
-	_, err := client.GrpcClient.PrimeEngine(ctx, &request)
-	err = helper.ConvertGrpcError(err)
-
-	return err
+	request := &szpb.PrimeEngineRequest{}
+	_, err := client.GrpcClient.PrimeEngine(ctx, request)
+	return helper.ConvertGrpcError(err)
 }
 
 func (client *Szengine) processRedoRecord(ctx context.Context, redoRecord string, flags int64) (string, error) {
-	request := szpb.ProcessRedoRecordRequest{
+	request := &szpb.ProcessRedoRecordRequest{
 		Flags:      flags,
 		RedoRecord: redoRecord,
 	}
-	response, err := client.GrpcClient.ProcessRedoRecord(ctx, &request)
+	response, err := client.GrpcClient.ProcessRedoRecord(ctx, request)
 	result := response.GetResult()
-	err = helper.ConvertGrpcError(err)
 
-	return result, err
+	return result, helper.ConvertGrpcError(err)
 }
 
 func (client *Szengine) reevaluateEntity(ctx context.Context, entityID int64, flags int64) (string, error) {
-	request := szpb.ReevaluateEntityRequest{
+	request := &szpb.ReevaluateEntityRequest{
 		EntityId: entityID,
 		Flags:    flags,
 	}
-	response, err := client.GrpcClient.ReevaluateEntity(ctx, &request)
+	response, err := client.GrpcClient.ReevaluateEntity(ctx, request)
 	result := response.GetResult()
-	err = helper.ConvertGrpcError(err)
 
-	return result, err
+	return result, helper.ConvertGrpcError(err)
 }
 
 func (client *Szengine) reevaluateRecord(
@@ -2174,26 +2147,23 @@ func (client *Szengine) reevaluateRecord(
 	recordID string,
 	flags int64,
 ) (string, error) {
-	request := szpb.ReevaluateRecordRequest{
+	request := &szpb.ReevaluateRecordRequest{
 		DataSourceCode: dataSourceCode,
 		Flags:          flags,
 		RecordId:       recordID,
 	}
-	response, err := client.GrpcClient.ReevaluateRecord(ctx, &request)
+	response, err := client.GrpcClient.ReevaluateRecord(ctx, request)
 	result := response.GetResult()
-	err = helper.ConvertGrpcError(err)
 
-	return result, err
+	return result, helper.ConvertGrpcError(err)
 }
 
 func (client *Szengine) reinitialize(ctx context.Context, configID int64) error {
-	request := szpb.ReinitializeRequest{
+	request := &szpb.ReinitializeRequest{
 		ConfigId: configID,
 	}
-	_, err := client.GrpcClient.Reinitialize(ctx, &request)
-	err = helper.ConvertGrpcError(err)
-
-	return err
+	_, err := client.GrpcClient.Reinitialize(ctx, request)
+	return helper.ConvertGrpcError(err)
 }
 
 func (client *Szengine) searchByAttributes(
@@ -2202,16 +2172,15 @@ func (client *Szengine) searchByAttributes(
 	searchProfile string,
 	flags int64,
 ) (string, error) {
-	request := szpb.SearchByAttributesRequest{
+	request := &szpb.SearchByAttributesRequest{
 		Attributes:    attributes,
 		Flags:         flags,
 		SearchProfile: searchProfile,
 	}
-	response, err := client.GrpcClient.SearchByAttributes(ctx, &request)
+	response, err := client.GrpcClient.SearchByAttributes(ctx, request)
 	result := response.GetResult()
-	err = helper.ConvertGrpcError(err)
 
-	return result, err
+	return result, helper.ConvertGrpcError(err)
 }
 
 func (client *Szengine) whyEntities(
@@ -2220,16 +2189,15 @@ func (client *Szengine) whyEntities(
 	entityID2 int64,
 	flags int64,
 ) (string, error) {
-	request := szpb.WhyEntitiesRequest{
+	request := &szpb.WhyEntitiesRequest{
 		EntityId_1: entityID1,
 		EntityId_2: entityID2,
 		Flags:      flags,
 	}
-	response, err := client.GrpcClient.WhyEntities(ctx, &request)
+	response, err := client.GrpcClient.WhyEntities(ctx, request)
 	result := response.GetResult()
-	err = helper.ConvertGrpcError(err)
 
-	return result, err
+	return result, helper.ConvertGrpcError(err)
 }
 
 func (client *Szengine) whyRecordInEntity(
@@ -2238,16 +2206,15 @@ func (client *Szengine) whyRecordInEntity(
 	recordID string,
 	flags int64,
 ) (string, error) {
-	request := szpb.WhyRecordInEntityRequest{
+	request := &szpb.WhyRecordInEntityRequest{
 		DataSourceCode: dataSourceCode,
 		Flags:          flags,
 		RecordId:       recordID,
 	}
-	response, err := client.GrpcClient.WhyRecordInEntity(ctx, &request)
+	response, err := client.GrpcClient.WhyRecordInEntity(ctx, request)
 	result := response.GetResult()
-	err = helper.ConvertGrpcError(err)
 
-	return result, err
+	return result, helper.ConvertGrpcError(err)
 }
 
 func (client *Szengine) whyRecords(
@@ -2258,18 +2225,17 @@ func (client *Szengine) whyRecords(
 	recordID2 string,
 	flags int64,
 ) (string, error) {
-	request := szpb.WhyRecordsRequest{
+	request := &szpb.WhyRecordsRequest{
 		DataSourceCode_1: dataSourceCode1,
 		DataSourceCode_2: dataSourceCode2,
 		RecordId_1:       recordID1,
 		RecordId_2:       recordID2,
 		Flags:            flags,
 	}
-	response, err := client.GrpcClient.WhyRecords(ctx, &request)
+	response, err := client.GrpcClient.WhyRecords(ctx, request)
 	result := response.GetResult()
-	err = helper.ConvertGrpcError(err)
 
-	return result, err
+	return result, helper.ConvertGrpcError(err)
 }
 
 // ----------------------------------------------------------------------------

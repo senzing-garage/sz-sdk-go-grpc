@@ -1,6 +1,7 @@
 package helper
 
 import (
+	"errors"
 	"fmt"
 	"reflect"
 	"strconv"
@@ -32,16 +33,35 @@ func ConvertGrpcError(originalError error) error {
 
 	result := originalError
 
+	for currentError := originalError; currentError != nil; currentError = errors.Unwrap(currentError) {
+		err := convertGrpcError(currentError)
+		if err != nil {
+			return err
+		}
+	}
+	return result
+}
+
+func convertGrpcError(originalError error) error {
+	var result error
+
 	// Determine if error is an RPC error.
 
 	if reflect.TypeOf(originalError).String() == "*status.Error" {
 		errorMessage := originalError.Error()
 		if strings.HasPrefix(errorMessage, "rpc error:") {
+
 			// TODO: Improve the fragile method of pulling out the Senzing JSON error.
+
 			indexOfDesc := strings.Index(errorMessage, " desc = ")
 			senzingErrorMessage := errorMessage[indexOfDesc+8:] // Implicitly safe from "0+8" because of "rpc error:" prefix.
+			indexOfBrace := strings.Index(errorMessage, "{")
+			senzingErrorMessage = errorMessage[indexOfBrace:]
+
+			// Parse JSON.
 
 			if jsonutil.IsJSON(senzingErrorMessage) {
+
 				// TODO: Add information about any gRPC error.
 				// Status: https://pkg.go.dev/google.golang.org/grpc/status
 				// Codes: https://pkg.go.dev/google.golang.org/grpc/codes

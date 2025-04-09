@@ -22,6 +22,7 @@ import (
 	"github.com/senzing-garage/sz-sdk-go-grpc/szengine"
 	"github.com/senzing-garage/sz-sdk-go/senzing"
 	"github.com/senzing-garage/sz-sdk-go/szerror"
+	szconfigpb "github.com/senzing-garage/sz-sdk-proto/go/szconfig"
 	szconfigmanagerpb "github.com/senzing-garage/sz-sdk-proto/go/szconfigmanager"
 	szdiagnosticpb "github.com/senzing-garage/sz-sdk-proto/go/szdiagnostic"
 	szpb "github.com/senzing-garage/sz-sdk-proto/go/szengine"
@@ -3573,7 +3574,8 @@ func getSzConfigManager(ctx context.Context) senzing.SzConfigManager {
 
 		grpcConnection := getGrpcConnection()
 		szConfigManagerSingleton = &szconfigmanager.Szconfigmanager{
-			GrpcClient: szconfigmanagerpb.NewSzConfigManagerClient(grpcConnection),
+			GrpcClient:         szconfigmanagerpb.NewSzConfigManagerClient(grpcConnection),
+			GrpcClientSzConfig: szconfigpb.NewSzConfigClient(grpcConnection),
 		}
 		err = szConfigManagerSingleton.SetLogLevel(ctx, logLevel)
 
@@ -3702,10 +3704,6 @@ func truncate(aString string, length int) string {
 func TestMain(m *testing.M) {
 	setup()
 	code := m.Run()
-
-	err := teardown()
-	handleErrorWithPanic(err)
-
 	os.Exit(code)
 }
 
@@ -3751,9 +3749,4 @@ func setupPurgeRepository() {
 	szDiagnostic := getSzDiagnostic(ctx)
 	err := szDiagnostic.PurgeRepository(ctx)
 	handleErrorWithPanic(err)
-}
-
-func teardown() error {
-	var err error
-	return err
 }

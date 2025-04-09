@@ -77,7 +77,9 @@ func (client *Szconfig) AddDataSource(ctx context.Context, dataSourceCode string
 		}()
 	}
 
-	return result, wraperror.Errorf(err, "szconfig.AddDataSource error: %w", err)
+	// FIXME: return result, wraperror.Errorf(err, "szconfig.AddDataSource error: %w", err)
+
+	return result, err
 }
 
 /*
@@ -423,36 +425,45 @@ func (client *Szconfig) addDataSource(
 	ctx context.Context,
 	dataSourceCode string,
 ) (string, error) {
-	request := szpb.AddDataSourceRequest{
+	var (
+		result string
+	)
+
+	request := &szpb.AddDataSourceRequest{
 		ConfigDefinition: client.configDefinition,
 		DataSourceCode:   dataSourceCode,
 	}
-	response, err := client.GrpcClient.AddDataSource(ctx, &request)
-	result := response.GetResult()
 
-	err = helper.ConvertGrpcError(err)
-	if err == nil {
-		err = client.importConfigDefinition(ctx, result)
-
+	response, err := client.GrpcClient.AddDataSource(ctx, request)
+	if err != nil {
+		return result, helper.ConvertGrpcError(err)
 	}
 
-	return result, err
+	result = response.GetResult()
+	err = client.importConfigDefinition(ctx, response.GetConfigDefinition())
+
+	return result, helper.ConvertGrpcError(err)
 }
 
 func (client *Szconfig) deleteDataSource(ctx context.Context, dataSourceCode string) (string, error) {
-	request := szpb.DeleteDataSourceRequest{
+	var (
+		result string
+	)
+
+	request := &szpb.DeleteDataSourceRequest{
 		ConfigDefinition: client.configDefinition,
 		DataSourceCode:   dataSourceCode,
 	}
-	response, err := client.GrpcClient.DeleteDataSource(ctx, &request)
-	result := response.GetResult()
 
-	err = helper.ConvertGrpcError(err)
-	if err == nil {
-		err = client.importConfigDefinition(ctx, result)
+	response, err := client.GrpcClient.DeleteDataSource(ctx, request)
+	if err != nil {
+		return result, helper.ConvertGrpcError(err)
 	}
 
-	return result, err
+	result = response.GetResult()
+	err = client.importConfigDefinition(ctx, response.GetConfigDefinition())
+
+	return result, helper.ConvertGrpcError(err)
 }
 
 func (client *Szconfig) export(ctx context.Context) (string, error) {
@@ -461,14 +472,22 @@ func (client *Szconfig) export(ctx context.Context) (string, error) {
 }
 
 func (client *Szconfig) getDataSources(ctx context.Context) (string, error) {
-	request := szpb.GetDataSourcesRequest{
+	var (
+		result string
+	)
+
+	request := &szpb.GetDataSourcesRequest{
 		ConfigDefinition: client.configDefinition,
 	}
-	response, err := client.GrpcClient.GetDataSources(ctx, &request)
-	result := response.GetResult()
-	err = helper.ConvertGrpcError(err)
 
-	return result, err
+	response, err := client.GrpcClient.GetDataSources(ctx, request)
+	if err != nil {
+		return result, helper.ConvertGrpcError(err)
+	}
+
+	result = response.GetResult()
+
+	return result, helper.ConvertGrpcError(err)
 }
 
 func (client *Szconfig) importConfigDefinition(ctx context.Context, configDefinition string) error {

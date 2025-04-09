@@ -170,23 +170,16 @@ func demonstrateConfigFunctions(ctx context.Context, szAbstractFactory senzing.S
 
 	configComments := fmt.Sprintf("Created by szmain.go at %s", now.UTC())
 
-	configStr, err := szConfig.Export(ctx)
+	configDefinition, err := szConfig.Export(ctx)
 	if err != nil {
 		return logger.NewError(5103, err)
 	}
 
 	// Using SzConfigManager: Persist configuration string to database.
 
-	configID, err := szConfigManager.RegisterConfig(ctx, configStr, configComments)
+	_, err = szConfigManager.SetDefaultConfig(ctx, configDefinition, configComments)
 	if err != nil {
 		return logger.NewError(5104, err)
-	}
-
-	// Using SzConfigManager: Set new configuration as the default.
-
-	err = szConfigManager.SetDefaultConfigID(ctx, configID)
-	if err != nil {
-		return logger.NewError(5105, err)
 	}
 
 	return err

@@ -47,10 +47,9 @@ func (client *Szproduct) Destroy(ctx context.Context) error {
 	var err error
 
 	if client.isTrace {
-		entryTime := time.Now()
-
 		client.traceEntry(3)
 
+		entryTime := time.Now()
 		defer func() { client.traceExit(4, err, time.Since(entryTime)) }()
 	}
 
@@ -79,10 +78,9 @@ func (client *Szproduct) GetLicense(ctx context.Context) (string, error) {
 	var result string
 
 	if client.isTrace {
-		entryTime := time.Now()
-
 		client.traceEntry(9)
 
+		entryTime := time.Now()
 		defer func() { client.traceExit(10, result, err, time.Since(entryTime)) }()
 	}
 
@@ -113,10 +111,9 @@ func (client *Szproduct) GetVersion(ctx context.Context) (string, error) {
 	var result string
 
 	if client.isTrace {
-		entryTime := time.Now()
-
 		client.traceEntry(11)
 
+		entryTime := time.Now()
 		defer func() { client.traceExit(12, result, err, time.Since(entryTime)) }()
 	}
 
@@ -159,14 +156,18 @@ Input
   - settings: A JSON string containing configuration parameters.
   - verboseLogging: A flag to enable deeper logging of the Sz processing. 0 for no Senzing logging; 1 for logging.
 */
-func (client *Szproduct) Initialize(ctx context.Context, instanceName string, settings string, verboseLogging int64) error {
+func (client *Szproduct) Initialize(
+	ctx context.Context,
+	instanceName string,
+	settings string,
+	verboseLogging int64,
+) error {
 	var err error
 
 	if client.isTrace {
-		entryTime := time.Now()
-
 		client.traceEntry(13, instanceName, settings, verboseLogging)
 
+		entryTime := time.Now()
 		defer func() { client.traceExit(14, instanceName, settings, verboseLogging, err, time.Since(entryTime)) }()
 	}
 
@@ -195,10 +196,9 @@ func (client *Szproduct) RegisterObserver(ctx context.Context, observer observer
 	var err error
 
 	if client.isTrace {
-		entryTime := time.Now()
-
 		client.traceEntry(703, observer.GetObserverID(ctx))
 
+		entryTime := time.Now()
 		defer func() { client.traceExit(704, observer.GetObserverID(ctx), err, time.Since(entryTime)) }()
 	}
 
@@ -231,10 +231,9 @@ func (client *Szproduct) SetLogLevel(ctx context.Context, logLevelName string) e
 	var err error
 
 	if client.isTrace {
-		entryTime := time.Now()
-
 		client.traceEntry(705, logLevelName)
 
+		entryTime := time.Now()
 		defer func() { client.traceExit(706, logLevelName, err, time.Since(entryTime)) }()
 	}
 
@@ -280,10 +279,9 @@ func (client *Szproduct) UnregisterObserver(ctx context.Context, observer observ
 	var err error
 
 	if client.isTrace {
-		entryTime := time.Now()
-
 		client.traceEntry(707, observer.GetObserverID(ctx))
 
+		entryTime := time.Now()
 		defer func() { client.traceExit(708, observer.GetObserverID(ctx), err, time.Since(entryTime)) }()
 	}
 
@@ -311,19 +309,19 @@ func (client *Szproduct) UnregisterObserver(ctx context.Context, observer observ
 // ----------------------------------------------------------------------------
 
 func (client *Szproduct) getLicense(ctx context.Context) (string, error) {
-	request := szpb.GetLicenseRequest{}
-	response, err := client.GrpcClient.GetLicense(ctx, &request)
-	result := response.GetResult()
+	request := &szpb.GetLicenseRequest{}
+	response, err := client.GrpcClient.GetLicense(ctx, request)
 	err = helper.ConvertGrpcError(err)
+	result := response.GetResult()
 
 	return result, err
 }
 
 func (client *Szproduct) getVersion(ctx context.Context) (string, error) {
-	request := szpb.GetVersionRequest{}
-	response, err := client.GrpcClient.GetVersion(ctx, &request)
-	result := response.GetResult()
+	request := &szpb.GetVersionRequest{}
+	response, err := client.GrpcClient.GetVersion(ctx, request)
 	err = helper.ConvertGrpcError(err)
+	result := response.GetResult()
 
 	return result, err
 }

@@ -73,7 +73,7 @@ func (client *Szdiagnostic) CheckDatastorePerformance(ctx context.Context, secon
 		}()
 	}
 
-	return result, err
+	return result, helper.ConvertGrpcError(err)
 }
 
 /*
@@ -86,10 +86,8 @@ func (client *Szdiagnostic) Destroy(ctx context.Context) error {
 	var err error
 
 	if client.isTrace {
-		entryTime := time.Now()
-
 		client.traceEntry(5)
-
+		entryTime := time.Now()
 		defer func() { client.traceExit(6, err, time.Since(entryTime)) }()
 	}
 
@@ -218,10 +216,9 @@ func (client *Szdiagnostic) Reinitialize(ctx context.Context, configID int64) er
 	var err error
 
 	if client.isTrace {
-		entryTime := time.Now()
-
 		client.traceEntry(19, configID)
 
+		entryTime := time.Now()
 		defer func() { client.traceExit(20, configID, err, time.Since(entryTime)) }()
 	}
 
@@ -425,52 +422,52 @@ func (client *Szdiagnostic) UnregisterObserver(ctx context.Context, observer obs
 // ----------------------------------------------------------------------------
 
 func (client *Szdiagnostic) checkDatastorePerformance(ctx context.Context, secondsToRun int) (string, error) {
-	request := szpb.CheckDatastorePerformanceRequest{
+	var (
+		result string
+	)
+
+	request := &szpb.CheckDatastorePerformanceRequest{
 		SecondsToRun: int32(secondsToRun), //nolint:gosec
 	}
-	response, err := client.GrpcClient.CheckDatastorePerformance(ctx, &request)
-	result := response.GetResult()
-	err = helper.ConvertGrpcError(err)
-
-	return result, err
+	response, err := client.GrpcClient.CheckDatastorePerformance(ctx, request)
+	result = response.GetResult()
+	return result, helper.ConvertGrpcError(err)
 }
 
 func (client *Szdiagnostic) getDatastoreInfo(ctx context.Context) (string, error) {
-	request := szpb.GetDatastoreInfoRequest{}
-	response, err := client.GrpcClient.GetDatastoreInfo(ctx, &request)
-	result := response.GetResult()
-	err = helper.ConvertGrpcError(err)
-
-	return result, err
+	var (
+		result string
+	)
+	request := &szpb.GetDatastoreInfoRequest{}
+	response, err := client.GrpcClient.GetDatastoreInfo(ctx, request)
+	result = response.GetResult()
+	return result, helper.ConvertGrpcError(err)
 }
 
 func (client *Szdiagnostic) getFeature(ctx context.Context, featureID int64) (string, error) {
-	request := szpb.GetFeatureRequest{
+	var (
+		result string
+	)
+	request := &szpb.GetFeatureRequest{
 		FeatureId: featureID,
 	}
-	response, err := client.GrpcClient.GetFeature(ctx, &request)
-	result := response.GetResult()
-	err = helper.ConvertGrpcError(err)
-
-	return result, err
+	response, err := client.GrpcClient.GetFeature(ctx, request)
+	result = response.GetResult()
+	return result, helper.ConvertGrpcError(err)
 }
 
 func (client *Szdiagnostic) purgeRepository(ctx context.Context) error {
-	request := szpb.PurgeRepositoryRequest{}
-	_, err := client.GrpcClient.PurgeRepository(ctx, &request)
-	err = helper.ConvertGrpcError(err)
-
-	return err
+	request := &szpb.PurgeRepositoryRequest{}
+	_, err := client.GrpcClient.PurgeRepository(ctx, request)
+	return helper.ConvertGrpcError(err)
 }
 
 func (client *Szdiagnostic) reinitialize(ctx context.Context, configID int64) error {
-	request := szpb.ReinitializeRequest{
+	request := &szpb.ReinitializeRequest{
 		ConfigId: configID,
 	}
-	_, err := client.GrpcClient.Reinitialize(ctx, &request)
-	err = helper.ConvertGrpcError(err)
-
-	return err
+	_, err := client.GrpcClient.Reinitialize(ctx, request)
+	return helper.ConvertGrpcError(err)
 }
 
 // ----------------------------------------------------------------------------

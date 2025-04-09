@@ -19,11 +19,14 @@ import (
 	"github.com/senzing-garage/sz-sdk-go/senzing"
 	"github.com/senzing-garage/sz-sdk-go/szconfigmanager"
 	"github.com/senzing-garage/sz-sdk-go/szerror"
+	szconfigpb "github.com/senzing-garage/sz-sdk-proto/go/szconfig"
 	szpb "github.com/senzing-garage/sz-sdk-proto/go/szconfigmanager"
 )
 
 type Szconfigmanager struct {
-	GrpcClient     szpb.SzConfigManagerClient
+	GrpcClient         szpb.SzConfigManagerClient
+	GrpcClientSzConfig szconfigpb.SzConfigClient
+
 	isTrace        bool
 	logger         logging.Logging
 	observerOrigin string
@@ -579,7 +582,9 @@ func (client *Szconfigmanager) createConfigFromString(
 ) (senzing.SzConfig, error) {
 	var err error
 
-	result := &szconfig.Szconfig{}
+	result := &szconfig.Szconfig{
+		GrpcClient: client.GrpcClientSzConfig,
+	}
 
 	err = result.Import(ctx, configDefinition)
 
@@ -606,12 +611,12 @@ func (client *Szconfigmanager) setDefaultConfigChoreography(
 		result int64
 	)
 
-	configID, err := client.registerConfig(ctx, configDefinition, configComment)
+	result, err = client.registerConfig(ctx, configDefinition, configComment)
 	if err != nil {
 		return 0, fmt.Errorf("setDefaultConfigChoreography.registerConfig error: %w", err)
 	}
 
-	err = client.setDefaultConfigID(ctx, configID)
+	err = client.setDefaultConfigID(ctx, result)
 	return result, wraperror.Errorf(err, "setDefaultConfigChoreography.setDefaultConfigID error: %w", err)
 }
 
@@ -630,9 +635,8 @@ func (client *Szconfigmanager) registerConfig(
 	}
 	response, err := client.GrpcClient.RegisterConfig(ctx, &request)
 	result := response.GetResult()
-	err = helper.ConvertGrpcError(err)
 
-	return result, err
+	return result, helper.ConvertGrpcError(err)
 }
 
 func (client *Szconfigmanager) getConfig(ctx context.Context, configID int64) (string, error) {
@@ -641,27 +645,24 @@ func (client *Szconfigmanager) getConfig(ctx context.Context, configID int64) (s
 	}
 	response, err := client.GrpcClient.GetConfig(ctx, &request)
 	result := response.GetResult()
-	err = helper.ConvertGrpcError(err)
 
-	return result, err
+	return result, helper.ConvertGrpcError(err)
 }
 
 func (client *Szconfigmanager) getConfigs(ctx context.Context) (string, error) {
 	request := szpb.GetConfigsRequest{}
 	response, err := client.GrpcClient.GetConfigs(ctx, &request)
 	result := response.GetResult()
-	err = helper.ConvertGrpcError(err)
 
-	return result, err
+	return result, helper.ConvertGrpcError(err)
 }
 
 func (client *Szconfigmanager) getDefaultConfigID(ctx context.Context) (int64, error) {
 	request := szpb.GetDefaultConfigIdRequest{}
 	response, err := client.GrpcClient.GetDefaultConfigId(ctx, &request)
 	result := response.GetResult()
-	err = helper.ConvertGrpcError(err)
 
-	return result, err
+	return result, helper.ConvertGrpcError(err)
 }
 
 func (client *Szconfigmanager) replaceDefaultConfigID(
@@ -674,9 +675,7 @@ func (client *Szconfigmanager) replaceDefaultConfigID(
 		NewDefaultConfigId:     newDefaultConfigID,
 	}
 	_, err := client.GrpcClient.ReplaceDefaultConfigId(ctx, &request)
-	err = helper.ConvertGrpcError(err)
-
-	return err
+	return helper.ConvertGrpcError(err)
 }
 
 func (client *Szconfigmanager) setDefaultConfigID(ctx context.Context, configID int64) error {
@@ -684,9 +683,7 @@ func (client *Szconfigmanager) setDefaultConfigID(ctx context.Context, configID 
 		ConfigId: configID,
 	}
 	_, err := client.GrpcClient.SetDefaultConfigId(ctx, &request)
-	err = helper.ConvertGrpcError(err)
-
-	return err
+	return helper.ConvertGrpcError(err)
 }
 
 // ----------------------------------------------------------------------------

@@ -373,31 +373,38 @@ func getSettings() string {
 	return "{}"
 }
 
-func getSzConfig(ctx context.Context) senzing.SzConfig {
-	var err error
-	if szConfigSingleton == nil {
+// func getSzConfig(ctx context.Context) *szconfig.Szconfig {
+// 	var szConfig *szconfig.Szconfig
 
-		grpcConnection := getGrpcConnection()
-		szConfigSingleton = &szconfig.Szconfig{
-			GrpcClient: szconfigpb.NewSzConfigClient(grpcConnection),
-		}
-		err = szConfigSingleton.SetLogLevel(ctx, logLevel)
+// 	szConfigManager := getSzConfigManager(ctx)
+// 	szConfigForExport, err := szConfigManager.CreateConfigFromTemplate(ctx)
+// 	handleErrorWithPanic(err)
 
-		handleErrorWithPanic(err)
+// 	configDefinition, err := szConfigForExport.Export(ctx)
+// 	handleErrorWithPanic(err)
 
-		if logLevel == "TRACE" {
-			szConfigSingleton.SetObserverOrigin(ctx, observerOrigin)
+// 	grpcConnection := getGrpcConnection()
+// 	szConfig = &szconfig.Szconfig{
+// 		GrpcClient: szconfigpb.NewSzConfigClient(grpcConnection),
+// 	}
+// 	err = szConfig.SetLogLevel(ctx, logLevel)
+// 	handleErrorWithPanic(err)
 
-			err = szConfigSingleton.RegisterObserver(ctx, observerSingleton)
-			handleErrorWithPanic(err)
+// 	err = szConfig.Import(ctx, configDefinition)
+// 	handleErrorWithPanic(err)
 
-			err = szConfigSingleton.SetLogLevel(ctx, logLevel) // Duplicated for coverage testing
-			handleErrorWithPanic(err)
-		}
-	}
+// 	if logLevel == "TRACE" {
+// 		szConfig.SetObserverOrigin(ctx, observerOrigin)
 
-	return szConfigSingleton
-}
+// 		err = szConfig.RegisterObserver(ctx, observerSingleton)
+// 		handleErrorWithPanic(err)
+
+// 		err = szConfig.SetLogLevel(ctx, logLevel) // Duplicated for coverage testing
+// 		handleErrorWithPanic(err)
+// 	}
+
+// 	return szConfig
+// }
 
 func getSzConfigManager(ctx context.Context) *szconfigmanager.Szconfigmanager {
 	var err error
@@ -405,7 +412,8 @@ func getSzConfigManager(ctx context.Context) *szconfigmanager.Szconfigmanager {
 
 		grpcConnection := getGrpcConnection()
 		szConfigManagerSingleton = &szconfigmanager.Szconfigmanager{
-			GrpcClient: szpb.NewSzConfigManagerClient(grpcConnection),
+			GrpcClient:         szpb.NewSzConfigManagerClient(grpcConnection),
+			GrpcClientSzConfig: szconfigpb.NewSzConfigClient(grpcConnection),
 		}
 		err = szConfigManagerSingleton.SetLogLevel(ctx, logLevel)
 
@@ -475,11 +483,7 @@ func truncate(aString string, length int) string {
 
 func TestMain(m *testing.M) {
 	setup()
-
 	code := m.Run()
-
-	teardown()
-
 	os.Exit(code)
 }
 
@@ -493,8 +497,10 @@ func setupSenzingConfiguration() {
 
 	// Create sz objects.
 
-	szConfig := getSzConfig(ctx)
+	// szConfig := getSzConfig(ctx)
 	szConfigManager := getSzConfigManager(ctx)
+	szConfig, err := szConfigManager.CreateConfigFromTemplate(ctx)
+	handleErrorWithPanic(err)
 
 	// Add data sources to in-memory Senzing configuration.
 
@@ -516,5 +522,3 @@ func setupSenzingConfiguration() {
 	err = szConfigManager.SetDefaultConfigID(ctx, configID)
 	handleErrorWithPanic(err)
 }
-
-func teardown() {}
