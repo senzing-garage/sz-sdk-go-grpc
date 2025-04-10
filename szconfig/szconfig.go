@@ -260,6 +260,42 @@ func (client *Szconfig) Import(ctx context.Context, configDefinition string) err
 }
 
 /*
+Method ImportTemplate retrieves a Senzing configuration from the default template.
+The default template is the Senzing configuration JSON document file,
+g2config.json, located in the PIPELINE.RESOURCEPATH path.
+
+Input
+  - ctx: A context to control lifecycle.
+
+Output
+  - configDefinition: A Senzing configuration JSON document.
+*/
+func (client *Szconfig) ImportTemplate(ctx context.Context) error {
+	var (
+		err              error
+		configDefinition string
+	)
+
+	if client.isTrace {
+		client.traceEntry(7)
+
+		entryTime := time.Now()
+		defer func() { client.traceExit(8, configDefinition, err, time.Since(entryTime)) }()
+	}
+
+	// TODO: Implement.
+
+	if client.observers != nil {
+		go func() {
+			details := map[string]string{}
+			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentID, 8003, err, details)
+		}()
+	}
+
+	return wraperror.Errorf(err, "szconfig.ImportTemplate error: %w", err)
+}
+
+/*
 Method Initialize is a Null function for sz-sdk-go-grpc.
 
 Input
@@ -413,6 +449,36 @@ func (client *Szconfig) UnregisterObserver(ctx context.Context, observer observe
 	}
 
 	return wraperror.Errorf(err, "szconfig.UnregisterObserver error: %w", err)
+}
+
+/*
+Method VerifyConfigDefinition determines if the Senzing configuration JSON document is syntactically correct.
+If no error is returned, the JSON document is valid.
+
+Input
+  - ctx: A context to control lifecycle.
+  - configDefinition: A Senzing configuration JSON document.
+*/
+func (client *Szconfig) VerifyConfigDefinition(ctx context.Context, configDefinition string) error {
+	var err error
+
+	if client.isTrace {
+		client.traceEntry(99, configDefinition)
+
+		entryTime := time.Now()
+		defer func() { client.traceExit(99, configDefinition, err, time.Since(entryTime)) }()
+	}
+
+	// TODO: Implement.
+
+	if client.observers != nil {
+		go func() {
+			details := map[string]string{}
+			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentID, 8999, err, details)
+		}()
+	}
+
+	return wraperror.Errorf(err, "szconfig.Import error: %w", err)
 }
 
 // ----------------------------------------------------------------------------

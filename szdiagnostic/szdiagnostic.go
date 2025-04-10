@@ -205,6 +205,10 @@ func (client *Szdiagnostic) PurgeRepository(ctx context.Context) error {
 	return wraperror.Errorf(err, "szdiagnostic.PurgeRepository error: %w", err)
 }
 
+// ----------------------------------------------------------------------------
+// Public non-interface methods
+// ----------------------------------------------------------------------------
+
 /*
 Method Reinitialize re-initializes the Senzing SzDiagnostic object.
 

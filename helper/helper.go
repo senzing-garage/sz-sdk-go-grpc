@@ -55,38 +55,42 @@ func convertGrpcError(originalError error) error {
 
 			indexOfDesc := strings.Index(errorMessage, " desc = ")
 			senzingErrorMessage := errorMessage[indexOfDesc+8:] // Implicitly safe from "0+8" because of "rpc error:" prefix.
-			indexOfBrace := strings.Index(errorMessage, "{")
-			senzingErrorMessage = errorMessage[indexOfBrace:]
+			indexOfBrace := strings.Index(senzingErrorMessage, "{")
 
-			// Parse JSON.
+			if indexOfBrace >= 0 {
+				senzingErrorMessage = senzingErrorMessage[indexOfBrace:]
 
-			if jsonutil.IsJSON(senzingErrorMessage) {
+				// Parse JSON.
 
-				// TODO: Add information about any gRPC error.
-				// Status: https://pkg.go.dev/google.golang.org/grpc/status
-				// Codes: https://pkg.go.dev/google.golang.org/grpc/codes
-				// Create a new Senzing nested error.
-				parsedMessage, err := parser.Parse(senzingErrorMessage)
-				if err != nil {
-					return fmt.Errorf(
-						"parse(%s) error: %w; Original Error: %w",
-						senzingErrorMessage,
-						err,
-						originalError,
-					)
+				if jsonutil.IsJSON(senzingErrorMessage) {
+
+					// TODO: Add information about any gRPC error.
+					// Status: https://pkg.go.dev/google.golang.org/grpc/status
+					// Codes: https://pkg.go.dev/google.golang.org/grpc/codes
+					// Create a new Senzing nested error.
+
+					parsedMessage, err := parser.Parse(senzingErrorMessage)
+					if err != nil {
+						return fmt.Errorf(
+							"parse(%s) error: %w; Original Error: %w",
+							senzingErrorMessage,
+							err,
+							originalError,
+						)
+					}
+
+					reason := parsedMessage.Reason
+					if len(reason) < 10 {
+						return fmt.Errorf("len(%s) error: %w; Original Error: %w", reason, err, originalError)
+					}
+
+					senzingErrorCode, err := strconv.Atoi(reason[4:8])
+					if err != nil {
+						return fmt.Errorf("strconv.Atoi(%s) error %w; Original Error: %w", reason, err, originalError)
+					}
+
+					result = szerror.New(senzingErrorCode, senzingErrorMessage)
 				}
-
-				reason := parsedMessage.Reason
-				if len(reason) < 10 {
-					return fmt.Errorf("len(%s) error: %w; Original Error: %w", reason, err, originalError)
-				}
-
-				senzingErrorCode, err := strconv.Atoi(reason[4:8])
-				if err != nil {
-					return fmt.Errorf("strconv.Atoi(%s) error %w; Original Error: %w", reason, err, originalError)
-				}
-
-				result = szerror.New(senzingErrorCode, senzingErrorMessage)
 			}
 		}
 	}

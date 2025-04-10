@@ -164,6 +164,30 @@ func TestSzconfig_Import_nilConfigDefinition(test *testing.T) {
 	require.NoError(test, err)
 }
 
+func TestSzconfig_ImportTemplate(test *testing.T) {
+	ctx := test.Context()
+	szConfig := getTestObject(test)
+	err := szConfig.ImportTemplate(ctx)
+	require.NoError(test, err)
+}
+
+func TestSzconfig_VerifyConfigDefinition(test *testing.T) {
+	ctx := test.Context()
+	szConfig := getTestObject(test)
+	configDefinition, err := szConfig.Export(ctx)
+	require.NoError(test, err)
+	err = szConfig.VerifyConfigDefinition(ctx, configDefinition)
+	require.NoError(test, err)
+}
+
+func TestSzconfig_VerifyConfigDefinition_badConfigDefinition(test *testing.T) {
+	ctx := test.Context()
+	szConfig := getTestObject(test)
+	err := szConfig.VerifyConfigDefinition(ctx, badConfigDefinition)
+	require.NoError(test, err)
+	// require.ErrorIs(test, err, szerror.ErrSzBadInput)
+}
+
 // ----------------------------------------------------------------------------
 // Logging and observing
 // ----------------------------------------------------------------------------
@@ -283,42 +307,6 @@ func getSzAbstractFactory(ctx context.Context) senzing.SzAbstractFactory {
 	return &szabstractfactory.Szabstractfactory{
 		GrpcConnection: getGrpcConnection(),
 	}
-}
-
-func getSzConfigSingleton(ctx context.Context) *szconfig.Szconfig {
-	if szConfigSingleton == nil {
-
-		szConfigSingleton = getSzConfig(ctx)
-
-		// szConfigManager := getSzConfigManager(ctx)
-		// szConfig, err := szConfigManager.CreateConfigFromTemplate(ctx)
-		// panicOnError(err)
-
-		// configDefinition, err := szConfig.Export(ctx)
-		// panicOnError(err)
-
-		// grpcConnection := getGrpcConnection()
-		// szConfigSingleton = &szconfig.Szconfig{
-		// 	GrpcClient: szpb.NewSzConfigClient(grpcConnection),
-		// }
-		// err = szConfigSingleton.SetLogLevel(ctx, logLevel)
-		// panicOnError(err)
-
-		// err = szConfigSingleton.Import(ctx, configDefinition)
-		// panicOnError(err)
-
-		// if logLevel == "TRACE" {
-		// 	szConfigSingleton.SetObserverOrigin(ctx, observerOrigin)
-
-		// 	err = szConfigSingleton.RegisterObserver(ctx, observerSingleton)
-		// 	panicOnError(err)
-
-		// 	err = szConfigSingleton.SetLogLevel(ctx, logLevel) // Duplicated for coverage testing
-		// 	panicOnError(err)
-		// }
-	}
-
-	return szConfigSingleton
 }
 
 func getSzConfigAsInterface(ctx context.Context) senzing.SzConfig {

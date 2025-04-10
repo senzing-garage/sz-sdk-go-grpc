@@ -13,7 +13,6 @@ import (
 	"github.com/senzing-garage/go-observing/observer"
 	"github.com/senzing-garage/sz-sdk-go-grpc/helper"
 	"github.com/senzing-garage/sz-sdk-go-grpc/szabstractfactory"
-	"github.com/senzing-garage/sz-sdk-go-grpc/szconfig"
 	"github.com/senzing-garage/sz-sdk-go-grpc/szconfigmanager"
 	"github.com/senzing-garage/sz-sdk-go/senzing"
 	"github.com/senzing-garage/sz-sdk-go/szerror"
@@ -62,7 +61,6 @@ var (
 		IsSilent: true,
 	}
 	szConfigManagerSingleton *szconfigmanager.Szconfigmanager
-	szConfigSingleton        *szconfig.Szconfig
 )
 
 // ----------------------------------------------------------------------------
