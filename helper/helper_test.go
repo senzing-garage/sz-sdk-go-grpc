@@ -1,6 +1,7 @@
 package helper
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/senzing-garage/sz-sdk-go/szerror"
@@ -46,9 +47,30 @@ func TestConvertGrpcError(test *testing.T) {
 			originalError := status.Error(testCase.gRPCCode, testCase.senzingErrorMessage)
 			actual := ConvertGrpcError(originalError)
 			require.ErrorIs(test, actual, testCase.expectedType)
+
 			for _, szerrorTypeID := range testCase.expectedTypes {
 				require.ErrorIs(test, actual, szerrorTypeID)
 			}
+
+			for _, szerrorTypeID := range testCase.falseTypes {
+				assert.NotErrorIs(test, actual, szerrorTypeID)
+			}
+		})
+	}
+}
+
+func TestConvertGrpcError_wrapped(test *testing.T) {
+	for _, testCase := range testCases {
+		test.Run(testCase.name, func(test *testing.T) {
+			originalError := status.Error(testCase.gRPCCode, testCase.senzingErrorMessage)
+			wrappedError := fmt.Errorf("Wrap %w", originalError)
+			actual := ConvertGrpcError(wrappedError)
+			require.ErrorIs(test, actual, testCase.expectedType)
+
+			for _, szerrorTypeID := range testCase.expectedTypes {
+				require.ErrorIs(test, actual, szerrorTypeID)
+			}
+
 			for _, szerrorTypeID := range testCase.falseTypes {
 				assert.NotErrorIs(test, actual, szerrorTypeID)
 			}

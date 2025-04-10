@@ -25,16 +25,17 @@ Output
 */
 func GetGrpcTransportCredentials() (credentials.TransportCredentials, error) {
 	var certificates []tls.Certificate
+
 	result := insecure.NewCredentials()
+
 	serverCaCertificatePath, isSet := os.LookupEnv("SENZING_TOOLS_SERVER_CA_CERTIFICATE_FILE")
 	if isSet {
-
 		// Server-side TLS.
-
 		pemServerCA, err := os.ReadFile(serverCaCertificatePath)
 		if err != nil {
 			return result, err
 		}
+
 		rootCAs := x509.NewCertPool()
 		if !rootCAs.AppendCertsFromPEM(pemServerCA) {
 			return result, fmt.Errorf("failed to add server CA's certificate")
@@ -44,12 +45,19 @@ func GetGrpcTransportCredentials() (credentials.TransportCredentials, error) {
 
 		clientCertificatePath, isClientCertificatePathSet := os.LookupEnv("SENZING_TOOLS_CLIENT_CERTIFICATE_FILE")
 		clientKeyPath, isClientKeyPathSet := os.LookupEnv("SENZING_TOOLS_CLIENT_KEY_FILE")
+
 		if isClientCertificatePathSet && isClientKeyPathSet {
 			clientKeyPassPhrase, _ := os.LookupEnv("SENZING_TOOLS_CLIENT_KEY_PASSPHRASE")
-			clientCertificate, err := tlshelper.LoadX509KeyPair(clientCertificatePath, clientKeyPath, clientKeyPassPhrase)
+
+			clientCertificate, err := tlshelper.LoadX509KeyPair(
+				clientCertificatePath,
+				clientKeyPath,
+				clientKeyPassPhrase,
+			)
 			if err != nil {
 				return result, err
 			}
+
 			certificates = []tls.Certificate{clientCertificate}
 		}
 
@@ -63,5 +71,6 @@ func GetGrpcTransportCredentials() (credentials.TransportCredentials, error) {
 		}
 		result = credentials.NewTLS(config)
 	}
+
 	return result, nil
 }

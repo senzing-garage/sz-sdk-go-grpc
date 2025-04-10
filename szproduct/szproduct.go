@@ -45,17 +45,21 @@ Input
 */
 func (client *Szproduct) Destroy(ctx context.Context) error {
 	var err error
+
 	if client.isTrace {
-		entryTime := time.Now()
 		client.traceEntry(3)
+
+		entryTime := time.Now()
 		defer func() { client.traceExit(4, err, time.Since(entryTime)) }()
 	}
+
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{}
 			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentID, 8001, err, details)
 		}()
 	}
+
 	return err
 }
 
@@ -70,19 +74,25 @@ Output
 */
 func (client *Szproduct) GetLicense(ctx context.Context) (string, error) {
 	var err error
+
 	var result string
+
 	if client.isTrace {
-		entryTime := time.Now()
 		client.traceEntry(9)
+
+		entryTime := time.Now()
 		defer func() { client.traceExit(10, result, err, time.Since(entryTime)) }()
 	}
+
 	result, err = client.getLicense(ctx)
+
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{}
 			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentID, 8003, err, details)
 		}()
 	}
+
 	return result, err
 }
 
@@ -97,19 +107,25 @@ Output
 */
 func (client *Szproduct) GetVersion(ctx context.Context) (string, error) {
 	var err error
+
 	var result string
+
 	if client.isTrace {
-		entryTime := time.Now()
 		client.traceEntry(11)
+
+		entryTime := time.Now()
 		defer func() { client.traceExit(12, result, err, time.Since(entryTime)) }()
 	}
+
 	result, err = client.getVersion(ctx)
+
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{}
 			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentID, 8004, err, details)
 		}()
 	}
+
 	return result, err
 }
 
@@ -140,13 +156,21 @@ Input
   - settings: A JSON string containing configuration parameters.
   - verboseLogging: A flag to enable deeper logging of the Sz processing. 0 for no Senzing logging; 1 for logging.
 */
-func (client *Szproduct) Initialize(ctx context.Context, instanceName string, settings string, verboseLogging int64) error {
+func (client *Szproduct) Initialize(
+	ctx context.Context,
+	instanceName string,
+	settings string,
+	verboseLogging int64,
+) error {
 	var err error
+
 	if client.isTrace {
-		entryTime := time.Now()
 		client.traceEntry(13, instanceName, settings, verboseLogging)
+
+		entryTime := time.Now()
 		defer func() { client.traceExit(14, instanceName, settings, verboseLogging, err, time.Since(entryTime)) }()
 	}
+
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{
@@ -157,6 +181,7 @@ func (client *Szproduct) Initialize(ctx context.Context, instanceName string, se
 			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentID, 8002, err, details)
 		}()
 	}
+
 	return err
 }
 
@@ -169,15 +194,20 @@ Input
 */
 func (client *Szproduct) RegisterObserver(ctx context.Context, observer observer.Observer) error {
 	var err error
+
 	if client.isTrace {
-		entryTime := time.Now()
 		client.traceEntry(703, observer.GetObserverID(ctx))
+
+		entryTime := time.Now()
 		defer func() { client.traceExit(704, observer.GetObserverID(ctx), err, time.Since(entryTime)) }()
 	}
+
 	if client.observers == nil {
 		client.observers = &subject.SimpleSubject{}
 	}
+
 	err = client.observers.RegisterObserver(ctx, observer)
+
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{
@@ -186,6 +216,7 @@ func (client *Szproduct) RegisterObserver(ctx context.Context, observer observer
 			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentID, 8702, err, details)
 		}()
 	}
+
 	return err
 }
 
@@ -198,15 +229,20 @@ Input
 */
 func (client *Szproduct) SetLogLevel(ctx context.Context, logLevelName string) error {
 	var err error
+
 	if client.isTrace {
-		entryTime := time.Now()
 		client.traceEntry(705, logLevelName)
+
+		entryTime := time.Now()
 		defer func() { client.traceExit(706, logLevelName, err, time.Since(entryTime)) }()
 	}
+
 	if !logging.IsValidLogLevelName(logLevelName) {
 		return fmt.Errorf("invalid error level: %s", logLevelName)
 	}
+
 	err = client.getLogger().SetLogLevel(logLevelName)
+
 	client.isTrace = (logLevelName == logging.LevelTraceName)
 	if client.observers != nil {
 		go func() {
@@ -216,6 +252,7 @@ func (client *Szproduct) SetLogLevel(ctx context.Context, logLevelName string) e
 			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentID, 8703, err, details)
 		}()
 	}
+
 	return err
 }
 
@@ -240,11 +277,14 @@ Input
 */
 func (client *Szproduct) UnregisterObserver(ctx context.Context, observer observer.Observer) error {
 	var err error
+
 	if client.isTrace {
-		entryTime := time.Now()
 		client.traceEntry(707, observer.GetObserverID(ctx))
+
+		entryTime := time.Now()
 		defer func() { client.traceExit(708, observer.GetObserverID(ctx), err, time.Since(entryTime)) }()
 	}
+
 	if client.observers != nil {
 		// Tricky code:
 		// client.notify is called synchronously before client.observers is set to nil.
@@ -255,10 +295,12 @@ func (client *Szproduct) UnregisterObserver(ctx context.Context, observer observ
 		}
 		notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentID, 8704, err, details)
 		err = client.observers.UnregisterObserver(ctx, observer)
+
 		if !client.observers.HasObservers(ctx) {
 			client.observers = nil
 		}
 	}
+
 	return err
 }
 
@@ -267,18 +309,20 @@ func (client *Szproduct) UnregisterObserver(ctx context.Context, observer observ
 // ----------------------------------------------------------------------------
 
 func (client *Szproduct) getLicense(ctx context.Context) (string, error) {
-	request := szpb.GetLicenseRequest{}
-	response, err := client.GrpcClient.GetLicense(ctx, &request)
-	result := response.GetResult()
+	request := &szpb.GetLicenseRequest{}
+	response, err := client.GrpcClient.GetLicense(ctx, request)
 	err = helper.ConvertGrpcError(err)
+	result := response.GetResult()
+
 	return result, err
 }
 
 func (client *Szproduct) getVersion(ctx context.Context) (string, error) {
-	request := szpb.GetVersionRequest{}
-	response, err := client.GrpcClient.GetVersion(ctx, &request)
-	result := response.GetResult()
+	request := &szpb.GetVersionRequest{}
+	response, err := client.GrpcClient.GetVersion(ctx, request)
 	err = helper.ConvertGrpcError(err)
+	result := response.GetResult()
+
 	return result, err
 }
 
@@ -293,6 +337,7 @@ func (client *Szproduct) getLogger() logging.Logging {
 	if client.logger == nil {
 		client.logger = helper.GetLogger(ComponentID, szproduct.IDMessages, baseCallerSkip)
 	}
+
 	return client.logger
 }
 
