@@ -73,32 +73,7 @@ func (client *Szdiagnostic) CheckDatastorePerformance(ctx context.Context, secon
 		}()
 	}
 
-	return result, helper.ConvertGrpcError(err)
-}
-
-/*
-Method Destroy is a Null function for sz-sdk-go-grpc.
-
-Input
-  - ctx: A context to control lifecycle.
-*/
-func (client *Szdiagnostic) Destroy(ctx context.Context) error {
-	var err error
-
-	if client.isTrace {
-		client.traceEntry(5)
-		entryTime := time.Now()
-		defer func() { client.traceExit(6, err, time.Since(entryTime)) }()
-	}
-
-	if client.observers != nil {
-		go func() {
-			details := map[string]string{}
-			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentID, 8002, err, details)
-		}()
-	}
-
-	return err
+	return result, wraperror.Errorf(err, "szdiagnostic.CheckDatastorePerformance error: %w", err)
 }
 
 /*
@@ -210,39 +185,30 @@ func (client *Szdiagnostic) PurgeRepository(ctx context.Context) error {
 // ----------------------------------------------------------------------------
 
 /*
-Method Reinitialize re-initializes the Senzing SzDiagnostic object.
+Method Destroy is a Null function for sz-sdk-go-grpc.
 
 Input
   - ctx: A context to control lifecycle.
-  - configID: The Senzing configuration JSON document identifier used for the initialization.
 */
-func (client *Szdiagnostic) Reinitialize(ctx context.Context, configID int64) error {
+func (client *Szdiagnostic) Destroy(ctx context.Context) error {
 	var err error
 
 	if client.isTrace {
-		client.traceEntry(19, configID)
+		client.traceEntry(5)
 
 		entryTime := time.Now()
-		defer func() { client.traceExit(20, configID, err, time.Since(entryTime)) }()
+		defer func() { client.traceExit(6, err, time.Since(entryTime)) }()
 	}
-
-	err = client.reinitialize(ctx, configID)
 
 	if client.observers != nil {
 		go func() {
-			details := map[string]string{
-				"configID": strconv.FormatInt(configID, baseTen),
-			}
-			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentID, 8008, err, details)
+			details := map[string]string{}
+			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentID, 8002, err, details)
 		}()
 	}
 
-	return err
+	return wraperror.Errorf(err, "szdiagnostic.Destroy error: %w", err)
 }
-
-// ----------------------------------------------------------------------------
-// Public non-interface methods
-// ----------------------------------------------------------------------------
 
 /*
 Method GetObserverOrigin returns the "origin" value of past Observer messages.
@@ -255,6 +221,7 @@ Output
 */
 func (client *Szdiagnostic) GetObserverOrigin(ctx context.Context) string {
 	_ = ctx
+
 	return client.observerOrigin
 }
 
@@ -334,6 +301,37 @@ func (client *Szdiagnostic) RegisterObserver(ctx context.Context, observer obser
 	}
 
 	return wraperror.Errorf(err, "szdiagnostic.RegisterObserver error: %w", err)
+}
+
+/*
+Method Reinitialize re-initializes the Senzing SzDiagnostic object.
+
+Input
+  - ctx: A context to control lifecycle.
+  - configID: The Senzing configuration JSON document identifier used for the initialization.
+*/
+func (client *Szdiagnostic) Reinitialize(ctx context.Context, configID int64) error {
+	var err error
+
+	if client.isTrace {
+		client.traceEntry(19, configID)
+
+		entryTime := time.Now()
+		defer func() { client.traceExit(20, configID, err, time.Since(entryTime)) }()
+	}
+
+	err = client.reinitialize(ctx, configID)
+
+	if client.observers != nil {
+		go func() {
+			details := map[string]string{
+				"configID": strconv.FormatInt(configID, baseTen),
+			}
+			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentID, 8008, err, details)
+		}()
+	}
+
+	return wraperror.Errorf(err, "szdiagnostic.Reinitialize error: %w", err)
 }
 
 /*

@@ -9,11 +9,13 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/senzing-garage/go-helpers/wraperror"
 	"github.com/senzing-garage/go-logging/logging"
 	"github.com/senzing-garage/go-observing/notifier"
 	"github.com/senzing-garage/go-observing/observer"
 	"github.com/senzing-garage/go-observing/subject"
 	"github.com/senzing-garage/sz-sdk-go-grpc/helper"
+	"github.com/senzing-garage/sz-sdk-go/szerror"
 	"github.com/senzing-garage/sz-sdk-go/szproduct"
 	szpb "github.com/senzing-garage/sz-sdk-proto/go/szproduct"
 )
@@ -35,6 +37,78 @@ const (
 
 // ----------------------------------------------------------------------------
 // sz-sdk-go.SzProduct interface methods
+// ----------------------------------------------------------------------------
+
+/*
+Method GetLicense retrieves information about the license used by the Senzing API.
+
+Input
+  - ctx: A context to control lifecycle.
+
+Output
+  - A JSON document containing Senzing license metadata.
+*/
+func (client *Szproduct) GetLicense(ctx context.Context) (string, error) {
+	var (
+		err    error
+		result string
+	)
+
+	if client.isTrace {
+		client.traceEntry(9)
+
+		entryTime := time.Now()
+		defer func() { client.traceExit(10, result, err, time.Since(entryTime)) }()
+	}
+
+	result, err = client.getLicense(ctx)
+
+	if client.observers != nil {
+		go func() {
+			details := map[string]string{}
+			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentID, 8003, err, details)
+		}()
+	}
+
+	return result, wraperror.Errorf(err, "szproduct.GetLicense error: %w", err)
+}
+
+/*
+Method GetVersion returns the Senzing API version information.
+
+Input
+  - ctx: A context to control lifecycle.
+
+Output
+  - A JSON document containing metadata about the Senzing Engine version being used.
+*/
+func (client *Szproduct) GetVersion(ctx context.Context) (string, error) {
+	var (
+		err    error
+		result string
+	)
+
+	if client.isTrace {
+		client.traceEntry(11)
+
+		entryTime := time.Now()
+		defer func() { client.traceExit(12, result, err, time.Since(entryTime)) }()
+	}
+
+	result, err = client.getVersion(ctx)
+
+	if client.observers != nil {
+		go func() {
+			details := map[string]string{}
+			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentID, 8004, err, details)
+		}()
+	}
+
+	return result, wraperror.Errorf(err, "szproduct.GetVersion error: %w", err)
+}
+
+// ----------------------------------------------------------------------------
+// Public non-interface methods
 // ----------------------------------------------------------------------------
 
 /*
@@ -60,73 +134,7 @@ func (client *Szproduct) Destroy(ctx context.Context) error {
 		}()
 	}
 
-	return err
-}
-
-/*
-Method GetLicense retrieves information about the license used by the Senzing API.
-
-Input
-  - ctx: A context to control lifecycle.
-
-Output
-  - A JSON document containing Senzing license metadata.
-*/
-func (client *Szproduct) GetLicense(ctx context.Context) (string, error) {
-	var err error
-
-	var result string
-
-	if client.isTrace {
-		client.traceEntry(9)
-
-		entryTime := time.Now()
-		defer func() { client.traceExit(10, result, err, time.Since(entryTime)) }()
-	}
-
-	result, err = client.getLicense(ctx)
-
-	if client.observers != nil {
-		go func() {
-			details := map[string]string{}
-			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentID, 8003, err, details)
-		}()
-	}
-
-	return result, err
-}
-
-/*
-Method GetVersion returns the Senzing API version information.
-
-Input
-  - ctx: A context to control lifecycle.
-
-Output
-  - A JSON document containing metadata about the Senzing Engine version being used.
-*/
-func (client *Szproduct) GetVersion(ctx context.Context) (string, error) {
-	var err error
-
-	var result string
-
-	if client.isTrace {
-		client.traceEntry(11)
-
-		entryTime := time.Now()
-		defer func() { client.traceExit(12, result, err, time.Since(entryTime)) }()
-	}
-
-	result, err = client.getVersion(ctx)
-
-	if client.observers != nil {
-		go func() {
-			details := map[string]string{}
-			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentID, 8004, err, details)
-		}()
-	}
-
-	return result, err
+	return wraperror.Errorf(err, "szproduct.Destroy error: %w", err)
 }
 
 // ----------------------------------------------------------------------------
@@ -144,6 +152,7 @@ Output
 */
 func (client *Szproduct) GetObserverOrigin(ctx context.Context) string {
 	_ = ctx
+
 	return client.observerOrigin
 }
 
@@ -160,8 +169,7 @@ func (client *Szproduct) Initialize(
 	ctx context.Context,
 	instanceName string,
 	settings string,
-	verboseLogging int64,
-) error {
+	verboseLogging int64) error {
 	var err error
 
 	if client.isTrace {
@@ -182,7 +190,7 @@ func (client *Szproduct) Initialize(
 		}()
 	}
 
-	return err
+	return wraperror.Errorf(err, "szproduct.Initialize error: %w", err)
 }
 
 /*
@@ -217,7 +225,7 @@ func (client *Szproduct) RegisterObserver(ctx context.Context, observer observer
 		}()
 	}
 
-	return err
+	return wraperror.Errorf(err, "szproduct.RegisterObserver error: %w", err)
 }
 
 /*
@@ -238,7 +246,7 @@ func (client *Szproduct) SetLogLevel(ctx context.Context, logLevelName string) e
 	}
 
 	if !logging.IsValidLogLevelName(logLevelName) {
-		return fmt.Errorf("invalid error level: %s", logLevelName)
+		return fmt.Errorf("invalid error level: %s; %w", logLevelName, szerror.ErrSzSdk)
 	}
 
 	err = client.getLogger().SetLogLevel(logLevelName)
@@ -253,7 +261,7 @@ func (client *Szproduct) SetLogLevel(ctx context.Context, logLevelName string) e
 		}()
 	}
 
-	return err
+	return wraperror.Errorf(err, "szproduct.SetLogLevel error: %w", err)
 }
 
 /*
@@ -301,7 +309,7 @@ func (client *Szproduct) UnregisterObserver(ctx context.Context, observer observ
 		}
 	}
 
-	return err
+	return wraperror.Errorf(err, "szproduct.UnregisterObserver error: %w", err)
 }
 
 // ----------------------------------------------------------------------------
