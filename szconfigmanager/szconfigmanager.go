@@ -618,6 +618,11 @@ func (client *Szconfigmanager) createConfigFromString(
 		GrpcClient: client.GrpcClientSzConfig,
 	}
 
+	err = result.VerifyConfigDefinition(ctx, configDefinition)
+	if err != nil {
+		return result, wraperror.Errorf(err, "createConfigFromStringChoreography.VerifyConfigDefinition error: %w", err)
+	}
+
 	err = result.Import(ctx, configDefinition)
 
 	return result, wraperror.Errorf(err, "createConfigFromStringChoreography.Import error: %w", err)
