@@ -208,7 +208,6 @@ func TestSzdiagnostic_Initialize(test *testing.T) {
 		GrpcClient: szpb.NewSzDiagnosticClient(grpcConnection),
 	}
 	settings := getSettings()
-
 	configID := senzing.SzInitializeWithDefaultConfiguration
 	err := szDiagnostic.Initialize(ctx, instanceName, settings, configID, verboseLogging)
 	require.NoError(test, err)
@@ -224,7 +223,6 @@ func TestSzdiagnostic_Initialize_withConfigId(test *testing.T) {
 		GrpcClient: szpb.NewSzDiagnosticClient(grpcConnection),
 	}
 	settings := getSettings()
-
 	configID := getDefaultConfigID()
 	err := szDiagnostic.Initialize(ctx, instanceName, settings, configID, verboseLogging)
 	require.NoError(test, err)
@@ -387,10 +385,8 @@ func getSzEngine(ctx context.Context) senzing.SzEngine {
 
 		if logLevel == "TRACE" {
 			szEngineSingleton.SetObserverOrigin(ctx, observerOrigin)
-
 			err = szEngineSingleton.RegisterObserver(ctx, observerSingleton)
 			panicOnError(err)
-
 			err = szEngineSingleton.SetLogLevel(ctx, logLevel) // Duplicated for coverage testing
 			panicOnError(err)
 		}
@@ -443,8 +439,10 @@ func truncate(aString string, length int) string {
 
 func TestMain(m *testing.M) {
 	setup()
+
 	code := m.Run()
 
+	teardown()
 	os.Exit(code)
 }
 

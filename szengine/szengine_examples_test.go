@@ -7010,19 +7010,21 @@ func ExampleSzengine_WhySearch() {
 	}
 
 	attributes := `{"NAMES": [{"NAME_TYPE": "PRIMARY", "NAME_LAST": "Smith"}], "EMAIL_ADDRESS": "bsmith@work.com"}`
+	searchProfile := "SEARCH"
+	flags := senzing.SzNoFlags
+
 	entityID, err := getEntityID(truthset.CustomerRecords["1001"])
 	if err != nil {
 		handleError(err)
 	}
-	searchProfile := "SEARCH"
-	flags := senzing.SzNoFlags
 
 	result, err := szEngine.WhySearch(ctx, attributes, entityID, searchProfile, flags)
 	if err != nil {
 		handleError(err)
 	}
 
-	fmt.Println(jsonutil.PrettyPrint(result, jsonIndentation))
+	fmt.Println(
+		jsonutil.PrettyPrint(result, jsonIndentation))
 	// Output:
 	// {
 	//     "WHY_RESULTS": [

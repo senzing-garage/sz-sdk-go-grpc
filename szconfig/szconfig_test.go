@@ -184,8 +184,7 @@ func TestSzconfig_VerifyConfigDefinition_badConfigDefinition(test *testing.T) {
 	ctx := test.Context()
 	szConfig := getTestObject(test)
 	err := szConfig.VerifyConfigDefinition(ctx, badConfigDefinition)
-	require.NoError(test, err)
-	// require.ErrorIs(test, err, szerror.ErrSzBadInput)
+	require.ErrorIs(test, err, szerror.ErrSzBadInput)
 }
 
 // ----------------------------------------------------------------------------
