@@ -260,42 +260,6 @@ func (client *Szconfig) Import(ctx context.Context, configDefinition string) err
 }
 
 /*
-Method ImportTemplate retrieves a Senzing configuration from the default template.
-The default template is the Senzing configuration JSON document file,
-g2config.json, located in the PIPELINE.RESOURCEPATH path.
-
-Input
-  - ctx: A context to control lifecycle.
-
-Output
-  - configDefinition: A Senzing configuration JSON document.
-*/
-func (client *Szconfig) ImportTemplate(ctx context.Context) error {
-	var (
-		err              error
-		configDefinition string
-	)
-
-	if client.isTrace {
-		client.traceEntry(7)
-
-		entryTime := time.Now()
-		defer func() { client.traceExit(8, configDefinition, err, time.Since(entryTime)) }()
-	}
-
-	// TODO: Implement.
-
-	if client.observers != nil {
-		go func() {
-			details := map[string]string{}
-			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentID, 8003, err, details)
-		}()
-	}
-
-	return wraperror.Errorf(err, "szconfig.ImportTemplate error: %w", err)
-}
-
-/*
 Method Initialize is a Null function for sz-sdk-go-grpc.
 
 Input
@@ -469,7 +433,7 @@ func (client *Szconfig) VerifyConfigDefinition(ctx context.Context, configDefini
 		defer func() { client.traceExit(26, configDefinition, err, time.Since(entryTime)) }()
 	}
 
-	// TODO: Implement.
+	err = verifyConfigDefinition(ctx, configDefinition)
 
 	if client.observers != nil {
 		go func() {
@@ -557,6 +521,26 @@ func (client *Szconfig) getDataSources(ctx context.Context) (string, error) {
 func (client *Szconfig) importConfigDefinition(ctx context.Context, configDefinition string) error {
 	_ = ctx
 	client.configDefinition = configDefinition
+	return nil
+}
+
+func (client *Szconfig) verifyConfigDefinition(ctx context.Context, configDefinition string) error {
+	_ = ctx
+
+	request := &szpb.VerifyConfigRequest{
+		ConfigDefinition: client.configDefinition,
+	}
+
+	response, err := client.GrpcClient.VerifyConfig(ctx, request)
+	if err != nil {
+		return helper.ConvertGrpcError(err)
+	}
+
+	result := response.GetResult()
+	if !result {
+		return helper.ConvertGrpcError(err)
+	}
+
 	return nil
 }
 

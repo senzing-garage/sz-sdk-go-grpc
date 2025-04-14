@@ -345,15 +345,12 @@ func getSzConfigManager(ctx context.Context) senzing.SzConfigManager {
 }
 
 func getSzDiagnostic(ctx context.Context) *szdiagnostic.Szdiagnostic {
-	var err error
-
 	if szDiagnosticSingleton == nil {
 		grpcConnection := getGrpcConnection()
 		szDiagnosticSingleton = &szdiagnostic.Szdiagnostic{
 			GrpcClient: szpb.NewSzDiagnosticClient(grpcConnection),
 		}
-		err = szDiagnosticSingleton.SetLogLevel(ctx, logLevel)
-
+		err := szDiagnosticSingleton.SetLogLevel(ctx, logLevel)
 		panicOnError(err)
 
 		if logLevel == "TRACE" {
@@ -373,14 +370,12 @@ func getSzDiagnosticAsInterface(ctx context.Context) senzing.SzDiagnostic {
 }
 
 func getSzEngine(ctx context.Context) senzing.SzEngine {
-	var err error
 	if szEngineSingleton == nil {
 		grpcConnection := getGrpcConnection()
 		szEngineSingleton = &szengine.Szengine{
 			GrpcClient: szenginepb.NewSzEngineClient(grpcConnection),
 		}
-		err = szEngineSingleton.SetLogLevel(ctx, logLevel)
-
+		err := szEngineSingleton.SetLogLevel(ctx, logLevel)
 		panicOnError(err)
 
 		if logLevel == "TRACE" {
@@ -442,7 +437,6 @@ func TestMain(m *testing.M) {
 
 	code := m.Run()
 
-	teardown()
 	os.Exit(code)
 }
 

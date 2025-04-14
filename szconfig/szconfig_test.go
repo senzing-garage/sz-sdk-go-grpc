@@ -164,13 +164,6 @@ func TestSzconfig_Import_nilConfigDefinition(test *testing.T) {
 	require.NoError(test, err)
 }
 
-func TestSzconfig_ImportTemplate(test *testing.T) {
-	ctx := test.Context()
-	szConfig := getTestObject(test)
-	err := szConfig.ImportTemplate(ctx)
-	require.NoError(test, err)
-}
-
 func TestSzconfig_VerifyConfigDefinition(test *testing.T) {
 	ctx := test.Context()
 	szConfig := getTestObject(test)
