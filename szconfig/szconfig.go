@@ -433,7 +433,7 @@ func (client *Szconfig) VerifyConfigDefinition(ctx context.Context, configDefini
 		defer func() { client.traceExit(26, configDefinition, err, time.Since(entryTime)) }()
 	}
 
-	err = verifyConfigDefinition(ctx, configDefinition)
+	err = client.verifyConfigDefinition(ctx, configDefinition)
 
 	if client.observers != nil {
 		go func() {
@@ -528,7 +528,7 @@ func (client *Szconfig) verifyConfigDefinition(ctx context.Context, configDefini
 	_ = ctx
 
 	request := &szpb.VerifyConfigRequest{
-		ConfigDefinition: client.configDefinition,
+		ConfigDefinition: configDefinition,
 	}
 
 	response, err := client.GrpcClient.VerifyConfig(ctx, request)

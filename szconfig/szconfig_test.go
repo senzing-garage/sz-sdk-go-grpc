@@ -311,7 +311,8 @@ func getSzConfigManager(ctx context.Context) *szconfigmanager.Szconfigmanager {
 
 		grpcConnection := getGrpcConnection()
 		szConfigManagerSingleton = &szconfigmanager.Szconfigmanager{
-			GrpcClient: szconfigmanagerpb.NewSzConfigManagerClient(grpcConnection),
+			GrpcClient:         szconfigmanagerpb.NewSzConfigManagerClient(grpcConnection),
+			GrpcClientSzConfig: szpb.NewSzConfigClient(grpcConnection),
 		}
 		err = szConfigManagerSingleton.SetLogLevel(ctx, logLevel)
 
