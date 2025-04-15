@@ -208,7 +208,6 @@ func TestSzdiagnostic_Initialize(test *testing.T) {
 		GrpcClient: szpb.NewSzDiagnosticClient(grpcConnection),
 	}
 	settings := getSettings()
-
 	configID := senzing.SzInitializeWithDefaultConfiguration
 	err := szDiagnostic.Initialize(ctx, instanceName, settings, configID, verboseLogging)
 	require.NoError(test, err)
@@ -224,7 +223,6 @@ func TestSzdiagnostic_Initialize_withConfigId(test *testing.T) {
 		GrpcClient: szpb.NewSzDiagnosticClient(grpcConnection),
 	}
 	settings := getSettings()
-
 	configID := getDefaultConfigID()
 	err := szDiagnostic.Initialize(ctx, instanceName, settings, configID, verboseLogging)
 	require.NoError(test, err)
@@ -347,15 +345,12 @@ func getSzConfigManager(ctx context.Context) senzing.SzConfigManager {
 }
 
 func getSzDiagnostic(ctx context.Context) *szdiagnostic.Szdiagnostic {
-	var err error
-
 	if szDiagnosticSingleton == nil {
 		grpcConnection := getGrpcConnection()
 		szDiagnosticSingleton = &szdiagnostic.Szdiagnostic{
 			GrpcClient: szpb.NewSzDiagnosticClient(grpcConnection),
 		}
-		err = szDiagnosticSingleton.SetLogLevel(ctx, logLevel)
-
+		err := szDiagnosticSingleton.SetLogLevel(ctx, logLevel)
 		panicOnError(err)
 
 		if logLevel == "TRACE" {
@@ -375,22 +370,18 @@ func getSzDiagnosticAsInterface(ctx context.Context) senzing.SzDiagnostic {
 }
 
 func getSzEngine(ctx context.Context) senzing.SzEngine {
-	var err error
 	if szEngineSingleton == nil {
 		grpcConnection := getGrpcConnection()
 		szEngineSingleton = &szengine.Szengine{
 			GrpcClient: szenginepb.NewSzEngineClient(grpcConnection),
 		}
-		err = szEngineSingleton.SetLogLevel(ctx, logLevel)
-
+		err := szEngineSingleton.SetLogLevel(ctx, logLevel)
 		panicOnError(err)
 
 		if logLevel == "TRACE" {
 			szEngineSingleton.SetObserverOrigin(ctx, observerOrigin)
-
 			err = szEngineSingleton.RegisterObserver(ctx, observerSingleton)
 			panicOnError(err)
-
 			err = szEngineSingleton.SetLogLevel(ctx, logLevel) // Duplicated for coverage testing
 			panicOnError(err)
 		}
@@ -443,6 +434,7 @@ func truncate(aString string, length int) string {
 
 func TestMain(m *testing.M) {
 	setup()
+
 	code := m.Run()
 
 	os.Exit(code)

@@ -164,13 +164,6 @@ func TestSzconfig_Import_nilConfigDefinition(test *testing.T) {
 	require.NoError(test, err)
 }
 
-func TestSzconfig_ImportTemplate(test *testing.T) {
-	ctx := test.Context()
-	szConfig := getTestObject(test)
-	err := szConfig.ImportTemplate(ctx)
-	require.NoError(test, err)
-}
-
 func TestSzconfig_VerifyConfigDefinition(test *testing.T) {
 	ctx := test.Context()
 	szConfig := getTestObject(test)
@@ -184,8 +177,7 @@ func TestSzconfig_VerifyConfigDefinition_badConfigDefinition(test *testing.T) {
 	ctx := test.Context()
 	szConfig := getTestObject(test)
 	err := szConfig.VerifyConfigDefinition(ctx, badConfigDefinition)
-	require.NoError(test, err)
-	// require.ErrorIs(test, err, szerror.ErrSzBadInput)
+	require.ErrorIs(test, err, szerror.ErrSzBadInput)
 }
 
 // ----------------------------------------------------------------------------
@@ -319,7 +311,8 @@ func getSzConfigManager(ctx context.Context) *szconfigmanager.Szconfigmanager {
 
 		grpcConnection := getGrpcConnection()
 		szConfigManagerSingleton = &szconfigmanager.Szconfigmanager{
-			GrpcClient: szconfigmanagerpb.NewSzConfigManagerClient(grpcConnection),
+			GrpcClient:         szconfigmanagerpb.NewSzConfigManagerClient(grpcConnection),
+			GrpcClientSzConfig: szpb.NewSzConfigClient(grpcConnection),
 		}
 		err = szConfigManagerSingleton.SetLogLevel(ctx, logLevel)
 
