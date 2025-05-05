@@ -7,7 +7,6 @@ package szengine
 import (
 	"context"
 	"errors"
-	"fmt"
 	"io"
 	"strconv"
 	"time"
@@ -1840,7 +1839,7 @@ func (client *Szengine) SetLogLevel(ctx context.Context, logLevelName string) er
 	}
 
 	if !logging.IsValidLogLevelName(logLevelName) {
-		return fmt.Errorf("invalid error level: %s; %w", logLevelName, szerror.ErrSzSdk)
+		return wraperror.Errorf(errForPackage, "invalid error level: %s; %w", logLevelName, szerror.ErrSzSdk)
 	}
 
 	err = client.getLogger().SetLogLevel(logLevelName)
@@ -1931,7 +1930,7 @@ func (client *Szengine) addRecord(
 
 func (client *Szengine) closeExport(ctx context.Context, exportHandle uintptr) error {
 	request := &szpb.CloseExportRequest{
-		ExportHandle: int64(exportHandle), //nolint:gosec
+		ExportHandle: int64(exportHandle),
 	}
 	_, err := client.GrpcClient.CloseExport(ctx, request)
 
@@ -1986,7 +1985,7 @@ func (client *Szengine) exportJSONEntityReport(ctx context.Context, flags int64)
 
 func (client *Szengine) fetchNext(ctx context.Context, exportHandle uintptr) (string, error) {
 	request := &szpb.FetchNextRequest{
-		ExportHandle: int64(exportHandle), //nolint:gosec
+		ExportHandle: int64(exportHandle),
 	}
 	response, err := client.GrpcClient.FetchNext(ctx, request)
 	result := response.GetResult()

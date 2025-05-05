@@ -5,7 +5,6 @@ package szconfigmanager
 
 import (
 	"context"
-	"fmt"
 	"strconv"
 	"time"
 
@@ -529,7 +528,7 @@ func (client *Szconfigmanager) SetLogLevel(ctx context.Context, logLevelName str
 	}
 
 	if !logging.IsValidLogLevelName(logLevelName) {
-		return fmt.Errorf("invalid error level: %s; %w", logLevelName, szerror.ErrSzSdk)
+		return wraperror.Errorf(errForPackage, "invalid error level: %s; %w", logLevelName, szerror.ErrSzSdk)
 	}
 
 	err = client.getLogger().SetLogLevel(logLevelName)
@@ -608,7 +607,7 @@ func (client *Szconfigmanager) createConfigFromConfigIDChoreography(
 
 	configDefinition, err := client.getConfig(ctx, configID)
 	if err != nil {
-		return nil, fmt.Errorf("createConfigFromConfigIDChoreography.getConfig error: %w", err)
+		return nil, wraperror.Errorf(err, "createConfigFromConfigIDChoreography.getConfig error: %w", err)
 	}
 
 	return client.createConfigFromString(ctx, configDefinition)
@@ -642,7 +641,7 @@ func (client *Szconfigmanager) createConfigFromTemplateChoreography(ctx context.
 
 	err = helper.ConvertGrpcError(err)
 	if err != nil {
-		return nil, fmt.Errorf("createConfigFromTemplateChoreography.getConfig error: %w", err)
+		return nil, wraperror.Errorf(err, "createConfigFromTemplateChoreography.getConfig error: %w", err)
 	}
 
 	return client.createConfigFromString(ctx, response.GetResult())
@@ -660,7 +659,7 @@ func (client *Szconfigmanager) setDefaultConfigChoreography(
 
 	result, err = client.registerConfig(ctx, configDefinition, configComment)
 	if err != nil {
-		return 0, fmt.Errorf("setDefaultConfigChoreography.registerConfig error: %w", err)
+		return 0, wraperror.Errorf(err, "setDefaultConfigChoreography.registerConfig error: %w", err)
 	}
 
 	err = client.setDefaultConfigID(ctx, result)

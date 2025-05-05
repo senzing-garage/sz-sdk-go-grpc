@@ -110,11 +110,8 @@ linters:
   disable:
     - dupl
     - gochecknoglobals
-    - gochecknoinits
     - lll
-    - nolintlint
     - paralleltest
-    - wrapcheck
   exclusions:
     generated: lax
     presets:
@@ -178,6 +175,10 @@ linters:
       case:
         rules:
           json: upperSnake
+    wrapcheck:
+      ignore-sigs:
+        - helper.ConvertGrpcError(
+        - wraperror.Errorf(
 formatters:
   enable:
     - gci

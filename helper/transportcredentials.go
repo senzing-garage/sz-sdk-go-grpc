@@ -95,7 +95,7 @@ func buildRootCAsFromFile(serverCaCertificatePath string) (*x509.CertPool, error
 
 	result = x509.NewCertPool()
 	if !result.AppendCertsFromPEM(pemServerCA) {
-		return result, wraperror.Errorf(errPackage, "failed to add server CA's certificate")
+		return result, wraperror.Errorf(errForPackage, "failed to add server CA's certificate")
 	}
 
 	return result, wraperror.Errorf(err, "helper.buildRootCAsFromFile error: %w", err)

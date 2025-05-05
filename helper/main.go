@@ -14,4 +14,4 @@ const (
 	MessageIDPrefix = "SZSDK"
 )
 
-var errPackage = errors.New("helper")
+var errForPackage = errors.New("helper")

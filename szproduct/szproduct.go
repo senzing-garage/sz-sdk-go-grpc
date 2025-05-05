@@ -5,7 +5,6 @@ package szproduct
 
 import (
 	"context"
-	"fmt"
 	"strconv"
 	"time"
 
@@ -247,7 +246,7 @@ func (client *Szproduct) SetLogLevel(ctx context.Context, logLevelName string) e
 	}
 
 	if !logging.IsValidLogLevelName(logLevelName) {
-		return fmt.Errorf("invalid error level: %s; %w", logLevelName, szerror.ErrSzSdk)
+		return wraperror.Errorf(errForPackage, "invalid error level: %s; %w", logLevelName, szerror.ErrSzSdk)
 	}
 
 	err = client.getLogger().SetLogLevel(logLevelName)

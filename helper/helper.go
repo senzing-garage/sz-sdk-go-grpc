@@ -2,7 +2,6 @@ package helper
 
 import (
 	"errors"
-	"fmt"
 	"reflect"
 	"strconv"
 	"strings"
@@ -94,7 +93,8 @@ func extractErrorFromJSON(originalError error, errorMessage string) error {
 
 	parsedMessage, err := parser.Parse(errorMessage)
 	if err != nil {
-		return fmt.Errorf(
+		return wraperror.Errorf(
+			err,
 			"parse(%s) error: %w; Original Error: %w",
 			errorMessage,
 			err,
@@ -104,12 +104,18 @@ func extractErrorFromJSON(originalError error, errorMessage string) error {
 
 	reason := parsedMessage.Reason
 	if len(reason) < maxReasons {
-		return fmt.Errorf("len(%s) error: %w; Original Error: %w", reason, err, originalError)
+		return wraperror.Errorf(errForPackage, "len(%s) error: %w; Original Error: %w", reason, err, originalError)
 	}
 
 	senzingErrorCode, err := strconv.Atoi(reason[4:8])
 	if err != nil {
-		return fmt.Errorf("strconv.Atoi(%s) error %w; Original Error: %w", reason, err, originalError)
+		return wraperror.Errorf(
+			errForPackage,
+			"strconv.Atoi(%s) error %w; Original Error: %w",
+			reason,
+			err,
+			originalError,
+		)
 	}
 
 	result = szerror.New(senzingErrorCode, errorMessage)

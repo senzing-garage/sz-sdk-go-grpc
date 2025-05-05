@@ -36,8 +36,8 @@ func TestHelpers_GetGrpcTransportCredentials_MutualTLS(test *testing.T) {
 	for envVar, value := range envVars {
 		_, isSet := os.LookupEnv(envVar)
 		if !isSet {
-			os.Setenv(envVar, value)  //nolint
-			defer os.Unsetenv(envVar) //nolint
+			os.Setenv(envVar, value) //nolint
+			defer os.Unsetenv(envVar)
 		}
 	}
 
@@ -52,7 +52,7 @@ func TestHelpers_GetGrpcTransportCredentials_ServerSideTLS(test *testing.T) {
 
 	if !isSet {
 		os.Setenv(envVar, "../testdata/certificates/certificate-authority/certificate.pem") //nolint
-		defer os.Unsetenv(envVar)                                                           //nolint
+		defer os.Unsetenv(envVar)
 	}
 
 	actual, err := helper.GetGrpcTransportCredentials()

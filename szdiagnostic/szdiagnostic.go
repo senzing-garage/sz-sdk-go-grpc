@@ -5,7 +5,6 @@ package szdiagnostic
 
 import (
 	"context"
-	"fmt"
 	"strconv"
 	"time"
 
@@ -352,7 +351,7 @@ func (client *Szdiagnostic) SetLogLevel(ctx context.Context, logLevelName string
 	}
 
 	if !logging.IsValidLogLevelName(logLevelName) {
-		return fmt.Errorf("invalid error level: %s; %w", logLevelName, szerror.ErrSzSdk)
+		return wraperror.Errorf(errForPackage, "invalid error level: %s; %w", logLevelName, szerror.ErrSzSdk)
 	}
 
 	err = client.getLogger().SetLogLevel(logLevelName)
