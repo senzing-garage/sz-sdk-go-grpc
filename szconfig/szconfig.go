@@ -272,7 +272,8 @@ func (client *Szconfig) Initialize(
 	ctx context.Context,
 	instanceName string,
 	settings string,
-	verboseLogging int64) error {
+	verboseLogging int64,
+) error {
 	var err error
 
 	if client.isTrace {
@@ -449,13 +450,8 @@ func (client *Szconfig) VerifyConfigDefinition(ctx context.Context, configDefini
 // Private methods for gRPC request/response
 // ----------------------------------------------------------------------------
 
-func (client *Szconfig) addDataSource(
-	ctx context.Context,
-	dataSourceCode string,
-) (string, error) {
-	var (
-		result string
-	)
+func (client *Szconfig) addDataSource(ctx context.Context, dataSourceCode string) (string, error) {
+	var result string
 
 	request := &szpb.AddDataSourceRequest{
 		ConfigDefinition: client.configDefinition,
@@ -474,9 +470,7 @@ func (client *Szconfig) addDataSource(
 }
 
 func (client *Szconfig) deleteDataSource(ctx context.Context, dataSourceCode string) (string, error) {
-	var (
-		result string
-	)
+	var result string
 
 	request := &szpb.DeleteDataSourceRequest{
 		ConfigDefinition: client.configDefinition,
@@ -501,9 +495,7 @@ func (client *Szconfig) export(ctx context.Context) string {
 }
 
 func (client *Szconfig) getDataSources(ctx context.Context) (string, error) {
-	var (
-		result string
-	)
+	var result string
 
 	request := &szpb.GetDataSourcesRequest{
 		ConfigDefinition: client.configDefinition,

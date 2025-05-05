@@ -169,7 +169,8 @@ func (client *Szproduct) Initialize(
 	ctx context.Context,
 	instanceName string,
 	settings string,
-	verboseLogging int64) error {
+	verboseLogging int64,
+) error {
 	var err error
 
 	if client.isTrace {

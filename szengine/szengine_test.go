@@ -262,6 +262,7 @@ func TestSzengine_AddRecord_withInfo_badDataSourceCode(test *testing.T) {
 		printActual(test, actual)
 	}
 }
+
 func TestSzengine_CloseExport(test *testing.T) {
 	// Tested in:
 	//  - TestSzengine_ExportCsvEntityReport
@@ -3518,9 +3519,7 @@ func getEntityIDString(record record.Record) string {
 }
 
 func getEntityIDStringForRecord(datasource string, recordID string) string {
-	var (
-		result string
-	)
+	var result string
 
 	entityID, err := getEntityIDForRecord(datasource, recordID)
 	panicOnError(err)
@@ -3600,8 +3599,8 @@ func getSzAbstractFactory(ctx context.Context) senzing.SzAbstractFactory {
 
 func getSzConfigManager(ctx context.Context) senzing.SzConfigManager {
 	var err error
-	if szConfigManagerSingleton == nil {
 
+	if szConfigManagerSingleton == nil {
 		grpcConnection := getGrpcConnection()
 		szConfigManagerSingleton = &szconfigmanager.Szconfigmanager{
 			GrpcClient:         szconfigmanagerpb.NewSzConfigManagerClient(grpcConnection),
@@ -3627,8 +3626,8 @@ func getSzConfigManager(ctx context.Context) senzing.SzConfigManager {
 
 func getSzDiagnostic(ctx context.Context) senzing.SzDiagnostic {
 	var err error
-	if szDiagnosticSingleton == nil {
 
+	if szDiagnosticSingleton == nil {
 		grpcConnection := getGrpcConnection()
 		szDiagnosticSingleton = &szdiagnostic.Szdiagnostic{
 			GrpcClient: szdiagnosticpb.NewSzDiagnosticClient(grpcConnection),
@@ -3653,8 +3652,8 @@ func getSzDiagnostic(ctx context.Context) senzing.SzDiagnostic {
 
 func getSzEngine(ctx context.Context) *szengine.Szengine {
 	var err error
-	if szEngineSingleton == nil {
 
+	if szEngineSingleton == nil {
 		grpcConnection := getGrpcConnection()
 		szEngineSingleton = &szengine.Szengine{
 			GrpcClient: szpb.NewSzEngineClient(grpcConnection),
@@ -3772,7 +3771,6 @@ func setupSenzingConfiguration() {
 
 	err = szConfigManager.SetDefaultConfigID(ctx, configID)
 	panicOnError(err)
-
 }
 
 func setupPurgeRepository() {

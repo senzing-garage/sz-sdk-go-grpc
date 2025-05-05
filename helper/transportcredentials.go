@@ -34,9 +34,7 @@ func GetGrpcTransportCredentials() (credentials.TransportCredentials, error) {
 
 	serverCaCertificatePath, isSet := os.LookupEnv("SENZING_TOOLS_SERVER_CA_CERTIFICATE_FILE")
 	if isSet {
-
 		// Server-side TLS.
-
 		rootCAs, err := buildRootCAsFromFile(serverCaCertificatePath)
 		if err != nil {
 			return result, err
@@ -56,7 +54,11 @@ func GetGrpcTransportCredentials() (credentials.TransportCredentials, error) {
 				clientKeyPassPhrase,
 			)
 			if err != nil {
-				return result, err
+				return result, wraperror.Errorf(
+					err,
+					"helper.GetGrpcTransportCredentials.LoadX509KeyPair error: %w",
+					err,
+				)
 			}
 
 			certificates = []tls.Certificate{clientCertificate}
@@ -81,7 +83,6 @@ func GetGrpcTransportCredentials() (credentials.TransportCredentials, error) {
 // ----------------------------------------------------------------------------
 
 func buildRootCAsFromFile(serverCaCertificatePath string) (*x509.CertPool, error) {
-
 	var (
 		err    error
 		result *x509.CertPool
@@ -89,7 +90,7 @@ func buildRootCAsFromFile(serverCaCertificatePath string) (*x509.CertPool, error
 
 	pemServerCA, err := os.ReadFile(serverCaCertificatePath)
 	if err != nil {
-		return result, err
+		return result, wraperror.Errorf(err, "helper.buildRootCAsFromFile.os.Read error: %w", err)
 	}
 
 	result = x509.NewCertPool()
@@ -97,5 +98,5 @@ func buildRootCAsFromFile(serverCaCertificatePath string) (*x509.CertPool, error
 		return result, wraperror.Errorf(errPackage, "failed to add server CA's certificate")
 	}
 
-	return result, err
+	return result, wraperror.Errorf(err, "helper.buildRootCAsFromFile error: %w", err)
 }

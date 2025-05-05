@@ -424,9 +424,7 @@ func (client *Szdiagnostic) UnregisterObserver(ctx context.Context, observer obs
 // ----------------------------------------------------------------------------
 
 func (client *Szdiagnostic) checkDatastorePerformance(ctx context.Context, secondsToRun int) (string, error) {
-	var (
-		result string
-	)
+	var result string
 
 	request := &szpb.CheckDatastorePerformanceRequest{
 		SecondsToRun: int32(secondsToRun), //nolint:gosec
@@ -438,9 +436,8 @@ func (client *Szdiagnostic) checkDatastorePerformance(ctx context.Context, secon
 }
 
 func (client *Szdiagnostic) getDatastoreInfo(ctx context.Context) (string, error) {
-	var (
-		result string
-	)
+	var result string
+
 	request := &szpb.GetDatastoreInfoRequest{}
 	response, err := client.GrpcClient.GetDatastoreInfo(ctx, request)
 	result = response.GetResult()
@@ -449,9 +446,8 @@ func (client *Szdiagnostic) getDatastoreInfo(ctx context.Context) (string, error
 }
 
 func (client *Szdiagnostic) getFeature(ctx context.Context, featureID int64) (string, error) {
-	var (
-		result string
-	)
+	var result string
+
 	request := &szpb.GetFeatureRequest{
 		FeatureId: featureID,
 	}

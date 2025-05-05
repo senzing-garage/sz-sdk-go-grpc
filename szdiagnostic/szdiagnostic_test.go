@@ -318,8 +318,8 @@ func getSzAbstractFactory(ctx context.Context) senzing.SzAbstractFactory {
 
 func getSzConfigManager(ctx context.Context) senzing.SzConfigManager {
 	var err error
-	if szConfigManagerSingleton == nil {
 
+	if szConfigManagerSingleton == nil {
 		grpcConnection := getGrpcConnection()
 		szConfigManagerSingleton = &szconfigmanager.Szconfigmanager{
 			GrpcClient:         szconfigmanagerpb.NewSzConfigManagerClient(grpcConnection),

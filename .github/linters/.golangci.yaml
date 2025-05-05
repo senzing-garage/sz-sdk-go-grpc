@@ -72,10 +72,10 @@ linters:
     - nilnil
     - nlreturn
     - noctx
-    # - nolintlint
+    - nolintlint
     - nonamedreturns
     - nosprintfhostport
-    # - paralleltest
+    - paralleltest
     - perfsprint
     - prealloc
     - predeclared
@@ -94,24 +94,27 @@ linters:
     - testableexamples
     - testifylint
     - testpackage
-    # - thelper
+    - thelper
     - tparallel
     - unconvert
     - unparam
     - unused
     - usestdlibvars
-    # - usetesting
-    # - varnamelen
+    - usetesting
+    - varnamelen
     - wastedassign
-    # - whitespace
-    # - wrapcheck
-    # - wsl
+    - whitespace
+    - wrapcheck
+    - wsl
     - zerologlint
   disable:
     - dupl
     - gochecknoglobals
     - gochecknoinits
     - lll
+    - nolintlint
+    - paralleltest
+    - wrapcheck
   exclusions:
     generated: lax
     presets:
@@ -179,9 +182,9 @@ formatters:
   enable:
     - gci
     - gofmt
-    # - gofumpt
+    - gofumpt
     - goimports
-    # - golines
+    - golines
   exclusions:
     generated: lax
     paths:

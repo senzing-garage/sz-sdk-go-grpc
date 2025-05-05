@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/senzing-garage/go-helpers/truthset"
+	"github.com/senzing-garage/go-helpers/wraperror"
 	"github.com/senzing-garage/go-logging/logging"
 	"github.com/senzing-garage/sz-sdk-go-grpc/helper"
 	"github.com/senzing-garage/sz-sdk-go-grpc/szabstractfactory"
@@ -94,9 +95,7 @@ func main() {
 // ----------------------------------------------------------------------------
 
 func demonstrateAdditionalFunctions(ctx context.Context, szAbstractFactory senzing.SzAbstractFactory) error {
-
 	// Create Senzing objects.
-
 	szEngine, err := szAbstractFactory.CreateEngine(ctx)
 	failOnError(5301, err)
 
@@ -115,7 +114,7 @@ func demonstrateAdditionalFunctions(ctx context.Context, szAbstractFactory senzi
 	failOnError(5304, err)
 	logger.Log(2004, license)
 
-	return err
+	return wraperror.Errorf(err, "main.demonstrateAdditionalFunctions error: %w", err)
 }
 
 func demonstrateAddRecord(ctx context.Context, szEngine senzing.SzEngine) (string, error) {
@@ -134,11 +133,13 @@ func demonstrateAddRecord(ctx context.Context, szEngine senzing.SzEngine) (strin
 		`", "DSRC_ACTION": "A", "ADDR_CITY": "Delhi", "DRIVERS_LICENSE_STATE": "DE", "PHONE_NUMBER": "225-671-0796", "NAME_LAST": "SEAMAN", "entityid": "284430058", "ADDR_LINE1": "772 Armstrong RD"}`,
 	)
 
-	var flags = senzing.SzWithInfo
+	flags := senzing.SzWithInfo
 
 	// Using SzEngine: Add record and return "withInfo".
 
-	return szEngine.AddRecord(ctx, dataSourceCode, recordID, recordDefinition, flags)
+	result, err := szEngine.AddRecord(ctx, dataSourceCode, recordID, recordDefinition, flags)
+
+	return result, wraperror.Errorf(err, "main.demonstrateAddRecord.AddRecord error: %w", err)
 }
 
 func demonstrateConfigFunctions(ctx context.Context, szAbstractFactory senzing.SzAbstractFactory) error {

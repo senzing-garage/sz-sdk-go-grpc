@@ -414,8 +414,8 @@ func getSzAbstractFactory(ctx context.Context) senzing.SzAbstractFactory {
 
 func getSzConfigManager(ctx context.Context) *szconfigmanager.Szconfigmanager {
 	var err error
-	if szConfigManagerSingleton == nil {
 
+	if szConfigManagerSingleton == nil {
 		grpcConnection := getGrpcConnection()
 		szConfigManagerSingleton = &szconfigmanager.Szconfigmanager{
 			GrpcClient:         szpb.NewSzConfigManagerClient(grpcConnection),
@@ -489,6 +489,7 @@ func truncate(aString string, length int) string {
 
 func TestMain(m *testing.M) {
 	setup()
+
 	code := m.Run()
 	os.Exit(code)
 }

@@ -306,8 +306,8 @@ func getSzConfigAsInterface(ctx context.Context) senzing.SzConfig {
 
 func getSzConfigManager(ctx context.Context) *szconfigmanager.Szconfigmanager {
 	var err error
-	if szConfigManagerSingleton == nil {
 
+	if szConfigManagerSingleton == nil {
 		grpcConnection := getGrpcConnection()
 		szConfigManagerSingleton = &szconfigmanager.Szconfigmanager{
 			GrpcClient:         szconfigmanagerpb.NewSzConfigManagerClient(grpcConnection),

@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/senzing-garage/go-helpers/jsonutil"
+	"github.com/senzing-garage/go-helpers/wraperror"
 	"github.com/senzing-garage/go-messaging/parser"
 	"github.com/senzing-garage/sz-sdk-go/szerror"
 )
@@ -113,5 +114,5 @@ func extractErrorFromJSON(originalError error, errorMessage string) error {
 
 	result = szerror.New(senzingErrorCode, errorMessage)
 
-	return result
+	return wraperror.Errorf(result, "%w", result)
 }

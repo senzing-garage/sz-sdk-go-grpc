@@ -170,6 +170,7 @@ func getSzAbstractFactory(ctx context.Context) senzing.SzAbstractFactory {
 
 func getSzProduct(ctx context.Context) *szproduct.Szproduct {
 	var err error
+
 	if szProductSingleton == nil {
 		settings := getSettings()
 
