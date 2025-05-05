@@ -12,6 +12,8 @@ import (
 	"github.com/senzing-garage/sz-sdk-go/szerror"
 )
 
+const maxReasons = 10
+
 // ----------------------------------------------------------------------------
 // Public functions
 // ----------------------------------------------------------------------------
@@ -39,8 +41,13 @@ func ConvertGrpcError(originalError error) error {
 			return err
 		}
 	}
+
 	return result
 }
+
+// ----------------------------------------------------------------------------
+// Private functions
+// ----------------------------------------------------------------------------
 
 func convertGrpcError(originalError error) error {
 	var result error
@@ -50,50 +57,61 @@ func convertGrpcError(originalError error) error {
 	if reflect.TypeOf(originalError).String() == "*status.Error" {
 		errorMessage := originalError.Error()
 		if strings.HasPrefix(errorMessage, "rpc error:") {
-
-			// IMPROVE: Improve the fragile method of pulling out the Senzing JSON error.
-
-			indexOfDesc := strings.Index(errorMessage, " desc = ")
-			senzingErrorMessage := errorMessage[indexOfDesc+8:] // Implicitly safe from "0+8" because of "rpc error:" prefix.
-			indexOfBrace := strings.Index(senzingErrorMessage, "{")
-
-			if indexOfBrace >= 0 {
-				senzingErrorMessage = senzingErrorMessage[indexOfBrace:]
-
-				// Parse JSON.
-
-				if jsonutil.IsJSON(senzingErrorMessage) {
-
-					// IMPROVE: Add information about any gRPC error.
-					// Status: https://pkg.go.dev/google.golang.org/grpc/status
-					// Codes: https://pkg.go.dev/google.golang.org/grpc/codes
-					// Create a new Senzing nested error.
-
-					parsedMessage, err := parser.Parse(senzingErrorMessage)
-					if err != nil {
-						return fmt.Errorf(
-							"parse(%s) error: %w; Original Error: %w",
-							senzingErrorMessage,
-							err,
-							originalError,
-						)
-					}
-
-					reason := parsedMessage.Reason
-					if len(reason) < 10 {
-						return fmt.Errorf("len(%s) error: %w; Original Error: %w", reason, err, originalError)
-					}
-
-					senzingErrorCode, err := strconv.Atoi(reason[4:8])
-					if err != nil {
-						return fmt.Errorf("strconv.Atoi(%s) error %w; Original Error: %w", reason, err, originalError)
-					}
-
-					result = szerror.New(senzingErrorCode, senzingErrorMessage)
-				}
-			}
+			result = extractErrorFromRPCError(originalError, errorMessage)
 		}
 	}
+
+	return result
+}
+
+func extractErrorFromRPCError(originalError error, errorMessage string) error {
+	var result error
+
+	// IMPROVE: Improve the fragile method of pulling out the Senzing JSON error.
+
+	indexOfDesc := strings.Index(errorMessage, " desc = ")
+	senzingErrorMessage := errorMessage[indexOfDesc+8:] // Implicitly safe from "0+8" because of "rpc error:" prefix.
+	indexOfBrace := strings.Index(senzingErrorMessage, "{")
+
+	if indexOfBrace >= 0 {
+		senzingErrorMessage = senzingErrorMessage[indexOfBrace:]
+		if jsonutil.IsJSON(senzingErrorMessage) {
+			result = extractErrorFromJSON(originalError, senzingErrorMessage)
+		}
+	}
+
+	return result
+}
+
+func extractErrorFromJSON(originalError error, errorMessage string) error {
+	var result error
+
+	// IMPROVE: Add information about any gRPC error.
+	// Status: https://pkg.go.dev/google.golang.org/grpc/status
+	// Codes: https://pkg.go.dev/google.golang.org/grpc/codes
+	// Create a new Senzing nested error.
+
+	parsedMessage, err := parser.Parse(errorMessage)
+	if err != nil {
+		return fmt.Errorf(
+			"parse(%s) error: %w; Original Error: %w",
+			errorMessage,
+			err,
+			originalError,
+		)
+	}
+
+	reason := parsedMessage.Reason
+	if len(reason) < maxReasons {
+		return fmt.Errorf("len(%s) error: %w; Original Error: %w", reason, err, originalError)
+	}
+
+	senzingErrorCode, err := strconv.Atoi(reason[4:8])
+	if err != nil {
+		return fmt.Errorf("strconv.Atoi(%s) error %w; Original Error: %w", reason, err, originalError)
+	}
+
+	result = szerror.New(senzingErrorCode, errorMessage)
 
 	return result
 }

@@ -56,27 +56,27 @@ linters:
     - ineffassign
     - interfacebloat
     - intrange
-    # - ireturn
-    # - lll
+    - ireturn
+    - lll
     - loggercheck
-    # - maintidx
+    - maintidx
     - makezero
     - mirror
     - misspell
-    # - mnd
+    - mnd
     - musttag
     - nakedret
-    # - nestif
+    - nestif
     - nilerr
     - nilnesserr
     - nilnil
-    # - nlreturn
+    - nlreturn
     - noctx
     # - nolintlint
     - nonamedreturns
     - nosprintfhostport
     # - paralleltest
-    # - perfsprint
+    - perfsprint
     - prealloc
     - predeclared
     - promlinter
@@ -90,14 +90,14 @@ linters:
     - sqlclosecheck
     - staticcheck
     - tagalign
-    # - tagliatelle
-    # - testableexamples
-    # - testifylint
-    # - testpackage
+    - tagliatelle
+    - testableexamples
+    - testifylint
+    - testpackage
     # - thelper
     - tparallel
     - unconvert
-    # - unparam
+    - unparam
     - unused
     - usestdlibvars
     # - usetesting
@@ -111,6 +111,7 @@ linters:
     - dupl
     - gochecknoglobals
     - gochecknoinits
+    - lll
   exclusions:
     generated: lax
     presets:
@@ -143,16 +144,37 @@ linters:
       lines: 70
     ireturn:
       allow:
-        - anon
-        - empty
+        - credentials.TransportCredentials
         - error
-        - stdlib
+        - logging.Logging
+        - messenger.Messenger
+        - observer.Observer
+        - senzing.SzAbstractFactory
+        - senzing.SzConfig
+        - senzing.SzConfigManager
+        - senzing.SzDiagnostic
+        - senzing.SzEngine
+        - senzing.SzProduct
+    maintidx:
+      under: 16
     mnd:
       ignored-functions:
+        - '^big\.NewInt$'
+        - '^client\.traceEntry$'
+        - '^client\.traceExit$'
         - '^logger\.Log$'
+        - '^logger\.NewError$'
+        - '^logging\.NewSenzingLogger$'
+        - '^notifier\.Notify$'
+        - '^rand\.Int$'
+        - "^failOnError$"
     goconst:
       min-occurrences: 5
       ignore-string-values: ["CUSTOMERS"]
+    tagliatelle:
+      case:
+        rules:
+          json: upperSnake
 formatters:
   enable:
     - gci

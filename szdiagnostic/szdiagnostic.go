@@ -433,6 +433,7 @@ func (client *Szdiagnostic) checkDatastorePerformance(ctx context.Context, secon
 	}
 	response, err := client.GrpcClient.CheckDatastorePerformance(ctx, request)
 	result = response.GetResult()
+
 	return result, helper.ConvertGrpcError(err)
 }
 
@@ -443,6 +444,7 @@ func (client *Szdiagnostic) getDatastoreInfo(ctx context.Context) (string, error
 	request := &szpb.GetDatastoreInfoRequest{}
 	response, err := client.GrpcClient.GetDatastoreInfo(ctx, request)
 	result = response.GetResult()
+
 	return result, helper.ConvertGrpcError(err)
 }
 
@@ -455,12 +457,14 @@ func (client *Szdiagnostic) getFeature(ctx context.Context, featureID int64) (st
 	}
 	response, err := client.GrpcClient.GetFeature(ctx, request)
 	result = response.GetResult()
+
 	return result, helper.ConvertGrpcError(err)
 }
 
 func (client *Szdiagnostic) purgeRepository(ctx context.Context) error {
 	request := &szpb.PurgeRepositoryRequest{}
 	_, err := client.GrpcClient.PurgeRepository(ctx, request)
+
 	return helper.ConvertGrpcError(err)
 }
 
@@ -469,6 +473,7 @@ func (client *Szdiagnostic) reinitialize(ctx context.Context, configID int64) er
 		ConfigId: configID,
 	}
 	_, err := client.GrpcClient.Reinitialize(ctx, request)
+
 	return helper.ConvertGrpcError(err)
 }
 

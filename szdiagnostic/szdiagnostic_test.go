@@ -391,6 +391,7 @@ func getSzEngine(ctx context.Context) senzing.SzEngine {
 
 func getTestObject(t *testing.T) *szdiagnostic.Szdiagnostic {
 	t.Helper()
+
 	return getSzDiagnostic(t.Context())
 }
 

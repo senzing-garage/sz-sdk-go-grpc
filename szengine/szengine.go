@@ -311,6 +311,7 @@ func (client *Szengine) ExportCsvEntityReportIterator(
 				stringFragmentChannel <- senzing.StringFragment{
 					Error: helper.ConvertGrpcError(ctx.Err()),
 				}
+
 				break forLoop
 			default:
 				response, err := stream.Recv()
@@ -321,6 +322,7 @@ func (client *Szengine) ExportCsvEntityReportIterator(
 					stringFragmentChannel <- senzing.StringFragment{
 						Error: helper.ConvertGrpcError(err),
 					}
+
 					break forLoop
 				}
 				stringFragmentChannel <- senzing.StringFragment{
@@ -427,6 +429,7 @@ func (client *Szengine) ExportJSONEntityReportIterator(ctx context.Context, flag
 				stringFragmentChannel <- senzing.StringFragment{
 					Error: helper.ConvertGrpcError(ctx.Err()),
 				}
+
 				break forLoop
 			default:
 				response, err := stream.Recv()
@@ -437,6 +440,7 @@ func (client *Szengine) ExportJSONEntityReportIterator(ctx context.Context, flag
 					stringFragmentChannel <- senzing.StringFragment{
 						Error: helper.ConvertGrpcError(err),
 					}
+
 					break forLoop
 				}
 				stringFragmentChannel <- senzing.StringFragment{
@@ -1906,6 +1910,7 @@ func (client *Szengine) closeExport(ctx context.Context, exportHandle uintptr) e
 		ExportHandle: int64(exportHandle), //nolint:gosec
 	}
 	_, err := client.GrpcClient.CloseExport(ctx, request)
+
 	return helper.ConvertGrpcError(err)
 }
 
@@ -2198,6 +2203,7 @@ func (client *Szengine) preprocessRecord(ctx context.Context, recordDefinition s
 func (client *Szengine) primeEngine(ctx context.Context) error {
 	request := &szpb.PrimeEngineRequest{}
 	_, err := client.GrpcClient.PrimeEngine(ctx, request)
+
 	return helper.ConvertGrpcError(err)
 }
 
@@ -2245,6 +2251,7 @@ func (client *Szengine) reinitialize(ctx context.Context, configID int64) error 
 		ConfigId: configID,
 	}
 	_, err := client.GrpcClient.Reinitialize(ctx, request)
+
 	return helper.ConvertGrpcError(err)
 }
 

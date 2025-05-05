@@ -636,6 +636,7 @@ func (client *Szconfigmanager) createConfigFromTemplateChoreography(ctx context.
 	if err != nil {
 		return nil, fmt.Errorf("createConfigFromTemplateChoreography.getConfig error: %w", err)
 	}
+
 	return client.createConfigFromString(ctx, response.GetResult())
 }
 
@@ -713,6 +714,7 @@ func (client *Szconfigmanager) replaceDefaultConfigID(
 		NewDefaultConfigId:     newDefaultConfigID,
 	}
 	_, err := client.GrpcClient.ReplaceDefaultConfigId(ctx, &request)
+
 	return helper.ConvertGrpcError(err)
 }
 
@@ -721,6 +723,7 @@ func (client *Szconfigmanager) setDefaultConfigID(ctx context.Context, configID 
 		ConfigId: configID,
 	}
 	_, err := client.GrpcClient.SetDefaultConfigId(ctx, &request)
+
 	return helper.ConvertGrpcError(err)
 }
 

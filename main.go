@@ -74,8 +74,7 @@ func main() {
 	outputf("\n-------------------------------------------------------------------------------\n\n")
 	logger.Log(2001, "Just a test of logging", programmMetadataMap)
 
-	szAbstractFactory, err := getSzAbstractFactory(ctx)
-	failOnError(5001, err)
+	szAbstractFactory := getSzAbstractFactory(ctx)
 
 	// Persist the Senzing configuration to the Senzing repository.
 
@@ -226,17 +225,14 @@ func getLogger(ctx context.Context) (logging.Logging, error) {
 	return logger, err
 }
 
-func getSzAbstractFactory(ctx context.Context) (senzing.SzAbstractFactory, error) {
-	var err error
-
+func getSzAbstractFactory(ctx context.Context) senzing.SzAbstractFactory {
 	_ = ctx
 
 	result := &szabstractfactory.Szabstractfactory{
 		GrpcConnection: getGrpcConnection(),
 	}
 
-	return result, err
-
+	return result
 }
 
 func outputf(format string, message ...any) {

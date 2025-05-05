@@ -139,7 +139,7 @@ func (client *Szconfig) Export(ctx context.Context) (string, error) {
 		defer func() { client.traceExit(14, result, err, time.Since(entryTime)) }()
 	}
 
-	result, err = client.export(ctx)
+	result = client.export(ctx)
 
 	if client.observers != nil {
 		go func() {
@@ -247,7 +247,7 @@ func (client *Szconfig) Import(ctx context.Context, configDefinition string) err
 		defer func() { client.traceExit(22, configDefinition, err, time.Since(entryTime)) }()
 	}
 
-	err = client.importConfigDefinition(ctx, configDefinition)
+	client.importConfigDefinition(ctx, configDefinition)
 
 	if client.observers != nil {
 		go func() {
@@ -468,7 +468,7 @@ func (client *Szconfig) addDataSource(
 	}
 
 	result = response.GetResult()
-	err = client.importConfigDefinition(ctx, response.GetConfigDefinition())
+	client.importConfigDefinition(ctx, response.GetConfigDefinition())
 
 	return result, helper.ConvertGrpcError(err)
 }
@@ -489,14 +489,15 @@ func (client *Szconfig) deleteDataSource(ctx context.Context, dataSourceCode str
 	}
 
 	result = response.GetResult()
-	err = client.importConfigDefinition(ctx, response.GetConfigDefinition())
+	client.importConfigDefinition(ctx, response.GetConfigDefinition())
 
 	return result, helper.ConvertGrpcError(err)
 }
 
-func (client *Szconfig) export(ctx context.Context) (string, error) {
+func (client *Szconfig) export(ctx context.Context) string {
 	_ = ctx
-	return client.configDefinition, nil
+
+	return client.configDefinition
 }
 
 func (client *Szconfig) getDataSources(ctx context.Context) (string, error) {
@@ -518,10 +519,9 @@ func (client *Szconfig) getDataSources(ctx context.Context) (string, error) {
 	return result, helper.ConvertGrpcError(err)
 }
 
-func (client *Szconfig) importConfigDefinition(ctx context.Context, configDefinition string) error {
+func (client *Szconfig) importConfigDefinition(ctx context.Context, configDefinition string) {
 	_ = ctx
 	client.configDefinition = configDefinition
-	return nil
 }
 
 func (client *Szconfig) verifyConfigDefinition(ctx context.Context, configDefinition string) error {

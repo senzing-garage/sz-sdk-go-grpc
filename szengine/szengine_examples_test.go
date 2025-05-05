@@ -224,6 +224,7 @@ func ExampleSzengine_ExportCsvEntityReportIterator() {
 	for result := range szEngine.ExportCsvEntityReportIterator(ctx, csvColumnList, flags) {
 		if result.Error != nil {
 			handleError(err)
+
 			break
 		}
 
@@ -269,6 +270,7 @@ func ExampleSzengine_ExportJSONEntityReportIterator() {
 	for result := range szEngine.ExportJSONEntityReportIterator(ctx, flags) {
 		if result.Error != nil {
 			handleError(err)
+
 			break
 		}
 

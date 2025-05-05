@@ -11,6 +11,10 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 )
 
+// ----------------------------------------------------------------------------
+// Public functions
+// ----------------------------------------------------------------------------
+
 /*
 The GetGrpcTransportCredentials function returns a gRPC credentials.TransportCredentials
 based on the value of the SENZING_TOOLS_SERVER_CA_CERTIFICATE_FILE,
@@ -30,15 +34,12 @@ func GetGrpcTransportCredentials() (credentials.TransportCredentials, error) {
 
 	serverCaCertificatePath, isSet := os.LookupEnv("SENZING_TOOLS_SERVER_CA_CERTIFICATE_FILE")
 	if isSet {
+
 		// Server-side TLS.
-		pemServerCA, err := os.ReadFile(serverCaCertificatePath)
+
+		rootCAs, err := buildRootCAsFromFile(serverCaCertificatePath)
 		if err != nil {
 			return result, err
-		}
-
-		rootCAs := x509.NewCertPool()
-		if !rootCAs.AppendCertsFromPEM(pemServerCA) {
-			return result, wraperror.Errorf(errPackage, "failed to add server CA's certificate")
 		}
 
 		// Mutual TLS.
@@ -73,4 +74,28 @@ func GetGrpcTransportCredentials() (credentials.TransportCredentials, error) {
 	}
 
 	return result, nil
+}
+
+// ----------------------------------------------------------------------------
+// Private functions
+// ----------------------------------------------------------------------------
+
+func buildRootCAsFromFile(serverCaCertificatePath string) (*x509.CertPool, error) {
+
+	var (
+		err    error
+		result *x509.CertPool
+	)
+
+	pemServerCA, err := os.ReadFile(serverCaCertificatePath)
+	if err != nil {
+		return result, err
+	}
+
+	result = x509.NewCertPool()
+	if !result.AppendCertsFromPEM(pemServerCA) {
+		return result, wraperror.Errorf(errPackage, "failed to add server CA's certificate")
+	}
+
+	return result, err
 }
