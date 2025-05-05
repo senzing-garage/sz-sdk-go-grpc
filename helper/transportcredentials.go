@@ -4,6 +4,7 @@ import (
 	"crypto/tls"
 	"crypto/x509"
 	"os"
+	"path/filepath"
 
 	tlshelper "github.com/senzing-garage/go-helpers/tls"
 	"github.com/senzing-garage/go-helpers/wraperror"
@@ -88,7 +89,8 @@ func buildRootCAsFromFile(serverCaCertificatePath string) (*x509.CertPool, error
 		result *x509.CertPool
 	)
 
-	pemServerCA, err := os.ReadFile(serverCaCertificatePath)
+	safeFilename := filepath.Base(serverCaCertificatePath)
+	pemServerCA, err := os.ReadFile(safeFilename)
 	if err != nil {
 		return result, wraperror.Errorf(err, "helper.buildRootCAsFromFile.os.Read error: %w", err)
 	}
