@@ -89,7 +89,7 @@ func buildRootCAsFromFile(serverCaCertificatePath string) (*x509.CertPool, error
 		result *x509.CertPool
 	)
 
-	safeFilename := filepath.Base(serverCaCertificatePath)
+	safeFilename := filepath.Clean(serverCaCertificatePath)
 	pemServerCA, err := os.ReadFile(safeFilename)
 	if err != nil {
 		return result, wraperror.Errorf(err, "helper.buildRootCAsFromFile.os.Read error: %w", err)

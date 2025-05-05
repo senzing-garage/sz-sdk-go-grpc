@@ -197,6 +197,11 @@ update-pkg-cache:
 # Specific programs
 # -----------------------------------------------------------------------------
 
+.PHONY: bearer
+bearer:
+	@bearer scan .
+
+
 .PHONY: cspell
 cspell:
 	@cspell lint --dot .
