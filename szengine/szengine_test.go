@@ -43,6 +43,7 @@ const (
 	jsonIndentation     = "    "
 	maxDegrees          = int64(2)
 	observerOrigin      = "SzEngine observer"
+	origin              = "Machine: nn; Task: UnitTest"
 	printResults        = false
 	requiredDataSources = senzing.SzNoRequiredDatasources
 	searchAttributes    = `{"NAMES": [{"NAME_TYPE": "PRIMARY", "NAME_LAST": "JOHNSON"}], "SSN_NUMBER": "053-39-3251"}`
@@ -629,7 +630,7 @@ func TestSzengine_ExportJSONEntityReport_65536(test *testing.T) {
 	assert.Greater(test, len(jsonEntityReport), 65536)
 }
 
-// TODO: Implement TestSzengine_ExportJSONEntityReport_error
+// IMPROVE: Implement TestSzengine_ExportJSONEntityReport_error
 // func TestSzengine_ExportJSONEntityReport_error(test *testing.T) {}
 
 func TestSzengine_ExportJSONEntityReportIterator(test *testing.T) {
@@ -3365,14 +3366,12 @@ func TestSzengine_SetLogLevel_badLogLevelName(test *testing.T) {
 func TestSzengine_SetObserverOrigin(test *testing.T) {
 	ctx := test.Context()
 	szEngine := getTestObject(test)
-	origin := "Machine: nn; Task: UnitTest"
 	szEngine.SetObserverOrigin(ctx, origin)
 }
 
 func TestSzengine_GetObserverOrigin(test *testing.T) {
 	ctx := test.Context()
 	szEngine := getTestObject(test)
-	origin := "Machine: nn; Task: UnitTest"
 	szEngine.SetObserverOrigin(ctx, origin)
 	actual := szEngine.GetObserverOrigin(ctx)
 	assert.Equal(test, origin, actual)
@@ -3410,7 +3409,7 @@ func TestSzengine_Initialize(test *testing.T) {
 	require.NoError(test, err)
 }
 
-// TODO: Implement TestSzengine_Initialize_error
+// IMPROVE: Implement TestSzengine_Initialize_error
 // func TestSzengine_Initialize_error(test *testing.T) {}
 
 func TestSzengine_Initialize_withConfigID(test *testing.T) {
@@ -3423,7 +3422,7 @@ func TestSzengine_Initialize_withConfigID(test *testing.T) {
 	require.NoError(test, err)
 }
 
-// TODO: Implement TestSzengine_Initialize_withConfigID_error
+// IMPROVE: Implement TestSzengine_Initialize_withConfigID_error
 // func TestSzengine_Initialize_withConfigID_error(test *testing.T) {}
 
 func TestSzengine_Reinitialize(test *testing.T) {
@@ -3436,7 +3435,7 @@ func TestSzengine_Reinitialize(test *testing.T) {
 	printActual(test, configID)
 }
 
-// TODO: Implement TestSzengine_Reinitialize_badConfigID
+// IMPROVE: Implement TestSzengine_Reinitialize_badConfigID
 // func TestSzengine_Reinitialize_badConfigID(test *testing.T) {}
 
 func TestSzengine_Destroy(test *testing.T) {
@@ -3446,7 +3445,7 @@ func TestSzengine_Destroy(test *testing.T) {
 	require.NoError(test, err)
 }
 
-// TODO: Implement TestSzengine_Destroy_error
+// IMPROVE: Implement TestSzengine_Destroy_error
 // func TestSzengine_Destroy_error(test *testing.T) {}
 
 func TestSzengine_Destroy_withObserver(test *testing.T) {

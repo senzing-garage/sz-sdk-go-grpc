@@ -51,7 +51,7 @@ func convertGrpcError(originalError error) error {
 		errorMessage := originalError.Error()
 		if strings.HasPrefix(errorMessage, "rpc error:") {
 
-			// TODO: Improve the fragile method of pulling out the Senzing JSON error.
+			// IMPROVE: Improve the fragile method of pulling out the Senzing JSON error.
 
 			indexOfDesc := strings.Index(errorMessage, " desc = ")
 			senzingErrorMessage := errorMessage[indexOfDesc+8:] // Implicitly safe from "0+8" because of "rpc error:" prefix.
@@ -64,7 +64,7 @@ func convertGrpcError(originalError error) error {
 
 				if jsonutil.IsJSON(senzingErrorMessage) {
 
-					// TODO: Add information about any gRPC error.
+					// IMPROVE: Add information about any gRPC error.
 					// Status: https://pkg.go.dev/google.golang.org/grpc/status
 					// Codes: https://pkg.go.dev/google.golang.org/grpc/codes
 					// Create a new Senzing nested error.

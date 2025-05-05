@@ -71,7 +71,7 @@ func main() {
 		"BuildIteration": buildIteration,
 	}
 
-	fmt.Printf("\n-------------------------------------------------------------------------------\n\n")
+	outputf("\n-------------------------------------------------------------------------------\n\n")
 	logger.Log(2001, "Just a test of logging", programmMetadataMap)
 
 	szAbstractFactory, err := getSzAbstractFactory(ctx)
@@ -87,7 +87,7 @@ func main() {
 	err = demonstrateAdditionalFunctions(ctx, szAbstractFactory)
 	failOnError(5003, err)
 
-	fmt.Printf("\n-------------------------------------------------------------------------------\n\n")
+	outputf("\n-------------------------------------------------------------------------------\n\n")
 }
 
 // ----------------------------------------------------------------------------
@@ -220,7 +220,7 @@ func getLogger(ctx context.Context) (logging.Logging, error) {
 
 	logger, err := logging.NewSenzingLogger(9999, Messages, loggerOptions...)
 	if err != nil {
-		fmt.Println(err)
+		outputln(err)
 	}
 
 	return logger, err
@@ -237,4 +237,12 @@ func getSzAbstractFactory(ctx context.Context) (senzing.SzAbstractFactory, error
 
 	return result, err
 
+}
+
+func outputf(format string, message ...any) {
+	fmt.Printf(format, message...) //nolint
+}
+
+func outputln(message ...any) {
+	fmt.Println(message...) //nolint
 }

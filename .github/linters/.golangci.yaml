@@ -11,37 +11,37 @@ linters:
     - containedctx
     - contextcheck
     - copyloopvar
-    # - cyclop
+    - cyclop
     - decorder
-    # - depguard
+    - depguard
     - dogsled
-    # - dupl
-    # - dupword
+    - dupl
+    - dupword
     - durationcheck
-    # - err113
+    - err113
     - errcheck
     - errchkjson
     - errname
     - errorlint
     - exhaustive
-    # - exhaustruct
+    - exhaustruct
     - exptostd
     - fatcontext
-    # - forbidigo
+    - forbidigo
     - forcetypeassert
-    # - funcorder
-    # - funlen
+    - funcorder
+    - funlen
     - ginkgolinter
     - gocheckcompilerdirectives
-    # - gochecknoglobals
-    # - gochecknoinits
+    - gochecknoglobals
+    - gochecknoinits
     - gochecksumtype
     - gocognit
-    # - goconst
+    - goconst
     - gocritic
     - gocyclo
     - godot
-    # - godox
+    - godox
     - goheader
     - gomoddirectives
     - gomodguard
@@ -108,6 +108,7 @@ linters:
     # - wsl
     - zerologlint
   disable:
+    - dupl
     - gochecknoglobals
     - gochecknoinits
   exclusions:
@@ -133,7 +134,13 @@ linters:
               desc: "replaced by io and os packages since Go 1.16: https://tip.golang.org/doc/go1.16#ioutil"
     exhaustruct:
       exclude:
-        - '.+/cobra\.Command$'
+        - '.+/senzing\.StringFragment$'
+        - '.+/subject\.SimpleSubject$'
+        - '.+/szconfigmanager\.Szconfigmanager$'
+        - '.+/szproduct\.Szproduct$'
+        - ".+/tls.Config$"
+    funlen:
+      lines: 70
     ireturn:
       allow:
         - anon
@@ -143,7 +150,9 @@ linters:
     mnd:
       ignored-functions:
         - '^logger\.Log$'
-
+    goconst:
+      min-occurrences: 5
+      ignore-string-values: ["CUSTOMERS"]
 formatters:
   enable:
     - gci

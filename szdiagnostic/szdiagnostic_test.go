@@ -33,6 +33,7 @@ const (
 	instanceName      = "SzDiagnostic Test"
 	jsonIndentation   = "    "
 	observerOrigin    = "SzDiagnostic observer"
+	origin            = "Machine: nn; Task: UnitTest"
 	printResults      = false
 	verboseLogging    = senzing.SzNoLogging
 )
@@ -168,14 +169,12 @@ func TestSzdiagnostic_SetLogLevel_badLogLevelName(test *testing.T) {
 func TestSzdiagnostic_SetObserverOrigin(test *testing.T) {
 	ctx := test.Context()
 	szDiagnostic := getTestObject(test)
-	origin := "Machine: nn; Task: UnitTest"
 	szDiagnostic.SetObserverOrigin(ctx, origin)
 }
 
 func TestSzdiagnostic_GetObserverOrigin(test *testing.T) {
 	ctx := test.Context()
 	szDiagnostic := getTestObject(test)
-	origin := "Machine: nn; Task: UnitTest"
 	szDiagnostic.SetObserverOrigin(ctx, origin)
 	actual := szDiagnostic.GetObserverOrigin(ctx)
 	assert.Equal(test, origin, actual)
@@ -213,7 +212,7 @@ func TestSzdiagnostic_Initialize(test *testing.T) {
 	require.NoError(test, err)
 }
 
-// TODO: Implement TestSzdiagnostic_Initialize_error
+// IMPROVE: Implement TestSzdiagnostic_Initialize_error
 // func TestSzdiagnostic_Initialize_error(test *testing.T) {}
 
 func TestSzdiagnostic_Initialize_withConfigId(test *testing.T) {
@@ -228,7 +227,7 @@ func TestSzdiagnostic_Initialize_withConfigId(test *testing.T) {
 	require.NoError(test, err)
 }
 
-// TODO: Implement TestSzdiagnostic_Initialize_withConfigId_badConfigID
+// IMPROVE: Implement TestSzdiagnostic_Initialize_withConfigId_badConfigID
 // func TestSzdiagnostic_Initialize_withConfigId_badConfigID(test *testing.T) {}
 
 // func TestSzdiagnostic_Reinitialize(test *testing.T) {
@@ -239,7 +238,7 @@ func TestSzdiagnostic_Initialize_withConfigId(test *testing.T) {
 // 	require.NoError(test, err)
 // }
 
-// TODO: Implement TestSzdiagnostic_Reinitialize_error
+// IMPROVE: Implement TestSzdiagnostic_Reinitialize_error
 // func TestSzdiagnostic_Reinitialize_error(test *testing.T) {}
 
 func TestSzdiagnostic_Destroy(test *testing.T) {
@@ -258,7 +257,7 @@ func TestSzdiagnostic_Destroy_withObserver(test *testing.T) {
 	require.NoError(test, err)
 }
 
-// TODO: Implement TestSzdiagnostic_Destroy_error
+// IMPROVE: Implement TestSzdiagnostic_Destroy_error
 // func TestSzdiagnostic_Destroy_error(test *testing.T) {}
 
 // ----------------------------------------------------------------------------

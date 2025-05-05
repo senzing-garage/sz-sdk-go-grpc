@@ -3,10 +3,10 @@ package helper
 import (
 	"crypto/tls"
 	"crypto/x509"
-	"fmt"
 	"os"
 
 	tlshelper "github.com/senzing-garage/go-helpers/tls"
+	"github.com/senzing-garage/go-helpers/wraperror"
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/credentials/insecure"
 )
@@ -38,7 +38,7 @@ func GetGrpcTransportCredentials() (credentials.TransportCredentials, error) {
 
 		rootCAs := x509.NewCertPool()
 		if !rootCAs.AppendCertsFromPEM(pemServerCA) {
-			return result, fmt.Errorf("failed to add server CA's certificate")
+			return result, wraperror.Errorf(errPackage, "failed to add server CA's certificate")
 		}
 
 		// Mutual TLS.

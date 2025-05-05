@@ -22,6 +22,7 @@ const (
 	defaultTruncation = 76
 	instanceName      = "SzProduct Test"
 	observerOrigin    = "SzProduct observer"
+	origin            = "Machine: nn; Task: UnitTest"
 	printResults      = false
 	verboseLogging    = senzing.SzNoLogging
 )
@@ -76,14 +77,12 @@ func TestSzproduct_SetLogLevel_badLogLevelName(test *testing.T) {
 func TestSzproduct_SetObserverOrigin(test *testing.T) {
 	ctx := test.Context()
 	szProduct := getTestObject(test)
-	origin := "Machine: nn; Task: UnitTest"
 	szProduct.SetObserverOrigin(ctx, origin)
 }
 
 func TestSzproduct_GetObserverOrigin(test *testing.T) {
 	ctx := test.Context()
 	szProduct := getTestObject(test)
-	origin := "Machine: nn; Task: UnitTest"
 	szProduct.SetObserverOrigin(ctx, origin)
 	actual := szProduct.GetObserverOrigin(ctx)
 	assert.Equal(test, origin, actual)
@@ -116,7 +115,7 @@ func TestSzproduct_Initialize(test *testing.T) {
 	require.NoError(test, err)
 }
 
-// TODO: Implement TestSzengine_Initialize_error
+// IMPROVE: Implement TestSzengine_Initialize_error
 // func TestSzproduct_Initialize_error(test *testing.T) {}
 
 func TestSzproduct_Destroy(test *testing.T) {
@@ -126,7 +125,7 @@ func TestSzproduct_Destroy(test *testing.T) {
 	require.NoError(test, err)
 }
 
-// TODO: Implement TestSzengine_Destroy_error
+// IMPROVE: Implement TestSzengine_Destroy_error
 // func TestSzproduct_Destroy_error(test *testing.T) {}
 
 func TestSzproduct_Destroy_withObserver(test *testing.T) {
