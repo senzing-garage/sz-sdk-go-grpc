@@ -1,9 +1,10 @@
-package helper
+package helper_test
 
 import (
 	"errors"
 	"fmt"
 
+	"github.com/senzing-garage/sz-sdk-go-grpc/helper"
 	"github.com/senzing-garage/sz-sdk-go/szerror"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -18,7 +19,7 @@ func ExampleConvertGrpcError() {
 	senzingErrorMessage := `{"reason": "SENZ0033|Test message"}`        // Example message from Senzing Sz engine.
 	grpcStatusError := status.Error(codes.Unknown, senzingErrorMessage) // Create a gRPC *status.Error
 
-	err := ConvertGrpcError(grpcStatusError)
+	err := helper.ConvertGrpcError(grpcStatusError)
 	if err != nil {
 		if errors.Is(err, szerror.ErrSzNotFound) {
 			fmt.Println("Is an ErrSzNotFound")

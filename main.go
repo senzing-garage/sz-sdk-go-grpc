@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/senzing-garage/go-helpers/truthset"
+	"github.com/senzing-garage/go-helpers/wraperror"
 	"github.com/senzing-garage/go-logging/logging"
 	"github.com/senzing-garage/sz-sdk-go-grpc/helper"
 	"github.com/senzing-garage/sz-sdk-go-grpc/szabstractfactory"
@@ -71,11 +72,10 @@ func main() {
 		"BuildIteration": buildIteration,
 	}
 
-	fmt.Printf("\n-------------------------------------------------------------------------------\n\n")
+	outputf("\n-------------------------------------------------------------------------------\n\n")
 	logger.Log(2001, "Just a test of logging", programmMetadataMap)
 
-	szAbstractFactory, err := getSzAbstractFactory(ctx)
-	failOnError(5001, err)
+	szAbstractFactory := getSzAbstractFactory(ctx)
 
 	// Persist the Senzing configuration to the Senzing repository.
 
@@ -87,7 +87,7 @@ func main() {
 	err = demonstrateAdditionalFunctions(ctx, szAbstractFactory)
 	failOnError(5003, err)
 
-	fmt.Printf("\n-------------------------------------------------------------------------------\n\n")
+	outputf("\n-------------------------------------------------------------------------------\n\n")
 }
 
 // ----------------------------------------------------------------------------
@@ -95,9 +95,7 @@ func main() {
 // ----------------------------------------------------------------------------
 
 func demonstrateAdditionalFunctions(ctx context.Context, szAbstractFactory senzing.SzAbstractFactory) error {
-
 	// Create Senzing objects.
-
 	szEngine, err := szAbstractFactory.CreateEngine(ctx)
 	failOnError(5301, err)
 
@@ -116,7 +114,7 @@ func demonstrateAdditionalFunctions(ctx context.Context, szAbstractFactory senzi
 	failOnError(5304, err)
 	logger.Log(2004, license)
 
-	return err
+	return wraperror.Errorf(err, "main.demonstrateAdditionalFunctions error: %w", err)
 }
 
 func demonstrateAddRecord(ctx context.Context, szEngine senzing.SzEngine) (string, error) {
@@ -135,11 +133,13 @@ func demonstrateAddRecord(ctx context.Context, szEngine senzing.SzEngine) (strin
 		`", "DSRC_ACTION": "A", "ADDR_CITY": "Delhi", "DRIVERS_LICENSE_STATE": "DE", "PHONE_NUMBER": "225-671-0796", "NAME_LAST": "SEAMAN", "entityid": "284430058", "ADDR_LINE1": "772 Armstrong RD"}`,
 	)
 
-	var flags = senzing.SzWithInfo
+	flags := senzing.SzWithInfo
 
 	// Using SzEngine: Add record and return "withInfo".
 
-	return szEngine.AddRecord(ctx, dataSourceCode, recordID, recordDefinition, flags)
+	result, err := szEngine.AddRecord(ctx, dataSourceCode, recordID, recordDefinition, flags)
+
+	return result, wraperror.Errorf(err, "main.demonstrateAddRecord.AddRecord error: %w", err)
 }
 
 func demonstrateConfigFunctions(ctx context.Context, szAbstractFactory senzing.SzAbstractFactory) error {
@@ -149,12 +149,20 @@ func demonstrateConfigFunctions(ctx context.Context, szAbstractFactory senzing.S
 
 	szConfigManager, err := szAbstractFactory.CreateConfigManager(ctx)
 	if err != nil {
-		return logger.NewError(5100, err)
+		return wraperror.Errorf(
+			err,
+			"demonstrateConfigFunctions.CreateConfigManager error: %w",
+			logger.NewError(5100, err),
+		)
 	}
 
 	szConfig, err := szConfigManager.CreateConfigFromTemplate(ctx)
 	if err != nil {
-		return logger.NewError(5101, err)
+		return wraperror.Errorf(
+			err,
+			"demonstrateConfigFunctions.CreateConfigFromTemplate error: %w",
+			logger.NewError(5101, err),
+		)
 	}
 
 	// Using SzConfig: Add data source to in-memory configuration.
@@ -162,7 +170,11 @@ func demonstrateConfigFunctions(ctx context.Context, szAbstractFactory senzing.S
 	for dataSourceCode := range truthset.TruthsetDataSources {
 		_, err := szConfig.AddDataSource(ctx, dataSourceCode)
 		if err != nil {
-			return logger.NewError(5102, err)
+			return wraperror.Errorf(
+				err,
+				"demonstrateConfigFunctions.AddDataSource error: %w",
+				logger.NewError(5102, err),
+			)
 		}
 	}
 
@@ -172,17 +184,25 @@ func demonstrateConfigFunctions(ctx context.Context, szAbstractFactory senzing.S
 
 	configDefinition, err := szConfig.Export(ctx)
 	if err != nil {
-		return logger.NewError(5103, err)
+		return wraperror.Errorf(
+			err,
+			"demonstrateConfigFunctions.Export error: %w",
+			logger.NewError(5103, err),
+		)
 	}
 
 	// Using SzConfigManager: Persist configuration string to database.
 
 	_, err = szConfigManager.SetDefaultConfig(ctx, configDefinition, configComments)
 	if err != nil {
-		return logger.NewError(5104, err)
+		return wraperror.Errorf(
+			err,
+			"demonstrateConfigFunctions.SetDefaultConfig error: %w",
+			logger.NewError(5104, err),
+		)
 	}
 
-	return err
+	return wraperror.Errorf(err, "demonstrateConfigFunctions error: %w", err)
 }
 
 func failOnError(msgID int, err error) {
@@ -220,21 +240,26 @@ func getLogger(ctx context.Context) (logging.Logging, error) {
 
 	logger, err := logging.NewSenzingLogger(9999, Messages, loggerOptions...)
 	if err != nil {
-		fmt.Println(err)
+		outputln(err)
 	}
 
-	return logger, err
+	return logger, wraperror.Errorf(err, "getLogger error: %w", err)
 }
 
-func getSzAbstractFactory(ctx context.Context) (senzing.SzAbstractFactory, error) {
-	var err error
-
+func getSzAbstractFactory(ctx context.Context) senzing.SzAbstractFactory {
 	_ = ctx
 
 	result := &szabstractfactory.Szabstractfactory{
 		GrpcConnection: getGrpcConnection(),
 	}
 
-	return result, err
+	return result
+}
 
+func outputf(format string, message ...any) {
+	fmt.Printf(format, message...) //nolint
+}
+
+func outputln(message ...any) {
+	fmt.Println(message...) //nolint
 }

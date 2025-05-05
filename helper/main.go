@@ -1,5 +1,7 @@
 package helper
 
+import "errors"
+
 // ----------------------------------------------------------------------------
 // Constants
 // ----------------------------------------------------------------------------
@@ -11,3 +13,5 @@ where "cccc" is the component ID and "eeee" is the error identifier.
 const (
 	MessageIDPrefix = "SZSDK"
 )
+
+var errForPackage = errors.New("helper")

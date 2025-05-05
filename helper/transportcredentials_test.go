@@ -1,9 +1,10 @@
-package helper
+package helper_test
 
 import (
 	"os"
 	"testing"
 
+	"github.com/senzing-garage/sz-sdk-go-grpc/helper"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -18,10 +19,10 @@ func TestHelpers_GetGrpcTransportCredentials_Insecure(test *testing.T) {
 
 	if isSet {
 		os.Unsetenv(envVar)
-		defer os.Setenv(envVar, value)
+		defer os.Setenv(envVar, value) //nolint
 	}
 
-	actual, err := GetGrpcTransportCredentials()
+	actual, err := helper.GetGrpcTransportCredentials()
 	require.NoError(test, err)
 	assert.Empty(test, actual)
 }
@@ -35,12 +36,12 @@ func TestHelpers_GetGrpcTransportCredentials_MutualTLS(test *testing.T) {
 	for envVar, value := range envVars {
 		_, isSet := os.LookupEnv(envVar)
 		if !isSet {
-			os.Setenv(envVar, value)
+			os.Setenv(envVar, value) //nolint
 			defer os.Unsetenv(envVar)
 		}
 	}
 
-	actual, err := GetGrpcTransportCredentials()
+	actual, err := helper.GetGrpcTransportCredentials()
 	require.NoError(test, err)
 	assert.NotEmpty(test, actual)
 }
@@ -50,11 +51,11 @@ func TestHelpers_GetGrpcTransportCredentials_ServerSideTLS(test *testing.T) {
 	_, isSet := os.LookupEnv(envVar)
 
 	if !isSet {
-		os.Setenv(envVar, "../testdata/certificates/certificate-authority/certificate.pem")
+		os.Setenv(envVar, "../testdata/certificates/certificate-authority/certificate.pem") //nolint
 		defer os.Unsetenv(envVar)
 	}
 
-	actual, err := GetGrpcTransportCredentials()
+	actual, err := helper.GetGrpcTransportCredentials()
 	require.NoError(test, err)
 	assert.NotEmpty(test, actual)
 }

@@ -5,7 +5,6 @@ package szdiagnostic
 
 import (
 	"context"
-	"fmt"
 	"strconv"
 	"time"
 
@@ -352,7 +351,7 @@ func (client *Szdiagnostic) SetLogLevel(ctx context.Context, logLevelName string
 	}
 
 	if !logging.IsValidLogLevelName(logLevelName) {
-		return fmt.Errorf("invalid error level: %s; %w", logLevelName, szerror.ErrSzSdk)
+		return wraperror.Errorf(errForPackage, "invalid error level: %s; %w", logLevelName, szerror.ErrSzSdk)
 	}
 
 	err = client.getLogger().SetLogLevel(logLevelName)
@@ -424,43 +423,43 @@ func (client *Szdiagnostic) UnregisterObserver(ctx context.Context, observer obs
 // ----------------------------------------------------------------------------
 
 func (client *Szdiagnostic) checkDatastorePerformance(ctx context.Context, secondsToRun int) (string, error) {
-	var (
-		result string
-	)
+	var result string
 
 	request := &szpb.CheckDatastorePerformanceRequest{
 		SecondsToRun: int32(secondsToRun), //nolint:gosec
 	}
 	response, err := client.GrpcClient.CheckDatastorePerformance(ctx, request)
 	result = response.GetResult()
+
 	return result, helper.ConvertGrpcError(err)
 }
 
 func (client *Szdiagnostic) getDatastoreInfo(ctx context.Context) (string, error) {
-	var (
-		result string
-	)
+	var result string
+
 	request := &szpb.GetDatastoreInfoRequest{}
 	response, err := client.GrpcClient.GetDatastoreInfo(ctx, request)
 	result = response.GetResult()
+
 	return result, helper.ConvertGrpcError(err)
 }
 
 func (client *Szdiagnostic) getFeature(ctx context.Context, featureID int64) (string, error) {
-	var (
-		result string
-	)
+	var result string
+
 	request := &szpb.GetFeatureRequest{
 		FeatureId: featureID,
 	}
 	response, err := client.GrpcClient.GetFeature(ctx, request)
 	result = response.GetResult()
+
 	return result, helper.ConvertGrpcError(err)
 }
 
 func (client *Szdiagnostic) purgeRepository(ctx context.Context) error {
 	request := &szpb.PurgeRepositoryRequest{}
 	_, err := client.GrpcClient.PurgeRepository(ctx, request)
+
 	return helper.ConvertGrpcError(err)
 }
 
@@ -469,6 +468,7 @@ func (client *Szdiagnostic) reinitialize(ctx context.Context, configID int64) er
 		ConfigId: configID,
 	}
 	_, err := client.GrpcClient.Reinitialize(ctx, request)
+
 	return helper.ConvertGrpcError(err)
 }
 

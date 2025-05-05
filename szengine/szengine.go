@@ -7,7 +7,6 @@ package szengine
 import (
 	"context"
 	"errors"
-	"fmt"
 	"io"
 	"strconv"
 	"time"
@@ -311,6 +310,7 @@ func (client *Szengine) ExportCsvEntityReportIterator(
 				stringFragmentChannel <- senzing.StringFragment{
 					Error: helper.ConvertGrpcError(ctx.Err()),
 				}
+
 				break forLoop
 			default:
 				response, err := stream.Recv()
@@ -321,6 +321,7 @@ func (client *Szengine) ExportCsvEntityReportIterator(
 					stringFragmentChannel <- senzing.StringFragment{
 						Error: helper.ConvertGrpcError(err),
 					}
+
 					break forLoop
 				}
 				stringFragmentChannel <- senzing.StringFragment{
@@ -427,6 +428,7 @@ func (client *Szengine) ExportJSONEntityReportIterator(ctx context.Context, flag
 				stringFragmentChannel <- senzing.StringFragment{
 					Error: helper.ConvertGrpcError(ctx.Err()),
 				}
+
 				break forLoop
 			default:
 				response, err := stream.Recv()
@@ -437,6 +439,7 @@ func (client *Szengine) ExportJSONEntityReportIterator(ctx context.Context, flag
 					stringFragmentChannel <- senzing.StringFragment{
 						Error: helper.ConvertGrpcError(err),
 					}
+
 					break forLoop
 				}
 				stringFragmentChannel <- senzing.StringFragment{
@@ -753,8 +756,14 @@ Output
   - A JSON document.
 */
 func (client *Szengine) FindPathByEntityID(
-	ctx context.Context, startEntityID int64, endEntityID int64, maxDegrees int64, avoidEntityIDs string,
-	requiredDataSources string, flags int64) (string, error) {
+	ctx context.Context,
+	startEntityID int64,
+	endEntityID int64,
+	maxDegrees int64,
+	avoidEntityIDs string,
+	requiredDataSources string,
+	flags int64,
+) (string, error) {
 	var (
 		err    error
 		result string
@@ -827,9 +836,17 @@ Input
 Output
   - A JSON document.
 */
-func (client *Szengine) FindPathByRecordID(ctx context.Context, startDataSourceCode string, startRecordID string,
-	endDataSourceCode string, endRecordID string, maxDegrees int64, avoidRecordKeys string, requiredDataSources string,
-	flags int64) (string, error) {
+func (client *Szengine) FindPathByRecordID(
+	ctx context.Context,
+	startDataSourceCode string,
+	startRecordID string,
+	endDataSourceCode string,
+	endRecordID string,
+	maxDegrees int64,
+	avoidRecordKeys string,
+	requiredDataSources string,
+	flags int64,
+) (string, error) {
 	var (
 		err    error
 		result string
@@ -967,7 +984,8 @@ func (client *Szengine) GetEntityByRecordID(
 	ctx context.Context,
 	dataSourceCode string,
 	recordID string,
-	flags int64) (string, error) {
+	flags int64,
+) (string, error) {
 	var (
 		err    error
 		result string
@@ -1014,7 +1032,8 @@ func (client *Szengine) GetRecord(
 	ctx context.Context,
 	dataSourceCode string,
 	recordID string,
-	flags int64) (string, error) {
+	flags int64,
+) (string, error) {
 	var (
 		err    error
 		result string
@@ -1130,7 +1149,8 @@ Output
 func (client *Szengine) GetVirtualEntityByRecordID(
 	ctx context.Context,
 	recordKeys string,
-	flags int64) (string, error) {
+	flags int64,
+) (string, error) {
 	var (
 		err    error
 		result string
@@ -1357,7 +1377,8 @@ func (client *Szengine) ReevaluateRecord(
 	ctx context.Context,
 	dataSourceCode string,
 	recordID string,
-	flags int64) (string, error) {
+	flags int64,
+) (string, error) {
 	var (
 		err    error
 		result string
@@ -1406,7 +1427,8 @@ func (client *Szengine) SearchByAttributes(
 	ctx context.Context,
 	attributes string,
 	searchProfile string,
-	flags int64) (string, error) {
+	flags int64,
+) (string, error) {
 	var (
 		err    error
 		result string
@@ -1497,7 +1519,8 @@ func (client *Szengine) WhyRecordInEntity(
 	ctx context.Context,
 	dataSourceCode string,
 	recordID string,
-	flags int64) (string, error) {
+	flags int64,
+) (string, error) {
 	var (
 		err    error
 		result string
@@ -1546,7 +1569,8 @@ func (client *Szengine) WhyRecords(
 	recordID1 string,
 	dataSourceCode2 string,
 	recordID2 string,
-	flags int64) (string, error) {
+	flags int64,
+) (string, error) {
 	var (
 		err    error
 		result string
@@ -1610,7 +1634,8 @@ func (client *Szengine) WhySearch(
 	attributes string,
 	entityID int64,
 	searchProfile string,
-	flags int64) (string, error) {
+	flags int64,
+) (string, error) {
 	var (
 		err    error
 		result string
@@ -1701,7 +1726,9 @@ func (client *Szengine) Initialize(
 	ctx context.Context,
 	instanceName string,
 	settings string,
-	configID int64, verboseLogging int64) error {
+	configID int64,
+	verboseLogging int64,
+) error {
 	var err error
 
 	if client.isTrace {
@@ -1812,7 +1839,7 @@ func (client *Szengine) SetLogLevel(ctx context.Context, logLevelName string) er
 	}
 
 	if !logging.IsValidLogLevelName(logLevelName) {
-		return fmt.Errorf("invalid error level: %s; %w", logLevelName, szerror.ErrSzSdk)
+		return wraperror.Errorf(errForPackage, "invalid error level: %s; %w", logLevelName, szerror.ErrSzSdk)
 	}
 
 	err = client.getLogger().SetLogLevel(logLevelName)
@@ -1903,9 +1930,10 @@ func (client *Szengine) addRecord(
 
 func (client *Szengine) closeExport(ctx context.Context, exportHandle uintptr) error {
 	request := &szpb.CloseExportRequest{
-		ExportHandle: int64(exportHandle), //nolint:gosec
+		ExportHandle: int64(exportHandle),
 	}
 	_, err := client.GrpcClient.CloseExport(ctx, request)
+
 	return helper.ConvertGrpcError(err)
 }
 
@@ -1957,7 +1985,7 @@ func (client *Szengine) exportJSONEntityReport(ctx context.Context, flags int64)
 
 func (client *Szengine) fetchNext(ctx context.Context, exportHandle uintptr) (string, error) {
 	request := &szpb.FetchNextRequest{
-		ExportHandle: int64(exportHandle), //nolint:gosec
+		ExportHandle: int64(exportHandle),
 	}
 	response, err := client.GrpcClient.FetchNext(ctx, request)
 	result := response.GetResult()
@@ -2198,6 +2226,7 @@ func (client *Szengine) preprocessRecord(ctx context.Context, recordDefinition s
 func (client *Szengine) primeEngine(ctx context.Context) error {
 	request := &szpb.PrimeEngineRequest{}
 	_, err := client.GrpcClient.PrimeEngine(ctx, request)
+
 	return helper.ConvertGrpcError(err)
 }
 
@@ -2245,6 +2274,7 @@ func (client *Szengine) reinitialize(ctx context.Context, configID int64) error 
 		ConfigId: configID,
 	}
 	_, err := client.GrpcClient.Reinitialize(ctx, request)
+
 	return helper.ConvertGrpcError(err)
 }
 

@@ -1,9 +1,10 @@
-package helper
+package helper_test
 
 import (
 	"fmt"
 	"testing"
 
+	"github.com/senzing-garage/sz-sdk-go-grpc/helper"
 	"github.com/senzing-garage/sz-sdk-go/szerror"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -45,7 +46,7 @@ func TestConvertGrpcError(test *testing.T) {
 	for _, testCase := range testCases {
 		test.Run(testCase.name, func(test *testing.T) {
 			originalError := status.Error(testCase.gRPCCode, testCase.senzingErrorMessage)
-			actual := ConvertGrpcError(originalError)
+			actual := helper.ConvertGrpcError(originalError)
 			require.ErrorIs(test, actual, testCase.expectedType)
 
 			for _, szerrorTypeID := range testCase.expectedTypes {
@@ -64,7 +65,7 @@ func TestConvertGrpcError_wrapped(test *testing.T) {
 		test.Run(testCase.name, func(test *testing.T) {
 			originalError := status.Error(testCase.gRPCCode, testCase.senzingErrorMessage)
 			wrappedError := fmt.Errorf("Wrap %w", originalError)
-			actual := ConvertGrpcError(wrappedError)
+			actual := helper.ConvertGrpcError(wrappedError)
 			require.ErrorIs(test, actual, testCase.expectedType)
 
 			for _, szerrorTypeID := range testCase.expectedTypes {
@@ -79,27 +80,27 @@ func TestConvertGrpcError_wrapped(test *testing.T) {
 }
 
 func TestConvertGrpcError_nil(test *testing.T) {
-	actual := ConvertGrpcError(nil)
+	actual := helper.ConvertGrpcError(nil)
 	require.NoError(test, actual)
 }
 
 func TestConvertGrpcError_badParse(test *testing.T) {
 	jsonMessage := `{"time": 12345}`
 	gRPCError := status.Error(codes.Unknown, jsonMessage)
-	actual := ConvertGrpcError(gRPCError)
+	actual := helper.ConvertGrpcError(gRPCError)
 	require.Error(test, actual)
 }
 
 func TestConvertGrpcError_badReason(test *testing.T) {
 	jsonMessage := `{"reason": "bad"}`
 	gRPCError := status.Error(codes.Unknown, jsonMessage)
-	actual := ConvertGrpcError(gRPCError)
+	actual := helper.ConvertGrpcError(gRPCError)
 	require.Error(test, actual)
 }
 
 func TestConvertGrpcError_badReasonCode(test *testing.T) {
 	jsonMessage := `{"reason": "SENZabcd | bad text"}`
 	gRPCError := status.Error(codes.Unknown, jsonMessage)
-	actual := ConvertGrpcError(gRPCError)
+	actual := helper.ConvertGrpcError(gRPCError)
 	require.Error(test, actual)
 }

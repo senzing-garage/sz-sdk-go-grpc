@@ -5,7 +5,6 @@ package szconfigmanager
 
 import (
 	"context"
-	"fmt"
 	"strconv"
 	"time"
 
@@ -237,7 +236,8 @@ Output
 func (client *Szconfigmanager) RegisterConfig(
 	ctx context.Context,
 	configDefinition string,
-	configComment string) (int64, error) {
+	configComment string,
+) (int64, error) {
 	var (
 		err    error
 		result int64
@@ -285,7 +285,8 @@ Input
 func (client *Szconfigmanager) ReplaceDefaultConfigID(
 	ctx context.Context,
 	currentDefaultConfigID int64,
-	newDefaultConfigID int64) error {
+	newDefaultConfigID int64,
+) error {
 	var err error
 
 	if client.isTrace {
@@ -325,7 +326,8 @@ Input
 func (client *Szconfigmanager) SetDefaultConfig(
 	ctx context.Context,
 	configDefinition string,
-	configComment string) (int64, error) {
+	configComment string,
+) (int64, error) {
 	var (
 		err    error
 		result int64
@@ -448,7 +450,8 @@ func (client *Szconfigmanager) Initialize(
 	ctx context.Context,
 	instanceName string,
 	settings string,
-	verboseLogging int64) error {
+	verboseLogging int64,
+) error {
 	var err error
 
 	if client.isTrace {
@@ -525,7 +528,7 @@ func (client *Szconfigmanager) SetLogLevel(ctx context.Context, logLevelName str
 	}
 
 	if !logging.IsValidLogLevelName(logLevelName) {
-		return fmt.Errorf("invalid error level: %s; %w", logLevelName, szerror.ErrSzSdk)
+		return wraperror.Errorf(errForPackage, "invalid error level: %s; %w", logLevelName, szerror.ErrSzSdk)
 	}
 
 	err = client.getLogger().SetLogLevel(logLevelName)
@@ -598,12 +601,13 @@ func (client *Szconfigmanager) UnregisterObserver(ctx context.Context, observer 
 
 func (client *Szconfigmanager) createConfigFromConfigIDChoreography(
 	ctx context.Context,
-	configID int64) (senzing.SzConfig, error) {
+	configID int64,
+) (senzing.SzConfig, error) {
 	var err error
 
 	configDefinition, err := client.getConfig(ctx, configID)
 	if err != nil {
-		return nil, fmt.Errorf("createConfigFromConfigIDChoreography.getConfig error: %w", err)
+		return nil, wraperror.Errorf(err, "createConfigFromConfigIDChoreography.getConfig error: %w", err)
 	}
 
 	return client.createConfigFromString(ctx, configDefinition)
@@ -611,7 +615,8 @@ func (client *Szconfigmanager) createConfigFromConfigIDChoreography(
 
 func (client *Szconfigmanager) createConfigFromString(
 	ctx context.Context,
-	configDefinition string) (senzing.SzConfig, error) {
+	configDefinition string,
+) (senzing.SzConfig, error) {
 	var err error
 
 	result := &szconfig.Szconfig{
@@ -630,19 +635,23 @@ func (client *Szconfigmanager) createConfigFromString(
 
 func (client *Szconfigmanager) createConfigFromTemplateChoreography(ctx context.Context) (senzing.SzConfig, error) {
 	var err error
+
 	request := szpb.GetTemplateConfigRequest{}
 	response, err := client.GrpcClient.GetTemplateConfig(ctx, &request)
+
 	err = helper.ConvertGrpcError(err)
 	if err != nil {
-		return nil, fmt.Errorf("createConfigFromTemplateChoreography.getConfig error: %w", err)
+		return nil, wraperror.Errorf(err, "createConfigFromTemplateChoreography.getConfig error: %w", err)
 	}
+
 	return client.createConfigFromString(ctx, response.GetResult())
 }
 
 func (client *Szconfigmanager) setDefaultConfigChoreography(
 	ctx context.Context,
 	configDefinition string,
-	configComment string) (int64, error) {
+	configComment string,
+) (int64, error) {
 	var (
 		err    error
 		result int64
@@ -650,7 +659,7 @@ func (client *Szconfigmanager) setDefaultConfigChoreography(
 
 	result, err = client.registerConfig(ctx, configDefinition, configComment)
 	if err != nil {
-		return 0, fmt.Errorf("setDefaultConfigChoreography.registerConfig error: %w", err)
+		return 0, wraperror.Errorf(err, "setDefaultConfigChoreography.registerConfig error: %w", err)
 	}
 
 	err = client.setDefaultConfigID(ctx, result)
@@ -713,6 +722,7 @@ func (client *Szconfigmanager) replaceDefaultConfigID(
 		NewDefaultConfigId:     newDefaultConfigID,
 	}
 	_, err := client.GrpcClient.ReplaceDefaultConfigId(ctx, &request)
+
 	return helper.ConvertGrpcError(err)
 }
 
@@ -721,6 +731,7 @@ func (client *Szconfigmanager) setDefaultConfigID(ctx context.Context, configID 
 		ConfigId: configID,
 	}
 	_, err := client.GrpcClient.SetDefaultConfigId(ctx, &request)
+
 	return helper.ConvertGrpcError(err)
 }
 

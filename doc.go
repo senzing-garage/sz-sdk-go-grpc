@@ -8,7 +8,7 @@ Under the covers, gRPC is used as the protocol to communicate with a Senzing gRP
 
 # Examples
 
-Examples of use can be seen in the xxxx_test.go files.
+Usage examples can be seen in the xxxx_test.go files.
 
 # Related information
 

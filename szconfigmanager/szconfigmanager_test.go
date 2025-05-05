@@ -27,6 +27,7 @@ const (
 	defaultTruncation = 76
 	instanceName      = "SzConfigManager Test"
 	observerOrigin    = "SzConfigManager observer"
+	origin            = "Machine: nn; Task: UnitTest"
 	printResults      = false
 	verboseLogging    = senzing.SzNoLogging
 )
@@ -187,7 +188,7 @@ func TestSzconfigmanager_ReplaceDefaultConfigID(test *testing.T) {
 	currentDefaultConfigID, err1 := szConfigManager.GetDefaultConfigID(ctx)
 	require.NoError(test, err1)
 
-	// TODO: This is kind of a cheater.
+	// IMPROVE: This is kind of a cheater.
 
 	newDefaultConfigID, err2 := szConfigManager.GetDefaultConfigID(ctx)
 	require.NoError(test, err2)
@@ -287,14 +288,12 @@ func TestSzconfigmanager_SetLogLevel_badLogLevelName(test *testing.T) {
 func TestSzconfigmanager_SetObserverOrigin(test *testing.T) {
 	ctx := test.Context()
 	szConfigManager := getTestObject(test)
-	origin := "Machine: nn; Task: UnitTest"
 	szConfigManager.SetObserverOrigin(ctx, origin)
 }
 
 func TestSzconfigmanager_GetObserverOrigin(test *testing.T) {
 	ctx := test.Context()
 	szConfigManager := getTestObject(test)
-	origin := "Machine: nn; Task: UnitTest"
 	szConfigManager.SetObserverOrigin(ctx, origin)
 	actual := szConfigManager.GetObserverOrigin(ctx)
 	assert.Equal(test, origin, actual)
@@ -327,7 +326,7 @@ func TestSzconfigmanager_Initialize(test *testing.T) {
 	require.NoError(test, err)
 }
 
-// TODO: Implement TestSzconfigmanager_Initialize_error
+// IMPROVE: Implement TestSzconfigmanager_Initialize_error
 // func TestSzconfigmanager_Initialize_error(test *testing.T) {}
 
 func TestSzconfigmanager_Destroy(test *testing.T) {
@@ -345,7 +344,7 @@ func TestSzconfigmanager_Destroy_withObserver(test *testing.T) {
 	require.NoError(test, err)
 }
 
-// TODO: Implement TestSzconfigmanager_Destroy_error
+// IMPROVE: Implement TestSzconfigmanager_Destroy_error
 // func TestSzconfigmanager_Destroy_error(test *testing.T) {}
 
 // ----------------------------------------------------------------------------
@@ -415,8 +414,8 @@ func getSzAbstractFactory(ctx context.Context) senzing.SzAbstractFactory {
 
 func getSzConfigManager(ctx context.Context) *szconfigmanager.Szconfigmanager {
 	var err error
-	if szConfigManagerSingleton == nil {
 
+	if szConfigManagerSingleton == nil {
 		grpcConnection := getGrpcConnection()
 		szConfigManagerSingleton = &szconfigmanager.Szconfigmanager{
 			GrpcClient:         szpb.NewSzConfigManagerClient(grpcConnection),
@@ -490,6 +489,7 @@ func truncate(aString string, length int) string {
 
 func TestMain(m *testing.M) {
 	setup()
+
 	code := m.Run()
 	os.Exit(code)
 }

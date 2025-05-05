@@ -27,6 +27,7 @@ const (
 	defaultTruncation = 76
 	instanceName      = "SzConfig Test"
 	observerOrigin    = "SzConfig observer"
+	origin            = "Machine: nn; Task: UnitTest"
 	printResults      = false
 	verboseLogging    = senzing.SzNoLogging
 )
@@ -193,14 +194,12 @@ func TestSzconfig_SetLogLevel_badLogLevelName(test *testing.T) {
 func TestSzconfig_SetObserverOrigin(test *testing.T) {
 	ctx := test.Context()
 	szConfig := getTestObject(test)
-	origin := "Machine: nn; Task: UnitTest"
 	szConfig.SetObserverOrigin(ctx, origin)
 }
 
 func TestSzconfig_GetObserverOrigin(test *testing.T) {
 	ctx := test.Context()
 	szConfig := getTestObject(test)
-	origin := "Machine: nn; Task: UnitTest"
 	szConfig.SetObserverOrigin(ctx, origin)
 	actual := szConfig.GetObserverOrigin(ctx)
 	assert.Equal(test, origin, actual)
@@ -240,7 +239,7 @@ func TestSzconfig_Initialize_badSettings(test *testing.T) {
 	assert.NoError(test, err)
 }
 
-// TODO: Implement TestSzconfig_Initialize_error
+// IMPROVE: Implement TestSzconfig_Initialize_error
 // func TestSzconfig_Initialize_error(test *testing.T) {}
 
 func TestSzconfig_Initialize_again(test *testing.T) {
@@ -258,7 +257,7 @@ func TestSzconfig_Destroy(test *testing.T) {
 	require.NoError(test, err)
 }
 
-// TODO: Implement TestSzconfig_Destroy_error
+// IMPROVE: Implement TestSzconfig_Destroy_error
 // func TestSzconfig_Destroy_error(test *testing.T) {}
 
 func TestSzconfig_Destroy_withObserver(test *testing.T) {
@@ -307,8 +306,8 @@ func getSzConfigAsInterface(ctx context.Context) senzing.SzConfig {
 
 func getSzConfigManager(ctx context.Context) *szconfigmanager.Szconfigmanager {
 	var err error
-	if szConfigManagerSingleton == nil {
 
+	if szConfigManagerSingleton == nil {
 		grpcConnection := getGrpcConnection()
 		szConfigManagerSingleton = &szconfigmanager.Szconfigmanager{
 			GrpcClient:         szconfigmanagerpb.NewSzConfigManagerClient(grpcConnection),

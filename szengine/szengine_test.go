@@ -43,6 +43,7 @@ const (
 	jsonIndentation     = "    "
 	maxDegrees          = int64(2)
 	observerOrigin      = "SzEngine observer"
+	origin              = "Machine: nn; Task: UnitTest"
 	printResults        = false
 	requiredDataSources = senzing.SzNoRequiredDatasources
 	searchAttributes    = `{"NAMES": [{"NAME_TYPE": "PRIMARY", "NAME_LAST": "JOHNSON"}], "SSN_NUMBER": "053-39-3251"}`
@@ -144,7 +145,7 @@ func TestG2engine_AddRecord_badDataSourceCodeInJSON(test *testing.T) {
 	flags := senzing.SzWithoutInfo
 	record1 := truthset.CustomerRecords["1001"]
 	record2 := truthset.CustomerRecords["1002"]
-	record2Json := `{"DATA_SOURCE": "BOB", "RECORD_ID": "1002", "RECORD_TYPE": "PERSON", "PRIMARY_NAME_LAST": "Smith", "PRIMARY_NAME_FIRST": "Bob", "DATE_OF_BIRTH": "11/12/1978", "ADDR_TYPE": "HOME", "ADDR_LINE1": "1515 Adela Lane", "ADDR_CITY": "Las Vegas", "ADDR_STATE": "NV", "ADDR_POSTAL_CODE": "89111", "PHONE_TYPE": "MOBILE", "PHONE_NUMBER": "702-919-1300", "DATE": "3/10/17", "STATUS": "Inactive", "AMOUNT": "200"}` //nolint
+	record2Json := `{"DATA_SOURCE": "BOB", "RECORD_ID": "1002", "RECORD_TYPE": "PERSON", "PRIMARY_NAME_LAST": "Smith", "PRIMARY_NAME_FIRST": "Bob", "DATE_OF_BIRTH": "11/12/1978", "ADDR_TYPE": "HOME", "ADDR_LINE1": "1515 Adela Lane", "ADDR_CITY": "Las Vegas", "ADDR_STATE": "NV", "ADDR_POSTAL_CODE": "89111", "PHONE_TYPE": "MOBILE", "PHONE_NUMBER": "702-919-1300", "DATE": "3/10/17", "STATUS": "Inactive", "AMOUNT": "200"}`
 	actual, err := szEngine.AddRecord(ctx, record1.DataSource, record1.ID, record1.JSON, flags)
 	require.NoError(test, err)
 	require.Empty(test, actual)
@@ -261,6 +262,7 @@ func TestSzengine_AddRecord_withInfo_badDataSourceCode(test *testing.T) {
 		printActual(test, actual)
 	}
 }
+
 func TestSzengine_CloseExport(test *testing.T) {
 	// Tested in:
 	//  - TestSzengine_ExportCsvEntityReport
@@ -629,7 +631,7 @@ func TestSzengine_ExportJSONEntityReport_65536(test *testing.T) {
 	assert.Greater(test, len(jsonEntityReport), 65536)
 }
 
-// TODO: Implement TestSzengine_ExportJSONEntityReport_error
+// IMPROVE: Implement TestSzengine_ExportJSONEntityReport_error
 // func TestSzengine_ExportJSONEntityReport_error(test *testing.T) {}
 
 func TestSzengine_ExportJSONEntityReportIterator(test *testing.T) {
@@ -3365,14 +3367,12 @@ func TestSzengine_SetLogLevel_badLogLevelName(test *testing.T) {
 func TestSzengine_SetObserverOrigin(test *testing.T) {
 	ctx := test.Context()
 	szEngine := getTestObject(test)
-	origin := "Machine: nn; Task: UnitTest"
 	szEngine.SetObserverOrigin(ctx, origin)
 }
 
 func TestSzengine_GetObserverOrigin(test *testing.T) {
 	ctx := test.Context()
 	szEngine := getTestObject(test)
-	origin := "Machine: nn; Task: UnitTest"
 	szEngine.SetObserverOrigin(ctx, origin)
 	actual := szEngine.GetObserverOrigin(ctx)
 	assert.Equal(test, origin, actual)
@@ -3410,7 +3410,7 @@ func TestSzengine_Initialize(test *testing.T) {
 	require.NoError(test, err)
 }
 
-// TODO: Implement TestSzengine_Initialize_error
+// IMPROVE: Implement TestSzengine_Initialize_error
 // func TestSzengine_Initialize_error(test *testing.T) {}
 
 func TestSzengine_Initialize_withConfigID(test *testing.T) {
@@ -3423,7 +3423,7 @@ func TestSzengine_Initialize_withConfigID(test *testing.T) {
 	require.NoError(test, err)
 }
 
-// TODO: Implement TestSzengine_Initialize_withConfigID_error
+// IMPROVE: Implement TestSzengine_Initialize_withConfigID_error
 // func TestSzengine_Initialize_withConfigID_error(test *testing.T) {}
 
 func TestSzengine_Reinitialize(test *testing.T) {
@@ -3436,7 +3436,7 @@ func TestSzengine_Reinitialize(test *testing.T) {
 	printActual(test, configID)
 }
 
-// TODO: Implement TestSzengine_Reinitialize_badConfigID
+// IMPROVE: Implement TestSzengine_Reinitialize_badConfigID
 // func TestSzengine_Reinitialize_badConfigID(test *testing.T) {}
 
 func TestSzengine_Destroy(test *testing.T) {
@@ -3446,7 +3446,7 @@ func TestSzengine_Destroy(test *testing.T) {
 	require.NoError(test, err)
 }
 
-// TODO: Implement TestSzengine_Destroy_error
+// IMPROVE: Implement TestSzengine_Destroy_error
 // func TestSzengine_Destroy_error(test *testing.T) {}
 
 func TestSzengine_Destroy_withObserver(test *testing.T) {
@@ -3519,9 +3519,7 @@ func getEntityIDString(record record.Record) string {
 }
 
 func getEntityIDStringForRecord(datasource string, recordID string) string {
-	var (
-		result string
-	)
+	var result string
 
 	entityID, err := getEntityIDForRecord(datasource, recordID)
 	panicOnError(err)
@@ -3601,8 +3599,8 @@ func getSzAbstractFactory(ctx context.Context) senzing.SzAbstractFactory {
 
 func getSzConfigManager(ctx context.Context) senzing.SzConfigManager {
 	var err error
-	if szConfigManagerSingleton == nil {
 
+	if szConfigManagerSingleton == nil {
 		grpcConnection := getGrpcConnection()
 		szConfigManagerSingleton = &szconfigmanager.Szconfigmanager{
 			GrpcClient:         szconfigmanagerpb.NewSzConfigManagerClient(grpcConnection),
@@ -3628,8 +3626,8 @@ func getSzConfigManager(ctx context.Context) senzing.SzConfigManager {
 
 func getSzDiagnostic(ctx context.Context) senzing.SzDiagnostic {
 	var err error
-	if szDiagnosticSingleton == nil {
 
+	if szDiagnosticSingleton == nil {
 		grpcConnection := getGrpcConnection()
 		szDiagnosticSingleton = &szdiagnostic.Szdiagnostic{
 			GrpcClient: szdiagnosticpb.NewSzDiagnosticClient(grpcConnection),
@@ -3654,8 +3652,8 @@ func getSzDiagnostic(ctx context.Context) senzing.SzDiagnostic {
 
 func getSzEngine(ctx context.Context) *szengine.Szengine {
 	var err error
-	if szEngineSingleton == nil {
 
+	if szEngineSingleton == nil {
 		grpcConnection := getGrpcConnection()
 		szEngineSingleton = &szengine.Szengine{
 			GrpcClient: szpb.NewSzEngineClient(grpcConnection),
@@ -3773,7 +3771,6 @@ func setupSenzingConfiguration() {
 
 	err = szConfigManager.SetDefaultConfigID(ctx, configID)
 	panicOnError(err)
-
 }
 
 func setupPurgeRepository() {

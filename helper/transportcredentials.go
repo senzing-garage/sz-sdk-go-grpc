@@ -3,13 +3,18 @@ package helper
 import (
 	"crypto/tls"
 	"crypto/x509"
-	"fmt"
 	"os"
+	"path/filepath"
 
 	tlshelper "github.com/senzing-garage/go-helpers/tls"
+	"github.com/senzing-garage/go-helpers/wraperror"
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/credentials/insecure"
 )
+
+// ----------------------------------------------------------------------------
+// Public functions
+// ----------------------------------------------------------------------------
 
 /*
 The GetGrpcTransportCredentials function returns a gRPC credentials.TransportCredentials
@@ -31,14 +36,9 @@ func GetGrpcTransportCredentials() (credentials.TransportCredentials, error) {
 	serverCaCertificatePath, isSet := os.LookupEnv("SENZING_TOOLS_SERVER_CA_CERTIFICATE_FILE")
 	if isSet {
 		// Server-side TLS.
-		pemServerCA, err := os.ReadFile(serverCaCertificatePath)
+		rootCAs, err := buildRootCAsFromFile(serverCaCertificatePath)
 		if err != nil {
 			return result, err
-		}
-
-		rootCAs := x509.NewCertPool()
-		if !rootCAs.AppendCertsFromPEM(pemServerCA) {
-			return result, fmt.Errorf("failed to add server CA's certificate")
 		}
 
 		// Mutual TLS.
@@ -55,7 +55,11 @@ func GetGrpcTransportCredentials() (credentials.TransportCredentials, error) {
 				clientKeyPassPhrase,
 			)
 			if err != nil {
-				return result, err
+				return result, wraperror.Errorf(
+					err,
+					"helper.GetGrpcTransportCredentials.LoadX509KeyPair error: %w",
+					err,
+				)
 			}
 
 			certificates = []tls.Certificate{clientCertificate}
@@ -73,4 +77,29 @@ func GetGrpcTransportCredentials() (credentials.TransportCredentials, error) {
 	}
 
 	return result, nil
+}
+
+// ----------------------------------------------------------------------------
+// Private functions
+// ----------------------------------------------------------------------------
+
+func buildRootCAsFromFile(serverCaCertificatePath string) (*x509.CertPool, error) {
+	var (
+		err    error
+		result *x509.CertPool
+	)
+
+	safeFilename := filepath.Clean(serverCaCertificatePath)
+
+	pemServerCA, err := os.ReadFile(safeFilename)
+	if err != nil {
+		return result, wraperror.Errorf(err, "helper.buildRootCAsFromFile.os.Read error: %w", err)
+	}
+
+	result = x509.NewCertPool()
+	if !result.AppendCertsFromPEM(pemServerCA) {
+		return result, wraperror.Errorf(errForPackage, "failed to add server CA's certificate")
+	}
+
+	return result, wraperror.Errorf(err, "helper.buildRootCAsFromFile error: %w", err)
 }
