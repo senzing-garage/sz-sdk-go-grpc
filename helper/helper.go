@@ -110,7 +110,7 @@ func extractErrorFromJSON(originalError error, errorMessage string) error {
 	senzingErrorCode, err := strconv.Atoi(reason[4:8])
 	if err != nil {
 		return wraperror.Errorf(
-			errForPackage,
+			err,
 			"strconv.Atoi(%s) error %w; Original Error: %w",
 			reason,
 			err,
