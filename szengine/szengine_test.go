@@ -3541,7 +3541,7 @@ func getFlagsForEntityReport() int64 {
 		senzing.SzEntityIncludePossiblySameRelations,
 		senzing.SzEntityIncludeRecordData,
 		senzing.SzEntityIncludeRecordFeatureDetails,
-		senzing.SzEntityIncludeRecordFeatureIDs,
+		senzing.SzEntityIncludeRecordFeatures,
 		senzing.SzEntityIncludeRecordFeatureStats,
 		senzing.SzEntityIncludeRecordJSONData,
 		senzing.SzEntityIncludeRecordMatchingInfo,
