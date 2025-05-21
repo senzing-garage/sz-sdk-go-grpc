@@ -1,9 +1,9 @@
 package helper_test
 
 import (
-	"fmt"
 	"testing"
 
+	"github.com/senzing-garage/go-helpers/wraperror"
 	"github.com/senzing-garage/sz-sdk-go-grpc/helper"
 	"github.com/senzing-garage/sz-sdk-go/szerror"
 	"github.com/stretchr/testify/assert"
@@ -64,7 +64,7 @@ func TestConvertGrpcError_wrapped(test *testing.T) {
 	for _, testCase := range testCases {
 		test.Run(testCase.name, func(test *testing.T) {
 			originalError := status.Error(testCase.gRPCCode, testCase.senzingErrorMessage)
-			wrappedError := fmt.Errorf("Wrap %w", originalError)
+			wrappedError := wraperror.Errorf(originalError, wraperror.NoMessage)
 			actual := helper.ConvertGrpcError(wrappedError)
 			require.ErrorIs(test, actual, testCase.expectedType)
 

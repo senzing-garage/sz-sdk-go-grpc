@@ -93,32 +93,20 @@ func extractErrorFromJSON(originalError error, errorMessage string) error {
 
 	parsedMessage, err := parser.Parse(errorMessage)
 	if err != nil {
-		return wraperror.Errorf(
-			err,
-			"parse(%s) error: %w; Original Error: %w",
-			errorMessage,
-			err,
-			originalError,
-		)
+		return wraperror.Errorf(err, "parse(%s) Original Error: %s", errorMessage, originalError.Error())
 	}
 
 	reason := parsedMessage.Reason
 	if len(reason) < maxReasons {
-		return wraperror.Errorf(errForPackage, "len(%s) error: %w; Original Error: %w", reason, err, originalError)
+		return wraperror.Errorf(errForPackage, "len(%s) Original Error: %s", reason, originalError.Error())
 	}
 
 	senzingErrorCode, err := strconv.Atoi(reason[4:8])
 	if err != nil {
-		return wraperror.Errorf(
-			err,
-			"strconv.Atoi(%s) error %w; Original Error: %w",
-			reason,
-			err,
-			originalError,
-		)
+		return wraperror.Errorf(err, "strconv.Atoi(%s) Original Error: %s", reason, originalError.Error())
 	}
 
 	result = szerror.New(senzingErrorCode, errorMessage)
 
-	return wraperror.Errorf(result, "%w", result)
+	return wraperror.Errorf(result, wraperror.NoMessage)
 }

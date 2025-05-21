@@ -72,7 +72,7 @@ func (client *Szdiagnostic) CheckDatastorePerformance(ctx context.Context, secon
 		}()
 	}
 
-	return result, wraperror.Errorf(err, "szdiagnostic.CheckDatastorePerformance error: %w", err)
+	return result, wraperror.Errorf(err, wraperror.NoMessage)
 }
 
 /*
@@ -107,7 +107,7 @@ func (client *Szdiagnostic) GetDatastoreInfo(ctx context.Context) (string, error
 		}()
 	}
 
-	return result, wraperror.Errorf(err, "szdiagnostic.GetDatastoreInfo error: %w", err)
+	return result, wraperror.Errorf(err, wraperror.NoMessage)
 }
 
 /*
@@ -146,7 +146,7 @@ func (client *Szdiagnostic) GetFeature(ctx context.Context, featureID int64) (st
 		}()
 	}
 
-	return result, wraperror.Errorf(err, "szdiagnostic.GetFeature error: %w", err)
+	return result, wraperror.Errorf(err, wraperror.NoMessage)
 }
 
 /*
@@ -176,7 +176,7 @@ func (client *Szdiagnostic) PurgeRepository(ctx context.Context) error {
 		}()
 	}
 
-	return wraperror.Errorf(err, "szdiagnostic.PurgeRepository error: %w", err)
+	return wraperror.Errorf(err, wraperror.NoMessage)
 }
 
 // ----------------------------------------------------------------------------
@@ -206,7 +206,7 @@ func (client *Szdiagnostic) Destroy(ctx context.Context) error {
 		}()
 	}
 
-	return wraperror.Errorf(err, "szdiagnostic.Destroy error: %w", err)
+	return wraperror.Errorf(err, wraperror.NoMessage)
 }
 
 /*
@@ -264,7 +264,7 @@ func (client *Szdiagnostic) Initialize(
 		}()
 	}
 
-	return wraperror.Errorf(err, "szdiagnostic.Initialize error: %w", err)
+	return wraperror.Errorf(err, wraperror.NoMessage)
 }
 
 /*
@@ -299,7 +299,7 @@ func (client *Szdiagnostic) RegisterObserver(ctx context.Context, observer obser
 		}()
 	}
 
-	return wraperror.Errorf(err, "szdiagnostic.RegisterObserver error: %w", err)
+	return wraperror.Errorf(err, wraperror.NoMessage)
 }
 
 /*
@@ -330,7 +330,7 @@ func (client *Szdiagnostic) Reinitialize(ctx context.Context, configID int64) er
 		}()
 	}
 
-	return wraperror.Errorf(err, "szdiagnostic.Reinitialize error: %w", err)
+	return wraperror.Errorf(err, wraperror.NoMessage)
 }
 
 /*
@@ -351,7 +351,7 @@ func (client *Szdiagnostic) SetLogLevel(ctx context.Context, logLevelName string
 	}
 
 	if !logging.IsValidLogLevelName(logLevelName) {
-		return wraperror.Errorf(errForPackage, "invalid error level: %s; %w", logLevelName, szerror.ErrSzSdk)
+		return wraperror.Errorf(szerror.ErrSzSdk, "invalid error level: %s", logLevelName)
 	}
 
 	err = client.getLogger().SetLogLevel(logLevelName)
@@ -366,7 +366,7 @@ func (client *Szdiagnostic) SetLogLevel(ctx context.Context, logLevelName string
 		}()
 	}
 
-	return wraperror.Errorf(err, "szdiagnostic.SetLogLevel error: %w", err)
+	return wraperror.Errorf(err, wraperror.NoMessage)
 }
 
 /*
@@ -415,7 +415,7 @@ func (client *Szdiagnostic) UnregisterObserver(ctx context.Context, observer obs
 		}
 	}
 
-	return wraperror.Errorf(err, "szdiagnostic.UnregisterObserver error: %w", err)
+	return wraperror.Errorf(err, wraperror.NoMessage)
 }
 
 // ----------------------------------------------------------------------------
