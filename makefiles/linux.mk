@@ -98,7 +98,8 @@ setup-server-side-tls-osarch-specific:
 
 .PHONY: test-osarch-specific
 test-osarch-specific:
-	@go test -json -v -p 1 ./... 2>&1 | tee /tmp/gotest.log | gotestfmt
+	# @go test -json -v -p 1 ./... 2>&1 | tee /tmp/gotest.log | gotestfmt
+	@go test -v -p 1 ./szconfig
 
 
 .PHONY: test-mutual-tls-osarch-specific

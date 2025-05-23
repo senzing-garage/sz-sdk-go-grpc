@@ -139,7 +139,7 @@ func TestSzengine_AddRecord(test *testing.T) {
 	}
 }
 
-func TestG2engine_AddRecord_badDataSourceCodeInJSON(test *testing.T) {
+func TestSzengine_AddRecord_badDataSourceCodeInJSON(test *testing.T) {
 	ctx := test.Context()
 	szEngine := getTestObject(test)
 	flags := senzing.SzWithoutInfo
