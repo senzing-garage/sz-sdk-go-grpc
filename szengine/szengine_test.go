@@ -33,6 +33,35 @@ import (
 )
 
 const (
+	avoidEntityIDs             = senzing.SzNoAvoidance
+	avoidRecordKeys            = senzing.SzNoAvoidance
+	baseTen                    = 10
+	buildOutDegrees            = int64(2)
+	buildOutMaxEntities        = int64(10)
+	defaultAttributes          = `{"NAMES": [{"NAME_TYPE": "PRIMARY", "NAME_LAST": "JOHNSON"}], "SSN_NUMBER": "053-39-3251"}`
+	defaultAvoidEntityIDs      = senzing.SzNoAvoidance
+	defaultAvoidRecordKeys     = senzing.SzNoAvoidance
+	defaultBuildOutDegrees     = int64(2)
+	defaultBuildOutMaxEntities = int64(10)
+	defaultMaxDegrees          = int64(2)
+	defaultSearchAttributes    = `{"NAMES": [{"NAME_TYPE": "PRIMARY", "NAME_LAST": "JOHNSON"}], "SSN_NUMBER": "053-39-3251"}`
+	defaultSearchProfile       = senzing.SzNoSearchProfile
+	defaultTruncation          = 76
+	defaultVerboseLogging      = senzing.SzNoLogging
+	instanceName               = "SzEngine Test"
+	jsonIndentation            = "    "
+	maxDegrees                 = int64(2)
+	observerID                 = "Observer 1"
+	observerOrigin             = "SzEngine observer"
+	originMessage              = "Machine: nn; Task: UnitTest"
+	printErrors                = false
+	printResults               = false
+	requiredDataSources        = senzing.SzNoRequiredDatasources
+	searchAttributes           = `{"NAMES": [{"NAME_TYPE": "PRIMARY", "NAME_LAST": "JOHNSON"}], "SSN_NUMBER": "053-39-3251"}`
+	searchProfile              = senzing.SzNoSearchProfile
+	verboseLogging             = senzing.SzNoLogging
+
+
 	avoidEntityIDs      = senzing.SzNoAvoidance
 	avoidRecordKeys     = senzing.SzNoAvoidance
 	baseTen             = 10
@@ -43,7 +72,9 @@ const (
 	jsonIndentation     = "    "
 	maxDegrees          = int64(2)
 	observerOrigin      = "SzEngine observer"
-	origin              = "Machine: nn; Task: UnitTest"
+	originMessage              = "Machine: nn; Task: UnitTest"
+	printErrors                = false
+
 	printResults        = false
 	requiredDataSources = senzing.SzNoRequiredDatasources
 	searchAttributes    = `{"NAMES": [{"NAME_TYPE": "PRIMARY", "NAME_LAST": "JOHNSON"}], "SSN_NUMBER": "053-39-3251"}`
@@ -70,25 +101,25 @@ const (
 	badRedoRecord          = "{}"
 	badRequiredDataSources = "}{"
 	badSearchProfile       = "}{"
+	nilSemaphoreString     = "xyzzy"
+	nilSemaphoreInt64      = int64(-9999)
 )
 
 // Nil/empty parameters
 
 var (
-	nilAttributes          string
-	nilAvoidEntityIDs      string
-	nilBuildOutDegrees     int64
-	nilBuildOutMaxEntities int64
+	nilAttributes          = nilSemaphoreString
+	nilBuildOutDegrees     = nilSemaphoreInt64
+	nilBuildOutMaxEntities = nilSemaphoreInt64
 	nilCsvColumnList       string
-	nilDataSourceCode      string
-	nilEntityID            int64
+	nilDataSourceCode      = nilSemaphoreString
+	nilEntityID            = nilSemaphoreInt64
 	nilExportHandle        uintptr
-	nilMaxDegrees          int64
-	nilRecordDefinition    string
-	nilRecordID            string
-	nilRedoRecord          string
-	nilRequiredDataSources string
-	nilSearchProfile       string
+	nilMaxDegrees          = nilSemaphoreInt64
+	nilRecordDefinition    = nilSemaphoreString
+	nilRecordID            = nilSemaphoreString
+	nilRedoRecord          = nilSemaphoreString
+	nilSearchProfile       = nilSemaphoreString
 )
 
 var (
@@ -112,7 +143,7 @@ type GetEntityByRecordIDResponse struct {
 }
 
 // ----------------------------------------------------------------------------
-// Interface methods - test
+// Interface methods
 // ----------------------------------------------------------------------------
 
 func TestSzengine_AddRecord(test *testing.T) {

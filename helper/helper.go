@@ -3,7 +3,6 @@ package helper
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 	"reflect"
 	"strconv"
 	"strings"
@@ -53,13 +52,9 @@ func convertGrpcError(grpcError error) error {
 
 	var result error
 
-	fmt.Printf(">>>>>> convertGrpcError error: %v\n", grpcError)
-
 	// Verify that it is a gRPC error.
 
 	if reflect.TypeOf(grpcError).String() != "*status.Error" {
-		fmt.Printf(">>>>>> reflect.TypeOf(grpcError).String()\n")
-
 		return result
 	}
 
@@ -70,8 +65,6 @@ func convertGrpcError(grpcError error) error {
 
 	indexOfDesc := strings.Index(grpcErrorMessage, desc)
 	if indexOfDesc < 0 {
-		fmt.Printf(">>>>>> indexOfDesc < 0\n")
-
 		return result
 	}
 
@@ -81,14 +74,11 @@ func convertGrpcError(grpcError error) error {
 
 	indexOfBrace := strings.Index(senzingErrorMessage, "{")
 	if indexOfBrace < 0 {
-		fmt.Printf(">>>>>> indexOfBrace < 0\n")
-
 		return result
 	}
 
 	senzingErrorJSON := senzingErrorMessage[indexOfBrace:]
 	if !jsonutil.IsJSON(senzingErrorJSON) {
-		fmt.Printf(">>>>>> !jsonutil.IsJSON: %s\n", senzingErrorJSON)
 		return result
 	}
 
@@ -96,8 +86,6 @@ func convertGrpcError(grpcError error) error {
 
 	reason := extractReasonFromJSON(senzingErrorJSON)
 	if len(reason) == 0 {
-		fmt.Printf(">>>>>> len(reason) == 0\n")
-
 		return result
 	}
 
@@ -109,42 +97,37 @@ func extractReasonFromJSON(message string) string {
 		result   string
 		errorMap map[string]any
 	)
-
 	err := json.Unmarshal([]byte(message), &errorMap)
 	if err != nil {
-		fmt.Printf(">>>>>> Cannot Unmarshal error: %v\n", err)
 		return result
 	}
 
-	// Determine if "reason" JSON key exists.  If so, return value.
+	return extractReasonFromAny(errorMap)
+}
 
+func extractReasonFromAny(errorMap map[string]any) string {
 	reasonValue, isOK := errorMap["reason"]
 	if isOK {
-
-		fmt.Printf(">>>>>> found reason. Type: %T Value: %+v\n", reasonValue, reasonValue)
-
 		reasonValueString, isOK := reasonValue.(string)
 		if isOK {
 			return reasonValueString
 		}
 	}
 
-	// If "error" JSON key exists, recurse into it.
-
 	errorValue, isOK := errorMap["error"]
 	if isOK {
-
-		fmt.Printf(">>>>>> found error. Type: %T Value: %+v\n", errorValue, errorValue)
-
-		errorValueString, isOK := errorValue.(string)
+		newErrorMap, isOK := errorValue.(map[string]any)
 		if isOK {
-			return extractReasonFromJSON(errorValueString)
+			return extractReasonFromAny(newErrorMap)
 		}
 	}
 
-	fmt.Printf(">>>>>> Couldn't find neither 'error' nor 'reason'\n")
+	result, err := json.Marshal(errorMap)
+	if err != nil {
+		panic(err)
+	}
 
-	return result
+	return string(result)
 }
 
 func createErrorFromReason(errorMessage string, reason string) error {

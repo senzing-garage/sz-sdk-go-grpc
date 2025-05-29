@@ -26,8 +26,10 @@ const (
 	dataSourceCode    = "GO_TEST"
 	defaultTruncation = 76
 	instanceName      = "SzConfig Test"
+	jsonIndentation   = "    "
 	observerOrigin    = "SzConfig observer"
-	origin            = "Machine: nn; Task: UnitTest"
+	originMessage     = "Machine: nn; Task: UnitTest"
+	printErrors       = false
 	printResults      = false
 	verboseLogging    = senzing.SzNoLogging
 )
@@ -69,6 +71,7 @@ func TestSzconfig_AddDataSource(test *testing.T) {
 	ctx := test.Context()
 	szConfig := getTestObject(test)
 	actual, err := szConfig.AddDataSource(ctx, dataSourceCode)
+	printError(test, err)
 	require.NoError(test, err)
 	printActual(test, actual)
 }
@@ -77,7 +80,11 @@ func TestSzconfig_AddDataSource_badDataSourceCode(test *testing.T) {
 	ctx := test.Context()
 	szConfig := getTestObject(test)
 	actual, err := szConfig.AddDataSource(ctx, badDataSourceCode)
+	printError(test, err)
 	require.ErrorIs(test, err, szerror.ErrSzBadInput)
+
+	expectedErr := `{"function":"szconfig.(*Szconfig).AddDataSource","error":{"function":"szconfig.(*Szconfig).addDataSourceChoreography","text":"addDataSource: \n\tGO_TEST","error":{"id":"SZSDK60014001","reason":"SENZ3121|JSON Parsing Failure [code=12,offset=15]"}}}`
+	require.JSONEq(test, expectedErr, err.Error())
 	printActual(test, actual)
 }
 
@@ -85,7 +92,11 @@ func TestSzconfig_AddDataSource_nilDataSourceCode(test *testing.T) {
 	ctx := test.Context()
 	szConfig := getTestObject(test)
 	actual, err := szConfig.AddDataSource(ctx, nilDataSourceCode)
+	printError(test, err)
 	require.ErrorIs(test, err, szerror.ErrSzBadInput)
+
+	expectedErr := `{"function":"szconfig.(*Szconfig).AddDataSource","error":{"function":"szconfig.(*Szconfig).addDataSourceChoreography","text":"addDataSource: ","error":{"id":"SZSDK60014001","reason":"SENZ7313|A non-empty value for [DSRC_CODE] must be specified."}}}`
+	require.JSONEq(test, expectedErr, err.Error())
 	printActual(test, actual)
 }
 
@@ -93,17 +104,21 @@ func TestSzconfig_DeleteDataSource(test *testing.T) {
 	ctx := test.Context()
 	szConfig := getTestObject(test)
 	actual, err := szConfig.GetDataSources(ctx)
+	printError(test, err)
 	require.NoError(test, err)
 	printResult(test, "Original", actual)
 
 	_, _ = szConfig.AddDataSource(ctx, dataSourceCode)
 	actual, err = szConfig.GetDataSources(ctx)
+	printError(test, err)
 	require.NoError(test, err)
 	printResult(test, "     Add", actual)
 
 	_, err = szConfig.DeleteDataSource(ctx, dataSourceCode)
+	printError(test, err)
 	require.NoError(test, err)
 	actual, err = szConfig.GetDataSources(ctx)
+	printError(test, err)
 	require.NoError(test, err)
 	printResult(test, "  Delete", actual)
 }
@@ -112,20 +127,29 @@ func TestSzconfig_DeleteDataSource_badDataSourceCode(test *testing.T) {
 	ctx := test.Context()
 	szConfig := getTestObject(test)
 	_, err := szConfig.DeleteDataSource(ctx, badDataSourceCode)
+	printError(test, err)
 	require.ErrorIs(test, err, szerror.ErrSzBadInput)
+
+	expectedErr := `{"function":"szconfig.(*Szconfig).DeleteDataSource","error":{"function":"szconfig.(*Szconfig).deleteDataSourceChoreography","text":"deleteDataSource(\n\tGO_TEST)","error":{"id":"SZSDK60014004","reason":"SENZ3121|JSON Parsing Failure [code=12,offset=15]"}}}`
+	require.JSONEq(test, expectedErr, err.Error())
 }
 
 func TestSzconfig_DeleteDataSource_nilDataSourceCode(test *testing.T) {
 	ctx := test.Context()
 	szConfig := getTestObject(test)
 	_, err := szConfig.DeleteDataSource(ctx, nilDataSourceCode)
+	printError(test, err)
 	require.ErrorIs(test, err, szerror.ErrSzBadInput)
+
+	expectedErr := `{"function":"szconfig.(*Szconfig).DeleteDataSource","error":{"function":"szconfig.(*Szconfig).deleteDataSourceChoreography","text":"deleteDataSource()","error":{"id":"SZSDK60014004","reason":"SENZ7313|A non-empty value for [DSRC_CODE] must be specified."}}}`
+	require.JSONEq(test, expectedErr, err.Error())
 }
 
 func TestSzconfig_Export(test *testing.T) {
 	ctx := test.Context()
 	szConfig := getTestObject(test)
 	actual, err := szConfig.Export(ctx)
+	printError(test, err)
 	require.NoError(test, err)
 	printActual(test, actual)
 }
@@ -134,6 +158,7 @@ func TestSzconfig_GetDataSources(test *testing.T) {
 	ctx := test.Context()
 	szConfig := getTestObject(test)
 	actual, err := szConfig.GetDataSources(ctx)
+	printError(test, err)
 	require.NoError(test, err)
 	printActual(test, actual)
 }
@@ -146,8 +171,10 @@ func TestSzconfig_Import(test *testing.T) {
 	ctx := test.Context()
 	szConfig := getTestObject(test)
 	configDefinition, err := szConfig.Export(ctx)
+	printError(test, err)
 	require.NoError(test, err)
 	err = szConfig.Import(ctx, configDefinition)
+	printError(test, err)
 	require.NoError(test, err)
 }
 
@@ -155,6 +182,7 @@ func TestSzconfig_Import_badConfigDefinition(test *testing.T) {
 	ctx := test.Context()
 	szConfig := getTestObject(test)
 	err := szConfig.Import(ctx, badConfigDefinition)
+	printError(test, err)
 	require.NoError(test, err)
 }
 
@@ -162,6 +190,7 @@ func TestSzconfig_Import_nilConfigDefinition(test *testing.T) {
 	ctx := test.Context()
 	szConfig := getTestObject(test)
 	err := szConfig.Import(ctx, nilConfigDefinition)
+	printError(test, err)
 	require.NoError(test, err)
 }
 
@@ -169,8 +198,10 @@ func TestSzconfig_VerifyConfigDefinition(test *testing.T) {
 	ctx := test.Context()
 	szConfig := getTestObject(test)
 	configDefinition, err := szConfig.Export(ctx)
+	printError(test, err)
 	require.NoError(test, err)
 	err = szConfig.VerifyConfigDefinition(ctx, configDefinition)
+	printError(test, err)
 	require.NoError(test, err)
 }
 
@@ -178,7 +209,11 @@ func TestSzconfig_VerifyConfigDefinition_badConfigDefinition(test *testing.T) {
 	ctx := test.Context()
 	szConfig := getTestObject(test)
 	err := szConfig.VerifyConfigDefinition(ctx, badConfigDefinition)
+	printError(test, err)
 	require.ErrorIs(test, err, szerror.ErrSzBadInput)
+
+	expectedErr := `{"function":"szconfig.(*Szconfig).VerifyConfigDefinition","error":{"function":"szconfig.(*Szconfig).verifyConfigDefinitionChoreography","text":"load","error":{"id":"SZSDK60014009","reason":"SENZ3121|JSON Parsing Failure [code=3,offset=0]"}}}`
+	require.JSONEq(test, expectedErr, err.Error())
 }
 
 // ----------------------------------------------------------------------------
@@ -194,12 +229,14 @@ func TestSzconfig_SetLogLevel_badLogLevelName(test *testing.T) {
 func TestSzconfig_SetObserverOrigin(test *testing.T) {
 	ctx := test.Context()
 	szConfig := getTestObject(test)
+	origin := originMessage
 	szConfig.SetObserverOrigin(ctx, origin)
 }
 
 func TestSzconfig_GetObserverOrigin(test *testing.T) {
 	ctx := test.Context()
 	szConfig := getTestObject(test)
+	origin := originMessage
 	szConfig.SetObserverOrigin(ctx, origin)
 	actual := szConfig.GetObserverOrigin(ctx)
 	assert.Equal(test, origin, actual)
@@ -209,6 +246,7 @@ func TestSzconfig_UnregisterObserver(test *testing.T) {
 	ctx := test.Context()
 	szConfig := getTestObject(test)
 	err := szConfig.UnregisterObserver(ctx, observerSingleton)
+	printError(test, err)
 	require.NoError(test, err)
 }
 
@@ -220,6 +258,7 @@ func TestSzconfig_AsInterface(test *testing.T) {
 	ctx := test.Context()
 	szConfig := getSzConfigAsInterface(ctx)
 	actual, err := szConfig.GetDataSources(ctx)
+	printError(test, err)
 	require.NoError(test, err)
 	printActual(test, actual)
 }
@@ -229,6 +268,7 @@ func TestSzconfig_Initialize(test *testing.T) {
 	szConfig := getTestObject(test)
 	settings := getSettings()
 	err := szConfig.Initialize(ctx, instanceName, settings, verboseLogging)
+	printError(test, err)
 	require.NoError(test, err)
 }
 
@@ -239,14 +279,17 @@ func TestSzconfig_Initialize_badSettings(test *testing.T) {
 	assert.NoError(test, err)
 }
 
-// IMPROVE: Implement TestSzconfig_Initialize_error
-// func TestSzconfig_Initialize_error(test *testing.T) {}
+func TestSzconfig_Initialize_error(test *testing.T) {
+	// IMPROVE: Implement TestSzconfig_Initialize_error
+	_ = test
+}
 
 func TestSzconfig_Initialize_again(test *testing.T) {
 	ctx := test.Context()
 	szConfig := getTestObject(test)
 	settings := getSettings()
 	err := szConfig.Initialize(ctx, instanceName, settings, verboseLogging)
+	printError(test, err)
 	require.NoError(test, err)
 }
 
@@ -254,17 +297,21 @@ func TestSzconfig_Destroy(test *testing.T) {
 	ctx := test.Context()
 	szConfig := getTestObject(test)
 	err := szConfig.Destroy(ctx)
+	printError(test, err)
 	require.NoError(test, err)
 }
 
-// IMPROVE: Implement TestSzconfig_Destroy_error
-// func TestSzconfig_Destroy_error(test *testing.T) {}
+func TestSzconfig_Destroy_error(test *testing.T) {
+	// IMPROVE: Implement TestSzconfig_Destroy_error
+	_ = test
+}
 
 func TestSzconfig_Destroy_withObserver(test *testing.T) {
 	ctx := test.Context()
 	szConfigSingleton = nil
 	szConfig := getTestObject(test)
 	err := szConfig.Destroy(ctx)
+	printError(test, err)
 	require.NoError(test, err)
 }
 

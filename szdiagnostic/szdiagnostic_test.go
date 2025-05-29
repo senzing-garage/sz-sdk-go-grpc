@@ -33,7 +33,8 @@ const (
 	instanceName      = "SzDiagnostic Test"
 	jsonIndentation   = "    "
 	observerOrigin    = "SzDiagnostic observer"
-	origin            = "Machine: nn; Task: UnitTest"
+	originMessage     = "Machine: nn; Task: UnitTest"
+	printErrors       = false
 	printResults      = false
 	verboseLogging    = senzing.SzNoLogging
 )
@@ -76,6 +77,7 @@ func TestSzdiagnostic_CheckDatastorePerformance(test *testing.T) {
 	szDiagnostic := getTestObject(test)
 	secondsToRun := 1
 	actual, err := szDiagnostic.CheckDatastorePerformance(ctx, secondsToRun)
+	printError(test, err)
 	require.NoError(test, err)
 	printActual(test, actual)
 }
@@ -84,6 +86,7 @@ func TestSzdiagnostic_CheckDatastorePerformance_badSecondsToRun(test *testing.T)
 	ctx := test.Context()
 	szDiagnostic := getTestObject(test)
 	actual, err := szDiagnostic.CheckDatastorePerformance(ctx, badSecondsToRun)
+	printError(test, err)
 	require.NoError(test, err)
 	printActual(test, actual)
 }
@@ -92,6 +95,7 @@ func TestSzdiagnostic_CheckDatastorePerformance_nilSecondsToRun(test *testing.T)
 	ctx := test.Context()
 	szDiagnostic := getTestObject(test)
 	actual, err := szDiagnostic.CheckDatastorePerformance(ctx, nilSecondsToRun)
+	printError(test, err)
 	require.NoError(test, err)
 	printActual(test, actual)
 }
@@ -100,6 +104,7 @@ func TestSzdiagnostic_GetDatastoreInfo(test *testing.T) {
 	ctx := test.Context()
 	szDiagnostic := getTestObject(test)
 	actual, err := szDiagnostic.GetDatastoreInfo(ctx)
+	printError(test, err)
 	require.NoError(test, err)
 	printActual(test, actual)
 }
@@ -117,6 +122,7 @@ func TestSzdiagnostic_GetFeature(test *testing.T) {
 	szDiagnostic := getTestObject(test)
 	featureID := int64(1)
 	actual, err := szDiagnostic.GetFeature(ctx, featureID)
+	printError(test, err)
 	require.NoError(test, err)
 	printActual(test, actual)
 }
@@ -133,8 +139,12 @@ func TestSzdiagnostic_GetFeature_badFeatureID(test *testing.T) {
 
 	szDiagnostic := getTestObject(test)
 	actual, err := szDiagnostic.GetFeature(ctx, badFeatureID)
+	printError(test, err)
 	require.ErrorIs(test, err, szerror.ErrSz)
 	printActual(test, actual)
+
+	expectedErr := `{"function":"szdiagnostic.(*Szdiagnostic).GetFeature","error":{"id":"SZSDK60034004","reason":"SENZ0057|Unknown feature ID value '-1'"}}`
+	require.JSONEq(test, expectedErr, err.Error())
 }
 
 func TestSzdiagnostic_GetFeature_nilFeatureID(test *testing.T) {
@@ -149,8 +159,12 @@ func TestSzdiagnostic_GetFeature_nilFeatureID(test *testing.T) {
 
 	szDiagnostic := getTestObject(test)
 	actual, err := szDiagnostic.GetFeature(ctx, nilFeatureID)
+	printError(test, err)
 	require.ErrorIs(test, err, szerror.ErrSz)
 	printActual(test, actual)
+
+	expectedErr := `{"function":"szdiagnostic.(*Szdiagnostic).GetFeature","error":{"id":"SZSDK60034004","reason":"SENZ0057|Unknown feature ID value '0'"}}`
+	require.JSONEq(test, expectedErr, err.Error())
 }
 
 // PurgeRepository is tested in szdiagnostic_examples_test.go
@@ -169,21 +183,22 @@ func TestSzdiagnostic_SetLogLevel_badLogLevelName(test *testing.T) {
 func TestSzdiagnostic_SetObserverOrigin(test *testing.T) {
 	ctx := test.Context()
 	szDiagnostic := getTestObject(test)
-	szDiagnostic.SetObserverOrigin(ctx, origin)
+	szDiagnostic.SetObserverOrigin(ctx, originMessage)
 }
 
 func TestSzdiagnostic_GetObserverOrigin(test *testing.T) {
 	ctx := test.Context()
 	szDiagnostic := getTestObject(test)
-	szDiagnostic.SetObserverOrigin(ctx, origin)
+	szDiagnostic.SetObserverOrigin(ctx, originMessage)
 	actual := szDiagnostic.GetObserverOrigin(ctx)
-	assert.Equal(test, origin, actual)
+	assert.Equal(test, originMessage, actual)
 }
 
 func TestSzdiagnostic_UnregisterObserver(test *testing.T) {
 	ctx := test.Context()
 	szDiagnostic := getTestObject(test)
 	err := szDiagnostic.UnregisterObserver(ctx, observerSingleton)
+	printError(test, err)
 	require.NoError(test, err)
 }
 
@@ -196,6 +211,7 @@ func TestSzdiagnostic_AsInterface(test *testing.T) {
 	szDiagnostic := getSzDiagnosticAsInterface(ctx)
 	secondsToRun := 1
 	actual, err := szDiagnostic.CheckDatastorePerformance(ctx, secondsToRun)
+	printError(test, err)
 	require.NoError(test, err)
 	printActual(test, actual)
 }
@@ -209,6 +225,7 @@ func TestSzdiagnostic_Initialize(test *testing.T) {
 	settings := getSettings()
 	configID := senzing.SzInitializeWithDefaultConfiguration
 	err := szDiagnostic.Initialize(ctx, instanceName, settings, configID, verboseLogging)
+	printError(test, err)
 	require.NoError(test, err)
 }
 
@@ -224,11 +241,14 @@ func TestSzdiagnostic_Initialize_withConfigId(test *testing.T) {
 	settings := getSettings()
 	configID := getDefaultConfigID()
 	err := szDiagnostic.Initialize(ctx, instanceName, settings, configID, verboseLogging)
+	printError(test, err)
 	require.NoError(test, err)
 }
 
-// IMPROVE: Implement TestSzdiagnostic_Initialize_withConfigId_badConfigID
-// func TestSzdiagnostic_Initialize_withConfigId_badConfigID(test *testing.T) {}
+func TestSzdiagnostic_Initialize_withConfigId_badConfigID(test *testing.T) {
+	// IMPROVE: Implement TestSzdiagnostic_Initialize_withConfigId_badConfigID
+	_ = test
+}
 
 // func TestSzdiagnostic_Reinitialize(test *testing.T) {
 // 	ctx := test.Context()
@@ -238,14 +258,17 @@ func TestSzdiagnostic_Initialize_withConfigId(test *testing.T) {
 // 	require.NoError(test, err)
 // }
 
-// IMPROVE: Implement TestSzdiagnostic_Reinitialize_error
-// func TestSzdiagnostic_Reinitialize_error(test *testing.T) {}
+func TestSzdiagnostic_Reinitialize_error(test *testing.T) {
+	// IMPROVE: Implement TestSzdiagnostic_Reinitialize_error
+	_ = test
+}
 
 func TestSzdiagnostic_Destroy(test *testing.T) {
 	ctx := test.Context()
 	szDiagnosticSingleton = nil
 	szDiagnostic := getTestObject(test)
 	err := szDiagnostic.Destroy(ctx)
+	printError(test, err)
 	require.NoError(test, err)
 }
 
@@ -254,11 +277,14 @@ func TestSzdiagnostic_Destroy_withObserver(test *testing.T) {
 	szDiagnosticSingleton = nil
 	szDiagnostic := getTestObject(test)
 	err := szDiagnostic.Destroy(ctx)
+	printError(test, err)
 	require.NoError(test, err)
 }
 
-// IMPROVE: Implement TestSzdiagnostic_Destroy_error
-// func TestSzdiagnostic_Destroy_error(test *testing.T) {}
+func TestSzdiagnostic_Destroy_error(test *testing.T) {
+	// IMPROVE: Implement TestSzdiagnostic_Destroy_error
+	_ = test
+}
 
 // ----------------------------------------------------------------------------
 // Internal functions
@@ -391,14 +417,17 @@ func getSzEngine(ctx context.Context) senzing.SzEngine {
 
 func getTestObject(t *testing.T) *szdiagnostic.Szdiagnostic {
 	t.Helper()
-
 	return getSzDiagnostic(t.Context())
 }
 
 func handleError(err error) {
 	if err != nil {
-		safePrintln("Error:", err)
+		outputln("Error:", err)
 	}
+}
+
+func outputln(message ...any) {
+	fmt.Println(message...) //nolint
 }
 
 func panicOnError(err error) {
@@ -412,16 +441,22 @@ func printActual(t *testing.T, actual interface{}) {
 	printResult(t, "Actual", actual)
 }
 
+func printError(t *testing.T, err error) {
+	t.Helper()
+
+	if printErrors {
+		if err != nil {
+			t.Logf("Error: %s", err.Error())
+		}
+	}
+}
+
 func printResult(t *testing.T, title string, result interface{}) {
 	t.Helper()
 
 	if printResults {
 		t.Logf("%s: %v", title, truncate(fmt.Sprintf("%v", result), defaultTruncation))
 	}
-}
-
-func safePrintln(message ...any) {
-	fmt.Println(message...) //nolint
 }
 
 func truncate(aString string, length int) string {
