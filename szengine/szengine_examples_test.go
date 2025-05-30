@@ -142,7 +142,7 @@ func ExampleSzengine_CountRedoRecords() {
 	}
 
 	fmt.Println(result)
-	// Output: 4
+	// Output: 5
 }
 
 func ExampleSzengine_ExportCsvEntityReport() {
@@ -1759,7 +1759,6 @@ func ExampleSzengine_GetRedoRecord() {
 	//     "DATA_SOURCE": "CUSTOMERS",
 	//     "RECORD_ID": "1003",
 	//     "REEVAL_ITERATION": 1,
-	//     "ENTITY_CORRUPTION_TRANSIENT": true,
 	//     "DSRC_ACTION": "X"
 	// }
 }
@@ -6925,7 +6924,7 @@ func ExampleSzengine_WhySearch() {
 
 func ExampleSzengine_ReevaluateEntity() {
 	// For more information, visit
-	// https://github.com/senzing-garage/sz-sdk-go-core/blob/main/szengine/szengine_examples_test.go
+	// https://github.com/senzing-garage/sz-sdk-go-grpc/blob/main/szengine/szengine_examples_test.go
 	ctx := context.TODO()
 	szAbstractFactory := getSzAbstractFactory(ctx)
 
@@ -6949,7 +6948,7 @@ func ExampleSzengine_ReevaluateEntity() {
 
 func ExampleSzengine_ReevaluateEntity_withInfo() {
 	// For more information, visit
-	// https://github.com/senzing-garage/sz-sdk-go-core/blob/main/szengine/szengine_examples_test.go
+	// https://github.com/senzing-garage/sz-sdk-go-grpc/blob/main/szengine/szengine_examples_test.go
 	ctx := context.TODO()
 	szAbstractFactory := getSzAbstractFactory(ctx)
 
@@ -6979,7 +6978,7 @@ func ExampleSzengine_ReevaluateEntity_withInfo() {
 
 func ExampleSzengine_ReevaluateRecord() {
 	// For more information, visit
-	// https://github.com/senzing-garage/sz-sdk-go-core/blob/main/szengine/szengine_examples_test.go
+	// https://github.com/senzing-garage/sz-sdk-go-grpc/blob/main/szengine/szengine_examples_test.go
 	ctx := context.TODO()
 	szAbstractFactory := getSzAbstractFactory(ctx)
 
@@ -7003,7 +7002,7 @@ func ExampleSzengine_ReevaluateRecord() {
 
 func ExampleSzengine_ReevaluateRecord_withInfo() {
 	// For more information, visit
-	// https://github.com/senzing-garage/sz-sdk-go-core/blob/main/szengine/szengine_examples_test.go
+	// https://github.com/senzing-garage/sz-sdk-go-grpc/blob/main/szengine/szengine_examples_test.go
 	ctx := context.TODO()
 	szAbstractFactory := getSzAbstractFactory(ctx)
 
@@ -7036,7 +7035,7 @@ func ExampleSzengine_ReevaluateRecord_withInfo() {
 
 func ExampleSzengine_DeleteRecord() {
 	// For more information, visit
-	// https://github.com/senzing-garage/sz-sdk-go-core/blob/main/szengine/szengine_examples_test.go
+	// https://github.com/senzing-garage/sz-sdk-go-grpc/blob/main/szengine/szengine_examples_test.go
 	ctx := context.TODO()
 	szAbstractFactory := getSzAbstractFactory(ctx)
 
@@ -7060,7 +7059,7 @@ func ExampleSzengine_DeleteRecord() {
 
 func ExampleSzengine_DeleteRecord_withInfo() {
 	// For more information, visit
-	// https://github.com/senzing-garage/sz-sdk-go-core/blob/main/szengine/szengine_examples_test.go
+	// https://github.com/senzing-garage/sz-sdk-go-grpc/blob/main/szengine/szengine_examples_test.go
 	ctx := context.TODO()
 	szAbstractFactory := getSzAbstractFactory(ctx)
 
@@ -7116,7 +7115,7 @@ func ExampleSzengine_SetObserverOrigin() {
 
 func ExampleSzengine_GetObserverOrigin() {
 	// For more information, visit
-	// https://github.com/senzing-garage/sz-sdk-go-grpc/blob/main/szengine/szengine_test.go
+	// https://github.com/senzing-garage/sz-sdk-go-grpc/blob/main/szengine/szengine_examples_test.go
 	ctx := context.TODO()
 	szEngine := getSzEngine(ctx)
 	origin := "Machine: nn; Task: UnitTest"

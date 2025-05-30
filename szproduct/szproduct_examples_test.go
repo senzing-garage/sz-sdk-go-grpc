@@ -36,12 +36,12 @@ func ExampleSzproduct_GetLicense() {
 	fmt.Println(jsonutil.PrettyPrint(jsonutil.Truncate(result, AllLines, redactKeys...), jsonIndentation))
 	// Output:
 	// {
-	//     "billing": "YEARLY",
-	//     "contract": "Senzing Public Test License",
-	//     "customer": "Senzing Public Test License",
-	//     "licenseLevel": "STANDARD",
+	//     "billing": "",
+	//     "contract": "",
+	//     "customer": "",
+	//     "licenseLevel": "",
 	//     "licenseType": "EVAL (Solely for non-productive use)",
-	//     "recordLimit": 50000
+	//     "recordLimit": 500
 	// }
 }
 
