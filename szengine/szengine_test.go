@@ -172,12 +172,11 @@ func TestSzEngine_CloseExport(test *testing.T) {
 
 func TestSzEngine_CountRedoRecords(test *testing.T) {
 	ctx := test.Context()
-	expected := int64(0)
 	szEngine := getTestObject(ctx, test)
 	actual, err := szEngine.CountRedoRecords(ctx)
 	printDebug(test, err, actual)
 	require.NoError(test, err)
-	require.Equal(test, expected, actual)
+	require.Equal(test, expectedRedoRecordCount, actual)
 }
 
 func TestSzEngine_DeleteRecord(test *testing.T) {
@@ -1501,7 +1500,7 @@ func TestSzEngine_UnregisterObserver(test *testing.T) {
 // ----------------------------------------------------------------------------
 
 func TestSzEngine_AsInterface(test *testing.T) {
-	expected := int64(5)
+	expected := int64(4)
 	ctx := test.Context()
 	szEngine := getSzEngineAsInterface(ctx)
 	actual, err := szEngine.CountRedoRecords(ctx)
