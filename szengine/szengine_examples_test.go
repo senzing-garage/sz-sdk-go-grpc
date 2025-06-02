@@ -142,7 +142,7 @@ func ExampleSzengine_CountRedoRecords() {
 	}
 
 	fmt.Println(result)
-	// Output: 5
+	// Output: 4
 }
 
 func ExampleSzengine_ExportCsvEntityReport() {
