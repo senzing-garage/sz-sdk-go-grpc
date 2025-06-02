@@ -1,18 +1,21 @@
 package helper
 
 import (
+	"encoding/json"
 	"errors"
+	"fmt"
 	"reflect"
 	"strconv"
 	"strings"
 
 	"github.com/senzing-garage/go-helpers/jsonutil"
 	"github.com/senzing-garage/go-helpers/wraperror"
-	"github.com/senzing-garage/go-messaging/parser"
 	"github.com/senzing-garage/sz-sdk-go/szerror"
 )
 
 const maxReasons = 10
+
+var errPackage = errors.New("helper")
 
 // ----------------------------------------------------------------------------
 // Public functions
@@ -49,76 +52,100 @@ func ConvertGrpcError(originalError error) error {
 // Private functions
 // ----------------------------------------------------------------------------
 
-func convertGrpcError(originalError error) error {
+func convertGrpcError(grpcError error) error {
 	var result error
 
-	// Determine if error is an RPC error.
+	// Verify that it is a gRPC error.
 
-	if reflect.TypeOf(originalError).String() == "*status.Error" {
-		errorMessage := originalError.Error()
-		if strings.HasPrefix(errorMessage, "rpc error:") {
-			result = extractErrorFromRPCError(originalError, errorMessage)
-		}
+	if reflect.TypeOf(grpcError).String() != "*status.Error" {
+		return result
 	}
 
-	return result
-}
+	// Make sure there is a "desc" field.
 
-func extractErrorFromRPCError(originalError error, errorMessage string) error {
-	var result error
+	grpcErrorMessage := grpcError.Error()
+	desc := " desc = "
 
-	// IMPROVE: Improve the fragile method of pulling out the Senzing JSON error.
+	indexOfDesc := strings.Index(grpcErrorMessage, desc)
+	if indexOfDesc < 0 {
+		return result
+	}
 
-	indexOfDesc := strings.Index(errorMessage, " desc = ")
-	senzingErrorMessage := errorMessage[indexOfDesc+8:] // Implicitly safe from "0+8" because of "rpc error:" prefix.
+	// Get the JSON string.
+
+	senzingErrorMessage := grpcErrorMessage[indexOfDesc+len(desc):]
+
 	indexOfBrace := strings.Index(senzingErrorMessage, "{")
+	if indexOfBrace < 0 {
+		return result
+	}
 
-	if indexOfBrace >= 0 {
-		senzingErrorMessage = senzingErrorMessage[indexOfBrace:]
-		if jsonutil.IsJSON(senzingErrorMessage) {
-			result = extractErrorFromJSON(originalError, senzingErrorMessage)
+	senzingErrorJSON := senzingErrorMessage[indexOfBrace:]
+	if !jsonutil.IsJSON(senzingErrorJSON) {
+		return result
+	}
+
+	// Inspect the JSON for the "reason" field in a "message".
+
+	reason := extractReasonFromJSON(senzingErrorJSON)
+	if len(reason) == 0 {
+		return result
+	}
+
+	return createErrorFromReason(senzingErrorJSON, reason)
+}
+
+func extractReasonFromJSON(message string) string {
+	var (
+		result   string
+		errorMap map[string]any
+	)
+
+	err := json.Unmarshal([]byte(message), &errorMap)
+	if err != nil {
+		return result
+	}
+
+	return extractReasonFromAny(errorMap)
+}
+
+func extractReasonFromAny(errorMap map[string]any) string {
+	reasonValue, isOK := errorMap["reason"]
+	if isOK {
+		reasonValueString, isOK := reasonValue.(string)
+		if isOK {
+			return reasonValueString
 		}
 	}
 
-	return result
-}
-
-func extractErrorFromJSON(originalError error, errorMessage string) error {
-	var result error
-
-	// IMPROVE: Add information about any gRPC error.
-	// Status: https://pkg.go.dev/google.golang.org/grpc/status
-	// Codes: https://pkg.go.dev/google.golang.org/grpc/codes
-	// Create a new Senzing nested error.
-
-	parsedMessage, err := parser.Parse(errorMessage)
-	if err != nil {
-		return wraperror.Errorf(
-			err,
-			"parse(%s) error: %w; Original Error: %w",
-			errorMessage,
-			err,
-			originalError,
-		)
+	errorValue, isOK := errorMap["error"]
+	if isOK {
+		newErrorMap, isOK := errorValue.(map[string]any)
+		if isOK {
+			return extractReasonFromAny(newErrorMap)
+		}
 	}
 
-	reason := parsedMessage.Reason
+	result, err := json.Marshal(errorMap)
+	if err != nil {
+		panic(err)
+	}
+
+	return string(result)
+}
+
+func createErrorFromReason(errorMessage string, reason string) error {
 	if len(reason) < maxReasons {
-		return wraperror.Errorf(errForPackage, "len(%s) error: %w; Original Error: %w", reason, err, originalError)
+		return wraperror.Errorf(
+			errPackage,
+			wraperror.Quote(fmt.Sprintf("errorMessage: %s; reason: %s", errorMessage, reason)),
+		)
 	}
 
 	senzingErrorCode, err := strconv.Atoi(reason[4:8])
 	if err != nil {
-		return wraperror.Errorf(
-			err,
-			"strconv.Atoi(%s) error %w; Original Error: %w",
-			reason,
-			err,
-			originalError,
-		)
+		return wraperror.Errorf(err, wraperror.Quote(fmt.Sprintf("errorMessage: %s; reason: %s", errorMessage, reason)))
 	}
 
-	result = szerror.New(senzingErrorCode, errorMessage)
-
-	return wraperror.Errorf(result, "%w", result)
+	return szerror.New(senzingErrorCode, errorMessage) //nolint
 }

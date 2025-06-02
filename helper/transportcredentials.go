@@ -55,11 +55,7 @@ func GetGrpcTransportCredentials() (credentials.TransportCredentials, error) {
 				clientKeyPassPhrase,
 			)
 			if err != nil {
-				return result, wraperror.Errorf(
-					err,
-					"helper.GetGrpcTransportCredentials.LoadX509KeyPair error: %w",
-					err,
-				)
+				return result, wraperror.Errorf(err, "LoadX509KeyPair")
 			}
 
 			certificates = []tls.Certificate{clientCertificate}
@@ -93,7 +89,7 @@ func buildRootCAsFromFile(serverCaCertificatePath string) (*x509.CertPool, error
 
 	pemServerCA, err := os.ReadFile(safeFilename)
 	if err != nil {
-		return result, wraperror.Errorf(err, "helper.buildRootCAsFromFile.os.Read error: %w", err)
+		return result, wraperror.Errorf(err, "os.Read: %s", safeFilename)
 	}
 
 	result = x509.NewCertPool()
@@ -101,5 +97,5 @@ func buildRootCAsFromFile(serverCaCertificatePath string) (*x509.CertPool, error
 		return result, wraperror.Errorf(errForPackage, "failed to add server CA's certificate")
 	}
 
-	return result, wraperror.Errorf(err, "helper.buildRootCAsFromFile error: %w", err)
+	return result, wraperror.Errorf(err, wraperror.NoMessage)
 }

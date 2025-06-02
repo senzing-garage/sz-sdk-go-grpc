@@ -13,7 +13,7 @@ import (
 // Interface methods - test
 // ----------------------------------------------------------------------------
 
-func TestHelpers_GetGrpcTransportCredentials_Insecure(test *testing.T) {
+func TestGetGrpcTransportCredentials_Insecure(test *testing.T) {
 	envVar := "SENZING_TOOLS_SERVER_CA_CERTIFICATE_FILE"
 	value, isSet := os.LookupEnv(envVar)
 
@@ -27,7 +27,7 @@ func TestHelpers_GetGrpcTransportCredentials_Insecure(test *testing.T) {
 	assert.Empty(test, actual)
 }
 
-func TestHelpers_GetGrpcTransportCredentials_MutualTLS(test *testing.T) {
+func TestGetGrpcTransportCredentials_MutualTLS(test *testing.T) {
 	envVars := map[string]string{
 		"SENZING_TOOLS_SERVER_CA_CERTIFICATE_FILE": "../testdata/certificates/certificate-authority/certificate.pem",
 		"SENZING_TOOLS_CLIENT_CERTIFICATE_FILE":    "../testdata/certificates/client/certificate.pem",
@@ -46,7 +46,7 @@ func TestHelpers_GetGrpcTransportCredentials_MutualTLS(test *testing.T) {
 	assert.NotEmpty(test, actual)
 }
 
-func TestHelpers_GetGrpcTransportCredentials_ServerSideTLS(test *testing.T) {
+func TestGetGrpcTransportCredentials_ServerSideTLS(test *testing.T) {
 	envVar := "SENZING_TOOLS_SERVER_CA_CERTIFICATE_FILE"
 	_, isSet := os.LookupEnv(envVar)
 

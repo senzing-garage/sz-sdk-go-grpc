@@ -49,7 +49,7 @@ func (factory *Szabstractfactory) CreateConfigManager(ctx context.Context) (senz
 		GrpcClientSzConfig: szconfigpb.NewSzConfigClient(factory.GrpcConnection),
 	}
 
-	return result, wraperror.Errorf(err, "szabstractfactory.CreateConfigManager  error: %w", err)
+	return result, wraperror.Errorf(err, wraperror.NoMessage)
 }
 
 /*
@@ -70,7 +70,7 @@ func (factory *Szabstractfactory) CreateDiagnostic(ctx context.Context) (senzing
 		GrpcClient: szdiagnosticpb.NewSzDiagnosticClient(factory.GrpcConnection),
 	}
 
-	return result, wraperror.Errorf(err, "szabstractfactory.CreateDiagnostic  error: %w", err)
+	return result, wraperror.Errorf(err, wraperror.NoMessage)
 }
 
 /*
@@ -91,7 +91,7 @@ func (factory *Szabstractfactory) CreateEngine(ctx context.Context) (senzing.SzE
 		GrpcClient: szenginepb.NewSzEngineClient(factory.GrpcConnection),
 	}
 
-	return result, wraperror.Errorf(err, "szabstractfactory.CreateEngine  error: %w", err)
+	return result, wraperror.Errorf(err, wraperror.NoMessage)
 }
 
 /*
@@ -112,7 +112,7 @@ func (factory *Szabstractfactory) CreateProduct(ctx context.Context) (senzing.Sz
 		GrpcClient: szproductpb.NewSzProductClient(factory.GrpcConnection),
 	}
 
-	return result, wraperror.Errorf(err, "szabstractfactory.CreateProduct  error: %w", err)
+	return result, wraperror.Errorf(err, wraperror.NoMessage)
 }
 
 /*
@@ -131,7 +131,7 @@ func (factory *Szabstractfactory) Destroy(ctx context.Context) error {
 
 	err = szConfigmanager.Destroy(ctx)
 	if err != nil {
-		return wraperror.Errorf(err, "szabstractfactory.Destroy.szConfigmanager error: %w", err)
+		return wraperror.Errorf(err, "szConfigmanager")
 	}
 
 	szDiagnostic := &szdiagnostic.Szdiagnostic{
@@ -140,7 +140,7 @@ func (factory *Szabstractfactory) Destroy(ctx context.Context) error {
 
 	err = szDiagnostic.Destroy(ctx)
 	if err != nil {
-		return wraperror.Errorf(err, "szabstractfactory.Destroy.szDiagnostic error: %w", err)
+		return wraperror.Errorf(err, "szDiagnostic")
 	}
 
 	szEngine := &szengine.Szengine{
@@ -149,7 +149,7 @@ func (factory *Szabstractfactory) Destroy(ctx context.Context) error {
 
 	err = szEngine.Destroy(ctx)
 	if err != nil {
-		return wraperror.Errorf(err, "szabstractfactory.Destroy.szEngine error: %w", err)
+		return wraperror.Errorf(err, "szEngine")
 	}
 
 	szProduct := &szproduct.Szproduct{
@@ -158,10 +158,10 @@ func (factory *Szabstractfactory) Destroy(ctx context.Context) error {
 
 	err = szProduct.Destroy(ctx)
 	if err != nil {
-		return wraperror.Errorf(err, "szabstractfactory.Destroy.szProduct error: %w", err)
+		return wraperror.Errorf(err, "szProduct")
 	}
 
-	return wraperror.Errorf(err, "szabstractfactory.Destroy error: %w", err)
+	return wraperror.Errorf(err, wraperror.NoMessage)
 }
 
 /*
@@ -181,7 +181,7 @@ func (factory *Szabstractfactory) Reinitialize(ctx context.Context, configID int
 
 	err = szDiagnostic.Reinitialize(ctx, configID)
 	if err != nil {
-		return wraperror.Errorf(err, "szabstractfactory.Reinitialize.szDiagnostic error: %w", err)
+		return wraperror.Errorf(err, "szDiagnostic")
 	}
 
 	szEngine := &szengine.Szengine{
@@ -190,8 +190,8 @@ func (factory *Szabstractfactory) Reinitialize(ctx context.Context, configID int
 
 	err = szEngine.Reinitialize(ctx, configID)
 	if err != nil {
-		return wraperror.Errorf(err, "szabstractfactory.Reinitialize.szEngine error: %w", err)
+		return wraperror.Errorf(err, "Reinitialize")
 	}
 
-	return wraperror.Errorf(err, "szabstractfactory.Reinitialize error: %w", err)
+	return wraperror.Errorf(err, wraperror.NoMessage)
 }
