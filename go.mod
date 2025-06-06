@@ -1,6 +1,6 @@
 module github.com/senzing-garage/sz-sdk-go-grpc
 
-go 1.24
+go 1.24.2
 
 require (
 	github.com/aquilax/truncate v1.0.1
