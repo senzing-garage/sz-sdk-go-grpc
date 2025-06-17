@@ -104,7 +104,7 @@ func ExampleSzconfigmanager_CreateConfigFromTemplate() {
 	// Output: {"G2_CONFIG":{"CFG_ATTR":[{"ATTR_CLASS":"ADDRESS","ATTR_CODE":"ADDR_CITY","ATTR_ID":1608,...
 }
 
-func ExampleSzconfigmanager_GetConfigs() {
+func ExampleSzconfigmanager_GetConfigRegistry() {
 	// For more information, visit
 	// https://github.com/senzing-garage/sz-sdk-go-grpc/blob/main/szconfigmanager/szconfigmanager_examples_test.go
 	ctx := context.TODO()
@@ -115,7 +115,7 @@ func ExampleSzconfigmanager_GetConfigs() {
 		handleError(err)
 	}
 
-	configList, err := szConfigManager.GetConfigs(ctx)
+	configList, err := szConfigManager.GetConfigRegistry(ctx)
 	if err != nil {
 		handleError(err)
 	}
@@ -281,7 +281,7 @@ func ExampleSzconfigmanager_SetDefaultConfigID() {
 
 	configID, err := szConfigManager.GetDefaultConfigID(
 		ctx,
-	) // For example purposes only. Normally would use output from GetConfigList()
+	) // For example purposes only. Normally would use output from GetConfigRegistry()
 	if err != nil {
 		handleError(err)
 	}
