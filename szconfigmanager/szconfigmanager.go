@@ -152,7 +152,7 @@ func (client *Szconfigmanager) CreateConfigFromTemplate(ctx context.Context) (se
 }
 
 /*
-Method GetConfigs retrieves a list of Senzing configuration JSON documents from the Senzing datastore.
+Method GetConfigRegistry retrieves a list of Senzing configuration JSON documents from the Senzing datastore.
 
 Input
   - ctx: A context to control lifecycle.
@@ -160,7 +160,7 @@ Input
 Output
   - A JSON document listing Senzing configuration JSON document metadata.
 */
-func (client *Szconfigmanager) GetConfigs(ctx context.Context) (string, error) {
+func (client *Szconfigmanager) GetConfigRegistry(ctx context.Context) (string, error) {
 	var (
 		err    error
 		result string
@@ -173,7 +173,7 @@ func (client *Szconfigmanager) GetConfigs(ctx context.Context) (string, error) {
 		defer func() { client.traceExit(10, result, err, time.Since(entryTime)) }()
 	}
 
-	result, err = client.getConfigs(ctx)
+	result, err = client.getConfigRegistry(ctx)
 
 	if client.observers != nil {
 		go func() {
@@ -696,9 +696,9 @@ func (client *Szconfigmanager) getConfig(ctx context.Context, configID int64) (s
 	return result, helper.ConvertGrpcError(err)
 }
 
-func (client *Szconfigmanager) getConfigs(ctx context.Context) (string, error) {
-	request := szpb.GetConfigsRequest{}
-	response, err := client.GrpcClient.GetConfigs(ctx, &request)
+func (client *Szconfigmanager) getConfigRegistry(ctx context.Context) (string, error) {
+	request := szpb.GetConfigRegistryRequest{}
+	response, err := client.GrpcClient.GetConfigRegistry(ctx, &request)
 	result := response.GetResult()
 
 	return result, helper.ConvertGrpcError(err)
