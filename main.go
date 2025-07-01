@@ -160,9 +160,9 @@ func demonstrateConfigFunctions(ctx context.Context, szAbstractFactory senzing.S
 	// Using SzConfig: Add data source to in-memory configuration.
 
 	for dataSourceCode := range truthset.TruthsetDataSources {
-		_, err := szConfig.AddDataSource(ctx, dataSourceCode)
+		_, err := szConfig.RegisterDataSource(ctx, dataSourceCode)
 		if err != nil {
-			return wraperror.Errorf(logger.NewError(5102, err), "AddDataSource")
+			return wraperror.Errorf(logger.NewError(5102, err), "RegisterDataSource")
 		}
 	}
 

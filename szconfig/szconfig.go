@@ -40,7 +40,7 @@ const (
 // ----------------------------------------------------------------------------
 
 /*
-Method AddDataSource adds a new data source to the Senzing configuration.
+Method RegisterDataSource adds a new data source to the Senzing configuration.
 
 Input
   - ctx: A context to control lifecycle.
@@ -49,7 +49,7 @@ Input
 Output
   - A JSON document listing the newly created data source.
 */
-func (client *Szconfig) AddDataSource(ctx context.Context, dataSourceCode string) (string, error) {
+func (client *Szconfig) RegisterDataSource(ctx context.Context, dataSourceCode string) (string, error) {
 	var (
 		err    error
 		result string
@@ -59,12 +59,13 @@ func (client *Szconfig) AddDataSource(ctx context.Context, dataSourceCode string
 		client.traceEntry(1, dataSourceCode)
 
 		entryTime := time.Now()
+
 		defer func() {
 			client.traceExit(2, dataSourceCode, result, err, time.Since(entryTime))
 		}()
 	}
 
-	result, err = client.addDataSource(ctx, dataSourceCode)
+	result, err = client.registerDataSource(ctx, dataSourceCode)
 
 	if client.observers != nil {
 		go func() {
@@ -80,7 +81,7 @@ func (client *Szconfig) AddDataSource(ctx context.Context, dataSourceCode string
 }
 
 /*
-Method DeleteDataSource removes a data source from the Senzing configuration.
+Method UnregisterDataSource removes a data source from the Senzing configuration.
 
 Input
   - ctx: A context to control lifecycle.
@@ -89,7 +90,7 @@ Input
 Output
   - A JSON document listing the newly created data source. Currently an empty string.
 */
-func (client *Szconfig) DeleteDataSource(ctx context.Context, dataSourceCode string) (string, error) {
+func (client *Szconfig) UnregisterDataSource(ctx context.Context, dataSourceCode string) (string, error) {
 	var (
 		err    error
 		result string
@@ -99,10 +100,11 @@ func (client *Szconfig) DeleteDataSource(ctx context.Context, dataSourceCode str
 		client.traceEntry(9, dataSourceCode)
 
 		entryTime := time.Now()
+
 		defer func() { client.traceExit(10, dataSourceCode, err, time.Since(entryTime)) }()
 	}
 
-	result, err = client.deleteDataSource(ctx, dataSourceCode)
+	result, err = client.unregisterDataSource(ctx, dataSourceCode)
 
 	if client.observers != nil {
 		go func() {
@@ -135,6 +137,7 @@ func (client *Szconfig) Export(ctx context.Context) (string, error) {
 		client.traceEntry(13)
 
 		entryTime := time.Now()
+
 		defer func() { client.traceExit(14, result, err, time.Since(entryTime)) }()
 	}
 
@@ -151,7 +154,7 @@ func (client *Szconfig) Export(ctx context.Context) (string, error) {
 }
 
 /*
-Method GetDataSources returns a JSON document containing data sources defined in the Senzing configuration.
+Method GetDataSourceRegistry returns a JSON document containing data sources defined in the Senzing configuration.
 
 Input
   - ctx: A context to control lifecycle.
@@ -159,7 +162,7 @@ Input
 Output
   - A JSON document listing data sources in the in-memory configuration.
 */
-func (client *Szconfig) GetDataSources(ctx context.Context) (string, error) {
+func (client *Szconfig) GetDataSourceRegistry(ctx context.Context) (string, error) {
 	var (
 		err    error
 		result string
@@ -169,10 +172,11 @@ func (client *Szconfig) GetDataSources(ctx context.Context) (string, error) {
 		client.traceEntry(15)
 
 		entryTime := time.Now()
+
 		defer func() { client.traceExit(16, result, err, time.Since(entryTime)) }()
 	}
 
-	result, err = client.getDataSources(ctx)
+	result, err = client.getDataSourceRegistry(ctx)
 
 	if client.observers != nil {
 		go func() {
@@ -201,6 +205,7 @@ func (client *Szconfig) Destroy(ctx context.Context) error {
 		client.traceEntry(11)
 
 		entryTime := time.Now()
+
 		defer func() { client.traceExit(12, err, time.Since(entryTime)) }()
 	}
 
@@ -243,6 +248,7 @@ func (client *Szconfig) Import(ctx context.Context, configDefinition string) err
 		client.traceEntry(21, configDefinition)
 
 		entryTime := time.Now()
+
 		defer func() { client.traceExit(22, configDefinition, err, time.Since(entryTime)) }()
 	}
 
@@ -279,6 +285,7 @@ func (client *Szconfig) Initialize(
 		client.traceEntry(23, instanceName, settings, verboseLogging)
 
 		entryTime := time.Now()
+
 		defer func() { client.traceExit(24, instanceName, settings, verboseLogging, err, time.Since(entryTime)) }()
 	}
 
@@ -310,6 +317,7 @@ func (client *Szconfig) RegisterObserver(ctx context.Context, observer observer.
 		client.traceEntry(703, observer.GetObserverID(ctx))
 
 		entryTime := time.Now()
+
 		defer func() { client.traceExit(704, observer.GetObserverID(ctx), err, time.Since(entryTime)) }()
 	}
 
@@ -345,6 +353,7 @@ func (client *Szconfig) SetLogLevel(ctx context.Context, logLevelName string) er
 		client.traceEntry(705, logLevelName)
 
 		entryTime := time.Now()
+
 		defer func() { client.traceExit(706, logLevelName, err, time.Since(entryTime)) }()
 	}
 
@@ -393,6 +402,7 @@ func (client *Szconfig) UnregisterObserver(ctx context.Context, observer observe
 		client.traceEntry(707, observer.GetObserverID(ctx))
 
 		entryTime := time.Now()
+
 		defer func() { client.traceExit(708, observer.GetObserverID(ctx), err, time.Since(entryTime)) }()
 	}
 
@@ -430,6 +440,7 @@ func (client *Szconfig) VerifyConfigDefinition(ctx context.Context, configDefini
 		client.traceEntry(25, configDefinition)
 
 		entryTime := time.Now()
+
 		defer func() { client.traceExit(26, configDefinition, err, time.Since(entryTime)) }()
 	}
 
@@ -449,15 +460,15 @@ func (client *Szconfig) VerifyConfigDefinition(ctx context.Context, configDefini
 // Private methods for gRPC request/response
 // ----------------------------------------------------------------------------
 
-func (client *Szconfig) addDataSource(ctx context.Context, dataSourceCode string) (string, error) {
+func (client *Szconfig) registerDataSource(ctx context.Context, dataSourceCode string) (string, error) {
 	var result string
 
-	request := &szpb.AddDataSourceRequest{
+	request := &szpb.RegisterDataSourceRequest{
 		ConfigDefinition: client.configDefinition,
 		DataSourceCode:   dataSourceCode,
 	}
 
-	response, err := client.GrpcClient.AddDataSource(ctx, request)
+	response, err := client.GrpcClient.RegisterDataSource(ctx, request)
 	if err != nil {
 		return result, helper.ConvertGrpcError(err)
 	}
@@ -468,15 +479,15 @@ func (client *Szconfig) addDataSource(ctx context.Context, dataSourceCode string
 	return result, helper.ConvertGrpcError(err)
 }
 
-func (client *Szconfig) deleteDataSource(ctx context.Context, dataSourceCode string) (string, error) {
+func (client *Szconfig) unregisterDataSource(ctx context.Context, dataSourceCode string) (string, error) {
 	var result string
 
-	request := &szpb.DeleteDataSourceRequest{
+	request := &szpb.UnregisterDataSourceRequest{
 		ConfigDefinition: client.configDefinition,
 		DataSourceCode:   dataSourceCode,
 	}
 
-	response, err := client.GrpcClient.DeleteDataSource(ctx, request)
+	response, err := client.GrpcClient.UnregisterDataSource(ctx, request)
 	if err != nil {
 		return result, helper.ConvertGrpcError(err)
 	}
@@ -493,14 +504,14 @@ func (client *Szconfig) export(ctx context.Context) string {
 	return client.configDefinition
 }
 
-func (client *Szconfig) getDataSources(ctx context.Context) (string, error) {
+func (client *Szconfig) getDataSourceRegistry(ctx context.Context) (string, error) {
 	var result string
 
-	request := &szpb.GetDataSourcesRequest{
+	request := &szpb.GetDataSourceRegistryRequest{
 		ConfigDefinition: client.configDefinition,
 	}
 
-	response, err := client.GrpcClient.GetDataSources(ctx, request)
+	response, err := client.GrpcClient.GetDataSourceRegistry(ctx, request)
 	if err != nil {
 		return result, helper.ConvertGrpcError(err)
 	}

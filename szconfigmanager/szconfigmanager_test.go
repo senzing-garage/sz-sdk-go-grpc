@@ -169,7 +169,7 @@ func TestSzconfigmanager_RegisterConfig(test *testing.T) {
 	require.NoError(test, err)
 
 	dataSourceCode := "GO_TEST_" + strconv.FormatInt(now.Unix(), baseTen)
-	actual, err := szConfig.AddDataSource(ctx, dataSourceCode)
+	actual, err := szConfig.RegisterDataSource(ctx, dataSourceCode)
 	printDebug(test, err, actual)
 	require.NoError(test, err)
 	configDefinition, err := szConfig.Export(ctx)
@@ -308,7 +308,7 @@ func TestSzconfigmanager_SetDefaultConfig(test *testing.T) {
 	require.NoError(test, err)
 
 	dataSourceCode := "GO_TEST_" + strconv.FormatInt(now.Unix(), baseTen)
-	actual, err := szConfig.AddDataSource(ctx, dataSourceCode)
+	actual, err := szConfig.RegisterDataSource(ctx, dataSourceCode)
 	printDebug(test, err, actual)
 	require.NoError(test, err)
 	configDefintion, err := szConfig.Export(ctx)
@@ -598,7 +598,7 @@ func setupSenzingConfiguration() {
 
 	dataSourceCodes := []string{"CUSTOMERS", "REFERENCE", "WATCHLIST"}
 	for _, dataSourceCode := range dataSourceCodes {
-		_, err := szConfig.AddDataSource(ctx, dataSourceCode)
+		_, err := szConfig.RegisterDataSource(ctx, dataSourceCode)
 		panicOnError(err)
 	}
 
