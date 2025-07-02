@@ -82,7 +82,7 @@ func TestSzconfig_RegisterDataSource_badDataSourceCode(test *testing.T) {
 	printDebug(test, err, actual)
 	require.ErrorIs(test, err, szerror.ErrSzBadInput)
 
-	expectedErr := `{"function":"szconfig.(*Szconfig).RegisterDataSource","error":{"function":"szconfigserver.(*SzConfigServer).RegisterDataSource","text":"RegisterDataSource: \n\tGO_TEST","error":{"function":"szconfig.(*Szconfig).RegisterDataSource","error":{"function":"szconfig.(*Szconfig).registerDataSource","text":"registerDataSource: \n\tGO_TEST","error":{"id":"SZSDK60014001","reason":"SENZ3121|JSON Parsing Failure [code=12,offset=15]"}}}}}`
+	expectedErr := `{"function":"szconfig.(*Szconfig).RegisterDataSource","error":{"function":"szconfigserver.(*SzConfigServer).RegisterDataSource","text":"RegisterDataSource: \n\tGO_TEST","error":{"function":"szconfig.(*Szconfig).RegisterDataSource","error":{"function":"szconfig.(*Szconfig).registerDataSourceChoreography","text":"registerDataSource: \n\tGO_TEST","error":{"id":"SZSDK60014001","reason":"SENZ3121|JSON Parsing Failure [code=12,offset=15]"}}}}}`
 	require.JSONEq(test, expectedErr, err.Error())
 }
 
@@ -93,7 +93,7 @@ func TestSzconfig_RegisterDataSource_nilDataSourceCode(test *testing.T) {
 	printDebug(test, err, actual)
 	require.ErrorIs(test, err, szerror.ErrSzBadInput)
 
-	expectedErr := `{"function":"szconfig.(*Szconfig).RegisterDataSource","error":{"function":"szconfigserver.(*SzConfigServer).RegisterDataSource","text":"RegisterDataSource: ","error":{"function":"szconfig.(*Szconfig).RegisterDataSource","error":{"function":"szconfig.(*Szconfig).registerDataSource","text":"registerDataSource: ","error":{"id":"SZSDK60014001","reason":"SENZ7313|A non-empty value for [DSRC_CODE] must be specified."}}}}}`
+	expectedErr := `{"function":"szconfig.(*Szconfig).RegisterDataSource","error":{"function":"szconfigserver.(*SzConfigServer).RegisterDataSource","text":"RegisterDataSource: ","error":{"function":"szconfig.(*Szconfig).RegisterDataSource","error":{"function":"szconfig.(*Szconfig).registerDataSourceChoreography","text":"registerDataSource: ","error":{"id":"SZSDK60014001","reason":"SENZ7313|A non-empty value for [DSRC_CODE] must be specified."}}}}}`
 	require.JSONEq(test, expectedErr, err.Error())
 }
 
