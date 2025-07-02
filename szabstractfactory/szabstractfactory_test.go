@@ -54,7 +54,7 @@ func TestSzAbstractFactory_CreateDiagnostic(test *testing.T) {
 	szDiagnostic, err := szAbstractFactory.CreateDiagnostic(ctx)
 	printDebug(test, err, szDiagnostic)
 	require.NoError(test, err)
-	result, err := szDiagnostic.CheckDatastorePerformance(ctx, 1)
+	result, err := szDiagnostic.CheckRepositoryPerformance(ctx, 1)
 	printDebug(test, err, result)
 	require.NoError(test, err)
 }

@@ -7,8 +7,8 @@ require (
 	github.com/senzing-garage/go-helpers v0.6.13
 	github.com/senzing-garage/go-logging v1.5.3
 	github.com/senzing-garage/go-observing v0.3.6
-	github.com/senzing-garage/sz-sdk-go v0.15.6
-	github.com/senzing-garage/sz-sdk-proto v0.8.6
+	github.com/senzing-garage/sz-sdk-go v0.15.7
+	github.com/senzing-garage/sz-sdk-proto v0.8.7
 	github.com/stretchr/testify v1.10.0
 	google.golang.org/grpc v1.73.0
 )
@@ -17,7 +17,7 @@ require (
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
 	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 // indirect
 	github.com/senzing-garage/go-messaging v1.5.3 // indirect
-	golang.org/x/exp v0.0.0-20250606033433-dcc06ee1d476 // indirect
+	golang.org/x/exp v0.0.0-20250620022241-b7579e27df2b // indirect
 	golang.org/x/net v0.41.0 // indirect
 	golang.org/x/sys v0.33.0 // indirect
 	golang.org/x/text v0.26.0 // indirect
