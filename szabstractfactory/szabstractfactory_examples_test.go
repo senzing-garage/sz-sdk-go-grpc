@@ -10,13 +10,26 @@ import (
 // Interface methods - Examples for godoc documentation
 // ----------------------------------------------------------------------------
 
+func ExampleSzabstractfactory_Close() {
+	// For more information, visit
+	// https://github.com/senzing-garage/sz-sdk-go-grpc/blob/main/szabstractfactory/szabstractfactory_examples_test.go
+	ctx := context.TODO()
+	szAbstractFactory := getSzAbstractFactory(ctx)
+
+	err := szAbstractFactory.Close(ctx)
+	if err != nil {
+		handleError(err)
+	}
+	// Output:
+}
+
 func ExampleSzabstractfactory_CreateConfigManager() {
 	// For more information, visit
 	// https://github.com/senzing-garage/sz-sdk-go-grpc/blob/main/szabstractfactory/szabstractfactory_examples_test.go
 	ctx := context.TODO()
 	szAbstractFactory := getSzAbstractFactory(ctx)
 
-	defer func() { handleError(szAbstractFactory.Destroy(ctx)) }()
+	defer func() { handleError(szAbstractFactory.Close(ctx)) }()
 
 	szConfigManager, err := szAbstractFactory.CreateConfigManager(ctx)
 	if err != nil {
@@ -33,7 +46,7 @@ func ExampleSzabstractfactory_CreateDiagnostic() {
 	ctx := context.TODO()
 	szAbstractFactory := getSzAbstractFactory(ctx)
 
-	defer func() { handleError(szAbstractFactory.Destroy(ctx)) }()
+	defer func() { handleError(szAbstractFactory.Close(ctx)) }()
 
 	szDiagnostic, err := szAbstractFactory.CreateDiagnostic(ctx)
 	if err != nil {
@@ -50,7 +63,7 @@ func ExampleSzabstractfactory_CreateEngine() {
 	ctx := context.TODO()
 	szAbstractFactory := getSzAbstractFactory(ctx)
 
-	defer func() { handleError(szAbstractFactory.Destroy(ctx)) }()
+	defer func() { handleError(szAbstractFactory.Close(ctx)) }()
 
 	szEngine, err := szAbstractFactory.CreateEngine(ctx)
 	if err != nil {
@@ -67,7 +80,7 @@ func ExampleSzabstractfactory_CreateProduct() {
 	ctx := context.TODO()
 	szAbstractFactory := getSzAbstractFactory(ctx)
 
-	defer func() { handleError(szAbstractFactory.Destroy(ctx)) }()
+	defer func() { handleError(szAbstractFactory.Close(ctx)) }()
 
 	szProduct, err := szAbstractFactory.CreateProduct(ctx)
 	if err != nil {
@@ -78,26 +91,13 @@ func ExampleSzabstractfactory_CreateProduct() {
 	// Output:
 }
 
-func ExampleSzabstractfactory_Destroy() {
-	// For more information, visit
-	// https://github.com/senzing-garage/sz-sdk-go-grpc/blob/main/szabstractfactory/szabstractfactory_examples_test.go
-	ctx := context.TODO()
-	szAbstractFactory := getSzAbstractFactory(ctx)
-
-	err := szAbstractFactory.Destroy(ctx)
-	if err != nil {
-		handleError(err)
-	}
-	// Output:
-}
-
 func ExampleSzabstractfactory_Reinitialize() {
 	// For more information, visit
 	// https://github.com/senzing-garage/sz-sdk-go-grpc/blob/main/szabstractfactory/szabstractfactory_examples_test.go
 	ctx := context.TODO()
 	szAbstractFactory := getSzAbstractFactory(ctx)
 
-	defer func() { handleError(szAbstractFactory.Destroy(ctx)) }()
+	defer func() { handleError(szAbstractFactory.Close(ctx)) }()
 
 	szConfigManager, err := szAbstractFactory.CreateConfigManager(ctx)
 	if err != nil {

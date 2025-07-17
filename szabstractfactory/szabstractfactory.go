@@ -31,6 +31,20 @@ type Szabstractfactory struct {
 // ----------------------------------------------------------------------------
 
 /*
+Method Close is a null method in the sz-sdk-go-grpc implementation.
+
+Input
+  - ctx: A context to control lifecycle.
+*/
+func (factory *Szabstractfactory) Close(ctx context.Context) error {
+	var err error
+
+	_ = ctx
+
+	return wraperror.Errorf(err, wraperror.NoMessage)
+}
+
+/*
 Method CreateConfigManager returns an SzConfigManager object
 implemented to use the Senzing native C binary, libSz.so.
 
@@ -113,55 +127,6 @@ func (factory *Szabstractfactory) CreateProduct(ctx context.Context) (senzing.Sz
 	}
 
 	return result, wraperror.Errorf(err, wraperror.NoMessage)
-}
-
-/*
-Method Destroy will destroy and perform cleanup for the Senzing objects created by the AbstractFactory.
-It should be called after all other calls are complete.
-
-Input
-  - ctx: A context to control lifecycle.
-*/
-func (factory *Szabstractfactory) Destroy(ctx context.Context) error {
-	var err error
-
-	szConfigmanager := &szconfigmanager.Szconfigmanager{
-		GrpcClient: szconfigmanagerpb.NewSzConfigManagerClient(factory.GrpcConnection),
-	}
-
-	err = szConfigmanager.Destroy(ctx)
-	if err != nil {
-		return wraperror.Errorf(err, "szConfigmanager")
-	}
-
-	szDiagnostic := &szdiagnostic.Szdiagnostic{
-		GrpcClient: szdiagnosticpb.NewSzDiagnosticClient(factory.GrpcConnection),
-	}
-
-	err = szDiagnostic.Destroy(ctx)
-	if err != nil {
-		return wraperror.Errorf(err, "szDiagnostic")
-	}
-
-	szEngine := &szengine.Szengine{
-		GrpcClient: szenginepb.NewSzEngineClient(factory.GrpcConnection),
-	}
-
-	err = szEngine.Destroy(ctx)
-	if err != nil {
-		return wraperror.Errorf(err, "szEngine")
-	}
-
-	szProduct := &szproduct.Szproduct{
-		GrpcClient: szproductpb.NewSzProductClient(factory.GrpcConnection),
-	}
-
-	err = szProduct.Destroy(ctx)
-	if err != nil {
-		return wraperror.Errorf(err, "szProduct")
-	}
-
-	return wraperror.Errorf(err, wraperror.NoMessage)
 }
 
 /*
