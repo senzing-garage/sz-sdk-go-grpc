@@ -1759,6 +1759,7 @@ func ExampleSzengine_GetRedoRecord() {
 	//     "DATA_SOURCE": "CUSTOMERS",
 	//     "RECORD_ID": "1003",
 	//     "REEVAL_ITERATION": 1,
+	//     "ENTITY_CORRUPTION_TRANSIENT": true,
 	//     "DSRC_ACTION": "X"
 	// }
 }
