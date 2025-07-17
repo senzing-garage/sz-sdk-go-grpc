@@ -9,11 +9,11 @@ and this project adheres to [Semantic Versioning].
 
 -
 
-## [0.9.10] - 2025-07-17
+## [0.9.9] - 2025-07-17
 
-### Added in 0.9.10
+### Changed in 0.9.9
 
-- `SzAbstractFactory.Close()`
+- Changed SzAbstractFactory's Delete() to Close()
 
 ## [0.9.8] - 2025-07-02
 
