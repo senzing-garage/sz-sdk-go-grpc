@@ -39,7 +39,11 @@ const (
 // ----------------------------------------------------------------------------
 
 /*
-Method CheckRepositoryPerformance runs performance tests on the Senzing repository.
+Method CheckRepositoryPerformance conducts a rudimentary repository test to gauge I/O and network performance.
+
+Typically, this is only run when troubleshooting performance.
+
+This is a non-destructive test.
 
 Input
   - ctx: A context to control lifecycle.
@@ -60,7 +64,6 @@ func (client *Szdiagnostic) CheckRepositoryPerformance(ctx context.Context, seco
 		client.traceEntry(1, secondsToRun)
 
 		entryTime := time.Now()
-
 		defer func() { client.traceExit(2, secondsToRun, result, err, time.Since(entryTime)) }()
 	}
 
@@ -89,7 +92,6 @@ func (client *Szdiagnostic) Destroy(ctx context.Context) error {
 		client.traceEntry(5)
 
 		entryTime := time.Now()
-
 		defer func() { client.traceExit(6, err, time.Since(entryTime)) }()
 	}
 
@@ -104,8 +106,7 @@ func (client *Szdiagnostic) Destroy(ctx context.Context) error {
 }
 
 /*
-Method GetFeature is an experimental method that returns diagnostic information of a feature.
-Not recommended for use.
+Method GetFeature Experimental/internal for Senzing support use only.
 
 Input
   - ctx: A context to control lifecycle.
@@ -125,7 +126,6 @@ func (client *Szdiagnostic) GetFeature(ctx context.Context, featureID int64) (st
 		client.traceEntry(9, featureID)
 
 		entryTime := time.Now()
-
 		defer func() { client.traceExit(10, featureID, result, err, time.Since(entryTime)) }()
 	}
 
@@ -144,7 +144,7 @@ func (client *Szdiagnostic) GetFeature(ctx context.Context, featureID int64) (st
 }
 
 /*
-Method GetRepositoryInfo returns information about the Senzing repository.
+Method GetRepositoryInfo returns overview information about the repository.
 
 Input
   - ctx: A context to control lifecycle.
@@ -163,7 +163,6 @@ func (client *Szdiagnostic) GetRepositoryInfo(ctx context.Context) (string, erro
 		client.traceEntry(7)
 
 		entryTime := time.Now()
-
 		defer func() { client.traceExit(8, result, err, time.Since(entryTime)) }()
 	}
 
@@ -180,9 +179,13 @@ func (client *Szdiagnostic) GetRepositoryInfo(ctx context.Context) (string, erro
 }
 
 /*
-WARNING: Method PurgeRepository removes every record in the Senzing repository.
-This is a destructive method that cannot be undone.
-Before calling purgeRepository(), all programs using Senzing MUST be terminated.
+WARNING: Method PurgeRepository permanently deletes all data in the repository, except the configuration.
+
+WARNING: This method is destructive, it will delete all loaded records and entity resolution decisions.
+
+Senzing does not provide a means to restore the data.
+
+The only means of recovery would be restoring from a database backup.
 
 Input
   - ctx: A context to control lifecycle.
@@ -194,7 +197,6 @@ func (client *Szdiagnostic) PurgeRepository(ctx context.Context) error {
 		client.traceEntry(17)
 
 		entryTime := time.Now()
-
 		defer func() { client.traceExit(18, err, time.Since(entryTime)) }()
 	}
 
@@ -252,7 +254,6 @@ func (client *Szdiagnostic) Initialize(
 		client.traceEntry(15, instanceName, settings, configID, verboseLogging)
 
 		entryTime := time.Now()
-
 		defer func() {
 			client.traceExit(16, instanceName, settings, configID, verboseLogging, err, time.Since(entryTime))
 		}()
@@ -287,7 +288,6 @@ func (client *Szdiagnostic) RegisterObserver(ctx context.Context, observer obser
 		client.traceEntry(703, observer.GetObserverID(ctx))
 
 		entryTime := time.Now()
-
 		defer func() { client.traceExit(704, observer.GetObserverID(ctx), err, time.Since(entryTime)) }()
 	}
 
@@ -323,7 +323,6 @@ func (client *Szdiagnostic) Reinitialize(ctx context.Context, configID int64) er
 		client.traceEntry(19, configID)
 
 		entryTime := time.Now()
-
 		defer func() { client.traceExit(20, configID, err, time.Since(entryTime)) }()
 	}
 
@@ -355,7 +354,6 @@ func (client *Szdiagnostic) SetLogLevel(ctx context.Context, logLevelName string
 		client.traceEntry(705, logLevelName)
 
 		entryTime := time.Now()
-
 		defer func() { client.traceExit(706, logLevelName, err, time.Since(entryTime)) }()
 	}
 
@@ -404,7 +402,6 @@ func (client *Szdiagnostic) UnregisterObserver(ctx context.Context, observer obs
 		client.traceEntry(707, observer.GetObserverID(ctx))
 
 		entryTime := time.Now()
-
 		defer func() { client.traceExit(708, observer.GetObserverID(ctx), err, time.Since(entryTime)) }()
 	}
 
