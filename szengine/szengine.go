@@ -220,6 +220,33 @@ func (client *Szengine) DeleteRecord(
 }
 
 /*
+Method Destroy is a Null function for sz-sdk-go-grpc.
+
+Input
+  - ctx: A context to control lifecycle.
+*/
+func (client *Szengine) Destroy(ctx context.Context) error {
+	var err error
+
+	if client.isTrace {
+		client.traceEntry(11)
+
+		entryTime := time.Now()
+
+		defer func() { client.traceExit(12, err, time.Since(entryTime)) }()
+	}
+
+	if client.observers != nil {
+		go func() {
+			details := map[string]string{}
+			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentID, 8005, err, details)
+		}()
+	}
+
+	return wraperror.Errorf(err, wraperror.NoMessage)
+}
+
+/*
 Method ExportCsvEntityReport initializes a cursor over a CSV document of exported entities.
 It is part of the ExportCsvEntityReport, [Szengine.FetchNext], [Szengine.CloseExportReport] lifecycle
 of a list of entities to export.
@@ -1093,6 +1120,47 @@ func (client *Szengine) GetRecord(
 }
 
 /*
+Method GetRecordPreview tests adding a record into the Senzing repository.
+
+Input
+  - ctx: A context to control lifecycle.
+  - recordDefinition: A JSON document containing the record to be tested against the Senzing repository.
+  - flags: Flags used to control information returned.
+
+Output
+  - A JSON document containing metadata as specified by the flags.
+*/
+func (client *Szengine) GetRecordPreview(ctx context.Context, recordDefinition string, flags int64) (string, error) {
+	var (
+		err    error
+		result string
+	)
+
+	if client.isTrace {
+		client.traceEntry(77, recordDefinition, flags)
+
+		entryTime := time.Now()
+
+		defer func() {
+			client.traceExit(78, recordDefinition, flags, result, err, time.Since(entryTime))
+		}()
+	}
+
+	result, err = client.getRecordPreview(ctx, recordDefinition, flags)
+
+	if client.observers != nil {
+		go func() {
+			details := map[string]string{
+				"flags": strconv.FormatInt(flags, baseTen),
+			}
+			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentID, 8035, err, details)
+		}()
+	}
+
+	return result, wraperror.Errorf(err, wraperror.NoMessage)
+}
+
+/*
 Method GetRedoRecord returns the next maintenance record from the Senzing repository.
 Usually, [Szengine.ProcessRedoRecord] is called to process the maintenance record retrieved by GetRedoRecord.
 
@@ -1243,47 +1311,6 @@ func (client *Szengine) HowEntityByEntityID(ctx context.Context, entityID int64,
 				"flags":    strconv.FormatInt(flags, baseTen),
 			}
 			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentID, 8024, err, details)
-		}()
-	}
-
-	return result, wraperror.Errorf(err, wraperror.NoMessage)
-}
-
-/*
-Method GetRecordPreview tests adding a record into the Senzing repository.
-
-Input
-  - ctx: A context to control lifecycle.
-  - recordDefinition: A JSON document containing the record to be tested against the Senzing repository.
-  - flags: Flags used to control information returned.
-
-Output
-  - A JSON document containing metadata as specified by the flags.
-*/
-func (client *Szengine) GetRecordPreview(ctx context.Context, recordDefinition string, flags int64) (string, error) {
-	var (
-		err    error
-		result string
-	)
-
-	if client.isTrace {
-		client.traceEntry(77, recordDefinition, flags)
-
-		entryTime := time.Now()
-
-		defer func() {
-			client.traceExit(78, recordDefinition, flags, result, err, time.Since(entryTime))
-		}()
-	}
-
-	result, err = client.getRecordPreview(ctx, recordDefinition, flags)
-
-	if client.observers != nil {
-		go func() {
-			details := map[string]string{
-				"flags": strconv.FormatInt(flags, baseTen),
-			}
-			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentID, 8035, err, details)
 		}()
 	}
 
@@ -1712,33 +1739,6 @@ func (client *Szengine) WhySearch(
 // ----------------------------------------------------------------------------
 // Public non-interface methods
 // ----------------------------------------------------------------------------
-
-/*
-Method Destroy is a Null function for sz-sdk-go-grpc.
-
-Input
-  - ctx: A context to control lifecycle.
-*/
-func (client *Szengine) Destroy(ctx context.Context) error {
-	var err error
-
-	if client.isTrace {
-		client.traceEntry(11)
-
-		entryTime := time.Now()
-
-		defer func() { client.traceExit(12, err, time.Since(entryTime)) }()
-	}
-
-	if client.observers != nil {
-		go func() {
-			details := map[string]string{}
-			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentID, 8005, err, details)
-		}()
-	}
-
-	return wraperror.Errorf(err, wraperror.NoMessage)
-}
 
 /*
 Method GetObserverOrigin returns the "origin" value of past Observer messages.

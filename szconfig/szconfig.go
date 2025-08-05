@@ -40,6 +40,76 @@ const (
 // ----------------------------------------------------------------------------
 
 /*
+Method Export retrieves the Senzing configuration JSON document.
+
+Input
+  - ctx: A context to control lifecycle.
+
+Output
+  - configDefinition: A Senzing configuration JSON document representation of the in-memory configuration.
+*/
+func (client *Szconfig) Export(ctx context.Context) (string, error) {
+	var (
+		err    error
+		result string
+	)
+
+	if client.isTrace {
+		client.traceEntry(13)
+
+		entryTime := time.Now()
+
+		defer func() { client.traceExit(14, result, err, time.Since(entryTime)) }()
+	}
+
+	result = client.export(ctx)
+
+	if client.observers != nil {
+		go func() {
+			details := map[string]string{}
+			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentID, 8006, err, details)
+		}()
+	}
+
+	return result, wraperror.Errorf(err, wraperror.NoMessage)
+}
+
+/*
+Method GetDataSourceRegistry returns a JSON document containing data sources defined in the Senzing configuration.
+
+Input
+  - ctx: A context to control lifecycle.
+
+Output
+  - A JSON document listing data sources in the in-memory configuration.
+*/
+func (client *Szconfig) GetDataSourceRegistry(ctx context.Context) (string, error) {
+	var (
+		err    error
+		result string
+	)
+
+	if client.isTrace {
+		client.traceEntry(15)
+
+		entryTime := time.Now()
+
+		defer func() { client.traceExit(16, result, err, time.Since(entryTime)) }()
+	}
+
+	result, err = client.getDataSourceRegistry(ctx)
+
+	if client.observers != nil {
+		go func() {
+			details := map[string]string{}
+			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentID, 8008, err, details)
+		}()
+	}
+
+	return result, wraperror.Errorf(err, wraperror.NoMessage)
+}
+
+/*
 Method RegisterDataSource adds a new data source to the Senzing configuration.
 
 Input
@@ -112,76 +182,6 @@ func (client *Szconfig) UnregisterDataSource(ctx context.Context, dataSourceCode
 				"dataSourceCode": dataSourceCode,
 			}
 			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentID, 8004, err, details)
-		}()
-	}
-
-	return result, wraperror.Errorf(err, wraperror.NoMessage)
-}
-
-/*
-Method Export retrieves the Senzing configuration JSON document.
-
-Input
-  - ctx: A context to control lifecycle.
-
-Output
-  - configDefinition: A Senzing configuration JSON document representation of the in-memory configuration.
-*/
-func (client *Szconfig) Export(ctx context.Context) (string, error) {
-	var (
-		err    error
-		result string
-	)
-
-	if client.isTrace {
-		client.traceEntry(13)
-
-		entryTime := time.Now()
-
-		defer func() { client.traceExit(14, result, err, time.Since(entryTime)) }()
-	}
-
-	result = client.export(ctx)
-
-	if client.observers != nil {
-		go func() {
-			details := map[string]string{}
-			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentID, 8006, err, details)
-		}()
-	}
-
-	return result, wraperror.Errorf(err, wraperror.NoMessage)
-}
-
-/*
-Method GetDataSourceRegistry returns a JSON document containing data sources defined in the Senzing configuration.
-
-Input
-  - ctx: A context to control lifecycle.
-
-Output
-  - A JSON document listing data sources in the in-memory configuration.
-*/
-func (client *Szconfig) GetDataSourceRegistry(ctx context.Context) (string, error) {
-	var (
-		err    error
-		result string
-	)
-
-	if client.isTrace {
-		client.traceEntry(15)
-
-		entryTime := time.Now()
-
-		defer func() { client.traceExit(16, result, err, time.Since(entryTime)) }()
-	}
-
-	result, err = client.getDataSourceRegistry(ctx)
-
-	if client.observers != nil {
-		go func() {
-			details := map[string]string{}
-			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentID, 8008, err, details)
 		}()
 	}
 
