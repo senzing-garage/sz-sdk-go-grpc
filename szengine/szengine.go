@@ -76,6 +76,7 @@ func (client *Szengine) AddRecord(
 		client.traceEntry(1, dataSourceCode, recordID, recordDefinition, flags)
 
 		entryTime := time.Now()
+
 		defer func() {
 			client.traceExit(2, dataSourceCode, recordID, recordDefinition, flags, result, err, time.Since(entryTime))
 		}()
@@ -114,6 +115,7 @@ func (client *Szengine) CloseExportReport(ctx context.Context, exportHandle uint
 		client.traceEntry(5, exportHandle)
 
 		entryTime := time.Now()
+
 		defer func() { client.traceExit(6, exportHandle, err, time.Since(entryTime)) }()
 	}
 
@@ -148,6 +150,7 @@ func (client *Szengine) CountRedoRecords(ctx context.Context) (int64, error) {
 		client.traceEntry(7)
 
 		entryTime := time.Now()
+
 		defer func() { client.traceExit(8, result, err, time.Since(entryTime)) }()
 	}
 
@@ -194,6 +197,7 @@ func (client *Szengine) DeleteRecord(
 		client.traceEntry(9, dataSourceCode, recordID, flags)
 
 		entryTime := time.Now()
+
 		defer func() { client.traceExit(10, dataSourceCode, recordID, flags, result, err, time.Since(entryTime)) }()
 	}
 
@@ -226,6 +230,7 @@ func (client *Szengine) Destroy(ctx context.Context) error {
 		client.traceEntry(11)
 
 		entryTime := time.Now()
+
 		defer func() { client.traceExit(12, err, time.Since(entryTime)) }()
 	}
 
@@ -269,6 +274,7 @@ func (client *Szengine) ExportCsvEntityReport(ctx context.Context, csvColumnList
 		client.traceEntry(13, csvColumnList, flags)
 
 		entryTime := time.Now()
+
 		defer func() { client.traceExit(14, csvColumnList, flags, result, err, time.Since(entryTime)) }()
 	}
 
@@ -318,6 +324,7 @@ func (client *Szengine) ExportCsvEntityReportIterator(
 			client.traceEntry(15, csvColumnList, flags)
 
 			entryTime := time.Now()
+
 			defer func() { client.traceExit(16, csvColumnList, flags, err, time.Since(entryTime)) }()
 		}
 
@@ -403,6 +410,7 @@ func (client *Szengine) ExportJSONEntityReport(ctx context.Context, flags int64)
 		client.traceEntry(17, flags)
 
 		entryTime := time.Now()
+
 		defer func() { client.traceExit(18, flags, result, err, time.Since(entryTime)) }()
 	}
 
@@ -446,6 +454,7 @@ func (client *Szengine) ExportJSONEntityReportIterator(ctx context.Context, flag
 			client.traceEntry(19, flags)
 
 			entryTime := time.Now()
+
 			defer func() { client.traceExit(20, flags, err, time.Since(entryTime)) }()
 		}
 
@@ -532,6 +541,7 @@ func (client *Szengine) FetchNext(ctx context.Context, exportHandle uintptr) (st
 		client.traceEntry(21, exportHandle)
 
 		entryTime := time.Now()
+
 		defer func() { client.traceExit(22, exportHandle, result, err, time.Since(entryTime)) }()
 	}
 
@@ -574,6 +584,7 @@ func (client *Szengine) FindInterestingEntitiesByEntityID(
 		client.traceEntry(23, entityID, flags)
 
 		entryTime := time.Now()
+
 		defer func() { client.traceExit(24, entityID, flags, result, err, time.Since(entryTime)) }()
 	}
 
@@ -621,6 +632,7 @@ func (client *Szengine) FindInterestingEntitiesByRecordID(
 		client.traceEntry(25, dataSourceCode, recordID, flags)
 
 		entryTime := time.Now()
+
 		defer func() {
 			client.traceExit(26, dataSourceCode, recordID, flags, result, err, time.Since(entryTime))
 		}()
@@ -678,6 +690,7 @@ func (client *Szengine) FindNetworkByEntityID(
 		client.traceEntry(27, entityIDs, maxDegrees, buildOutDegrees, buildOutMaxEntities, flags)
 
 		entryTime := time.Now()
+
 		defer func() {
 			client.traceExit(
 				28,
@@ -751,6 +764,7 @@ func (client *Szengine) FindNetworkByRecordID(
 		client.traceEntry(29, recordKeys, maxDegrees, buildOutDegrees, buildOutMaxEntities, flags)
 
 		entryTime := time.Now()
+
 		defer func() {
 			client.traceExit(
 				30,
@@ -827,6 +841,7 @@ func (client *Szengine) FindPathByEntityID(
 		client.traceEntry(31, startEntityID, endEntityID, maxDegrees, avoidEntityIDs, requiredDataSources, flags)
 
 		entryTime := time.Now()
+
 		defer func() {
 			client.traceExit(32, startEntityID, endEntityID, maxDegrees, avoidEntityIDs, requiredDataSources,
 				flags, result, err, time.Since(entryTime))
@@ -911,6 +926,7 @@ func (client *Szengine) FindPathByRecordID(
 			avoidRecordKeys, requiredDataSources, flags)
 
 		entryTime := time.Now()
+
 		defer func() {
 			client.traceExit(34, startDataSourceCode, startRecordID, endDataSourceCode, endRecordID, maxDegrees,
 				avoidRecordKeys, requiredDataSources, flags, result, err, time.Since(entryTime))
@@ -968,6 +984,7 @@ func (client *Szengine) GetActiveConfigID(ctx context.Context) (int64, error) {
 		client.traceEntry(35)
 
 		entryTime := time.Now()
+
 		defer func() { client.traceExit(36, result, err, time.Since(entryTime)) }()
 	}
 
@@ -1005,6 +1022,7 @@ func (client *Szengine) GetEntityByEntityID(ctx context.Context, entityID int64,
 		client.traceEntry(37, entityID, flags)
 
 		entryTime := time.Now()
+
 		defer func() { client.traceExit(38, entityID, flags, result, err, time.Since(entryTime)) }()
 	}
 
@@ -1050,6 +1068,7 @@ func (client *Szengine) GetEntityByRecordID(
 		client.traceEntry(39, dataSourceCode, recordID, flags)
 
 		entryTime := time.Now()
+
 		defer func() {
 			client.traceExit(40, dataSourceCode, recordID, flags, result, err, time.Since(entryTime))
 		}()
@@ -1101,6 +1120,7 @@ func (client *Szengine) GetRecord(
 		client.traceEntry(45, dataSourceCode, recordID, flags)
 
 		entryTime := time.Now()
+
 		defer func() {
 			client.traceExit(46, dataSourceCode, recordID, flags, result, err, time.Since(entryTime))
 		}()
@@ -1145,6 +1165,7 @@ func (client *Szengine) GetRecordPreview(ctx context.Context, recordDefinition s
 		client.traceEntry(77, recordDefinition, flags)
 
 		entryTime := time.Now()
+
 		defer func() {
 			client.traceExit(78, recordDefinition, flags, result, err, time.Since(entryTime))
 		}()
@@ -1193,6 +1214,7 @@ func (client *Szengine) GetRedoRecord(ctx context.Context) (string, error) {
 		client.traceEntry(47)
 
 		entryTime := time.Now()
+
 		defer func() { client.traceExit(48, result, err, time.Since(entryTime)) }()
 	}
 
@@ -1231,6 +1253,7 @@ func (client *Szengine) GetStats(ctx context.Context) (string, error) {
 		client.traceEntry(49)
 
 		entryTime := time.Now()
+
 		defer func() { client.traceExit(50, result, err, time.Since(entryTime)) }()
 	}
 
@@ -1274,6 +1297,7 @@ func (client *Szengine) GetVirtualEntityByRecordID(
 		client.traceEntry(51, recordKeys, flags)
 
 		entryTime := time.Now()
+
 		defer func() { client.traceExit(52, recordKeys, flags, result, err, time.Since(entryTime)) }()
 	}
 
@@ -1313,6 +1337,7 @@ func (client *Szengine) HowEntityByEntityID(ctx context.Context, entityID int64,
 		client.traceEntry(53, entityID, flags)
 
 		entryTime := time.Now()
+
 		defer func() { client.traceExit(54, entityID, flags, result, err, time.Since(entryTime)) }()
 	}
 
@@ -1347,6 +1372,7 @@ func (client *Szengine) PrimeEngine(ctx context.Context) error {
 		client.traceEntry(57)
 
 		entryTime := time.Now()
+
 		defer func() { client.traceExit(58, err, time.Since(entryTime)) }()
 	}
 
@@ -1387,6 +1413,7 @@ func (client *Szengine) ProcessRedoRecord(ctx context.Context, redoRecord string
 		client.traceEntry(59, redoRecord, flags)
 
 		entryTime := time.Now()
+
 		defer func() { client.traceExit(60, redoRecord, flags, result, err, time.Since(entryTime)) }()
 	}
 
@@ -1426,6 +1453,7 @@ func (client *Szengine) ReevaluateEntity(ctx context.Context, entityID int64, fl
 		client.traceEntry(61, entityID, flags)
 
 		entryTime := time.Now()
+
 		defer func() { client.traceExit(62, entityID, flags, result, err, time.Since(entryTime)) }()
 	}
 
@@ -1472,6 +1500,7 @@ func (client *Szengine) ReevaluateRecord(
 		client.traceEntry(63, dataSourceCode, recordID, flags)
 
 		entryTime := time.Now()
+
 		defer func() { client.traceExit(64, dataSourceCode, recordID, flags, result, err, time.Since(entryTime)) }()
 	}
 
@@ -1523,6 +1552,7 @@ func (client *Szengine) SearchByAttributes(
 		client.traceEntry(69, attributes, searchProfile, flags)
 
 		entryTime := time.Now()
+
 		defer func() { client.traceExit(70, attributes, searchProfile, flags, result, err, time.Since(entryTime)) }()
 	}
 
@@ -1569,6 +1599,7 @@ func (client *Szengine) WhyEntities(
 		client.traceEntry(71, entityID1, entityID2, flags)
 
 		entryTime := time.Now()
+
 		defer func() { client.traceExit(72, entityID1, entityID2, flags, result, err, time.Since(entryTime)) }()
 	}
 
@@ -1615,6 +1646,7 @@ func (client *Szengine) WhyRecordInEntity(
 		client.traceEntry(73, dataSourceCode, recordID, flags)
 
 		entryTime := time.Now()
+
 		defer func() { client.traceExit(74, dataSourceCode, recordID, flags, result, err, time.Since(entryTime)) }()
 	}
 
@@ -1665,6 +1697,7 @@ func (client *Szengine) WhyRecords(
 		client.traceEntry(75, dataSourceCode1, recordID1, dataSourceCode2, recordID2, flags)
 
 		entryTime := time.Now()
+
 		defer func() {
 			client.traceExit(
 				76,
@@ -1732,6 +1765,7 @@ func (client *Szengine) WhySearch(
 		client.traceEntry(69, attributes, entityID, searchProfile, flags)
 
 		entryTime := time.Now()
+
 		defer func() {
 			client.traceExit(70, attributes, entityID, searchProfile, flags, result, err, time.Since(entryTime))
 		}()
@@ -1796,6 +1830,7 @@ func (client *Szengine) Initialize(
 		client.traceEntry(55, instanceName, settings, configID, verboseLogging)
 
 		entryTime := time.Now()
+
 		defer func() {
 			client.traceExit(56, instanceName, settings, configID, verboseLogging, err, time.Since(entryTime))
 		}()
@@ -1830,6 +1865,7 @@ func (client *Szengine) RegisterObserver(ctx context.Context, observer observer.
 		client.traceEntry(703, observer.GetObserverID(ctx))
 
 		entryTime := time.Now()
+
 		defer func() { client.traceExit(704, observer.GetObserverID(ctx), err, time.Since(entryTime)) }()
 	}
 
@@ -1865,6 +1901,7 @@ func (client *Szengine) Reinitialize(ctx context.Context, configID int64) error 
 		client.traceEntry(65, configID)
 
 		entryTime := time.Now()
+
 		defer func() { client.traceExit(66, configID, err, time.Since(entryTime)) }()
 	}
 
@@ -1896,6 +1933,7 @@ func (client *Szengine) SetLogLevel(ctx context.Context, logLevelName string) er
 		client.traceEntry(705, logLevelName)
 
 		entryTime := time.Now()
+
 		defer func() { client.traceExit(706, logLevelName, err, time.Since(entryTime)) }()
 	}
 
@@ -1944,6 +1982,7 @@ func (client *Szengine) UnregisterObserver(ctx context.Context, observer observe
 		client.traceEntry(707, observer.GetObserverID(ctx))
 
 		entryTime := time.Now()
+
 		defer func() { client.traceExit(708, observer.GetObserverID(ctx), err, time.Since(entryTime)) }()
 	}
 

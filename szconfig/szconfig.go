@@ -58,6 +58,7 @@ func (client *Szconfig) Export(ctx context.Context) (string, error) {
 		client.traceEntry(13)
 
 		entryTime := time.Now()
+
 		defer func() { client.traceExit(14, result, err, time.Since(entryTime)) }()
 	}
 
@@ -92,6 +93,7 @@ func (client *Szconfig) GetDataSourceRegistry(ctx context.Context) (string, erro
 		client.traceEntry(15)
 
 		entryTime := time.Now()
+
 		defer func() { client.traceExit(16, result, err, time.Since(entryTime)) }()
 	}
 
@@ -130,6 +132,7 @@ func (client *Szconfig) RegisterDataSource(ctx context.Context, dataSourceCode s
 		client.traceEntry(1, dataSourceCode)
 
 		entryTime := time.Now()
+
 		defer func() {
 			client.traceExit(2, dataSourceCode, result, err, time.Since(entryTime))
 		}()
@@ -178,6 +181,7 @@ func (client *Szconfig) UnregisterDataSource(ctx context.Context, dataSourceCode
 		client.traceEntry(9, dataSourceCode)
 
 		entryTime := time.Now()
+
 		defer func() { client.traceExit(10, dataSourceCode, err, time.Since(entryTime)) }()
 	}
 
@@ -212,6 +216,7 @@ func (client *Szconfig) Destroy(ctx context.Context) error {
 		client.traceEntry(11)
 
 		entryTime := time.Now()
+
 		defer func() { client.traceExit(12, err, time.Since(entryTime)) }()
 	}
 
@@ -254,6 +259,7 @@ func (client *Szconfig) Import(ctx context.Context, configDefinition string) err
 		client.traceEntry(21, configDefinition)
 
 		entryTime := time.Now()
+
 		defer func() { client.traceExit(22, configDefinition, err, time.Since(entryTime)) }()
 	}
 
@@ -290,6 +296,7 @@ func (client *Szconfig) Initialize(
 		client.traceEntry(23, instanceName, settings, verboseLogging)
 
 		entryTime := time.Now()
+
 		defer func() { client.traceExit(24, instanceName, settings, verboseLogging, err, time.Since(entryTime)) }()
 	}
 
@@ -321,6 +328,7 @@ func (client *Szconfig) RegisterObserver(ctx context.Context, observer observer.
 		client.traceEntry(703, observer.GetObserverID(ctx))
 
 		entryTime := time.Now()
+
 		defer func() { client.traceExit(704, observer.GetObserverID(ctx), err, time.Since(entryTime)) }()
 	}
 
@@ -356,6 +364,7 @@ func (client *Szconfig) SetLogLevel(ctx context.Context, logLevelName string) er
 		client.traceEntry(705, logLevelName)
 
 		entryTime := time.Now()
+
 		defer func() { client.traceExit(706, logLevelName, err, time.Since(entryTime)) }()
 	}
 
@@ -404,6 +413,7 @@ func (client *Szconfig) UnregisterObserver(ctx context.Context, observer observe
 		client.traceEntry(707, observer.GetObserverID(ctx))
 
 		entryTime := time.Now()
+
 		defer func() { client.traceExit(708, observer.GetObserverID(ctx), err, time.Since(entryTime)) }()
 	}
 
@@ -442,6 +452,7 @@ func (client *Szconfig) VerifyConfigDefinition(ctx context.Context, configDefini
 		client.traceEntry(25, configDefinition)
 
 		entryTime := time.Now()
+
 		defer func() { client.traceExit(26, configDefinition, err, time.Since(entryTime)) }()
 	}
 
