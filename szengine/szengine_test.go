@@ -1500,7 +1500,7 @@ func TestSzEngine_UnregisterObserver(test *testing.T) {
 // ----------------------------------------------------------------------------
 
 func TestSzEngine_AsInterface(test *testing.T) {
-	expected := int64(4)
+	expected := int64(5)
 	ctx := test.Context()
 	szEngine := getSzEngineAsInterface(ctx)
 	actual, err := szEngine.CountRedoRecords(ctx)
