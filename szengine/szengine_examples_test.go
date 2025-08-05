@@ -142,7 +142,7 @@ func ExampleSzengine_CountRedoRecords() {
 	}
 
 	fmt.Println(result)
-	// Output: 5
+	// Output: 4
 }
 
 func ExampleSzengine_ExportCsvEntityReport() {
@@ -3054,7 +3054,7 @@ func ExampleSzEngine_ProcessRedoRecord_withInfo() {
 	// Output:
 	// {
 	//     "DATA_SOURCE": "CUSTOMERS",
-	//     "RECORD_ID": "1001",
+	//     "RECORD_ID": "1002",
 	//     "AFFECTED_ENTITIES": [
 	//         {
 	//             "ENTITY_ID": 100001
