@@ -44,7 +44,7 @@ const (
 // ----------------------------------------------------------------------------
 
 /*
-Method CreateConfigFromConfigID retrieves a specific Senzing configuration JSON document from the Senzing repository.
+Method CreateConfigFromConfigID creates a new SzConfig instance for a configuration ID.
 
 Input
   - ctx: A context to control lifecycle.
@@ -80,7 +80,7 @@ func (client *Szconfigmanager) CreateConfigFromConfigID(ctx context.Context, con
 }
 
 /*
-Method CreateConfigFromString creates an SzConfig from the submitted Senzing configuration JSON document.
+Method CreateConfigFromString creates a new SzConfig instance from a configuration definition.
 
 Input
   - ctx: A context to control lifecycle.
@@ -119,8 +119,7 @@ func (client *Szconfigmanager) CreateConfigFromString(
 }
 
 /*
-Method CreateConfigFromTemplate creates an SzConfig from the template Senzing configuration JSON document.
-This document is found in a file on the gRPC server at PIPELINE.RESOURCEPATH/templates/g2config.json
+Method CreateConfigFromTemplate creates a new SzConfig instance from the template configuration definition.
 
 Input
   - ctx: A context to control lifecycle.
@@ -155,7 +154,41 @@ func (client *Szconfigmanager) CreateConfigFromTemplate(ctx context.Context) (se
 }
 
 /*
-Method GetConfigRegistry retrieves a list of Senzing configuration JSON documents from the Senzing repository.
+Method Destroy will destroy and perform cleanup for the Senzing SzConfigMgr object.
+
+It should be called after all other calls are complete.
+
+Input
+  - ctx: A context to control lifecycle.
+*/
+func (client *Szconfigmanager) Destroy(ctx context.Context) error {
+	var err error
+
+	if client.isTrace {
+		client.traceEntry(5)
+
+		entryTime := time.Now()
+
+		defer func() { client.traceExit(6, err, time.Since(entryTime)) }()
+	}
+
+	if client.observers != nil {
+		go func() {
+			details := map[string]string{}
+			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentID, 8002, err, details)
+		}()
+	}
+
+	return wraperror.Errorf(err, wraperror.NoMessage)
+}
+
+/*
+Method GetConfigRegistry gets the configuration registry.
+
+The registry contains the original timestamp, original comment, and configuration ID of all configurations ever
+registered with the repository.
+
+Registered configurations cannot be unregistered.
 
 Input
   - ctx: A context to control lifecycle.
@@ -190,10 +223,11 @@ func (client *Szconfigmanager) GetConfigRegistry(ctx context.Context) (string, e
 }
 
 /*
-Method GetDefaultConfigID retrieves the default Senzing configuration JSON
-document identifier from the Senzing repository.
-Note: this may not be the currently active in-memory configuration.
-See [Szconfigmanager.SetDefaultConfigID] and [Szconfigmanager.ReplaceDefaultConfigID] for more details.
+Method GetDefaultConfigID gets the default configuration ID for the repository.
+
+Unless an explicit configuration ID is specified at initialization, the default configuration ID is used.
+
+This may not be the same as the active configuration ID.
 
 Input
   - ctx: A context to control lifecycle.
@@ -228,7 +262,11 @@ func (client *Szconfigmanager) GetDefaultConfigID(ctx context.Context) (int64, e
 }
 
 /*
-Method RegisterConfig adds a Senzing configuration JSON document to the Senzing repository.
+Method RegisterConfig registers a configuration definition in the repository.
+
+Registered configurations do not become immediately active nor do they become the default.
+
+Registered configurations cannot be unregistered.
 
 Input
   - ctx: A context to control lifecycle.
@@ -273,15 +311,11 @@ func (client *Szconfigmanager) RegisterConfig(
 }
 
 /*
-Similar to the [Szconfigmanager.SetDefaultConfigID] method,
-method ReplaceDefaultConfigID sets which Senzing configuration JSON document
-is used when initializing or reinitializing the system.
-The difference is that ReplaceDefaultConfigID only succeeds when the old Senzing configuration JSON document identifier
-is the existing default when the new identifier is applied.
-In other words, if currentDefaultConfigID is no longer the "old" identifier, the operation will fail.
-It is similar to a "compare-and-swap" instruction to avoid a "race condition".
-Note that calling the ReplaceDefaultConfigID method does not affect the currently running in-memory configuration.
-To simply set the default Senzing configuration JSON document identifier, use [Szconfigmanager.SetDefaultConfigID].
+Method ReplaceDefaultConfigID replaces the existing default configuration ID with a new configuration ID.
+
+The change is prevented if the current default configuration ID value is not as expected.
+
+Use this in place of setDefaultConfigID() to handle race conditions.
 
 Input
   - ctx: A context to control lifecycle.
@@ -318,12 +352,9 @@ func (client *Szconfigmanager) ReplaceDefaultConfigID(
 }
 
 /*
-Method SetDefaultConfig sets which Senzing configuration JSON document
-is used when initializing or reinitializing the system.
-Note that calling the SetDefaultConfig method does not affect the currently
-running in-memory configuration.
-SetDefaultConfig is susceptible to "race conditions".
-To avoid race conditions, see  [Szconfigmanager.ReplaceDefaultConfigID].
+Method SetDefaultConfig registers a configuration in the repository and sets its ID as the default for the repository.
+
+Convenience method for registerConfig() followed by setDefaultConfigId().
 
 Input
   - ctx: A context to control lifecycle.
@@ -365,12 +396,11 @@ func (client *Szconfigmanager) SetDefaultConfig(
 }
 
 /*
-Method SetDefaultConfigID sets which Senzing configuration JSON document identifier
-is used when initializing or reinitializing the system.
-Note that calling the SetDefaultConfigID method does not affect the currently
-running in-memory configuration.
-SetDefaultConfigID is susceptible to "race conditions".
-To avoid race conditions, see  [Szconfigmanager.ReplaceDefaultConfigID].
+Method SetDefaultConfigID sets the default configuration ID.
+
+Usually this method is sufficient for setting the default configuration ID.
+However in concurrent environments that could encounter race conditions,
+consider using replaceDefaultConfigId() instead.
 
 Input
   - ctx: A context to control lifecycle.
@@ -404,33 +434,6 @@ func (client *Szconfigmanager) SetDefaultConfigID(ctx context.Context, configID 
 // ----------------------------------------------------------------------------
 // Public non-interface methods
 // ----------------------------------------------------------------------------
-
-/*
-Method Destroy is a Null function for sz-sdk-go-grpc.
-
-Input
-  - ctx: A context to control lifecycle.
-*/
-func (client *Szconfigmanager) Destroy(ctx context.Context) error {
-	var err error
-
-	if client.isTrace {
-		client.traceEntry(5)
-
-		entryTime := time.Now()
-
-		defer func() { client.traceExit(6, err, time.Since(entryTime)) }()
-	}
-
-	if client.observers != nil {
-		go func() {
-			details := map[string]string{}
-			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentID, 8002, err, details)
-		}()
-	}
-
-	return wraperror.Errorf(err, wraperror.NoMessage)
-}
 
 /*
 Method GetObserverOrigin returns the "origin" value of past Observer messages.

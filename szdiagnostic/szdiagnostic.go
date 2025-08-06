@@ -39,7 +39,11 @@ const (
 // ----------------------------------------------------------------------------
 
 /*
-Method CheckRepositoryPerformance runs performance tests on the Senzing repository.
+Method CheckRepositoryPerformance conducts a rudimentary repository test to gauge I/O and network performance.
+
+Typically, this is only run when troubleshooting performance.
+
+This is a non-destructive test.
 
 Input
   - ctx: A context to control lifecycle.
@@ -77,44 +81,34 @@ func (client *Szdiagnostic) CheckRepositoryPerformance(ctx context.Context, seco
 }
 
 /*
-Method GetRepositoryInfo returns information about the Senzing repository.
+Method Destroy is a Null function for sz-sdk-go-grpc.
 
 Input
   - ctx: A context to control lifecycle.
-
-Output
-
-  - A JSON document containing Senzing repository metadata.
 */
-func (client *Szdiagnostic) GetRepositoryInfo(ctx context.Context) (string, error) {
-	var (
-		err    error
-		result string
-	)
+func (client *Szdiagnostic) Destroy(ctx context.Context) error {
+	var err error
 
 	if client.isTrace {
-		client.traceEntry(7)
+		client.traceEntry(5)
 
 		entryTime := time.Now()
 
-		defer func() { client.traceExit(8, result, err, time.Since(entryTime)) }()
+		defer func() { client.traceExit(6, err, time.Since(entryTime)) }()
 	}
-
-	result, err = client.getRepositoryInfo(ctx)
 
 	if client.observers != nil {
 		go func() {
 			details := map[string]string{}
-			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentID, 8003, err, details)
+			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentID, 8002, err, details)
 		}()
 	}
 
-	return result, wraperror.Errorf(err, wraperror.NoMessage)
+	return wraperror.Errorf(err, wraperror.NoMessage)
 }
 
 /*
-Method GetFeature is an experimental method that returns diagnostic information of a feature.
-Not recommended for use.
+Method GetFeature Experimental/internal for Senzing support use only.
 
 Input
   - ctx: A context to control lifecycle.
@@ -153,9 +147,49 @@ func (client *Szdiagnostic) GetFeature(ctx context.Context, featureID int64) (st
 }
 
 /*
-WARNING: Method PurgeRepository removes every record in the Senzing repository.
-This is a destructive method that cannot be undone.
-Before calling purgeRepository(), all programs using Senzing MUST be terminated.
+Method GetRepositoryInfo returns overview information about the repository.
+
+Input
+  - ctx: A context to control lifecycle.
+
+Output
+
+  - A JSON document containing Senzing repository metadata.
+*/
+func (client *Szdiagnostic) GetRepositoryInfo(ctx context.Context) (string, error) {
+	var (
+		err    error
+		result string
+	)
+
+	if client.isTrace {
+		client.traceEntry(7)
+
+		entryTime := time.Now()
+
+		defer func() { client.traceExit(8, result, err, time.Since(entryTime)) }()
+	}
+
+	result, err = client.getRepositoryInfo(ctx)
+
+	if client.observers != nil {
+		go func() {
+			details := map[string]string{}
+			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentID, 8003, err, details)
+		}()
+	}
+
+	return result, wraperror.Errorf(err, wraperror.NoMessage)
+}
+
+/*
+WARNING: Method PurgeRepository permanently deletes all data in the repository, except the configuration.
+
+WARNING: This method is destructive, it will delete all loaded records and entity resolution decisions.
+
+Senzing does not provide a means to restore the data.
+
+The only means of recovery would be restoring from a database backup.
 
 Input
   - ctx: A context to control lifecycle.
@@ -186,33 +220,6 @@ func (client *Szdiagnostic) PurgeRepository(ctx context.Context) error {
 // ----------------------------------------------------------------------------
 // Public non-interface methods
 // ----------------------------------------------------------------------------
-
-/*
-Method Destroy is a Null function for sz-sdk-go-grpc.
-
-Input
-  - ctx: A context to control lifecycle.
-*/
-func (client *Szdiagnostic) Destroy(ctx context.Context) error {
-	var err error
-
-	if client.isTrace {
-		client.traceEntry(5)
-
-		entryTime := time.Now()
-
-		defer func() { client.traceExit(6, err, time.Since(entryTime)) }()
-	}
-
-	if client.observers != nil {
-		go func() {
-			details := map[string]string{}
-			notifier.Notify(ctx, client.observers, client.observerOrigin, ComponentID, 8002, err, details)
-		}()
-	}
-
-	return wraperror.Errorf(err, wraperror.NoMessage)
-}
 
 /*
 Method GetObserverOrigin returns the "origin" value of past Observer messages.
