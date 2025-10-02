@@ -13,6 +13,8 @@ jobs:
     name: Make a vM.m.P tag
     outputs:
       status: ${{ job.status }}
+    permissions:
+      contents: write
     runs-on: ubuntu-latest
 
     steps:
