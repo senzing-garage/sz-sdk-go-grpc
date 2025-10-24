@@ -36,6 +36,7 @@ func ExampleSzproduct_GetLicense() {
 	fmt.Println(jsonutil.PrettyPrint(jsonutil.Truncate(result, AllLines, redactKeys...), jsonIndentation))
 	// Output:
 	// {
+	//     "advSearch": 0,
 	//     "billing": "",
 	//     "contract": "",
 	//     "customer": "",
