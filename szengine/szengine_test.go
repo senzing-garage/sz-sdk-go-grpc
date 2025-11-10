@@ -429,7 +429,7 @@ func TestSzEngine_ExportJSONEntityReport(test *testing.T) {
 	printDebug(test, err, actual)
 	require.NoError(test, err)
 
-	jsonEntityReport := ""
+	var jsonEntityReportBuilder strings.Builder
 
 	for {
 		jsonEntityReportFragment, err := szEngine.FetchNext(ctx, exportHandle)
@@ -440,8 +440,10 @@ func TestSzEngine_ExportJSONEntityReport(test *testing.T) {
 			break
 		}
 
-		jsonEntityReport += jsonEntityReportFragment
+		jsonEntityReportBuilder.WriteString(jsonEntityReportFragment)
 	}
+
+	jsonEntityReport := jsonEntityReportBuilder.String()
 
 	printDebug(test, err, actual)
 	require.NoError(test, err)
@@ -472,7 +474,7 @@ func TestSzEngine_ExportJSONEntityReport_65536(test *testing.T) {
 	printDebug(test, err, actual)
 	require.NoError(test, err)
 
-	jsonEntityReport := ""
+	var jsonEntityReportBuilder strings.Builder
 
 	for {
 		jsonEntityReportFragment, err := szEngine.FetchNext(ctx, aHandle)
@@ -483,8 +485,10 @@ func TestSzEngine_ExportJSONEntityReport_65536(test *testing.T) {
 			break
 		}
 
-		jsonEntityReport += jsonEntityReportFragment
+		jsonEntityReportBuilder.WriteString(jsonEntityReportFragment)
 	}
+
+	jsonEntityReport := jsonEntityReportBuilder.String()
 
 	printDebug(test, err, actual)
 	require.NoError(test, err)
@@ -3132,12 +3136,15 @@ func badRecordKeysFunc() string {
 }
 
 func entityIDsJSON(entityIDs ...int64) string {
-	result := `{"ENTITIES": [`
+	var resultBuilder strings.Builder
+
+	resultBuilder.WriteString(`{"ENTITIES": [`)
 
 	for _, entityID := range entityIDs {
-		result += `{"ENTITY_ID":` + strconv.FormatInt(entityID, baseTen) + `},`
+		resultBuilder.WriteString(`{"ENTITY_ID":` + strconv.FormatInt(entityID, baseTen) + `},`)
 	}
 
+	result := resultBuilder.String()
 	result = result[:len(result)-1] // Remove final comma.
 	result += `]}`
 
