@@ -146,6 +146,10 @@ Create a code coverage map.
 
    ```
 
+### Certificates
+
+1. See [testdata/certificates/README.md]
+
 ## References
 
 [clone-repository]: https://github.com/senzing-garage/knowledge-base/blob/main/HOWTO/clone-repository.md
@@ -157,3 +161,4 @@ Create a code coverage map.
 [localhost:6060]: http://localhost:6060/pkg/github.com/senzing-garage/sz-sdk-go-grpc/
 [make]: https://github.com/senzing-garage/knowledge-base/blob/main/WHATIS/make.md
 [testcoverage.yaml]: ../.github/coverage/testcoverage.yaml
+[testdata/certificates/README.md]: ../testdata/certificates/README.md

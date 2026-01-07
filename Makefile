@@ -173,6 +173,17 @@ clean: clean-osarch-specific
 	@go clean -testcache
 
 # -----------------------------------------------------------------------------
+# Certificates
+# -----------------------------------------------------------------------------
+
+
+.PHONY: certificate-info
+certificate-info:
+	openssl x509 -in testdata/certificates/certificate-authority/certificate.pem -text -noout
+	openssl x509 -in testdata/certificates/server/certificate.pem -text -noout
+	openssl x509 -in testdata/certificates/client/certificate.pem -text -noout
+
+# -----------------------------------------------------------------------------
 # Utility targets
 # -----------------------------------------------------------------------------
 
