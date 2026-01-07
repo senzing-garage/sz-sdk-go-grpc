@@ -26,7 +26,6 @@ import (
 const (
 	defaultTruncation = 76
 	instanceName      = "SzConfigManager Test"
-	jsonIndentation   = "    "
 	observerOrigin    = "SzConfigManager observer"
 	originMessage     = "Machine: nn; Task: UnitTest"
 	printErrors       = false
@@ -437,9 +436,9 @@ func TestSzconfigmanager_Destroy_error(test *testing.T) {
 // Internal functions
 // ----------------------------------------------------------------------------
 
-func getGrpcConnection() *grpc.ClientConn {
+func getGrpcConnection(ctx context.Context) *grpc.ClientConn {
 	if grpcConnection == nil {
-		transportCredentials, err := helper.GetGrpcTransportCredentials()
+		transportCredentials, err := helper.GetGrpcTransportCredentials(ctx)
 		panicOnError(err)
 
 		dialOptions := []grpc.DialOption{
@@ -491,10 +490,8 @@ func getSettings() string {
 // }
 
 func getSzAbstractFactory(ctx context.Context) senzing.SzAbstractFactory {
-	_ = ctx
-
 	return &szabstractfactory.Szabstractfactory{
-		GrpcConnection: getGrpcConnection(),
+		GrpcConnection: getGrpcConnection(ctx),
 	}
 }
 
@@ -502,7 +499,7 @@ func getSzConfigManager(ctx context.Context) *szconfigmanager.Szconfigmanager {
 	var err error
 
 	if szConfigManagerSingleton == nil {
-		grpcConnection := getGrpcConnection()
+		grpcConnection := getGrpcConnection(ctx)
 		szConfigManagerSingleton = &szconfigmanager.Szconfigmanager{
 			GrpcClient:         szpb.NewSzConfigManagerClient(grpcConnection),
 			GrpcClientSzConfig: szconfigpb.NewSzConfigClient(grpcConnection),

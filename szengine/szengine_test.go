@@ -32,32 +32,19 @@ import (
 )
 
 const (
-	avoidEntityIDs             = senzing.SzNoAvoidance
-	avoidRecordKeys            = senzing.SzNoAvoidance
 	baseTen                    = 10
-	buildOutDegrees            = int64(2)
-	buildOutMaxEntities        = int64(10)
 	defaultAttributes          = `{"NAMES": [{"NAME_TYPE": "PRIMARY", "NAME_LAST": "JOHNSON"}], "SSN_NUMBER": "053-39-3251"}`
-	defaultAvoidEntityIDs      = senzing.SzNoAvoidance
-	defaultAvoidRecordKeys     = senzing.SzNoAvoidance
 	defaultBuildOutDegrees     = int64(2)
 	defaultBuildOutMaxEntities = int64(10)
 	defaultMaxDegrees          = int64(2)
-	defaultSearchAttributes    = `{"NAMES": [{"NAME_TYPE": "PRIMARY", "NAME_LAST": "JOHNSON"}], "SSN_NUMBER": "053-39-3251"}`
 	defaultSearchProfile       = senzing.SzNoSearchProfile
 	defaultTruncation          = 76
-	defaultVerboseLogging      = senzing.SzNoLogging
 	instanceName               = "SzEngine Test"
 	jsonIndentation            = "    "
-	maxDegrees                 = int64(2)
-	observerID                 = "Observer 1"
 	observerOrigin             = "SzEngine observer"
 	originMessage              = "Machine: nn; Task: UnitTest"
 	printErrors                = false
 	printResults               = false
-	requiredDataSources        = senzing.SzNoRequiredDatasources
-	searchAttributes           = `{"NAMES": [{"NAME_TYPE": "PRIMARY", "NAME_LAST": "JOHNSON"}], "SSN_NUMBER": "053-39-3251"}`
-	searchProfile              = senzing.SzNoSearchProfile
 	verboseLogging             = senzing.SzNoLogging
 )
 
@@ -65,8 +52,6 @@ const (
 
 const (
 	badAttributes          = "}{"
-	badAvoidEntityIDs      = "}{"
-	badAvoidRecordKeys     = "}{"
 	badBuildOutDegrees     = int64(-1)
 	badBuildOutMaxEntities = int64(-1)
 	badCsvColumnList       = "BAD, CSV, COLUMN, LIST"
@@ -78,7 +63,6 @@ const (
 	badRecordDefinition    = "}{"
 	badRecordID            = "BadRecordID"
 	badRedoRecord          = "{}"
-	badRequiredDataSources = "}{"
 	badSearchProfile       = "}{"
 	nilSemaphoreString     = "xyzzy"
 	nilSemaphoreInt64      = int64(-9999)
@@ -1684,9 +1668,9 @@ func getFlagsForEntityReport() int64 {
 	)
 }
 
-func getGrpcConnection() *grpc.ClientConn {
+func getGrpcConnection(ctx context.Context) *grpc.ClientConn {
 	if grpcConnection == nil {
-		transportCredentials, err := helper.GetGrpcTransportCredentials()
+		transportCredentials, err := helper.GetGrpcTransportCredentials(ctx)
 		panicOnError(err)
 
 		dialOptions := []grpc.DialOption{
@@ -1705,10 +1689,8 @@ func getSettings() string {
 }
 
 func getSzAbstractFactory(ctx context.Context) senzing.SzAbstractFactory {
-	_ = ctx
-
 	return &szabstractfactory.Szabstractfactory{
-		GrpcConnection: getGrpcConnection(),
+		GrpcConnection: getGrpcConnection(ctx),
 	}
 }
 
@@ -1716,7 +1698,7 @@ func getSzConfigManager(ctx context.Context) senzing.SzConfigManager {
 	var err error
 
 	if szConfigManagerSingleton == nil {
-		grpcConnection := getGrpcConnection()
+		grpcConnection := getGrpcConnection(ctx)
 		szConfigManagerSingleton = &szconfigmanager.Szconfigmanager{
 			GrpcClient:         szconfigmanagerpb.NewSzConfigManagerClient(grpcConnection),
 			GrpcClientSzConfig: szconfigpb.NewSzConfigClient(grpcConnection),
@@ -1743,7 +1725,7 @@ func getSzDiagnostic(ctx context.Context) senzing.SzDiagnostic {
 	var err error
 
 	if szDiagnosticSingleton == nil {
-		grpcConnection := getGrpcConnection()
+		grpcConnection := getGrpcConnection(ctx)
 		szDiagnosticSingleton = &szdiagnostic.Szdiagnostic{
 			GrpcClient: szdiagnosticpb.NewSzDiagnosticClient(grpcConnection),
 		}
@@ -1769,7 +1751,7 @@ func getSzEngine(ctx context.Context) *szengine.Szengine {
 	var err error
 
 	if szEngineSingleton == nil {
-		grpcConnection := getGrpcConnection()
+		grpcConnection := getGrpcConnection(ctx)
 		szEngineSingleton = &szengine.Szengine{
 			GrpcClient: szpb.NewSzEngineClient(grpcConnection),
 		}

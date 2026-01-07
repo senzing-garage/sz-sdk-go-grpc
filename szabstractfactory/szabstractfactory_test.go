@@ -14,12 +14,9 @@ import (
 )
 
 const (
-	baseCallerSkip    = 4
 	defaultTruncation = 76
-	instanceName      = "SzAbstractFactory Test"
 	printErrors       = false
 	printResults      = false
-	verboseLogging    = senzing.SzNoLogging
 )
 
 var (
@@ -121,9 +118,9 @@ func TestSzAbstractFactory_Reinitialize(test *testing.T) {
 // Internal functions
 // ----------------------------------------------------------------------------
 
-func getGrpcConnection() *grpc.ClientConn {
+func getGrpcConnection(ctx context.Context) *grpc.ClientConn {
 	if grpcConnection == nil {
-		transportCredentials, err := helper.GetGrpcTransportCredentials()
+		transportCredentials, err := helper.GetGrpcTransportCredentials(ctx)
 		panicOnError(err)
 
 		dialOptions := []grpc.DialOption{
@@ -140,7 +137,7 @@ func getGrpcConnection() *grpc.ClientConn {
 func getSzAbstractFactory(ctx context.Context) senzing.SzAbstractFactory {
 	_ = ctx
 	result := &szabstractfactory.Szabstractfactory{
-		GrpcConnection: getGrpcConnection(),
+		GrpcConnection: getGrpcConnection(ctx),
 	}
 
 	return result

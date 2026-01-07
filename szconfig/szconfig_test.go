@@ -22,7 +22,6 @@ import (
 )
 
 const (
-	baseTen           = 10
 	dataSourceCode    = "GO_TEST"
 	defaultTruncation = 76
 	instanceName      = "SzConfig Test"
@@ -38,7 +37,6 @@ const (
 
 const (
 	badConfigDefinition = "}{"
-	badConfigHandle     = uintptr(0)
 	badDataSourceCode   = "\n\tGO_TEST"
 	badLogLevelName     = "BadLogLevelName"
 	badSettings         = "{]"
@@ -310,9 +308,9 @@ func TestSzconfig_Destroy_withObserver(test *testing.T) {
 // Internal functions
 // ----------------------------------------------------------------------------
 
-func getGrpcConnection() *grpc.ClientConn {
+func getGrpcConnection(ctx context.Context) *grpc.ClientConn {
 	if grpcConnection == nil {
-		transportCredentials, err := helper.GetGrpcTransportCredentials()
+		transportCredentials, err := helper.GetGrpcTransportCredentials(ctx)
 		panicOnError(err)
 
 		dialOptions := []grpc.DialOption{
@@ -331,10 +329,8 @@ func getSettings() string {
 }
 
 func getSzAbstractFactory(ctx context.Context) senzing.SzAbstractFactory {
-	_ = ctx
-
 	return &szabstractfactory.Szabstractfactory{
-		GrpcConnection: getGrpcConnection(),
+		GrpcConnection: getGrpcConnection(ctx),
 	}
 }
 
@@ -346,7 +342,7 @@ func getSzConfigManager(ctx context.Context) *szconfigmanager.Szconfigmanager {
 	var err error
 
 	if szConfigManagerSingleton == nil {
-		grpcConnection := getGrpcConnection()
+		grpcConnection := getGrpcConnection(ctx)
 		szConfigManagerSingleton = &szconfigmanager.Szconfigmanager{
 			GrpcClient:         szconfigmanagerpb.NewSzConfigManagerClient(grpcConnection),
 			GrpcClientSzConfig: szpb.NewSzConfigClient(grpcConnection),
@@ -379,7 +375,7 @@ func getSzConfig(ctx context.Context) *szconfig.Szconfig {
 	configDefinition, err := szConfigForExport.Export(ctx)
 	panicOnError(err)
 
-	grpcConnection := getGrpcConnection()
+	grpcConnection := getGrpcConnection(ctx)
 	szConfig = &szconfig.Szconfig{
 		GrpcClient: szpb.NewSzConfigClient(grpcConnection),
 	}

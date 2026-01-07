@@ -1,6 +1,7 @@
 package helper
 
 import (
+	"context"
 	"crypto/tls"
 	"crypto/x509"
 	"os"
@@ -28,7 +29,7 @@ credential is returned.
 Output
   - Transport Credential calculated by OS environment variables.
 */
-func GetGrpcTransportCredentials() (credentials.TransportCredentials, error) {
+func GetGrpcTransportCredentials(ctx context.Context) (credentials.TransportCredentials, error) {
 	var certificates []tls.Certificate
 
 	result := insecure.NewCredentials()
@@ -50,6 +51,7 @@ func GetGrpcTransportCredentials() (credentials.TransportCredentials, error) {
 			clientKeyPassPhrase, _ := os.LookupEnv("SENZING_TOOLS_CLIENT_KEY_PASSPHRASE")
 
 			clientCertificate, err := tlshelper.LoadX509KeyPair(
+				ctx,
 				clientCertificatePath,
 				clientKeyPath,
 				clientKeyPassPhrase,

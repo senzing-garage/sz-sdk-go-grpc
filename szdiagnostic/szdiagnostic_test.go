@@ -210,7 +210,7 @@ func TestSzdiagnostic_AsInterface(test *testing.T) {
 
 func TestSzdiagnostic_Initialize(test *testing.T) {
 	ctx := test.Context()
-	grpcConnection := getGrpcConnection()
+	grpcConnection := getGrpcConnection(ctx)
 	szDiagnostic := &szdiagnostic.Szdiagnostic{
 		GrpcClient: szpb.NewSzDiagnosticClient(grpcConnection),
 	}
@@ -228,7 +228,7 @@ func TestSzdiagnostic_Initialize_error(test *testing.T) {
 
 func TestSzdiagnostic_Initialize_withConfigId(test *testing.T) {
 	ctx := test.Context()
-	grpcConnection := getGrpcConnection()
+	grpcConnection := getGrpcConnection(ctx)
 	szDiagnostic := &szdiagnostic.Szdiagnostic{
 		GrpcClient: szpb.NewSzDiagnosticClient(grpcConnection),
 	}
@@ -308,9 +308,9 @@ func getDefaultConfigID() int64 {
 	return defaultConfigID
 }
 
-func getGrpcConnection() *grpc.ClientConn {
+func getGrpcConnection(ctx context.Context) *grpc.ClientConn {
 	if grpcConnection == nil {
-		transportCredentials, err := helper.GetGrpcTransportCredentials()
+		transportCredentials, err := helper.GetGrpcTransportCredentials(ctx)
 		panicOnError(err)
 
 		dialOptions := []grpc.DialOption{
@@ -329,10 +329,8 @@ func getSettings() string {
 }
 
 func getSzAbstractFactory(ctx context.Context) senzing.SzAbstractFactory {
-	_ = ctx
-
 	return &szabstractfactory.Szabstractfactory{
-		GrpcConnection: getGrpcConnection(),
+		GrpcConnection: getGrpcConnection(ctx),
 	}
 }
 
@@ -340,7 +338,7 @@ func getSzConfigManager(ctx context.Context) senzing.SzConfigManager {
 	var err error
 
 	if szConfigManagerSingleton == nil {
-		grpcConnection := getGrpcConnection()
+		grpcConnection := getGrpcConnection(ctx)
 		szConfigManagerSingleton = &szconfigmanager.Szconfigmanager{
 			GrpcClient:         szconfigmanagerpb.NewSzConfigManagerClient(grpcConnection),
 			GrpcClientSzConfig: szconfigpb.NewSzConfigClient(grpcConnection),
@@ -365,7 +363,7 @@ func getSzConfigManager(ctx context.Context) senzing.SzConfigManager {
 
 func getSzDiagnostic(ctx context.Context) *szdiagnostic.Szdiagnostic {
 	if szDiagnosticSingleton == nil {
-		grpcConnection := getGrpcConnection()
+		grpcConnection := getGrpcConnection(ctx)
 		szDiagnosticSingleton = &szdiagnostic.Szdiagnostic{
 			GrpcClient: szpb.NewSzDiagnosticClient(grpcConnection),
 		}
@@ -390,7 +388,7 @@ func getSzDiagnosticAsInterface(ctx context.Context) senzing.SzDiagnostic {
 
 func getSzEngine(ctx context.Context) senzing.SzEngine {
 	if szEngineSingleton == nil {
-		grpcConnection := getGrpcConnection()
+		grpcConnection := getGrpcConnection(ctx)
 		szEngineSingleton = &szengine.Szengine{
 			GrpcClient: szenginepb.NewSzEngineClient(grpcConnection),
 		}

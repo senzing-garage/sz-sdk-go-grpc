@@ -150,9 +150,9 @@ func TestSzproduct_Destroy_withObserver(test *testing.T) {
 // Internal functions
 // ----------------------------------------------------------------------------
 
-func getGrpcConnection() *grpc.ClientConn {
+func getGrpcConnection(ctx context.Context) *grpc.ClientConn {
 	if grpcConnection == nil {
-		transportCredentials, err := helper.GetGrpcTransportCredentials()
+		transportCredentials, err := helper.GetGrpcTransportCredentials(ctx)
 		panicOnError(err)
 
 		dialOptions := []grpc.DialOption{
@@ -171,10 +171,8 @@ func getSettings() string {
 }
 
 func getSzAbstractFactory(ctx context.Context) senzing.SzAbstractFactory {
-	_ = ctx
-
 	return &szabstractfactory.Szabstractfactory{
-		GrpcConnection: getGrpcConnection(),
+		GrpcConnection: getGrpcConnection(ctx),
 	}
 }
 
@@ -184,7 +182,7 @@ func getSzProduct(ctx context.Context) *szproduct.Szproduct {
 	if szProductSingleton == nil {
 		settings := getSettings()
 
-		grpcConnection := getGrpcConnection()
+		grpcConnection := getGrpcConnection(ctx)
 		szProductSingleton = &szproduct.Szproduct{
 			GrpcClient: szpb.NewSzProductClient(grpcConnection),
 		}

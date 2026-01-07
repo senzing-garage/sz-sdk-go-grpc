@@ -22,7 +22,7 @@ func TestGetGrpcTransportCredentials_Insecure(test *testing.T) {
 		defer os.Setenv(envVar, value) //nolint
 	}
 
-	actual, err := helper.GetGrpcTransportCredentials()
+	actual, err := helper.GetGrpcTransportCredentials(test.Context())
 	require.NoError(test, err)
 	assert.Empty(test, actual)
 }
@@ -41,7 +41,7 @@ func TestGetGrpcTransportCredentials_MutualTLS(test *testing.T) {
 		}
 	}
 
-	actual, err := helper.GetGrpcTransportCredentials()
+	actual, err := helper.GetGrpcTransportCredentials(test.Context())
 	require.NoError(test, err)
 	assert.NotEmpty(test, actual)
 }
@@ -55,7 +55,7 @@ func TestGetGrpcTransportCredentials_ServerSideTLS(test *testing.T) {
 		defer os.Unsetenv(envVar)
 	}
 
-	actual, err := helper.GetGrpcTransportCredentials()
+	actual, err := helper.GetGrpcTransportCredentials(test.Context())
 	require.NoError(test, err)
 	assert.NotEmpty(test, actual)
 }
