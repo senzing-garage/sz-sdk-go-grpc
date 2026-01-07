@@ -9,6 +9,14 @@ This project adheres to [Semantic Versioning].
 
 -
 
+## [0.9.12] - 2026-01-07
+
+### Changed in 0.9.12
+
+- Added context parameter to connection setup for improved request tracing
+- Update dependencies
+- Update TLS certificates
+
 ## [0.9.11] - 2025-10-24
 
 ### Changed in 0.9.11
