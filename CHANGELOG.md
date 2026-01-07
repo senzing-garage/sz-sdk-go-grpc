@@ -2,8 +2,8 @@
 
 All notable changes to this project will be documented in this file.
 
-The format is based on [Keep a Changelog], [markdownlint],
-and this project adheres to [Semantic Versioning].
+The changelog format is based on [Keep a Changelog] and [CommonMark].
+This project adheres to [Semantic Versioning].
 
 ## [Unreleased]
 
@@ -329,7 +329,7 @@ and this project adheres to [Semantic Versioning].
 
 ### Changed in 0.2.5
 
-- Added `GetObserverOrigin()` and `SetObserverOrigin()` to g2* packages
+- Added `GetObserverOrigin()` and `SetObserverOrigin()` to g2\* packages
 - Update dependencies
   - github.com/senzing/g2-sdk-go v0.6.2
   - github.com/senzing-garage/go-observing v0.2.2
@@ -374,6 +374,6 @@ and this project adheres to [Semantic Versioning].
 
 - Initial implementation
 
-[Keep a Changelog]: https://keepachangelog.com/en/1.0.0/
-[markdownlint]: https://dlaa.me/markdownlint/
-[Semantic Versioning]: https://semver.org/spec/v2.0.0.html
+[CommonMark]: https://commonmark.org/
+[Keep a Changelog]: https://keepachangelog.com/
+[Semantic Versioning]: https://semver.org/

@@ -65,6 +65,7 @@ hello-world: hello-world-osarch-specific
 
 .PHONY: dependencies-for-development
 dependencies-for-development: dependencies-for-development-osarch-specific
+	@go install github.com/bombsimon/wsl/v5/cmd/wsl@latest
 	@go install github.com/daixiang0/gci@latest
 	@go install github.com/gotesttools/gotestfmt/v2/cmd/gotestfmt@latest
 	@go install github.com/vladopajic/go-test-coverage/v2@latest
@@ -170,6 +171,17 @@ documentation: documentation-osarch-specific
 clean: clean-osarch-specific
 	@go clean -cache
 	@go clean -testcache
+
+# -----------------------------------------------------------------------------
+# Certificates
+# -----------------------------------------------------------------------------
+
+
+.PHONY: certificate-info
+certificate-info:
+	openssl x509 -in testdata/certificates/certificate-authority/certificate.pem -text -noout
+	openssl x509 -in testdata/certificates/server/certificate.pem -text -noout
+	openssl x509 -in testdata/certificates/client/certificate.pem -text -noout
 
 # -----------------------------------------------------------------------------
 # Utility targets
