@@ -131,6 +131,10 @@ run: run-osarch-specific
 test: test-osarch-specific
 
 
+.PHONY: test-verbose
+test-verbose: test-verbose-osarch-specific
+
+
 .PHONY: test-mutual-tls
 test-mutual-tls: test-mutual-tls-osarch-specific
 
