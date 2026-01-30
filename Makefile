@@ -131,6 +131,10 @@ run: run-osarch-specific
 test: test-osarch-specific
 
 
+.PHONY: test-verbose
+test-verbose: test-verbose-osarch-specific
+
+
 .PHONY: test-mutual-tls
 test-mutual-tls: test-mutual-tls-osarch-specific
 
@@ -141,11 +145,6 @@ test-mutual-tls-encrypted-key: test-mutual-tls-encrypted-key-osarch-specific
 
 .PHONY: test-server-side-tls
 test-server-side-tls: test-server-side-tls-osarch-specific
-
-
-.PHONY: test-verbose
-test-verbose:
-	@go test -v -p 1 ./...
 
 # -----------------------------------------------------------------------------
 # Coverage

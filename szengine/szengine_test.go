@@ -1844,6 +1844,7 @@ func setup() {
 	ctx := context.Background()
 	grpcConnection := getGrpcConnection(ctx)
 	senzingVersion = getversion.GetSenzingVersion(ctx, grpcConnection)
+
 	setupSenzingConfiguration()
 	setupPurgeRepository()
 }
@@ -2710,8 +2711,8 @@ func getTestCasesForHowEntityByEntityID() []TestMetadataForHowEntityByEntityID {
 
 func getTestCasesForGetRecordPreview() []TestMetadataForGetRecordPreview {
 	var addendum []TestMetadataForGetRecordPreview
-	result := []TestMetadataForGetRecordPreview{
 
+	result := []TestMetadataForGetRecordPreview{
 		{
 			name: "default",
 		},
@@ -2736,7 +2737,6 @@ func getTestCasesForGetRecordPreview() []TestMetadataForGetRecordPreview {
 				recordDefinition:   badRecordDefinition,
 			},
 		}
-
 	}
 
 	result = append(result, addendum...)

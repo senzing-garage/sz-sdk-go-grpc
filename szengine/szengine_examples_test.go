@@ -141,6 +141,7 @@ func ExampleSzengine_CountRedoRecords() {
 	if err != nil {
 		handleError(err)
 	}
+	// Output:
 }
 
 func ExampleSzengine_ExportCsvEntityReport() {
@@ -1752,6 +1753,7 @@ func ExampleSzengine_GetRedoRecord() {
 	if err != nil {
 		handleError(err)
 	}
+	// Output:
 }
 
 func ExampleSzengine_GetStats() {
@@ -1769,6 +1771,7 @@ func ExampleSzengine_GetStats() {
 	if err != nil {
 		handleError(err)
 	}
+	// Output:
 }
 
 func ExampleSzengine_GetStats_output() {
@@ -3036,6 +3039,7 @@ func ExampleSzEngine_ProcessRedoRecord_withInfo() {
 	if err != nil {
 		handleError(err)
 	}
+	// Output:
 }
 
 func ExampleSzengine_SearchByAttributes() {

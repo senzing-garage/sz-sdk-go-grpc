@@ -65,6 +65,11 @@ setup-osarch-specific:
 test-osarch-specific:
 	@go test -exec macos_exec_dyld.sh -json -v -p 1 ./... 2>&1 | tee /tmp/gotest.log | gotestfmt
 
+
+.PHONY: test-verbose-osarch-specific
+test-verbose-osarch-specific:
+	@go test -exec macos_exec_dyld.sh -v -p 1 ./...
+
 # -----------------------------------------------------------------------------
 # Makefile targets supported only by this platform.
 # -----------------------------------------------------------------------------

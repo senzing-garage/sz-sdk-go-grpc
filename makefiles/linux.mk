@@ -101,6 +101,11 @@ test-osarch-specific:
 	@go test -json -v -p 1 ./... 2>&1 | tee /tmp/gotest.log | gotestfmt
 
 
+.PHONY: test-verbose-osarch-specific
+test-verbose-osarch-specific:
+	@go test -v -p 1 ./...
+
+
 .PHONY: test-mutual-tls-osarch-specific
 test-mutual-tls-osarch-specific: export SENZING_TOOLS_SERVER_CA_CERTIFICATE_FILE=$(MAKEFILE_DIRECTORY)/testdata/certificates/certificate-authority/certificate.pem
 test-mutual-tls-osarch-specific: export SENZING_TOOLS_CLIENT_CERTIFICATE_FILE=$(MAKEFILE_DIRECTORY)/testdata/certificates/client/certificate.pem
