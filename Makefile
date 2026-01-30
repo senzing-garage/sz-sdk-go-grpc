@@ -142,6 +142,11 @@ test-mutual-tls-encrypted-key: test-mutual-tls-encrypted-key-osarch-specific
 .PHONY: test-server-side-tls
 test-server-side-tls: test-server-side-tls-osarch-specific
 
+
+.PHONY: test-verbose
+test-verbose:
+	@go test -v -p 1 ./...
+
 # -----------------------------------------------------------------------------
 # Coverage
 # -----------------------------------------------------------------------------

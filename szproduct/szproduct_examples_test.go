@@ -71,11 +71,11 @@ func ExampleSzproduct_GetVersion() {
 	//     },
 	//     "PRODUCT_NAME": "Senzing SDK",
 	//     "SCHEMA_VERSION": {
-	//         "ENGINE_SCHEMA_VERSION": "4.0",
+	//         "ENGINE_SCHEMA_VERSION": "4.2",
 	//         "MAXIMUM_REQUIRED_SCHEMA_VERSION": "4.99",
 	//         "MINIMUM_REQUIRED_SCHEMA_VERSION": "4.0"
 	//     },
-	//     "VERSION": "4.0.0"
+	//     "VERSION": "4.2.0"
 	// }
 }
 

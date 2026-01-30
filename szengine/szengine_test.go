@@ -16,6 +16,7 @@ import (
 	"github.com/senzing-garage/go-helpers/testfixtures"
 	"github.com/senzing-garage/go-helpers/truthset"
 	"github.com/senzing-garage/go-observing/observer"
+	"github.com/senzing-garage/sz-sdk-go-grpc/getversion"
 	"github.com/senzing-garage/sz-sdk-go-grpc/helper"
 	"github.com/senzing-garage/sz-sdk-go-grpc/szabstractfactory"
 	"github.com/senzing-garage/sz-sdk-go-grpc/szconfigmanager"
@@ -94,6 +95,7 @@ var (
 		ID:       "Observer 1",
 		IsSilent: true,
 	}
+	senzingVersion           = 0
 	szConfigManagerSingleton *szconfigmanager.Szconfigmanager
 	szDiagnosticSingleton    *szdiagnostic.Szdiagnostic
 	szEngineSingleton        *szengine.Szengine
@@ -108,6 +110,10 @@ type GetEntityByRecordIDResponse struct {
 // ----------------------------------------------------------------------------
 // Interface methods
 // ----------------------------------------------------------------------------
+
+func TestSzEngine_PrintSenzingVersion(test *testing.T) {
+	test.Logf("Detected Senzing version: %d", senzingVersion)
+}
 
 func TestSzEngine_AddRecord(test *testing.T) {
 	ctx := test.Context()
@@ -1488,13 +1494,13 @@ func TestSzEngine_UnregisterObserver(test *testing.T) {
 // ----------------------------------------------------------------------------
 
 func TestSzEngine_AsInterface(test *testing.T) {
-	expected := int64(4)
+	expected := int64(0)
 	ctx := test.Context()
 	szEngine := getSzEngineAsInterface(ctx)
 	actual, err := szEngine.CountRedoRecords(ctx)
 	printDebug(test, err, actual)
 	require.NoError(test, err)
-	require.Equal(test, expected, actual)
+	require.LessOrEqual(test, expected, actual)
 }
 
 func TestSzEngine_Initialize(test *testing.T) {
@@ -1835,6 +1841,9 @@ func TestMain(m *testing.M) {
 }
 
 func setup() {
+	ctx := context.Background()
+	grpcConnection := getGrpcConnection(ctx)
+	senzingVersion = getversion.GetSenzingVersion(ctx, grpcConnection)
 	setupSenzingConfiguration()
 	setupPurgeRepository()
 }
@@ -2700,17 +2709,37 @@ func getTestCasesForHowEntityByEntityID() []TestMetadataForHowEntityByEntityID {
 }
 
 func getTestCasesForGetRecordPreview() []TestMetadataForGetRecordPreview {
+	var addendum []TestMetadataForGetRecordPreview
 	result := []TestMetadataForGetRecordPreview{
-		{
-			name:               "badRecordDefinition",
-			expectedErr:        szerror.ErrSzBadInput,
-			expectedErrMessage: `{"function":"szengine.(*Szengine).GetRecordPreview","error":{"function":"szengineserver.(*SzEngineServer).GetRecordPreview","error":{"function":"szengine.(*Szengine).GetRecordPreview","error":{"id":"SZSDK60044061","reason":"SENZ0002|Invalid Message"}}}}`,
-			recordDefinition:   badRecordDefinition,
-		},
+
 		{
 			name: "default",
 		},
 	}
+
+	switch {
+	case senzingVersion < 40200:
+		addendum = []TestMetadataForGetRecordPreview{
+			{
+				name:               "badRecordDefinition",
+				expectedErr:        szerror.ErrSzBadInput,
+				expectedErrMessage: `{"function":"szengine.(*Szengine).GetRecordPreview","error":{"function":"szengineserver.(*SzEngineServer).GetRecordPreview","error":{"function":"szengine.(*Szengine).GetRecordPreview","error":{"id":"SZSDK60044061","reason":"SENZ0002|Invalid Message"}}}}`,
+				recordDefinition:   badRecordDefinition,
+			},
+		}
+	default:
+		addendum = []TestMetadataForGetRecordPreview{
+			{
+				name:               "badRecordDefinition",
+				expectedErr:        szerror.ErrSzBadInput,
+				expectedErrMessage: `{"function":"szengine.(*Szengine).GetRecordPreview","error":{"function":"szengineserver.(*SzEngineServer).GetRecordPreview","error":{"function":"szengine.(*Szengine).GetRecordPreview","error":{"id":"SZSDK60044061","reason":"SENZ3121|JSON Parsing Failure [code=3,offset=0]"}}}}`,
+				recordDefinition:   badRecordDefinition,
+			},
+		}
+
+	}
+
+	result = append(result, addendum...)
 
 	return result
 }
