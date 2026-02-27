@@ -2033,7 +2033,7 @@ func (client *Szengine) addRecord(
 
 func (client *Szengine) closeExportReport(ctx context.Context, exportHandle uintptr) error {
 	request := &szpb.CloseExportReportRequest{
-		ExportHandle: int64(exportHandle),
+		ExportHandle: int64(exportHandle), //nolint:gosec // G115
 	}
 	_, err := client.GrpcClient.CloseExportReport(ctx, request)
 
@@ -2071,7 +2071,7 @@ func (client *Szengine) exportCsvEntityReport(ctx context.Context, csvColumnList
 		Flags:         flags,
 	}
 	response, err := client.GrpcClient.ExportCsvEntityReport(ctx, request)
-	result := uintptr(response.GetResult())
+	result := uintptr(response.GetResult()) //nolint:gosec // G115
 
 	return result, helper.ConvertGrpcError(err)
 }
@@ -2081,14 +2081,14 @@ func (client *Szengine) exportJSONEntityReport(ctx context.Context, flags int64)
 		Flags: flags,
 	}
 	response, err := client.GrpcClient.ExportJsonEntityReport(ctx, request)
-	result := (uintptr)(response.GetResult())
+	result := (uintptr)(response.GetResult()) //nolint:gosec // G115
 
 	return result, helper.ConvertGrpcError(err)
 }
 
 func (client *Szengine) fetchNext(ctx context.Context, exportHandle uintptr) (string, error) {
 	request := &szpb.FetchNextRequest{
-		ExportHandle: int64(exportHandle),
+		ExportHandle: int64(exportHandle), //nolint:gosec // G115
 	}
 	response, err := client.GrpcClient.FetchNext(ctx, request)
 	result := response.GetResult()
