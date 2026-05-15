@@ -140,10 +140,6 @@ this action moves the PR on the "Garage" project board to "Done".
 [Add to Project Garage GitHub Action]: add-to-project-garage.yaml
 [andrewslotin/go-proxy-pull-action]: https://github.com/andrewslotin/go-proxy-pull-action
 [Dependabot Approve and Merge GitHub Action]: dependabot-approve-and-merge.yaml
-[Docker Build Container GitHub Action]: docker-build-container.yaml
-[Docker Push Containers to DockerHub GitHub Action]: docker-push-containers-to-dockerhub.yaml
-[DockerHub]: https://hub.docker.com/
-[github.go]: ../../cmd/github.go
 [Go Proxy Pull GitHub Action]: go-proxy-pull.yaml
 [Go Test Darwin GitHub Action]: go-test-darwin.yaml
 [Go Test Linux GitHub Action]: go-test-linux.yaml
@@ -154,7 +150,6 @@ this action moves the PR on the "Garage" project board to "Done".
 [golangci/golangci-lint-action]: https://github.com/golangci/golangci-lint-action
 [gotesttools/gotestfmt-action]: https://github.com/gotesttools/gotestfmt-action
 [Lint Workflows GitHub Action]: lint-workflows.yaml
-[Make Go GitHub File GitHub Action]: make-go-github-file.yaml
 [Make Go Tag GitHub Action]: make-go-tag.yaml
 [Move PR to Done Dependabot GitHub Action]: move-pr-to-done-dependabot.yaml
 [move-pr-to-done-dependabot.yaml]: move-pr-to-done-dependabotyaml
@@ -165,9 +160,7 @@ this action moves the PR on the "Garage" project board to "Done".
 [senzing-factory/build-resources/.../dependabot-approve-and-merge.yaml]: https://github.com/senzing-factory/build-resources/blob/main/.github/workflows/dependabot-approve-and-merge.yaml
 [senzing-factory/build-resources/.../go-coverage.yaml]: https://github.com/senzing-factory/build-resources/blob/main/.github/workflows/go-coverage.yaml
 [senzing-factory/build-resources/.../lint-workflows.yaml]: https://github.com/senzing-factory/build-resources/blob/main/.github/workflows/lint-workflows.yaml
-[senzing-factory/build-resources/.../make-go-github-file.yaml]: https://github.com/senzing-factory/build-resources/blob/main/.github/workflows/make-go-github-file.yaml
 [senzing-factory/build-resources/.../move-pr-to-done-dependabot.yaml]: https://github.com/senzing-factory/build-resources/blob/main/.github/workflows/move-pr-to-done-dependabot.yaml
-[senzing-factory/github-action-docker-buildx-build]: https://github.com/senzing-factory/github-action-docker-buildx-build
 [senzing-factory/github-action-make-go-tag]: https://github.com/senzing-factory/github-action-make-go-tag
 [super-linter]: https://github.com/super-linter/super-linter
 [testcoverage.yaml]: ../coverage/README.md#testcoverageyaml
