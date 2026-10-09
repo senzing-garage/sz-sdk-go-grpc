@@ -878,7 +878,7 @@ func (client *Szengine) FindPathByEntityID(
 }
 
 /*
-Method FindPathByRecordID searches for the shortest relationship path between two entities, specifiec by record IDs.
+Method FindPathByRecordID searches for the shortest relationship path between two entities, specified by record IDs.
 
 The returned path is the shortest path among the paths that satisfy the parameters.
 
@@ -2081,7 +2081,7 @@ func (client *Szengine) exportJSONEntityReport(ctx context.Context, flags int64)
 		Flags: flags,
 	}
 	response, err := client.GrpcClient.ExportJsonEntityReport(ctx, request)
-	result := (uintptr)(response.GetResult()) //nolint:gosec // G115
+	result := uintptr(response.GetResult()) //nolint:gosec // G115
 
 	return result, helper.ConvertGrpcError(err)
 }
