@@ -92,7 +92,7 @@ Each package has a unique ID for error messages and logging:
 
 ## Code Style
 
-- Go version: 1.24.4
+- Go version: 1.27.1
 - Line length limit: 120 characters
 - Uses extensive golangci-lint configuration (see `.github/linters/.golangci.yaml`)
 - JSON field tags use upperSnake case
