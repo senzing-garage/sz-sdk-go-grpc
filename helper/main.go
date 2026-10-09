@@ -7,7 +7,7 @@ import "errors"
 // ----------------------------------------------------------------------------
 
 /*
-MessageIDPrefix is the message prefix for `SZSDKcccceeee` message identifers
+MessageIDPrefix is the message prefix for `SZSDKcccceeee` message identifiers
 where "cccc" is the component ID and "eeee" is the error identifier.
 */
 const (
