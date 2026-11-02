@@ -75,7 +75,7 @@ func ExampleSzproduct_GetVersion() {
 	//         "MAXIMUM_REQUIRED_SCHEMA_VERSION": "4.99",
 	//         "MINIMUM_REQUIRED_SCHEMA_VERSION": "4.0"
 	//     },
-	//     "VERSION": "4.2.0"
+	//     "VERSION": "4.2.4"
 	// }
 }
 
